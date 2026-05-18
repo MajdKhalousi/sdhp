@@ -1,0 +1,29 @@
+export const DEFAULT_PAGE_SIZE = 20;
+export const MAX_PAGE_SIZE = 100;
+
+export const USER_ROLES = {
+  SUPER_ADMIN: 'SUPER_ADMIN',
+  ORG_ADMIN: 'ORG_ADMIN',
+  BRANCH_ADMIN: 'BRANCH_ADMIN',
+  DOCTOR: 'DOCTOR',
+  NURSE: 'NURSE',
+  SECRETARY: 'SECRETARY',
+  ACCOUNTANT: 'ACCOUNTANT',
+  TECHNICIAN: 'TECHNICIAN',
+} as const;
+
+export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
+
+export const APPOINTMENT_STATUS = {
+  SCHEDULED: 'SCHEDULED',
+  CONFIRMED: 'CONFIRMED',
+  CHECKED_IN: 'CHECKED_IN',
+  IN_QUEUE: 'IN_QUEUE',
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  NO_SHOW: 'NO_SHOW',
+} as const;
+
+export type AppointmentStatus =
+  (typeof APPOINTMENT_STATUS)[keyof typeof APPOINTMENT_STATUS];

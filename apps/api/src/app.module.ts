@@ -8,6 +8,7 @@ import { envConfig } from './config/env.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { BranchesModule } from './modules/branches/branches.module';
+import { DepartmentsModule } from './modules/departments/departments.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -21,6 +22,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     AuthModule,
     OrganizationsModule,
     BranchesModule,
+    DepartmentsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -90,7 +90,7 @@ async function main() {
   // Org2 branch — must NOT be accessible by org1 ORG_ADMIN
   await prisma.branch.upsert({
     where: { id: 'seed-branch-003' },
-    update: {},
+    update: { deletedAt: null, isActive: true },
     create: {
       id: 'seed-branch-003',
       organizationId: org2.id,
@@ -101,7 +101,46 @@ async function main() {
     },
   });
 
-  console.log(`Seed complete — orgs: ${org1.name}, ${org2.name} | branches: 3`);
+  // ── Departments ───────────────────────────────────────────────────────────
+  await prisma.department.upsert({
+    where: { id: 'seed-dept-001' },
+    update: { deletedAt: null, isActive: true },
+    create: {
+      id: 'seed-dept-001',
+      organizationId: org1.id,
+      branchId: 'seed-branch-001',
+      name: 'Cardiology',
+      nameAr: 'قسم القلبية',
+      code: 'CARD',
+    },
+  });
+
+  await prisma.department.upsert({
+    where: { id: 'seed-dept-002' },
+    update: { deletedAt: null, isActive: true },
+    create: {
+      id: 'seed-dept-002',
+      organizationId: org1.id,
+      name: 'General Practice',
+      nameAr: 'الطب العام',
+      code: 'GP',
+    },
+  });
+
+  await prisma.department.upsert({
+    where: { id: 'seed-dept-003' },
+    update: { deletedAt: null, isActive: true },
+    create: {
+      id: 'seed-dept-003',
+      organizationId: org2.id,
+      branchId: 'seed-branch-003',
+      name: 'Pediatrics',
+      nameAr: 'طب الأطفال',
+      code: 'PED',
+    },
+  });
+
+  console.log(`Seed complete — orgs: ${org1.name}, ${org2.name} | branches: 3 | departments: 3`);
 }
 
 main()

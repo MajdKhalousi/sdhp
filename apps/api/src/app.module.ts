@@ -10,6 +10,7 @@ import { OrganizationsModule } from './modules/organizations/organizations.modul
 import { BranchesModule } from './modules/branches/branches.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { UsersModule } from './modules/users/users.module';
+import { DoctorsModule } from './modules/doctors/doctors.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -25,6 +26,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     BranchesModule,
     DepartmentsModule,
     UsersModule,
+    DoctorsModule,
   ],
   controllers: [AppController],
   providers: [

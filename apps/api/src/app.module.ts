@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { envConfig } from './config/env.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { BranchesModule } from './modules/branches/branches.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -19,6 +20,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     PrismaModule,
     AuthModule,
     OrganizationsModule,
+    BranchesModule,
   ],
   controllers: [AppController],
   providers: [

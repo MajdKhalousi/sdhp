@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
   const passwordHash = await bcrypt.hash('password123', 10);
 
-  // Org 1 — used by the ORG_ADMIN seed user
+  // ── Organizations ──────────────────────────────────────────────────────────
   const org1 = await prisma.organization.upsert({
     where: { id: 'seed-org-001' },
     update: {},
@@ -18,7 +18,6 @@ async function main() {
     },
   });
 
-  // Org 2 — exists to verify cross-org isolation (ORG_ADMIN of org1 must not access this)
   const org2 = await prisma.organization.upsert({
     where: { id: 'seed-org-002' },
     update: {},
@@ -30,7 +29,7 @@ async function main() {
     },
   });
 
-  // ORG_ADMIN for org1
+  // ── Users ─────────────────────────────────────────────────────────────────
   await prisma.user.upsert({
     where: { phone: '+963912345678' },
     update: {},
@@ -45,7 +44,7 @@ async function main() {
     },
   });
 
-  // SUPER_ADMIN — no org affiliation restriction, can access all
+  // SUPER_ADMIN — organizationId is required by the FK but transcended at app level
   await prisma.user.upsert({
     where: { phone: '+963900000001' },
     update: {},
@@ -56,11 +55,53 @@ async function main() {
       firstName: 'Super',
       lastName: 'Admin',
       role: UserRole.SUPER_ADMIN,
-      organizationId: org1.id, // required by schema FK — SUPER_ADMIN transcends this at app level
+      organizationId: org1.id,
     },
   });
 
-  console.log(`Seed complete — orgs: ${org1.name}, ${org2.name}`);
+  // ── Branches ──────────────────────────────────────────────────────────────
+  // Org1 branches
+  await prisma.branch.upsert({
+    where: { id: 'seed-branch-001' },
+    update: {},
+    create: {
+      id: 'seed-branch-001',
+      organizationId: org1.id,
+      name: 'Damascus Main Branch',
+      nameAr: 'الفرع الرئيسي - دمشق',
+      address: 'Damascus, Syria',
+      phone: '+963112000001',
+    },
+  });
+
+  await prisma.branch.upsert({
+    where: { id: 'seed-branch-002' },
+    update: {},
+    create: {
+      id: 'seed-branch-002',
+      organizationId: org1.id,
+      name: 'Damascus South Branch',
+      nameAr: 'فرع دمشق الجنوبي',
+      address: 'Damascus South, Syria',
+      phone: '+963112000002',
+    },
+  });
+
+  // Org2 branch — must NOT be accessible by org1 ORG_ADMIN
+  await prisma.branch.upsert({
+    where: { id: 'seed-branch-003' },
+    update: {},
+    create: {
+      id: 'seed-branch-003',
+      organizationId: org2.id,
+      name: 'Aleppo Main Branch',
+      nameAr: 'الفرع الرئيسي - حلب',
+      address: 'Aleppo, Syria',
+      phone: '+963212000001',
+    },
+  });
+
+  console.log(`Seed complete — orgs: ${org1.name}, ${org2.name} | branches: 3`);
 }
 
 main()

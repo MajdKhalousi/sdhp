@@ -1,0 +1,90 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Version,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiConflictResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import { UserRole } from '@prisma/client';
+import { PatientsService } from './patients.service';
+import { CreatePatientDto } from './dto/create-patient.dto';
+import { UpdatePatientDto } from './dto/update-patient.dto';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { JwtPayload } from '../../common/types/jwt-payload.type';
+
+@ApiTags('Patients')
+@ApiBearerAuth()
+@Controller('patients')
+export class PatientsController {
+  constructor(private readonly service: PatientsService) {}
+
+  @Get()
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
+  @ApiOperation({ summary: 'List patients — SUPER_ADMIN: all | ORG_ADMIN/DOCTOR: own org only' })
+  findAll(@CurrentUser() user: JwtPayload) {
+    return this.service.findAll(user);
+  }
+
+  @Get(':id')
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
+  @ApiOperation({ summary: 'Get patient by ID — ORG_ADMIN/DOCTOR restricted to own org' })
+  @ApiNotFoundResponse({ description: 'Patient not found' })
+  findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.service.findOne(id, user);
+  }
+
+  @Post()
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
+  @ApiOperation({
+    summary:
+      'Create patient — MRN is auto-generated if not provided. SUPER_ADMIN must supply organizationId.',
+  })
+  @ApiConflictResponse({ description: 'MRN already exists in this organization' })
+  create(@Body() dto: CreatePatientDto, @CurrentUser() user: JwtPayload) {
+    return this.service.create(dto, user);
+  }
+
+  @Patch(':id')
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
+  @ApiOperation({
+    summary:
+      'Update patient — ORG_ADMIN restricted to own org. organizationId and mrn cannot be changed.',
+  })
+  @ApiNotFoundResponse({ description: 'Patient not found' })
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdatePatientDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.service.update(id, dto, user);
+  }
+
+  @Delete(':id')
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse({ description: 'Patient soft-deleted' })
+  @ApiNotFoundResponse({ description: 'Patient not found' })
+  @ApiOperation({ summary: 'Soft-delete patient — ORG_ADMIN restricted to own org' })
+  remove(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.service.remove(id, user);
+  }
+}

@@ -23,8 +23,273 @@ _Last updated: 2026-05-19_
 | 13 | **Reports** | GET /reports/summary, /appointments, /clinical, /queue | 12/12 | ✅ Complete |
 | 14 | **Allergies** | CRUD /patients/:patientId/allergies | 18/18 | ✅ Complete |
 | 15 | **Labs** | CRUD /lab-orders + /patients/:id/lab-orders | 32/32 | ✅ Complete |
+| 16 | **Radiology** | CRUD /radiology-orders + /patients/:id/radiology-orders | 35/35 | ✅ Complete |
 
-**Total: 15 backend modules, 243 test scenarios — all passing.**
+**Total: 16 backend modules, 278 test scenarios — all passing.**
+
+---
+
+## Technical Handoff — Radiology
+
+### 1. Module Name
+**Radiology** — radiology order lifecycle management with role-gated workflow transitions.
+
+---
+
+### 2. Goal
+Expose `RadiologyOrder` and `RadiologyReport` models through an 8-endpoint module. Workflow advances through six statuses via three dedicated PATCH endpoints. Mirrors Labs module pattern with radiology-specific field names and SCHEDULED state replacing SAMPLE_COLLECTED.
+
+---
+
+### 3. Files Created
+
+```
+apps/api/src/modules/radiology/
+  radiology.module.ts
+  radiology.service.ts
+  radiology.controller.ts          (exports RadiologyController + PatientRadiologyOrdersController)
+  dto/create-radiology-order.dto.ts
+  dto/update-radiology-order-status.dto.ts
+  dto/upsert-radiology-report.dto.ts
+  dto/review-radiology-report.dto.ts
+  dto/radiology-query.dto.ts
+```
+
+---
+
+### 4. Files Modified
+
+| File | Change |
+|---|---|
+| `apps/api/src/app.module.ts` | `RadiologyModule` added to imports |
+| `PROGRESS.md` | This file |
+
+---
+
+### 5. Endpoints Added
+
+| Method | Route | Roles |
+|---|---|---|
+| `POST` | `/api/v1/radiology-orders` | SA, OA, DOCTOR |
+| `GET` | `/api/v1/radiology-orders` | SA, OA, DOCTOR, NURSE, TECHNICIAN, SECRETARY |
+| `GET` | `/api/v1/radiology-orders/:id` | SA, OA, DOCTOR, NURSE, TECHNICIAN, SECRETARY |
+| `PATCH` | `/api/v1/radiology-orders/:id/status` | SA, OA, DOCTOR, NURSE, TECHNICIAN |
+| `PATCH` | `/api/v1/radiology-orders/:id/report` | SA, OA, TECHNICIAN |
+| `PATCH` | `/api/v1/radiology-orders/:id/review` | SA, OA, DOCTOR |
+| `DELETE` | `/api/v1/radiology-orders/:id` | SA, OA, DOCTOR (own orders only) |
+| `GET` | `/api/v1/patients/:patientId/radiology-orders` | SA, OA, DOCTOR, NURSE, TECHNICIAN, SECRETARY |
+
+`PatientRadiologyOrdersController` uses `@Controller('patients')` — 3-segment path `/patients/:patientId/radiology-orders` resolves without conflict with other patient controllers.
+
+---
+
+### 6. DTO Fields and Validation Rules
+
+**`CreateRadiologyOrderDto`**
+| Field | Type | Notes |
+|---|---|---|
+| `organizationId` | `string?` | SA only; auto-derived from patient if omitted |
+| `branchId` | `string?` | Validated against resolved org |
+| `patientId` | `string` | Required |
+| `encounterId` | `string?` | Validated against org and patient |
+| `orderedById` | `string?` | Required for SA/OA; ignored for DOCTOR (auto-resolved) |
+| `modality` | `string` | Required. Free string: X-RAY, CT, MRI, ULTRASOUND… |
+| `bodyPart` | `string?` | CHEST, ABDOMEN, HEAD, SPINE… |
+| `clinicalInfo` | `string?` | Clinical indication for the exam |
+| `priority` | `string?` | ROUTINE / URGENT / STAT (convention only) |
+| `notes` | `string?` | |
+
+`status`, `scheduledAt`, `cancelledAt`, `deletedAt` excluded from DTO.
+
+**`UpdateRadiologyOrderStatusDto`**: `status: RadiologyOrderStatus` (`@IsEnum`), `cancelReason?: string`
+
+**`UpsertRadiologyReportDto`**: `findings?: string`, `impression?: string`, `reportedAt?: string` (`@IsDateString`). `reportedById`/`reviewedById`/`reviewedAt` excluded — auto-resolved.
+
+**`ReviewRadiologyReportDto`**: Empty. Service auto-sets `reviewedById` + `reviewedAt`.
+
+**`RadiologyQueryDto`**: `organizationId?`, `branchId?`, `patientId?`, `status?: RadiologyOrderStatus`, `from?`, `to?`
+
+---
+
+### 7. Service Business Logic
+
+**`create`**
+1. `resolveCreateOrgId`: SA uses `dto.organizationId` or derives from patient. Non-SA uses `caller.organizationId`; cross-org → 403.
+2. Fetch patient; cross-org patient → 403. Not found → 404.
+3. Validate `branchId` and `encounterId` against org if provided.
+4. DOCTOR: auto-resolve `orderedById` from `caller.sub`. SA/OA: `orderedById` required, validated in org.
+5. `radiologyOrder.create`.
+
+**`updateStatus`**
+1. Fetch order, assert org access.
+2. Block RESULTED (use `/report`) and REVIEWED (use `/review`) as targets — 400.
+3. `assertValidTransition(from, to)` via `VALID_TRANSITIONS` map.
+4. `assertRoleCanTransition`:
+   - NURSE: only `ORDERED → SCHEDULED`
+   - TECHNICIAN: only `SCHEDULED → IN_PROGRESS`
+   - DOCTOR: `ORDERED → SCHEDULED` or `CANCELLED` (own orders only)
+   - SA/OA: any valid transition
+5. Side effects: `scheduledAt = now()` on SCHEDULED; `cancelledAt = now()` on CANCELLED.
+
+**`upsertReport`** (TECHNICIAN, OA, SA)
+1. Order must be `IN_PROGRESS` → 400 otherwise.
+2. Best-effort `reportedById`: resolve caller's Doctor profile; stays null if no profile (TECHNICIAN has no Doctor profile — request does not fail).
+3. `$transaction([radiologyReport.upsert, radiologyOrder.update → RESULTED])` — atomic.
+
+**`reviewReport`** (DOCTOR, OA, SA)
+1. Order must be `RESULTED` → 400 otherwise.
+2. `report` must exist → 400 otherwise.
+3. Resolve `reviewedById` from Doctor profile (required for DOCTOR, best-effort for SA/OA).
+4. `$transaction([radiologyReport.update → reviewedById/At, radiologyOrder.update → REVIEWED])` — atomic.
+
+---
+
+### 8. Tenant Isolation Strategy
+
+`RadiologyOrder.organizationId` is the direct tenant anchor. Identical to Labs.
+
+`RadiologyReport` has no `organizationId`. Access gated through parent `RadiologyOrder` — `fetchOrder` validates org before any report operation.
+
+SA omits org filter for reads. SA requires explicit `organizationId` for creates OR auto-derives from patient.
+
+---
+
+### 9. RBAC / Access Rules
+
+| Role | Create | Read | `/status` | `/report` | `/review` | Delete |
+|---|---|---|---|---|---|---|
+| SUPER_ADMIN | Any org | Any org | Any valid | Any org | Any org | Any org |
+| ORG_ADMIN | Own org | Own org | Any valid | Own org | Own org | Own org |
+| DOCTOR | Own org | Own org | ORDERED→SCHEDULED + cancel own | — | Own org | Own orders only |
+| NURSE | — | Own org | ORDERED→SCHEDULED only | — | — | — |
+| TECHNICIAN | — | Own org | SCHEDULED→IN_PROGRESS only | Own org | — | — |
+| SECRETARY | — | Own org | — | — | — | — |
+| ACCOUNTANT | 403 | 403 | 403 | 403 | 403 | 403 |
+
+---
+
+### 10. Prisma Schema Fields and Relations Used
+
+**`RadiologyOrder`**: all fields except `deletedAt`. `orderedBy → Doctor @relation("RadiologyOrdersOrdered")`. `report → RadiologyReport?`.
+
+**`RadiologyReport`**: all fields. `reportedBy → Doctor? @relation("RadiologyReportsReported")`. `reviewedBy → Doctor? @relation("RadiologyReportsReviewed")`. No `deletedAt`.
+
+Named relations required because Doctor has multiple relations to both `RadiologyOrder` and `RadiologyReport`.
+
+---
+
+### 11. Soft Delete / Hard Delete Behavior
+
+| Model | Behavior |
+|---|---|
+| `RadiologyOrder` | Soft delete — `deletedAt = new Date()`. All queries filter `deletedAt: null`. |
+| `RadiologyReport` | No `deletedAt`. Immutable medical record. If parent order is soft-deleted, report row is preserved for audit. |
+
+---
+
+### 12. Security Decisions
+
+**`passwordHash` never fetched** — not in any SELECT constant.
+
+**`deletedAt` never returned** — not in `ORDER_SELECT` or `REPORT_SELECT`.
+
+**Three dedicated PATCH endpoints** — `/status`, `/report`, `/review`. Each has its own `@Roles` guard. TECHNICIAN cannot review; DOCTOR cannot enter reports; NURSE cannot advance past SCHEDULED.
+
+**DOCTOR `orderedById` override ignored** — even if DOCTOR sends `orderedById` in the body, it is resolved from `caller.sub`. Cannot impersonate another doctor.
+
+**Atomic transitions** — both `upsertReport` and `reviewReport` use Prisma `$transaction` array form.
+
+**`reportedById` best-effort** — if caller has no Doctor profile (TECHNICIAN), `reportedById` stays null. The request still succeeds.
+
+---
+
+### 13. Workflow Status Transitions
+
+```
+ORDERED
+  ↓ NURSE / DOCTOR / OA / SA — scheduledAt set
+SCHEDULED
+  ↓ TECHNICIAN / OA / SA
+IN_PROGRESS
+  ↓ TECHNICIAN / OA / SA (via /report — atomic with RadiologyReport creation)
+RESULTED
+  ↓ DOCTOR / OA / SA (via /review — atomic with RadiologyReport.reviewedById/At)
+REVIEWED  ← terminal
+
+Any non-terminal → CANCELLED (DOCTOR own orders only; OA/SA any)  ← terminal
+```
+
+`VALID_TRANSITIONS` map:
+```
+ORDERED     → [SCHEDULED, CANCELLED]
+SCHEDULED   → [IN_PROGRESS, CANCELLED]
+IN_PROGRESS → [CANCELLED]
+RESULTED    → [CANCELLED]
+```
+
+---
+
+### 14. Test Results (35/35 PASS)
+
+| # | Test | Result |
+|---|---|---|
+| 1 | SA creates for any org (explicit organizationId) | ✓ |
+| 2 | OA creates in own org | ✓ |
+| 3 | OA cross-org patient → 403 | ✓ |
+| 4 | DOCTOR creates, orderedById auto-resolved | ✓ |
+| 5 | NURSE cannot create → 403 | ✓ |
+| 6 | TECHNICIAN cannot create → 403 | ✓ |
+| 7 | SECRETARY cannot create → 403 | ✓ |
+| 8 | SA lists all orgs | ✓ |
+| 9 | OA lists only own org | ✓ |
+| 10 | DOCTOR lists own org | ✓ |
+| 11 | SECRETARY lists own org | ✓ |
+| 12 | OA cross-org GET by ID → 403 | ✓ |
+| 13 | NURSE ORDERED → SCHEDULED, scheduledAt set | ✓ |
+| 14 | NURSE SCHEDULED → IN_PROGRESS → 403 | ✓ |
+| 15 | TECHNICIAN SCHEDULED → IN_PROGRESS | ✓ |
+| 16 | TECHNICIAN enters report, order → RESULTED | ✓ |
+| 17 | TECHNICIAN report when not IN_PROGRESS → 400 | ✓ |
+| 18 | DOCTOR reviews RESULTED, reviewedById + reviewedAt set | ✓ |
+| 19 | DOCTOR cannot enter report → 403 | ✓ |
+| 20 | REVIEWED terminal → 400 | ✓ |
+| 21 | CANCELLED terminal → 400 | ✓ |
+| 22 | DOCTOR cancels own order, cancelledAt set | ✓ |
+| 23 | DOCTOR cannot cancel another doctor's order → 403 | ✓ |
+| 24 | OA soft deletes order, deletedAt not in response | ✓ |
+| 25 | Deleted order hidden from list + GET → 404 | ✓ |
+| 26 | /status with status=RESULTED → 400 | ✓ |
+| 27 | /status with status=REVIEWED → 400 | ✓ |
+| 28 | Invalid date query string → 400 | ✓ |
+| 29 | Branch from wrong org in create → 400 | ✓ |
+| 30 | Non-existent patientId → 404 | ✓ |
+| 31 | Non-existent radiology order ID → 404 | ✓ |
+| 32 | No token → 401 | ✓ |
+| 33 | ACCOUNTANT → 403 | ✓ |
+| 34 | passwordHash and deletedAt never in responses | ✓ |
+| 35 | GET /patients/:patientId/radiology-orders returns correct patient orders | ✓ |
+
+TypeScript type-check: **clean (0 errors).**
+
+---
+
+### 15. Schema Limitations and Future Improvements
+
+- **`modality` is a free string** — no enum enforcement. X-RAY/CT/MRI/ULTRASOUND are convention only.
+- **`priority` is a free string** — same limitation as Labs.
+- **`reportedById` nullable for TECHNICIAN** — TECHNICIAN has no Doctor profile; report authorship is untracked in that case.
+- **No `RadiologyReport.deletedAt`** — reports are immutable. A radiology exam must be re-ordered to supersede a report.
+- **No pagination on list endpoints** — acceptable for MVP, required before production.
+
+---
+
+### 16. Next Recommended Module
+
+1. **Notifications** — in-app notification model. Requires `Notification` schema migration. Lower complexity than Billing.
+2. **Billing** — `Invoice` + `InvoiceItem`. High complexity due to financial rules. Build after clinical ordering chain is complete.
+3. **Audit Logs** — `AuditLog` model already in schema. Low migration risk; expose read endpoints for SUPER_ADMIN.
+
+**Recommended next:** Review schema and propose Notifications or Audit Logs migration — both are lower complexity than Billing.
 
 ---
 

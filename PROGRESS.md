@@ -22,8 +22,9 @@ _Last updated: 2026-05-19_
 | 12 | **Medical Timeline** | GET /patients/:patientId/timeline | 12/12 | ✅ Complete |
 | 13 | **Reports** | GET /reports/summary, /appointments, /clinical, /queue | 12/12 | ✅ Complete |
 | 14 | **Allergies** | CRUD /patients/:patientId/allergies | 18/18 | ✅ Complete |
+| 15 | **Labs** | CRUD /lab-orders + /patients/:id/lab-orders | 32/32 | ✅ Complete |
 
-**Total: 14 backend modules, 211 test scenarios — all passing.**
+**Total: 15 backend modules, 243 test scenarios — all passing.**
 
 ---
 
@@ -364,6 +365,269 @@ Check the schema before starting each of these — most will require a migration
 ---
 
 ---
+
+---
+
+---
+
+## Technical Handoff — Labs
+
+### 1. Module Name
+**Labs** — lab order lifecycle management with role-gated workflow transitions.
+
+---
+
+### 2. Goal
+Expose `LabOrder` and `LabResult` models through a 9-endpoint module. Workflow advances through six statuses via three dedicated PATCH endpoints. Each role is restricted to specific transitions. No role can skip steps.
+
+---
+
+### 3. Files Created
+
+```
+apps/api/src/modules/labs/
+  labs.module.ts
+  labs.service.ts
+  labs.controller.ts          (exports LabsController + PatientLabOrdersController)
+  dto/create-lab-order.dto.ts
+  dto/update-lab-order-status.dto.ts
+  dto/upsert-lab-result.dto.ts
+  dto/review-lab-result.dto.ts
+  dto/lab-query.dto.ts
+```
+
+---
+
+### 4. Files Modified
+
+| File | Change |
+|---|---|
+| `apps/api/src/app.module.ts` | `LabsModule` added to imports |
+| `PROGRESS.md` | This file |
+
+---
+
+### 5. Endpoints Added
+
+| Method | Route | Roles |
+|---|---|---|
+| `POST` | `/api/v1/lab-orders` | SA, OA, DOCTOR |
+| `GET` | `/api/v1/lab-orders` | SA, OA, DOCTOR, NURSE, TECHNICIAN, SECRETARY |
+| `GET` | `/api/v1/lab-orders/:id` | SA, OA, DOCTOR, NURSE, TECHNICIAN, SECRETARY |
+| `PATCH` | `/api/v1/lab-orders/:id/status` | SA, OA, DOCTOR, NURSE, TECHNICIAN |
+| `PATCH` | `/api/v1/lab-orders/:id/result` | SA, OA, TECHNICIAN |
+| `PATCH` | `/api/v1/lab-orders/:id/review` | SA, OA, DOCTOR |
+| `DELETE` | `/api/v1/lab-orders/:id` | SA, OA, DOCTOR (own orders only) |
+| `GET` | `/api/v1/patients/:patientId/lab-orders` | SA, OA, DOCTOR, NURSE, TECHNICIAN, SECRETARY |
+
+`PatientLabOrdersController` uses `@Controller('patients')` — same prefix as `PatientsController` and `MedicalTimelineController`. Path depth resolves without conflict (`/patients/:patientId/lab-orders` is 3-segment).
+
+---
+
+### 6. DTO Fields and Validation Rules
+
+**`CreateLabOrderDto`**
+| Field | Type | Validation |
+|---|---|---|
+| `organizationId` | `string?` | SA only; auto-derived from patient if omitted |
+| `branchId` | `string?` | Validated against resolved org |
+| `patientId` | `string` | Required |
+| `encounterId` | `string?` | Validated against org and patient |
+| `orderedById` | `string?` | Required for SA/OA; ignored for DOCTOR |
+| `testName` | `string` | Required |
+| `testCode` | `string?` | Optional |
+| `priority` | `string?` | Free text: ROUTINE, URGENT, STAT |
+| `notes` | `string?` | Optional |
+
+`status`, `collectedAt`, `cancelledAt`, `deletedAt` excluded from DTO — not accepted from caller.
+
+**`UpdateLabOrderStatusDto`**: `status: LabOrderStatus` (required, `@IsEnum`), `cancelReason?: string`
+
+**`UpsertLabResultDto`**: `resultValue?`, `unit?`, `referenceRange?`, `interpretation?`, `resultNotes?`, `resultAt?` (ISO date). `reviewedById`/`reviewedAt` excluded.
+
+**`ReviewLabResultDto`**: Empty. Service auto-sets `reviewedById` + `reviewedAt`.
+
+**`LabQueryDto`**: `organizationId?`, `branchId?`, `patientId?`, `status?: LabOrderStatus`, `from?`, `to?`
+
+---
+
+### 7. Service Business Logic
+
+**`create`**
+1. `resolveCreateOrgId`: SA uses `dto.organizationId` or derives from patient lookup. Non-SA uses `caller.organizationId`; cross-org → 403.
+2. Fetch patient; cross-org patient → 403. Patient not found → 404.
+3. Validate `branchId` belongs to org if provided.
+4. Validate `encounterId` belongs to org and patient if provided.
+5. DOCTOR: auto-resolve `orderedById` from `caller.sub` → Doctor profile. SA/OA: `orderedById` required, validated in org.
+6. `labOrder.create`.
+
+**`updateStatus`**
+1. Fetch order, assert org access.
+2. Block `RESULTED` (use `/result`) and `REVIEWED` (use `/review`) as targets — 400.
+3. `assertValidTransition(from, to)` — checks `VALID_TRANSITIONS` map.
+4. `assertRoleCanTransition(order, to, caller)`:
+   - NURSE: only `ORDERED → SAMPLE_COLLECTED`
+   - TECHNICIAN: only `SAMPLE_COLLECTED → IN_PROGRESS`
+   - DOCTOR: `ORDERED → SAMPLE_COLLECTED` or `CANCELLED` (own orders only)
+   - SA/OA: any valid transition
+5. Side effects: `collectedAt = now()` on SAMPLE_COLLECTED; `cancelledAt = now()` on CANCELLED.
+
+**`upsertResult`** (TECHNICIAN, OA, SA)
+1. Order must be `IN_PROGRESS` → 400 otherwise.
+2. `$transaction([labResult.upsert, labOrder.update → RESULTED])` — atomic.
+
+**`reviewResult`** (DOCTOR, OA, SA)
+1. Order must be `RESULTED` → 400 otherwise.
+2. `result` must exist → 400 otherwise.
+3. Resolve `reviewedById` from caller's Doctor profile (required for DOCTOR, best-effort for SA/OA).
+4. `$transaction([labResult.update → set reviewedById/At, labOrder.update → REVIEWED])` — atomic.
+
+**`remove`**
+- DOCTOR: only if `order.orderedById === callerDoctorId` → 403 otherwise.
+- Soft delete: `labOrder.update({ deletedAt: new Date() })`.
+
+---
+
+### 8. Tenant Isolation Strategy
+
+`LabOrder.organizationId` is the direct tenant anchor. All list queries: `where: { organizationId: caller.organizationId, deletedAt: null }`.
+
+`LabResult` has no `organizationId`. Access is gated through the parent `LabOrder` — `fetchOrder` validates org before any result operation.
+
+SA omits org filter for reads (all orgs). SA requires explicit `organizationId` for creates OR auto-derives from patient.
+
+`resolveCreateOrgId` handles both SA and non-SA cases. `resolveReadOrgId` is separate (returns `undefined` for SA all-orgs reads).
+
+---
+
+### 9. RBAC / Access Rules
+
+| Role | Create | Read | `/status` | `/result` | `/review` | Delete |
+|---|---|---|---|---|---|---|
+| SUPER_ADMIN | Any org | Any org | Any valid | Any org | Any org | Any org |
+| ORG_ADMIN | Own org | Own org | Any valid | Own org | Own org | Own org |
+| DOCTOR | Own org | Own org | ORDERED→SAMPLE_COLLECTED + cancel own | — | Own org | Own orders only |
+| NURSE | — | Own org | ORDERED→SAMPLE_COLLECTED only | — | — | — |
+| TECHNICIAN | — | Own org | SAMPLE_COLLECTED→IN_PROGRESS only | Own org | — | — |
+| SECRETARY | — | Own org | — | — | — | — |
+| ACCOUNTANT | 403 | 403 | 403 | 403 | 403 | 403 |
+
+---
+
+### 10. Prisma Schema Fields and Relations Used
+
+**`LabOrder`**: all fields except `deletedAt` in responses. `orderedById → Doctor @relation("LabOrdersOrdered")`. `result → LabResult?`.
+
+**`LabResult`**: all fields. `reviewedById → Doctor? @relation("LabResultsReviewed")`. No `deletedAt`.
+
+**Relation filters:**
+- Doctor org check via `{ user: { organizationId: orgId } }`
+- Encounter validation via `{ organizationId, patientId, deletedAt: null }`
+
+---
+
+### 11. Soft Delete / Hard Delete Behavior
+
+| Model | Behavior |
+|---|---|
+| `LabOrder` | Soft delete — `deletedAt = new Date()`. All queries filter `deletedAt: null`. |
+| `LabResult` | No `deletedAt`. Immutable medical record. Never deleted via API. If parent order is soft-deleted, result row is orphaned but preserved for audit. |
+
+---
+
+### 12. Security Decisions
+
+**`passwordHash` never fetched** — not in any SELECT constant.
+
+**`deletedAt` never returned** — not in `ORDER_SELECT` or `RESULT_SELECT`.
+
+**Three dedicated PATCH endpoints** instead of one generic PATCH. Each endpoint has its own `@Roles` guard, preventing TECHNICIAN from reviewing and NURSE from entering results at the controller level. Fine-grained role-transition logic is enforced in the service.
+
+**DOCTOR orderedById override** — even if a DOCTOR sends `orderedById` in the body, the service ignores it and resolves from `caller.sub`. A doctor cannot impersonate another doctor as the order author.
+
+**Atomic transitions** — `upsertResult` and `reviewResult` both use Prisma `$transaction` (array form). Status update and result mutation are committed together or neither is applied.
+
+---
+
+### 13. Workflow Status Transitions
+
+```
+ORDERED
+  ↓ NURSE / DOCTOR / OA / SA — collectedAt set
+SAMPLE_COLLECTED
+  ↓ TECHNICIAN / OA / SA
+IN_PROGRESS
+  ↓ TECHNICIAN / OA / SA (via /result — atomic with LabResult creation)
+RESULTED
+  ↓ DOCTOR / OA / SA (via /review — atomic with LabResult.reviewedById/At)
+REVIEWED  ← terminal
+
+Any non-terminal → CANCELLED (DOCTOR own orders only; OA/SA any)  ← terminal
+```
+
+Valid transitions enforced by `VALID_TRANSITIONS` map in service. RESULTED and REVIEWED targets are blocked at the `/status` endpoint — they have dedicated endpoints.
+
+---
+
+### 14. Test Results (32/32 PASS)
+
+| # | Test | Result |
+|---|---|---|
+| 1 | SA creates for any org | ✓ |
+| 2 | OA creates in own org | ✓ |
+| 3 | OA cross-org patient → 403 | ✓ |
+| 4 | DOCTOR creates, orderedById auto-resolved | ✓ |
+| 5 | NURSE cannot create → 403 | ✓ |
+| 6 | TECHNICIAN cannot create → 403 | ✓ |
+| 7 | SECRETARY cannot create → 403 | ✓ |
+| 8 | SA lists all orgs | ✓ |
+| 9 | OA lists only own org | ✓ |
+| 10 | DOCTOR lists own org | ✓ |
+| 11 | SECRETARY lists own org | ✓ |
+| 12 | OA cross-org GET → 403 | ✓ |
+| 13 | NURSE ORDERED→SAMPLE_COLLECTED, collectedAt set | ✓ |
+| 14 | NURSE SAMPLE_COLLECTED→IN_PROGRESS → 403 | ✓ |
+| 15 | TECHNICIAN SAMPLE_COLLECTED→IN_PROGRESS | ✓ |
+| 16 | TECHNICIAN enters result, order→RESULTED | ✓ |
+| 17 | TECHNICIAN result when not IN_PROGRESS → 400 | ✓ |
+| 18 | DOCTOR reviews RESULTED, reviewedById+At set | ✓ |
+| 19 | DOCTOR cannot enter result → 403 | ✓ |
+| 20 | REVIEWED terminal → 400 | ✓ |
+| 21 | CANCELLED terminal → 400 | ✓ |
+| 22 | DOCTOR cancels own order | ✓ |
+| 23 | DOCTOR cannot cancel another doctor's order → 403 | ✓ |
+| 24 | OA soft deletes own org order | ✓ |
+| 25 | Deleted order hidden from list + GET → 404 | ✓ |
+| 26 | Invalid date query → 400 | ✓ |
+| 27 | Branch from wrong org → 400 | ✓ |
+| 28 | Non-existent patient → 404 | ✓ |
+| 29 | Non-existent lab order → 404 | ✓ |
+| 30 | No token → 401 | ✓ |
+| 31 | ACCOUNTANT → 403 | ✓ |
+| 32 | passwordHash and deletedAt never returned | ✓ |
+
+TypeScript type-check: **clean (0 errors).**
+
+---
+
+### 15. Schema Limitations and Future Improvements
+
+- **`priority` is a free string** — no enum enforcement. ROUTINE/URGENT/STAT are convention only.
+- **`interpretation` is a free string** — no standardization. HIGH/LOW/NORMAL/CRITICAL is convention only.
+- **No `LabResult.deletedAt`** — results are immutable. A lab must be re-ordered to supersede a result.
+- **`LabResult` reviewedBy is nullable for SA/OA** — if an OA or SA with no Doctor profile reviews a result, `reviewedById` is null but `reviewedAt` is set. This is intentional for MVP.
+- **No `collectedById`** — who collected the sample is not tracked. Add `collectedById String?` → User or Doctor if required.
+- **No pagination on list endpoints** — acceptable for MVP, required before production.
+
+---
+
+### 16. Next Recommended Module
+
+1. **Radiology** — mirrors Labs exactly (`RadiologyOrder` + `RadiologyReport`). Same status workflow. Requires schema migration.
+2. **Notifications** — in-app notification fan-out. No complex workflow. Requires `Notification` model.
+3. **Billing** — `Invoice` + `InvoiceItem`. High complexity due to financial rules. Defer until clinical chain is complete.
+
+**Recommended next:** Radiology — same architecture as Labs, fastest to ship.
 
 ---
 

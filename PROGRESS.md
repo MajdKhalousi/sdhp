@@ -1,6 +1,6 @@
 # SDHP API — Build Progress
 
-_Last updated: 2026-05-19_
+_Last updated: 2026-05-20_
 
 ---
 
@@ -26,8 +26,188 @@ _Last updated: 2026-05-19_
 | 16 | **Radiology** | CRUD /radiology-orders + /patients/:id/radiology-orders | 35/35 | ✅ Complete |
 | 17 | **Medical Files** | CRUD /medical-files + /patients/:id/medical-files | 28/28 | ✅ Complete |
 | 18 | **Billing** | 10 endpoints: /invoices CRUD + items, issue, cancel, payments, /patients/:id/invoices | 36/36 | ✅ Complete |
+| 19 | **Audit Logs** | GET /audit-logs, GET /audit-logs/:id | 14/14 | ✅ Complete |
 
-**Total: 18 backend modules, 342 test scenarios — all passing.**
+**Total: 19 backend modules, 356 test scenarios — all passing.**
+
+---
+
+## Technical Handoff — Audit Logs
+
+### 1. Module Name
+**Audit Logs** — read-only API surface for the `AuditLog` model. SUPER_ADMIN only. No schema migration required — the model was already in the schema.
+
+---
+
+### 2. Goal
+Expose the existing `AuditLog` records through 2 read-only endpoints scoped exclusively to SUPER_ADMIN. No write surface. No migration. No status workflow.
+
+---
+
+### 3. Files Created
+
+```
+apps/api/src/modules/audit-logs/
+  audit-logs.module.ts
+  audit-logs.service.ts
+  audit-logs.controller.ts
+  dto/audit-log-query.dto.ts
+```
+
+---
+
+### 4. Files Modified
+
+| File | Change |
+|---|---|
+| `apps/api/src/app.module.ts` | Added `AuditLogsModule` import and registration |
+| `PROGRESS.md` | This file |
+
+---
+
+### 5. Endpoints Added
+
+| Method | Route | Roles |
+|---|---|---|
+| `GET` | `/api/v1/audit-logs` | SUPER_ADMIN only |
+| `GET` | `/api/v1/audit-logs/:id` | SUPER_ADMIN only |
+
+No POST, PATCH, or DELETE endpoints. Logs are immutable — never written or mutated via API. All other roles receive 403.
+
+---
+
+### 6. DTO Fields and Validation Rules
+
+**`AuditLogQueryDto`** (all fields optional):
+
+| Field | Type | Notes |
+|---|---|---|
+| `organizationId` | `string?` | Filter by organization |
+| `userId` | `string?` | Filter by actor user ID |
+| `action` | `string?` | e.g. `CREATE`, `UPDATE`, `DELETE` |
+| `resource` | `string?` | e.g. `invoice`, `patient` |
+| `resourceId` | `string?` | Filter to one specific record's history |
+| `from` | `string?` | `@IsDateString` — `createdAt >= from` |
+| `to` | `string?` | `@IsDateString` — `createdAt <= to` |
+
+Invalid date strings → 400 via global `ValidationPipe`. No body DTOs — the module has no write endpoints.
+
+---
+
+### 7. Service Business Logic
+
+**`findAll(query, caller)`**
+1. Build `where` from all optional query filters.
+2. `organizationId` omitted → no org filter (SA sees all orgs). Present → scoped to that org.
+3. `createdAtFilter` helper applies `gte`/`lte` on `createdAt` only when `from`/`to` are provided.
+4. `auditLog.findMany({ where, select: LOG_SELECT, orderBy: { createdAt: 'desc' } })`.
+
+**`findOne(id, caller)`**
+1. `auditLog.findUnique({ where: { id }, select: LOG_SELECT })`.
+2. Not found → 404.
+
+No org-access guard needed beyond the controller `@Roles(SUPER_ADMIN)` — SA is the only role that reaches the service.
+
+---
+
+### 8. Tenant Isolation Strategy
+
+SUPER_ADMIN sees all orgs by default (`organizationId` omitted → no filter). If `organizationId` is provided in the query, results are scoped to that org. No tenant check in the service — isolation is entirely at the role guard level (only SUPER_ADMIN can reach any log).
+
+---
+
+### 9. RBAC / Access Rules
+
+| Role | GET list | GET by ID |
+|---|---|---|
+| SUPER_ADMIN | All logs, any org | Any log |
+| All other roles | 403 | 403 |
+| Unauthenticated | 401 | 401 |
+
+---
+
+### 10. Prisma Schema Fields and Relations Used
+
+**`AuditLog`** (all fields present in schema, no migration applied):
+- `id`, `userId`, `organizationId`, `action`, `resource`, `resourceId`, `oldData`, `newData`, `ipAddress`, `userAgent`, `createdAt`
+- Relation: `user → User`
+
+No `updatedAt`, no `deletedAt` — the model is append-only by design.
+
+**SELECT constants:**
+```
+USER_SELECT: id, firstName, lastName, phone, role, isActive
+LOG_SELECT:  all scalar fields + user: USER_SELECT
+```
+
+`organization` relation is **not** included — `organizationId` scalar is sufficient.
+
+---
+
+### 11. Soft Delete / Hard Delete Behavior
+
+`AuditLog` has no `deletedAt`. Records are never deleted via this API. The model is immutable — no soft or hard delete exists. All queries return all matching rows with no `deletedAt` filter.
+
+---
+
+### 12. Security Decisions
+
+**`passwordHash` never fetched** — `USER_SELECT` excludes it.
+
+**`organization` relation not returned** — `organizationId` scalar is enough; avoids leaking org metadata.
+
+**No write surface** — there is no POST, PATCH, or DELETE endpoint. The module cannot be used to create, alter, or remove any audit record.
+
+**SUPER_ADMIN only** — a single `@Roles(UserRole.SUPER_ADMIN)` decorator on both endpoints. Any other authenticated role gets 403 at the guard level before the service is reached.
+
+---
+
+### 13. Workflow Rules Implemented
+
+1. All query filters are optional — omitting all returns the full log sorted by `createdAt DESC`.
+2. Date range filter uses `createdAt` only.
+3. `organizationId` in query narrows results; omitted means all orgs (SA only).
+4. `findOne` returns 404 for any unknown ID — does not leak whether a log exists in another org.
+
+---
+
+### 14. Test Results (14/14 PASS)
+
+| # | Test | Result |
+|---|---|---|
+| 1 | SA lists all audit logs (no filter) | ✓ |
+| 2 | SA filters by `organizationId` | ✓ |
+| 3 | SA filters by `userId` | ✓ |
+| 4 | SA filters by `action` | ✓ |
+| 5 | SA filters by `resource` | ✓ |
+| 6 | SA filters by `resourceId` | ✓ |
+| 7 | SA filters by `from`+`to` date range | ✓ |
+| 8 | SA GET by ID returns correct log entry | ✓ |
+| 9 | Non-existent ID → 404 | ✓ |
+| 10 | Invalid `from` date string → 400 | ✓ |
+| 11 | ORG_ADMIN → 403 | ✓ |
+| 12 | DOCTOR → 403 | ✓ |
+| 13 | No token → 401 | ✓ |
+| 14 | `passwordHash` absent from user in response | ✓ |
+
+TypeScript type-check: **clean (0 errors).**
+
+---
+
+### 15. Schema Notes
+
+- **`AuditLog` was already in the schema** — no migration was created or applied for this module.
+- **Nothing writes to `AuditLog` yet** — the model exists, the read API is live, but no service currently creates audit records. Writing is a separate concern (interceptor or service hooks) deferred to a future session.
+- **`oldData` / `newData`** are `Json?` — arbitrary snapshots. Values will be null for most records until a write-side implementation populates them.
+- **No `updatedAt`** — the model is append-only. `createdAt` is the only timestamp.
+
+---
+
+### 16. Next Recommended Module
+
+1. **Notifications** — `Notification` model not yet in schema; requires migration.
+2. **Audit Log Writer** — add an interceptor or service helper that creates `AuditLog` records on mutating operations. No new endpoints; complements this read module.
+3. **Patient Portal** — requires `PATIENT` role or separate auth strategy; not in schema yet.
 
 ---
 

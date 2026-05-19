@@ -52,6 +52,15 @@ enum QueueStatus {
   SKIPPED
 }
 
+enum LabOrderStatus {
+  ORDERED
+  SAMPLE_COLLECTED
+  IN_PROGRESS
+  RESULTED
+  REVIEWED
+  CANCELLED
+}
+
 // ─────────────────────────────────────────────
 // ORGANIZATIONS & BRANCHES
 // ─────────────────────────────────────────────
@@ -72,12 +81,13 @@ model Organization {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  branches    Branch[]
-  users       User[]
-  departments Department[]
-  patients    Patient[]
+  branches     Branch[]
+  users        User[]
+  departments  Department[]
+  patients     Patient[]
   appointments Appointment[]
-  auditLogs   AuditLog[]
+  auditLogs    AuditLog[]
+  labOrders    LabOrder[]
 
   @@map("organizations")
 }
@@ -95,10 +105,11 @@ model Branch {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization Organization @relation(fields: [organizationId], references: [id])
+  organization Organization  @relation(fields: [organizationId], references: [id])
   users        User[]
   departments  Department[]
   appointments Appointment[]
+  labOrders    LabOrder[]
 
   @@map("branches")
 }
@@ -108,18 +119,18 @@ model Branch {
 // ─────────────────────────────────────────────
 
 model User {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   organizationId String
   branchId       String?
-  phone          String   @unique
-  email          String?  @unique
+  phone          String    @unique
+  email          String?   @unique
   passwordHash   String
   firstName      String
   lastName       String
   firstNameAr    String?
   lastNameAr     String?
-  role           UserRole @default(SECRETARY)
-  isActive       Boolean  @default(true)
+  role           UserRole  @default(SECRETARY)
+  isActive       Boolean   @default(true)
   lastLoginAt    DateTime?
 
   createdAt DateTime  @default(now())
@@ -172,10 +183,12 @@ model Doctor {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  user         User          @relation(fields: [userId], references: [id])
-  department   Department?   @relation(fields: [departmentId], references: [id])
-  appointments Appointment[]
-  encounters   Encounter[]
+  user               User          @relation(fields: [userId], references: [id])
+  department         Department?   @relation(fields: [departmentId], references: [id])
+  appointments       Appointment[]
+  encounters         Encounter[]
+  orderedLabOrders   LabOrder[]    @relation("LabOrdersOrdered")
+  reviewedLabResults LabResult[]   @relation("LabResultsReviewed")
 
   @@map("doctors")
 }
@@ -185,7 +198,7 @@ model Doctor {
 // ─────────────────────────────────────────────
 
 model Patient {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   organizationId String
   mrn            String
   firstName      String
@@ -201,7 +214,7 @@ model Patient {
   address        String?
   emergencyName  String?
   emergencyPhone String?
-  isActive       Boolean  @default(true)
+  isActive       Boolean   @default(true)
   notes          String?
 
   createdAt DateTime  @default(now())
@@ -212,6 +225,7 @@ model Patient {
   allergies    Allergy[]
   appointments Appointment[]
   encounters   Encounter[]
+  labOrders    LabOrder[]
 
   @@unique([organizationId, mrn])
   @@map("patients")
@@ -264,8 +278,8 @@ model Appointment {
 }
 
 model QueueEntry {
-  id            String     @id @default(cuid())
-  appointmentId String     @unique
+  id            String      @id @default(cuid())
+  appointmentId String      @unique
   ticketNumber  Int
   status        QueueStatus @default(WAITING)
   calledAt      DateTime?
@@ -308,6 +322,7 @@ model Encounter {
   doctor        Doctor         @relation(fields: [doctorId], references: [id])
   appointment   Appointment?   @relation(fields: [appointmentId], references: [id])
   prescriptions Prescription[]
+  labOrders     LabOrder[]
 
   @@map("encounters")
 }
@@ -334,6 +349,66 @@ model Prescription {
   encounter Encounter @relation(fields: [encounterId], references: [id])
 
   @@map("prescriptions")
+}
+
+// ─────────────────────────────────────────────
+// LABS
+// ─────────────────────────────────────────────
+
+model LabOrder {
+  id             String         @id @default(cuid())
+  organizationId String
+  branchId       String?
+  patientId      String
+  encounterId    String?
+  orderedById    String
+  testName       String
+  testCode       String?
+  status         LabOrderStatus @default(ORDERED)
+  priority       String?
+  notes          String?
+  collectedAt    DateTime?
+  cancelReason   String?
+  cancelledAt    DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  branch       Branch?      @relation(fields: [branchId], references: [id])
+  patient      Patient      @relation(fields: [patientId], references: [id])
+  encounter    Encounter?   @relation(fields: [encounterId], references: [id])
+  orderedBy    Doctor       @relation("LabOrdersOrdered", fields: [orderedById], references: [id])
+  result       LabResult?
+
+  @@index([organizationId])
+  @@index([patientId])
+  @@index([encounterId])
+  @@index([orderedById])
+  @@index([status])
+  @@map("lab_orders")
+}
+
+model LabResult {
+  id             String    @id @default(cuid())
+  labOrderId     String    @unique
+  resultValue    String?
+  unit           String?
+  referenceRange String?
+  interpretation String?
+  resultNotes    String?
+  resultAt       DateTime  @default(now())
+  reviewedById   String?
+  reviewedAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  labOrder   LabOrder @relation(fields: [labOrderId], references: [id])
+  reviewedBy Doctor?  @relation("LabResultsReviewed", fields: [reviewedById], references: [id])
+
+  @@map("lab_results")
 }
 
 // ─────────────────────────────────────────────

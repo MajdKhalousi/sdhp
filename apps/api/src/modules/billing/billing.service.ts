@@ -14,6 +14,7 @@ import { AddInvoiceItemDto } from './dto/add-invoice-item.dto';
 import { CancelInvoiceDto } from './dto/cancel-invoice.dto';
 import { RecordPaymentDto } from './dto/record-payment.dto';
 import { BillingQueryDto } from './dto/billing-query.dto';
+import { AuditLogsWriterService } from '../audit-logs/audit-logs-writer.service';
 
 // ── Select constants ───────────────────────────────────────────────────────
 
@@ -93,7 +94,10 @@ const INVOICE_SELECT = {
 
 @Injectable()
 export class BillingService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditWriter: AuditLogsWriterService,
+  ) {}
 
   async create(dto: CreateInvoiceDto, caller: JwtPayload) {
     const orgId = await this.resolveCreateOrgId(dto, caller);
@@ -295,11 +299,13 @@ export class BillingService {
       throw new BadRequestException('Cannot issue an empty invoice');
     }
 
-    return this.prisma.invoice.update({
+    const result = await this.prisma.invoice.update({
       where: { id },
       data: { status: InvoiceStatus.ISSUED, issuedAt: new Date() },
       select: INVOICE_SELECT,
     });
+    await this.auditWriter.log({ caller, action: 'INVOICE_ISSUED', resource: 'invoice', resourceId: id });
+    return result;
   }
 
   async cancel(id: string, dto: CancelInvoiceDto, caller: JwtPayload) {
@@ -314,7 +320,7 @@ export class BillingService {
       throw new BadRequestException('Cannot cancel an invoice with recorded payments');
     }
 
-    return this.prisma.invoice.update({
+    const result = await this.prisma.invoice.update({
       where: { id },
       data: {
         status: InvoiceStatus.CANCELLED,
@@ -323,6 +329,8 @@ export class BillingService {
       },
       select: INVOICE_SELECT,
     });
+    await this.auditWriter.log({ caller, action: 'INVOICE_CANCELLED', resource: 'invoice', resourceId: id });
+    return result;
   }
 
   async recordPayment(id: string, dto: RecordPaymentDto, caller: JwtPayload) {
@@ -368,6 +376,7 @@ export class BillingService {
       }),
     ]);
 
+    await this.auditWriter.log({ caller, action: 'PAYMENT_CREATED', resource: 'invoice', resourceId: id });
     return updatedInvoice;
   }
 

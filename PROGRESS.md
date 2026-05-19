@@ -1,6 +1,6 @@
 # SDHP API — Build Progress
 
-_Last updated: 2026-05-20_
+_Last updated: 2026-05-20 — Audit Log Writer Phase 1A_
 
 ---
 
@@ -29,6 +29,12 @@ _Last updated: 2026-05-20_
 | 19 | **Audit Logs** | GET /audit-logs, GET /audit-logs/:id | 14/14 | ✅ Complete |
 
 **Total: 19 backend modules, 356 test scenarios — all passing.**
+
+### Completed Enhancements
+
+| Enhancement | Scope | Last Commit | Status |
+|---|---|---|---|
+| **Audit Log Writer — Phase 1A** | Billing: `INVOICE_ISSUED`, `INVOICE_CANCELLED`, `PAYMENT_CREATED` | `0d5123d` | ✅ Complete |
 
 ---
 
@@ -208,6 +214,106 @@ TypeScript type-check: **clean (0 errors).**
 1. **Notifications** — `Notification` model not yet in schema; requires migration.
 2. **Audit Log Writer** — add an interceptor or service helper that creates `AuditLog` records on mutating operations. No new endpoints; complements this read module.
 3. **Patient Portal** — requires `PATIENT` role or separate auth strategy; not in schema yet.
+
+---
+
+## Technical Handoff — Audit Log Writer (Phase 1A)
+
+### 1. Description
+Cross-cutting enhancement. Adds `AuditLogsWriterService` — a single injectable that writes `AuditLog` records after successful mutating operations. Phase 1A scope: Billing `issue()`, `cancel()`, `recordPayment()` only. No new endpoints, no schema migration, no auth changes.
+
+**Last committed:** `0d5123d feat: add billing audit log writer integration`
+
+---
+
+### 2. Files Created
+
+```
+apps/api/src/modules/audit-logs/
+  audit-logs-writer.service.ts      ← new
+```
+
+---
+
+### 3. Files Modified
+
+| File | Change |
+|---|---|
+| `modules/audit-logs/audit-logs.module.ts` | Added `AuditLogsWriterService` to `providers` and `exports` |
+| `modules/billing/billing.module.ts` | Added `AuditLogsModule` to `imports` |
+| `modules/billing/billing.service.ts` | Injected `AuditLogsWriterService`; added log call in `issue()`, `cancel()`, `recordPayment()` |
+
+---
+
+### 4. AuditLogsWriterService — Design
+
+Single public method:
+```ts
+log(input: { caller: JwtPayload; action: string; resource: string; resourceId?: string; newData?: Prisma.InputJsonObject }): Promise<void>
+```
+
+- Uses NestJS `Logger` — never `console.error`
+- Wrapped in try-catch — failure is logged, **never rethrown**
+- Primary operation return value and HTTP status are always unaffected by a log failure
+- `newData` typed as `Prisma.InputJsonObject` (not `Record<string, unknown>`) for Prisma JSON field compatibility
+
+---
+
+### 5. Actions Logged — Phase 1A
+
+| Method | `action` | `resource` | `resourceId` | Note |
+|---|---|---|---|---|
+| `BillingService.issue()` | `INVOICE_ISSUED` | `invoice` | invoice `id` | After `prisma.invoice.update` resolves |
+| `BillingService.cancel()` | `INVOICE_CANCELLED` | `invoice` | invoice `id` | After `prisma.invoice.update` resolves |
+| `BillingService.recordPayment()` | `PAYMENT_CREATED` | `invoice` | invoice `id` | After `$transaction` resolves — not inside it |
+
+`newData` omitted in Phase 1A. `caller.sub` → `userId`. `caller.organizationId` → `organizationId`.
+
+---
+
+### 6. Key Architecture Decisions
+
+- **Explicit service calls, not Prisma middleware or global interceptor** — caller context (`JwtPayload`) is already in scope; `resourceId` is known immediately; rollback is one line per method.
+- **Log call always after `$transaction`** — the audit write is never inside a Prisma transaction array. If the transaction rolls back, no false log is created.
+- **NestJS `Logger`** — structured, testable, consistent with the rest of the codebase.
+- **`AuditLogsModule` exported** — other modules import `AuditLogsModule` and receive `AuditLogsWriterService` via DI. No circular dependency risk (`AuditLogsModule` only imports `PrismaModule`).
+
+---
+
+### 7. Validation Results
+
+**TypeScript:** clean (0 errors). One fix applied during implementation: `newData` type corrected from `Record<string, unknown>` to `Prisma.InputJsonObject`.
+
+**Billing validation tests — 15/15 PASS:**
+
+| # | Test | Result |
+|---|---|---|
+| 1 | `PATCH /invoices/:id/issue` → 200 | ✓ |
+| 2 | `INVOICE_ISSUED` log count incremented | ✓ |
+| 3 | Log `resource=invoice` | ✓ |
+| 4 | Log `action=INVOICE_ISSUED` | ✓ |
+| 5 | Log `resourceId` matches invoice ID | ✓ |
+| 6 | `passwordHash` absent from log | ✓ |
+| 7 | Re-issue already-ISSUED → 400 | ✓ |
+| 8 | No extra log created on 400 | ✓ |
+| 9 | `POST /invoices/:id/payments` → 201 | ✓ |
+| 10 | `PAYMENT_CREATED` log count incremented | ✓ |
+| 11 | `PATCH /invoices/:id/cancel` → 200 | ✓ |
+| 12 | `INVOICE_CANCELLED` log count incremented | ✓ |
+| 13 | `GET /invoices` (read) produces no audit log | ✓ |
+| 14 | Log includes `user` sub-object | ✓ |
+| 15 | `user` sub-object has no `passwordHash` | ✓ |
+
+---
+
+### 8. What Is NOT Logged Yet (future phases)
+
+- `BillingService.create()`, `addItem()`, `removeItem()` — Phase 1B
+- `BillingService.update()` — excluded by design (generic DRAFT edits not audited)
+- Patients, Labs, Radiology — Phase 2
+- Encounters, Prescriptions, Appointments, Medical Files, Allergies — Phase 3
+- `oldData` / `newData` snapshots — Phase 2
+- `ipAddress` / `userAgent` — Phase 3
 
 ---
 

@@ -98,6 +98,7 @@ model Organization {
   auditLogs       AuditLog[]
   labOrders       LabOrder[]
   radiologyOrders RadiologyOrder[]
+  medicalFiles    MedicalFile[]
 
   @@map("organizations")
 }
@@ -148,10 +149,11 @@ model User {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  branch       Branch?      @relation(fields: [branchId], references: [id])
-  doctor       Doctor?
-  auditLogs    AuditLog[]
+  organization  Organization  @relation(fields: [organizationId], references: [id])
+  branch        Branch?       @relation(fields: [branchId], references: [id])
+  doctor        Doctor?
+  auditLogs     AuditLog[]
+  uploadedFiles MedicalFile[]
 
   @@map("users")
 }
@@ -241,6 +243,7 @@ model Patient {
   encounters      Encounter[]
   labOrders       LabOrder[]
   radiologyOrders RadiologyOrder[]
+  medicalFiles    MedicalFile[]
 
   @@unique([organizationId, mrn])
   @@map("patients")
@@ -339,6 +342,7 @@ model Encounter {
   prescriptions   Prescription[]
   labOrders       LabOrder[]
   radiologyOrders RadiologyOrder[]
+  medicalFiles    MedicalFile[]
 
   @@map("encounters")
 }
@@ -485,6 +489,53 @@ model RadiologyReport {
   reviewedBy     Doctor?        @relation("RadiologyReportsReviewed", fields: [reviewedById], references: [id])
 
   @@map("radiology_reports")
+}
+
+// ─────────────────────────────────────────────
+// MEDICAL FILES
+// ─────────────────────────────────────────────
+
+enum MedicalFileCategory {
+  LAB_RESULT
+  RADIOLOGY_IMAGE
+  PRESCRIPTION
+  REFERRAL
+  DISCHARGE_SUMMARY
+  CONSENT_FORM
+  INSURANCE
+  CLINICAL_NOTE
+  ID_DOCUMENT
+  OTHER
+}
+
+model MedicalFile {
+  id             String              @id @default(cuid())
+  organizationId String
+  patientId      String
+  encounterId    String?
+  uploadedById   String
+  category       MedicalFileCategory
+  fileName       String
+  mimeType       String
+  sizeBytes      Int
+  storageKey     String              @unique
+  description    String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  patient      Patient      @relation(fields: [patientId], references: [id])
+  encounter    Encounter?   @relation(fields: [encounterId], references: [id])
+  uploadedBy   User         @relation(fields: [uploadedById], references: [id])
+
+  @@index([organizationId])
+  @@index([patientId])
+  @@index([encounterId])
+  @@index([uploadedById])
+  @@index([category])
+  @@map("medical_files")
 }
 
 // ─────────────────────────────────────────────

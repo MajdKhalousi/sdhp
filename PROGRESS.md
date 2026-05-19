@@ -25,8 +25,9 @@ _Last updated: 2026-05-19_
 | 15 | **Labs** | CRUD /lab-orders + /patients/:id/lab-orders | 32/32 | ✅ Complete |
 | 16 | **Radiology** | CRUD /radiology-orders + /patients/:id/radiology-orders | 35/35 | ✅ Complete |
 | 17 | **Medical Files** | CRUD /medical-files + /patients/:id/medical-files | 28/28 | ✅ Complete |
+| 18 | **Billing** | 10 endpoints: /invoices CRUD + items, issue, cancel, payments, /patients/:id/invoices | 36/36 | ✅ Complete |
 
-**Total: 17 backend modules, 306 test scenarios — all passing.**
+**Total: 18 backend modules, 342 test scenarios — all passing.**
 
 ---
 

@@ -61,6 +61,15 @@ enum LabOrderStatus {
   CANCELLED
 }
 
+enum RadiologyOrderStatus {
+  ORDERED
+  SCHEDULED
+  IN_PROGRESS
+  RESULTED
+  REVIEWED
+  CANCELLED
+}
+
 // ─────────────────────────────────────────────
 // ORGANIZATIONS & BRANCHES
 // ─────────────────────────────────────────────
@@ -81,13 +90,14 @@ model Organization {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  branches     Branch[]
-  users        User[]
-  departments  Department[]
-  patients     Patient[]
-  appointments Appointment[]
-  auditLogs    AuditLog[]
-  labOrders    LabOrder[]
+  branches        Branch[]
+  users           User[]
+  departments     Department[]
+  patients        Patient[]
+  appointments    Appointment[]
+  auditLogs       AuditLog[]
+  labOrders       LabOrder[]
+  radiologyOrders RadiologyOrder[]
 
   @@map("organizations")
 }
@@ -105,11 +115,12 @@ model Branch {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization Organization  @relation(fields: [organizationId], references: [id])
-  users        User[]
-  departments  Department[]
-  appointments Appointment[]
-  labOrders    LabOrder[]
+  organization    Organization     @relation(fields: [organizationId], references: [id])
+  users           User[]
+  departments     Department[]
+  appointments    Appointment[]
+  labOrders       LabOrder[]
+  radiologyOrders RadiologyOrder[]
 
   @@map("branches")
 }
@@ -183,12 +194,15 @@ model Doctor {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  user               User          @relation(fields: [userId], references: [id])
-  department         Department?   @relation(fields: [departmentId], references: [id])
-  appointments       Appointment[]
-  encounters         Encounter[]
-  orderedLabOrders   LabOrder[]    @relation("LabOrdersOrdered")
-  reviewedLabResults LabResult[]   @relation("LabResultsReviewed")
+  user                     User              @relation(fields: [userId], references: [id])
+  department               Department?       @relation(fields: [departmentId], references: [id])
+  appointments             Appointment[]
+  encounters               Encounter[]
+  orderedLabOrders         LabOrder[]        @relation("LabOrdersOrdered")
+  reviewedLabResults       LabResult[]       @relation("LabResultsReviewed")
+  orderedRadiologyOrders   RadiologyOrder[]  @relation("RadiologyOrdersOrdered")
+  reportedRadiologyReports RadiologyReport[] @relation("RadiologyReportsReported")
+  reviewedRadiologyReports RadiologyReport[] @relation("RadiologyReportsReviewed")
 
   @@map("doctors")
 }
@@ -221,11 +235,12 @@ model Patient {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization Organization  @relation(fields: [organizationId], references: [id])
-  allergies    Allergy[]
-  appointments Appointment[]
-  encounters   Encounter[]
-  labOrders    LabOrder[]
+  organization    Organization     @relation(fields: [organizationId], references: [id])
+  allergies       Allergy[]
+  appointments    Appointment[]
+  encounters      Encounter[]
+  labOrders       LabOrder[]
+  radiologyOrders RadiologyOrder[]
 
   @@unique([organizationId, mrn])
   @@map("patients")
@@ -318,11 +333,12 @@ model Encounter {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  patient       Patient        @relation(fields: [patientId], references: [id])
-  doctor        Doctor         @relation(fields: [doctorId], references: [id])
-  appointment   Appointment?   @relation(fields: [appointmentId], references: [id])
-  prescriptions Prescription[]
-  labOrders     LabOrder[]
+  patient         Patient          @relation(fields: [patientId], references: [id])
+  doctor          Doctor           @relation(fields: [doctorId], references: [id])
+  appointment     Appointment?     @relation(fields: [appointmentId], references: [id])
+  prescriptions   Prescription[]
+  labOrders       LabOrder[]
+  radiologyOrders RadiologyOrder[]
 
   @@map("encounters")
 }
@@ -409,6 +425,66 @@ model LabResult {
   reviewedBy Doctor?  @relation("LabResultsReviewed", fields: [reviewedById], references: [id])
 
   @@map("lab_results")
+}
+
+// ─────────────────────────────────────────────
+// RADIOLOGY
+// ─────────────────────────────────────────────
+
+model RadiologyOrder {
+  id             String               @id @default(cuid())
+  organizationId String
+  branchId       String?
+  patientId      String
+  encounterId    String?
+  orderedById    String
+  modality       String
+  bodyPart       String?
+  clinicalInfo   String?
+  priority       String?
+  notes          String?
+  status         RadiologyOrderStatus @default(ORDERED)
+  scheduledAt    DateTime?
+  cancelReason   String?
+  cancelledAt    DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  organization Organization     @relation(fields: [organizationId], references: [id])
+  branch       Branch?          @relation(fields: [branchId], references: [id])
+  patient      Patient          @relation(fields: [patientId], references: [id])
+  encounter    Encounter?       @relation(fields: [encounterId], references: [id])
+  orderedBy    Doctor           @relation("RadiologyOrdersOrdered", fields: [orderedById], references: [id])
+  report       RadiologyReport?
+
+  @@index([organizationId])
+  @@index([patientId])
+  @@index([encounterId])
+  @@index([orderedById])
+  @@index([status])
+  @@map("radiology_orders")
+}
+
+model RadiologyReport {
+  id               String    @id @default(cuid())
+  radiologyOrderId String    @unique
+  findings         String?
+  impression       String?
+  reportedById     String?
+  reportedAt       DateTime  @default(now())
+  reviewedById     String?
+  reviewedAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  radiologyOrder RadiologyOrder @relation(fields: [radiologyOrderId], references: [id])
+  reportedBy     Doctor?        @relation("RadiologyReportsReported", fields: [reportedById], references: [id])
+  reviewedBy     Doctor?        @relation("RadiologyReportsReviewed", fields: [reviewedById], references: [id])
+
+  @@map("radiology_reports")
 }
 
 // ─────────────────────────────────────────────

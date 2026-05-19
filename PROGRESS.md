@@ -24,8 +24,242 @@ _Last updated: 2026-05-19_
 | 14 | **Allergies** | CRUD /patients/:patientId/allergies | 18/18 | ✅ Complete |
 | 15 | **Labs** | CRUD /lab-orders + /patients/:id/lab-orders | 32/32 | ✅ Complete |
 | 16 | **Radiology** | CRUD /radiology-orders + /patients/:id/radiology-orders | 35/35 | ✅ Complete |
+| 17 | **Medical Files** | CRUD /medical-files + /patients/:id/medical-files | 28/28 | ✅ Complete |
 
-**Total: 16 backend modules, 278 test scenarios — all passing.**
+**Total: 17 backend modules, 306 test scenarios — all passing.**
+
+---
+
+## Technical Handoff — Medical Files
+
+### 1. Module Name
+**Medical Files** — patient-scoped file metadata CRUD with soft delete. No file upload logic; stores metadata and storage keys only.
+
+---
+
+### 2. Goal
+Expose the `MedicalFile` model through 6 endpoints. No status workflow — pure metadata management. Any authenticated role except ACCOUNTANT can create and read. Only SA, OA, DOCTOR can update or delete. DOCTOR delete is restricted to own uploads.
+
+---
+
+### 3. Files Created
+
+```
+apps/api/src/modules/medical-files/
+  medical-files.module.ts
+  medical-files.service.ts
+  medical-files.controller.ts          (exports MedicalFilesController + PatientMedicalFilesController)
+  dto/create-medical-file.dto.ts
+  dto/update-medical-file.dto.ts
+  dto/medical-file-query.dto.ts
+```
+
+---
+
+### 4. Files Modified
+
+| File | Change |
+|---|---|
+| `apps/api/src/app.module.ts` | Added `MedicalFilesModule` import and registration |
+| `PROGRESS.md` | This file |
+
+---
+
+### 5. Endpoints Added
+
+| Method | Route | Roles |
+|---|---|---|
+| `POST` | `/api/v1/medical-files` | SA, OA, DOCTOR, NURSE, SECRETARY, TECHNICIAN |
+| `GET` | `/api/v1/medical-files` | SA, OA, DOCTOR, NURSE, SECRETARY, TECHNICIAN |
+| `GET` | `/api/v1/medical-files/:id` | SA, OA, DOCTOR, NURSE, SECRETARY, TECHNICIAN |
+| `PATCH` | `/api/v1/medical-files/:id` | SA, OA, DOCTOR |
+| `DELETE` | `/api/v1/medical-files/:id` | SA, OA, DOCTOR |
+| `GET` | `/api/v1/patients/:patientId/medical-files` | SA, OA, DOCTOR, NURSE, SECRETARY, TECHNICIAN |
+
+ACCOUNTANT is 403 on all endpoints. `PatientMedicalFilesController` uses `@Controller('patients')` — same 3-segment path depth pattern as Labs and Radiology.
+
+---
+
+### 6. DTO Fields and Validation Rules
+
+**`CreateMedicalFileDto`**
+| Field | Type | Notes |
+|---|---|---|
+| `organizationId` | `string?` | SA only; auto-derived from patient if omitted |
+| `patientId` | `string` | Required |
+| `encounterId` | `string?` | Validated against org + patient if provided |
+| `category` | `MedicalFileCategory` | Required, `@IsEnum` |
+| `fileName` | `string` | Required |
+| `mimeType` | `string` | Required |
+| `sizeBytes` | `number` | Required, `@IsInt`, `@Min(1)` |
+| `storageKey` | `string` | Required, `@unique` — duplicate returns 409 |
+| `description` | `string?` | Optional |
+
+`uploadedById` is **not in the DTO** — always auto-resolved to `caller.sub`. Sending it returns 400 (`forbidNonWhitelisted`).
+
+**`UpdateMedicalFileDto`** — `PartialType(PickType(CreateMedicalFileDto, ['fileName', 'description', 'category']))`
+
+Only `fileName`, `description`, `category` are mutable. Sending `storageKey`, `patientId`, `encounterId`, `organizationId`, `uploadedById`, `mimeType`, or `sizeBytes` returns 400.
+
+**`MedicalFileQueryDto`**: `organizationId?`, `patientId?`, `encounterId?`, `category?`, `uploadedById?`, `from?`, `to?`
+
+---
+
+### 7. Service Business Logic
+
+**`create`**
+1. `resolveCreateOrgId`: SA uses `dto.organizationId` or derives from patient. Others use `caller.organizationId`; cross-org → 403.
+2. Fetch patient; 404 if missing, 403 if org mismatch.
+3. If `encounterId`: validate belongs to org + patient → 400 otherwise.
+4. `uploadedById = caller.sub` — always the authenticated user.
+5. `medicalFile.create`. Catches Prisma P2002 (unique violation on `storageKey`) → 409.
+
+**`update`**
+1. Fetch file — 404 if not found or deleted.
+2. Assert org access.
+3. Only `fileName`, `description`, `category` applied — no other fields reachable.
+
+**`remove`**
+1. Fetch file — 404 if not found.
+2. Assert org access.
+3. DOCTOR: `file.uploadedById !== caller.sub` → 403. Note: `uploadedById` is `User.id`, not `Doctor.id` — checked directly against `caller.sub` with no doctor profile lookup needed.
+4. Soft delete: `medicalFile.update({ data: { deletedAt: new Date() } })`.
+
+---
+
+### 8. Tenant Isolation Strategy
+
+`MedicalFile.organizationId` is the direct tenant anchor.
+
+`uploadedById → User` — org resolution goes through `MedicalFile.organizationId` directly, not through the uploader's org join (unlike Doctor-linked modules). This is simpler and consistent with the fact that User already has `organizationId`.
+
+SA with no `organizationId` filter returns all orgs (undefined = no filter). SA with `organizationId` in query/body scopes to that org.
+
+Isolation lives entirely inside `MedicalFilesService`.
+
+---
+
+### 9. RBAC / Access Rules
+
+| Role | Create | Read | Update | Delete |
+|---|---|---|---|---|
+| SUPER_ADMIN | Any org | Any org | Any org | Any org |
+| ORG_ADMIN | Own org | Own org | Own org | Own org |
+| DOCTOR | Own org | Own org | Own org | Own uploads only |
+| NURSE | Own org | Own org | — | — |
+| SECRETARY | Own org | Own org | — | — |
+| TECHNICIAN | Own org | Own org | — | — |
+| ACCOUNTANT | 403 | 403 | 403 | 403 |
+
+---
+
+### 10. Prisma Schema Fields and Relations Used
+
+**`MedicalFile`** (all fields except `deletedAt`):
+- `id`, `organizationId`, `patientId`, `encounterId`, `uploadedById`, `category`, `fileName`, `mimeType`, `sizeBytes`, `storageKey`, `description`, `createdAt`, `updatedAt`
+- Relation: `patient → Patient`
+- Relation: `uploadedBy → User` (not Doctor — any role)
+
+**SELECT constants** (no nested encounter object — `encounterId` returned as scalar only):
+```
+UPLOADER_SELECT: id, firstName, lastName, phone, role, isActive
+PATIENT_SELECT:  id, mrn, firstName, lastName, organizationId, isActive
+FILE_SELECT:     all non-sensitive fields + patient + uploadedBy
+```
+
+---
+
+### 11. Soft Delete / Hard Delete Behavior
+
+| Model | Behavior |
+|---|---|
+| `MedicalFile` | Soft delete — `deletedAt = new Date()`. All queries filter `deletedAt: null`. |
+
+Physical file in object storage is NOT removed on soft delete. Storage cleanup is deferred to a future background job when MinIO integration is added.
+
+---
+
+### 12. Security Decisions
+
+**`passwordHash` never fetched** — `UPLOADER_SELECT` excludes it.
+
+**`deletedAt` never returned** — not in `FILE_SELECT`.
+
+**`uploadedById` auto-resolved** — callers cannot impersonate another user as the uploader. Even if `uploadedById` is sent in the body, `forbidNonWhitelisted: true` returns 400 before the service is reached.
+
+**Duplicate `storageKey` returns 409** — Prisma P2002 caught in service and converted to `ConflictException`. Prevents duplicate metadata records pointing to the same storage object.
+
+**DOCTOR delete restriction via User.id** — unlike Labs/Radiology where DOCTOR own-order checks resolve through a Doctor profile lookup, MedicalFile's `uploadedById` is a `User.id`, so the check is `file.uploadedById !== caller.sub` — a simple scalar comparison with no extra DB query.
+
+---
+
+### 13. Workflow Rules Implemented
+
+1. No status workflow — files are static metadata once created.
+2. Patient existence and org ownership validated before every operation.
+3. Encounter validated against org + patient if provided.
+4. `uploadedById` is always the authenticated caller — never from body.
+5. Duplicate `storageKey` rejected at DB level, surfaced as 409.
+6. Only `fileName`, `description`, `category` mutable via PATCH.
+7. DOCTOR delete restricted to own uploads via `uploadedById === caller.sub`.
+8. Soft delete only — no hard delete via API.
+
+---
+
+### 14. Test Results (28/28 PASS)
+
+| # | Test | Result |
+|---|---|---|
+| 1 | SA creates for any org | ✓ |
+| 2 | OA creates in own org | ✓ |
+| 3 | OA cross-org patient → 403 | ✓ |
+| 4 | DOCTOR creates, uploadedById auto-resolved | ✓ |
+| 5 | NURSE creates | ✓ |
+| 6 | SECRETARY creates | ✓ |
+| 7 | ACCOUNTANT creates → 403 | ✓ |
+| 8 | SA lists all orgs | ✓ |
+| 9 | OA lists own org only | ✓ |
+| 10 | DOCTOR lists own org | ✓ |
+| 11 | TECHNICIAN lists own org | ✓ |
+| 12 | OA cross-org GET by ID → 403 | ✓ |
+| 13 | SA updates fileName and description | ✓ |
+| 14 | OA updates category | ✓ |
+| 15 | NURSE PATCH → 403 | ✓ |
+| 16 | storageKey in PATCH body → 400 | ✓ |
+| 17 | OA soft deletes — hidden from list + GET → 404 | ✓ |
+| 18 | DOCTOR deletes own upload | ✓ |
+| 19 | DOCTOR deletes another user's upload → 403 | ✓ |
+| 20 | NURSE DELETE → 403 | ✓ |
+| 21 | Non-existent patient → 404 | ✓ |
+| 22 | encounterId not belonging to patient → 400 | ✓ |
+| 23 | Duplicate storageKey → 409 | ✓ |
+| 24 | Non-existent file ID → 404 | ✓ |
+| 25 | No token → 401 | ✓ |
+| 26 | ACCOUNTANT → 403 | ✓ |
+| 27 | GET /patients/:patientId/medical-files scoped correctly | ✓ |
+| 28 | passwordHash and deletedAt absent from all responses | ✓ |
+
+TypeScript type-check: **clean (0 errors).**
+
+---
+
+### 15. Schema Limitations and Future Improvements
+
+- **No actual file upload** — `storageKey` is stored but no MinIO/S3 integration exists. The API accepts the key from the caller; a future upload endpoint would generate the key server-side and return a presigned URL.
+- **`sizeBytes` not validated against actual upload** — the caller reports size; server does not verify. This becomes relevant once real upload logic is added.
+- **No `mimeType` whitelist** — any MIME string is accepted. Production should validate against an allowlist (PDF, JPEG, PNG, DICOM, etc.).
+- **No file versioning** — PATCH updates metadata in place. There is no version history for file name or category changes.
+- **No pagination** — all list endpoints return unbounded results.
+
+---
+
+### 16. Next Recommended Module
+
+1. **Billing** — `Invoice` + `InvoiceItem`. Requires schema migration. Complex financial rules (partial payments, tax, insurance).
+2. **Notifications** — `Notification` model. Simple fan-out. Requires schema migration.
+3. **Patient App** — requires `PATIENT` role or separate auth strategy, neither in schema.
+
+**Recommended next:** Notifications — simpler schema than Billing, unblocks clinical workflow alerts.
 
 ---
 

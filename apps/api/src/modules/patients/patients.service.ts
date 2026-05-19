@@ -10,6 +10,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { AuditLogsWriterService } from '../audit-logs/audit-logs-writer.service';
 
 const SELECT = {
   id: true,
@@ -36,7 +37,10 @@ const SELECT = {
 
 @Injectable()
 export class PatientsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditWriter: AuditLogsWriterService,
+  ) {}
 
   findAll(caller: JwtPayload) {
     const where =
@@ -67,7 +71,7 @@ export class PatientsService {
     const mrn = dto.mrn ?? this.generateMrn();
 
     try {
-      return await this.prisma.patient.create({
+      const result = await this.prisma.patient.create({
         data: {
           organizationId,
           mrn,
@@ -89,6 +93,8 @@ export class PatientsService {
         },
         select: SELECT,
       });
+      await this.auditWriter.log({ caller, action: 'CREATE', resource: 'patient' });
+      return result;
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
         throw new ConflictException('A patient with this MRN already exists in this organization');
@@ -108,7 +114,7 @@ export class PatientsService {
 
     const { ...data } = dto;
 
-    return this.prisma.patient.update({
+    const result = await this.prisma.patient.update({
       where: { id },
       data: {
         ...data,
@@ -116,6 +122,8 @@ export class PatientsService {
       },
       select: SELECT,
     });
+    await this.auditWriter.log({ caller, action: 'UPDATE', resource: 'patient', resourceId: id });
+    return result;
   }
 
   async remove(id: string, caller: JwtPayload) {
@@ -131,6 +139,7 @@ export class PatientsService {
       where: { id },
       data: { deletedAt: new Date(), isActive: false },
     });
+    await this.auditWriter.log({ caller, action: 'SOFT_DELETE', resource: 'patient', resourceId: id });
   }
 
   private assertOwnership(patientOrgId: string, caller: JwtPayload): void {

@@ -20,8 +20,9 @@ _Last updated: 2026-05-19_
 | 10 | **Encounters** | CRUD /encounters | 24/24 | ✅ Complete |
 | 11 | **Prescriptions** | CRUD /prescriptions | 23/23 | ✅ Complete |
 | 12 | **Medical Timeline** | GET /patients/:patientId/timeline | 12/12 | ✅ Complete |
+| 13 | **Reports** | GET /reports/summary, /appointments, /clinical, /queue | 12/12 | ✅ Complete |
 
-**Total: 12 backend modules, 181 test scenarios — all passing.**
+**Total: 13 backend modules, 193 test scenarios — all passing.**
 
 ---
 
@@ -358,6 +359,234 @@ Check the schema before starting each of these — most will require a migration
    `PATIENT` role or separate auth strategy, neither of which exists in the schema.
 
 **Recommended next:** Reports — no migration, no schema gap, immediately deliverable.
+
+---
+
+---
+
+## Technical Handoff — Reports
+
+### 1. Module Name
+**Reports** — read-only computed analytics endpoints. No new schema model, no writes.
+
+---
+
+### 2. Goal
+Provide aggregated statistics across Appointments, Encounters, Prescriptions,
+Patients, Staff, and Queue for operational dashboards and reporting. All data is
+assembled at query time from existing tables via `Promise.all`.
+
+---
+
+### 3. Files Created
+
+```
+apps/api/src/modules/reports/
+  reports.module.ts
+  reports.controller.ts
+  reports.service.ts
+  dto/report-query.dto.ts
+```
+
+---
+
+### 4. Files Modified
+
+| File | Change |
+|---|---|
+| `apps/api/src/app.module.ts` | Added `ReportsModule` import and registration |
+| `PROGRESS.md` | This file |
+
+---
+
+### 5. Endpoints Added
+
+| Method | Route | Auth |
+|---|---|---|
+| `GET` | `/api/v1/reports/summary` | SUPER_ADMIN, ORG_ADMIN, DOCTOR |
+| `GET` | `/api/v1/reports/appointments` | SUPER_ADMIN, ORG_ADMIN, DOCTOR |
+| `GET` | `/api/v1/reports/clinical` | SUPER_ADMIN, ORG_ADMIN, DOCTOR |
+| `GET` | `/api/v1/reports/queue` | SUPER_ADMIN, ORG_ADMIN, DOCTOR |
+
+All endpoints are GET-only. No POST, PATCH, DELETE.
+
+---
+
+### 6. DTO Fields and Validation Rules
+
+**`ReportQueryDto`** (all fields optional):
+| Field | Type | Validation | Notes |
+|---|---|---|---|
+| `organizationId` | `string?` | `@IsString` | SUPER_ADMIN only — other roles ignored/guarded |
+| `branchId` | `string?` | `@IsString` | Validated against resolved org |
+| `from` | `string?` | `@IsDateString` | Start of date range (ISO 8601) |
+| `to` | `string?` | `@IsDateString` | End of date range (ISO 8601) |
+
+Invalid `from`/`to` values (e.g. `"not-a-date"`) return **400** via global ValidationPipe.
+
+---
+
+### 7. Service Business Logic
+
+**`buildContext(query, caller)`**
+1. Calls `resolveOrgId` to determine the scoped organization.
+2. If `branchId` is provided, calls `assertBranchBelongsToOrg` — throws 400 if the
+   branch is not in the resolved org.
+3. Returns `{ orgId, branchId, from, to }` used by all report methods.
+
+**`resolveOrgId(query, caller)`**
+- SUPER_ADMIN: uses `query.organizationId` if provided; otherwise `undefined` (all orgs).
+- All other roles: uses `caller.organizationId`. If `query.organizationId` is provided
+  and differs from `caller.organizationId`, throws 403.
+
+**`getSummary`** — 12 parallel queries via `Promise.all`:
+- `patient.count` × 2 (total, active)
+- `user.count` (excluding SUPER_ADMIN)
+- `doctor.count` × 2 (total, active — joined via `user.organizationId`)
+- `appointment.count` × 3 (total by filter, today, upcoming)
+- `appointment.groupBy` by status
+- `encounter.count`
+- `prescription.count` (via `encounter.organizationId`)
+- `queueEntry.groupBy` by status (via `appointment.organizationId`)
+
+**`getAppointmentsReport`** — 4 parallel queries:
+- total, today, upcoming, groupBy status
+
+**`getClinicalReport`** — 5 parallel queries:
+- encounter total, with diagnosis, with treatment plan
+- prescription total, with refills
+
+**`getQueueReport`** — 1 `groupBy` query:
+- queueEntry grouped by status, totaled
+
+---
+
+### 8. Tenant Isolation Strategy
+
+All queries are wrapped with `orgId` conditional spreading:
+```typescript
+...(orgId ? { organizationId: orgId } : {})
+```
+When `orgId` is `undefined` (SUPER_ADMIN, no filter), the condition is omitted and
+Prisma returns data across all organizations.
+
+Models without a direct `organizationId` are scoped through relations:
+- `Doctor` → `user.organizationId`
+- `Prescription` → `encounter.organizationId`
+- `QueueEntry` → `appointment.organizationId`
+
+`branchId` filter is applied additionally to Appointments and Encounters
+(both have a direct `branchId` field). Branch is validated to belong to the resolved org.
+
+Isolation lives entirely inside `ReportsService`. The controller contains no scoping logic.
+
+---
+
+### 9. RBAC / Access Rules
+
+| Role | Access |
+|---|---|
+| SUPER_ADMIN | All orgs; can filter by `organizationId` |
+| ORG_ADMIN | Own org only; `organizationId` param ignored if it matches own org, 403 if it differs |
+| DOCTOR | Own org only; same as ORG_ADMIN |
+| NURSE / SECRETARY / ACCOUNTANT / TECHNICIAN | 403 |
+| Unauthenticated | 401 |
+
+---
+
+### 10. Prisma Schema Fields and Relations Used
+
+**Direct queries:**
+- `Patient`: `organizationId`, `deletedAt`, `isActive`
+- `User`: `organizationId`, `deletedAt`, `role`
+- `Doctor`: `deletedAt`, `isActive` + relation `user.organizationId`
+- `Appointment`: `organizationId`, `branchId`, `deletedAt`, `status`, `scheduledAt`
+- `Encounter`: `organizationId`, `branchId`, `deletedAt`, `diagnosis`, `treatmentPlan`
+- `Prescription`: `deletedAt`, `refillsLeft` + relation `encounter.organizationId`
+- `QueueEntry`: `status` + relation `appointment.organizationId`
+
+**No SELECT constants** — only `count` and `groupBy` queries, no fields returned directly.
+
+---
+
+### 11. Soft Delete / Hard Delete Behavior
+
+This module performs **no deletes** of any kind. All queries filter `deletedAt: null`
+where applicable. `QueueEntry` has no `deletedAt` field and is not filtered for it.
+
+---
+
+### 12. Security Decisions
+
+**No entity data in responses** — only aggregate counts and status maps are returned.
+No `passwordHash`, `deletedAt`, or any PII fields appear in responses.
+
+**SUPER_ADMIN all-orgs mode** — when `organizationId` is omitted by SUPER_ADMIN, `orgId`
+is `undefined`. All where clauses handle this safely via conditional spreading. There
+is no accidental data leak — if the condition evaluates to empty, Prisma queries all rows
+across all orgs, which is the intended behavior.
+
+**`branchId` validated against resolved org** — prevents a caller from passing a valid
+branch ID from a different organization to manipulate filtering.
+
+---
+
+### 13. Workflow Rules Implemented
+
+1. `resolveOrgId` is called first — tenant context is locked before any query runs.
+2. `branchId` is validated against the resolved org — 400 if branch doesn't belong.
+3. All counting queries run in `Promise.all` — no sequential waterfall.
+4. Date filters use `scheduledAt` for appointments, `createdAt` for everything else.
+5. "Today" is computed at query time using `setHours(0,0,0,0)` and `setHours(23,59,59,999)`.
+6. `groupBy` results are converted to `Record<string, number>` via `toStatusMap`.
+7. Queue total is derived from `Object.values(byStatus).reduce(...)` — no separate count query.
+
+---
+
+### 14. Test Results (12/12 PASS)
+
+| # | Test | Expected | Result |
+|---|---|---|---|
+| 1 | SA summary, no filter | `organizationId: null`, all orgs data | ✓ |
+| 2 | SA summary filtered by ORG1 | `organizationId: org1` | ✓ |
+| 3 | SA summary filtered by ORG1 + branch | `organizationId + branchId` set | ✓ |
+| 4 | OA summary auto-scoped to own org | `organizationId: org1` | ✓ |
+| 5 | OA cross-org attempt | 403 | ✓ |
+| 6 | DOCTOR can access summary | 200 with data | ✓ |
+| 7 | SA appointments report | `total`, `byStatus` present | ✓ |
+| 8 | SA clinical report | `encounters`, `prescriptions` present | ✓ |
+| 9 | SA queue report | `total`, `byStatus` with named fields | ✓ |
+| 10 | Date range filter (`from`/`to`) | `period.from`/`period.to` echoed, counts filtered | ✓ |
+| 11 | Invalid date string → 400 | 400 Bad Request | ✓ |
+| 12 | Branch from wrong org → 400 | 400 Bad Request | ✓ |
+
+TypeScript type-check: **clean (0 errors).**
+
+---
+
+### 15. Schema Limitations and Future Improvements
+
+- No dedicated `Report` or `AnalyticsSnapshot` model — all data is live at query time.
+  For large datasets, query times will grow. Consider adding a nightly materialized view
+  or caching layer before production.
+- `QueueEntry` has no `branchId` — queue reports cannot be filtered by branch.
+- Doctor report (active/total) is org-scoped but not branch-scoped (Doctor has no `branchId`).
+- Date range on prescriptions uses `createdAt`, not a clinical date — same limitation as
+  the Medical Timeline module.
+
+---
+
+### 16. Next Recommended Module
+
+All remaining modules require schema changes (new migrations):
+1. **Labs** — requires `LabOrder`, `LabResult` models
+2. **Radiology** — requires `RadiologyOrder`, `RadiologyResult` models
+3. **Billing** — requires `Invoice`, `InvoiceItem` models
+4. **Notifications** — requires `Notification` model
+5. **Patient App** — requires `PATIENT` role or separate auth strategy
+
+**Recommended next:** Read the Prisma schema to decide which migration to apply first.
+Schema file: `apps/api/prisma/schema.prisma`
 
 ---
 

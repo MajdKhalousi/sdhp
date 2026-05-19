@@ -21,8 +21,9 @@ _Last updated: 2026-05-19_
 | 11 | **Prescriptions** | CRUD /prescriptions | 23/23 | ✅ Complete |
 | 12 | **Medical Timeline** | GET /patients/:patientId/timeline | 12/12 | ✅ Complete |
 | 13 | **Reports** | GET /reports/summary, /appointments, /clinical, /queue | 12/12 | ✅ Complete |
+| 14 | **Allergies** | CRUD /patients/:patientId/allergies | 18/18 | ✅ Complete |
 
-**Total: 13 backend modules, 193 test scenarios — all passing.**
+**Total: 14 backend modules, 211 test scenarios — all passing.**
 
 ---
 
@@ -361,6 +362,210 @@ Check the schema before starting each of these — most will require a migration
 **Recommended next:** Reports — no migration, no schema gap, immediately deliverable.
 
 ---
+
+---
+
+---
+
+## Technical Handoff — Allergies
+
+### 1. Module Name
+**Allergies** — patient-scoped CRUD for allergy records.
+
+---
+
+### 2. Goal
+Expose the existing `Allergy` model through patient-nested REST endpoints. No migration required — the model was already in the schema with no prior API surface.
+
+---
+
+### 3. Files Created
+
+```
+apps/api/src/modules/allergies/
+  allergies.module.ts
+  allergies.service.ts
+  allergies.controller.ts
+  dto/create-allergy.dto.ts
+  dto/update-allergy.dto.ts
+```
+
+---
+
+### 4. Files Modified
+
+| File | Change |
+|---|---|
+| `apps/api/src/app.module.ts` | Added `AllergiesModule` import and registration |
+| `PROGRESS.md` | This file |
+
+---
+
+### 5. Endpoints Added
+
+| Method | Route | Roles |
+|---|---|---|
+| `GET` | `/api/v1/patients/:patientId/allergies` | SA, OA, DOCTOR, NURSE |
+| `POST` | `/api/v1/patients/:patientId/allergies` | SA, OA, DOCTOR, NURSE |
+| `PATCH` | `/api/v1/patients/:patientId/allergies/:id` | SA, OA, DOCTOR, NURSE |
+| `DELETE` | `/api/v1/patients/:patientId/allergies/:id` | SA, OA, DOCTOR only |
+
+NURSE is excluded from DELETE. SECRETARY, ACCOUNTANT, TECHNICIAN are forbidden on all routes.
+
+---
+
+### 6. DTO Fields and Validation Rules
+
+**`CreateAllergyDto`**
+| Field | Type | Validation |
+|---|---|---|
+| `substance` | `string` | Required, `@IsString` |
+| `reaction` | `string?` | Optional, `@IsString` |
+| `severity` | `string?` | Optional, `@IsString` |
+
+**`UpdateAllergyDto`** — `PartialType(CreateAllergyDto)`, all fields optional.
+`patientId` and `organizationId` are not part of any DTO — they cannot be sent or overridden by a caller.
+
+---
+
+### 7. Service Business Logic
+
+Every service method follows the same two-step validation pattern before any mutation:
+
+**Step 1 — `resolvePatient(patientId, caller)`**
+- Fetches patient with `{ id: patientId, deletedAt: null }`
+- Throws `NotFoundException` if not found
+- Throws `ForbiddenException` if caller is not SUPER_ADMIN and `patient.organizationId !== caller.organizationId`
+
+**Step 2 — `resolveAllergy(id, patientId)`** (update/delete only)
+- Fetches allergy with `{ id, patientId }` — the `patientId` condition prevents cross-patient access
+- Throws `NotFoundException` if not found (covers both "doesn't exist" and "belongs to different patient")
+
+**Methods:**
+- `findAll`: resolvePatient → `allergy.findMany({ where: { patientId }, orderBy: { createdAt: 'desc' } })`
+- `create`: resolvePatient → `allergy.create`
+- `update`: resolvePatient → resolveAllergy → `allergy.update`
+- `remove`: resolvePatient → resolveAllergy → `allergy.delete` (**hard delete**)
+
+---
+
+### 8. Tenant Isolation Strategy
+
+`Allergy` has no `organizationId`. Ownership is through:
+```
+Allergy.patientId → Patient.organizationId
+```
+
+The service fetches the parent patient first and validates org ownership before any allergy operation. This ensures an ORG_ADMIN or DOCTOR from org-B cannot read, write, or delete allergies of a patient belonging to org-A, even if they know the allergy ID.
+
+The `resolveAllergy` helper uses `{ id, patientId }` — not just `{ id }` — so a caller cannot reference an allergy from a different patient by guessing its ID and passing a patient they do have access to.
+
+All isolation is inside `AllergiesService`. The controller passes through without scoping logic.
+
+---
+
+### 9. RBAC / Access Rules
+
+| Role | GET | POST | PATCH | DELETE |
+|---|---|---|---|---|
+| SUPER_ADMIN | Any patient | Any patient | Any patient | Any patient |
+| ORG_ADMIN | Own org | Own org | Own org | Own org |
+| DOCTOR | Own org | Own org | Own org | Own org |
+| NURSE | Own org | Own org | Own org | **Forbidden (403)** |
+| SECRETARY / ACCOUNTANT / TECHNICIAN | 403 | 403 | 403 | 403 |
+| Unauthenticated | 401 | 401 | 401 | 401 |
+
+---
+
+### 10. Prisma Schema Fields and Relations Used
+
+**`Allergy` model** (all fields used):
+- `id`, `patientId`, `substance`, `reaction`, `severity`, `createdAt`, `updatedAt`
+
+**`Patient` model** (for ownership check only):
+- `id`, `organizationId`, `mrn`, `firstName`, `lastName`
+
+SELECT constants exclude `passwordHash` and `deletedAt` (Patient has `deletedAt`; Allergy does not).
+
+---
+
+### 11. Soft Delete / Hard Delete Behavior
+
+**`Allergy` has no `deletedAt` field. DELETE is a hard delete.**
+
+`prisma.allergy.delete({ where: { id } })` permanently removes the record. There is no recovery path. This matches the schema design — allergy data is expected to be corrected by PATCH or replaced by POST+DELETE, not soft-removed.
+
+If a future migration adds `deletedAt` to `Allergy`, the `remove` method in the service must be updated to use soft delete instead. The controller returns `204 No Content` on successful delete.
+
+---
+
+### 12. Security Decisions
+
+**`passwordHash` never fetched** — `PATIENT_SELECT` does not include any auth fields.
+
+**`deletedAt` never returned** — not in `ALLERGY_SELECT` or `PATIENT_SELECT`.
+
+**Cross-patient access blocked** — `resolveAllergy` uses `{ id, patientId }` compound filter. An allergy from patient B cannot be accessed via patient A's URL, even if the caller has access to patient A.
+
+**No patient PII over-exposure** — the patient fetch is used only for org ownership validation. Patient data is not included in allergy list responses. Only allergy fields are returned.
+
+---
+
+### 13. Workflow Rules Implemented
+
+1. Patient existence and org ownership validated before every allergy operation.
+2. Allergy existence and patient binding validated before update/delete.
+3. DELETE is hard — no soft delete, no recovery.
+4. `findAll` ordered by `createdAt DESC` — most recent allergy first.
+5. NURSE role is permitted on GET/POST/PATCH but blocked by `@Roles` on DELETE at the controller level.
+
+---
+
+### 14. Test Results (18/18 PASS)
+
+| # | Test | Expected | Result |
+|---|---|---|---|
+| 1 | SA lists org1 patient allergies | 200 array | ✓ |
+| 2 | OA lists own org patient allergies | 200 array | ✓ |
+| 3 | OA cross-org patient list | 403 | ✓ |
+| 4 | DOCTOR own org patient allergies | 200 array | ✓ |
+| 5 | NURSE own org patient allergies | 200 array | ✓ |
+| 6 | SA creates allergy for any org patient | 201 with id | ✓ |
+| 7 | OA creates allergy for own org patient | 201 with id | ✓ |
+| 8 | OA creates for cross-org patient | 403 | ✓ |
+| 9 | DOCTOR updates own org patient allergy | 200, updated field | ✓ |
+| 10 | NURSE updates own org patient allergy | 200, updated field | ✓ |
+| 11 | NURSE DELETE | 403 | ✓ |
+| 12 | OA hard deletes own org allergy | 204 No Content | ✓ |
+| 13 | Non-existent patient | 404 | ✓ |
+| 14 | Non-existent allergy | 404 | ✓ |
+| 15 | No token | 401 | ✓ |
+| 16 | SECRETARY role | 403 | ✓ |
+| 17 | Cross-patient PATCH (P2 allergy via P1 URL) | 404 | ✓ |
+| 18 | passwordHash and deletedAt absent | Not in response | ✓ |
+
+TypeScript type-check: **clean (0 errors).**
+
+---
+
+### 15. Schema Limitations and Future Improvements
+
+- **No `deletedAt` on `Allergy`** — hard delete only. If audit trail or undo is needed, a migration adding `deletedAt DateTime?` is required, and the service `remove` method must switch to `prisma.allergy.update({ data: { deletedAt: new Date() } })`.
+- **`severity` is a free string** — not an enum. Common values are MILD, MODERATE, SEVERE but nothing enforces this. A future migration could add a `AllergySeverity` enum to the schema for consistency.
+- **No `verifiedBy` or `verifiedAt`** — there is no workflow for a clinician to mark an allergy as clinically confirmed vs. self-reported. This is relevant for prescription safety checks.
+
+---
+
+### 16. Next Recommended Module
+
+All remaining modules require new Prisma models and migrations. Recommended order:
+
+1. **Labs** — `LabOrder` + `LabResult`. Most common ancillary request after encounters. Status workflow: ORDERED → SAMPLE_COLLECTED → RESULTED → REVIEWED.
+2. **Radiology** — mirrors Labs pattern. Best built after Labs to reuse the same design.
+3. **Notifications** — in-app notification fan-out. Useful but not blocking clinical workflow.
+4. **Billing** — `Invoice` + `InvoiceItem`. High complexity due to business rules (taxes, partial payments, insurance). Defer until clinical chain is complete.
+
+**Recommended next:** Read the schema and propose the `LabOrder`/`LabResult` migration, then build the Labs module.
 
 ---
 

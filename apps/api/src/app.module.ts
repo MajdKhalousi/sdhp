@@ -18,6 +18,7 @@ import { EncountersModule } from './modules/encounters/encounters.module';
 import { PrescriptionsModule } from './modules/prescriptions/prescriptions.module';
 import { MedicalTimelineModule } from './modules/medical-timeline/medical-timeline.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { AllergiesModule } from './modules/allergies/allergies.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -41,6 +42,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     PrescriptionsModule,
     MedicalTimelineModule,
     ReportsModule,
+    AllergiesModule,
   ],
   controllers: [AppController],
   providers: [

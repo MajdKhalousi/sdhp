@@ -15,6 +15,7 @@ import { PatientsModule } from './modules/patients/patients.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { QueueModule } from './modules/queue/queue.module';
 import { EncountersModule } from './modules/encounters/encounters.module';
+import { PrescriptionsModule } from './modules/prescriptions/prescriptions.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -35,6 +36,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     AppointmentsModule,
     QueueModule,
     EncountersModule,
+    PrescriptionsModule,
   ],
   controllers: [AppController],
   providers: [

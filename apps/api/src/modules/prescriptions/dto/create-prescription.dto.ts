@@ -1,0 +1,44 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+
+export class CreatePrescriptionDto {
+  @ApiProperty({ example: 'encounter-cuid' })
+  @IsString()
+  encounterId: string;
+
+  @ApiProperty({ example: 'Amoxicillin 500mg' })
+  @IsString()
+  medication: string;
+
+  @ApiPropertyOptional({ example: '500mg' })
+  @IsOptional()
+  @IsString()
+  dosage?: string;
+
+  @ApiPropertyOptional({ example: 'Three times daily' })
+  @IsOptional()
+  @IsString()
+  frequency?: string;
+
+  @ApiPropertyOptional({ example: '7 days' })
+  @IsOptional()
+  @IsString()
+  duration?: string;
+
+  @ApiPropertyOptional({ example: 'Take with food' })
+  @IsOptional()
+  @IsString()
+  instructions?: string;
+
+  @ApiPropertyOptional({ example: 21 })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  quantity?: number;
+
+  @ApiPropertyOptional({ example: 0 })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  refillsLeft?: number;
+}

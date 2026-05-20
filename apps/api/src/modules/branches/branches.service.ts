@@ -7,6 +7,8 @@ import {
 import { UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { PaginatedResponse } from '../../common/types/paginated-response.type';
+import { BranchQueryDto } from './dto/branch-query.dto';
 import { CreateBranchDto } from './dto/create-branch.dto';
 import { UpdateBranchDto } from './dto/update-branch.dto';
 
@@ -27,17 +29,22 @@ const SELECT = {
 export class BranchesService {
   constructor(private prisma: PrismaService) {}
 
-  findAll(user: JwtPayload) {
+  async findAll(query: BranchQueryDto, user: JwtPayload): Promise<PaginatedResponse<unknown>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const skip = (page - 1) * limit;
+
     const where =
       user.role === UserRole.SUPER_ADMIN
         ? { deletedAt: null }
         : { organizationId: user.organizationId, deletedAt: null };
 
-    return this.prisma.branch.findMany({
-      where,
-      select: SELECT,
-      orderBy: { createdAt: 'desc' },
-    });
+    const [data, total] = await Promise.all([
+      this.prisma.branch.findMany({ where, select: SELECT, orderBy: { createdAt: 'desc' }, skip, take: limit }),
+      this.prisma.branch.count({ where }),
+    ]);
+
+    return { data, total, page, limit };
   }
 
   async findOne(id: string, user: JwtPayload) {

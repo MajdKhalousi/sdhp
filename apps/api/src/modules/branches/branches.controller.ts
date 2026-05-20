@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Version,
 } from '@nestjs/common';
 import {
@@ -19,6 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { BranchesService } from './branches.service';
+import { BranchQueryDto } from './dto/branch-query.dto';
 import { CreateBranchDto } from './dto/create-branch.dto';
 import { UpdateBranchDto } from './dto/update-branch.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -35,8 +37,8 @@ export class BranchesController {
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
   @ApiOperation({ summary: 'List branches — SUPER_ADMIN: all | ORG_ADMIN: own org only' })
-  findAll(@CurrentUser() user: JwtPayload) {
-    return this.service.findAll(user);
+  findAll(@Query() query: BranchQueryDto, @CurrentUser() user: JwtPayload) {
+    return this.service.findAll(query, user);
   }
 
   @Get(':id')

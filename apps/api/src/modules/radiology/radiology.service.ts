@@ -11,6 +11,7 @@ import { CreateRadiologyOrderDto } from './dto/create-radiology-order.dto';
 import { UpdateRadiologyOrderStatusDto } from './dto/update-radiology-order-status.dto';
 import { UpsertRadiologyReportDto } from './dto/upsert-radiology-report.dto';
 import { RadiologyQueryDto } from './dto/radiology-query.dto';
+import { AuditLogsWriterService } from '../audit-logs/audit-logs-writer.service';
 
 // ── Select constants ───────────────────────────────────────────────────────
 
@@ -91,7 +92,10 @@ const VALID_TRANSITIONS: Partial<Record<RadiologyOrderStatus, RadiologyOrderStat
 
 @Injectable()
 export class RadiologyService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditWriter: AuditLogsWriterService,
+  ) {}
 
   async create(dto: CreateRadiologyOrderDto, caller: JwtPayload) {
     const orgId = await this.resolveCreateOrgId(dto, caller);
@@ -120,7 +124,7 @@ export class RadiologyService {
       orderedById = dto.orderedById;
     }
 
-    return this.prisma.radiologyOrder.create({
+    const result = await this.prisma.radiologyOrder.create({
       data: {
         organizationId: orgId,
         branchId: dto.branchId,
@@ -135,6 +139,8 @@ export class RadiologyService {
       },
       select: ORDER_SELECT,
     });
+    await this.auditWriter.log({ caller, action: 'CREATE', resource: 'radiology_order', resourceId: result.id });
+    return result;
   }
 
   async findAll(query: RadiologyQueryDto, caller: JwtPayload) {
@@ -193,11 +199,13 @@ export class RadiologyService {
       if (dto.cancelReason) data.cancelReason = dto.cancelReason;
     }
 
-    return this.prisma.radiologyOrder.update({
+    const result = await this.prisma.radiologyOrder.update({
       where: { id },
       data,
       select: ORDER_SELECT,
     });
+    await this.auditWriter.log({ caller, action: 'STATUS_TRANSITION', resource: 'radiology_order', resourceId: id });
+    return result;
   }
 
   async upsertReport(id: string, dto: UpsertRadiologyReportDto, caller: JwtPayload) {
@@ -249,7 +257,7 @@ export class RadiologyService {
         select: ORDER_SELECT,
       }),
     ]);
-
+    await this.auditWriter.log({ caller, action: 'REPORT_ENTERED', resource: 'radiology_order', resourceId: id });
     return updatedOrder;
   }
 
@@ -297,7 +305,7 @@ export class RadiologyService {
         select: ORDER_SELECT,
       }),
     ]);
-
+    await this.auditWriter.log({ caller, action: 'REPORT_REVIEWED', resource: 'radiology_order', resourceId: id });
     return updatedOrder;
   }
 
@@ -312,11 +320,13 @@ export class RadiologyService {
       }
     }
 
-    return this.prisma.radiologyOrder.update({
+    const result = await this.prisma.radiologyOrder.update({
       where: { id },
       data: { deletedAt: new Date() },
       select: ORDER_SELECT,
     });
+    await this.auditWriter.log({ caller, action: 'SOFT_DELETE', resource: 'radiology_order', resourceId: id });
+    return result;
   }
 
   async findByPatient(patientId: string, query: RadiologyQueryDto, caller: JwtPayload) {

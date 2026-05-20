@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -14,6 +16,7 @@ import {
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -121,9 +124,10 @@ export class BillingController {
 
   @Delete(':id/items/:itemId')
   @Version('1')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ACCOUNTANT)
   @ApiOperation({ summary: 'Remove item from DRAFT invoice. Updates subtotal and totalAmount atomically.' })
-  @ApiOkResponse({ description: 'Item removed, invoice totals updated' })
+  @ApiNoContentResponse({ description: 'Item removed, invoice totals updated' })
   @ApiNotFoundResponse({ description: 'Invoice or item not found' })
   @ApiForbiddenResponse({ description: 'Cross-org access denied or insufficient role' })
   removeItem(

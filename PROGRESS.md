@@ -1,6 +1,6 @@
 # SDHP API — Build Progress
 
-_Last updated: 2026-05-20 — Audit Log Writer Phase 1A_
+_Last updated: 2026-05-20 — Audit Log Writer Phase 1B_
 
 ---
 
@@ -35,6 +35,9 @@ _Last updated: 2026-05-20 — Audit Log Writer Phase 1A_
 | Enhancement | Scope | Last Commit | Status |
 |---|---|---|---|
 | **Audit Log Writer — Phase 1A** | Billing: `INVOICE_ISSUED`, `INVOICE_CANCELLED`, `PAYMENT_CREATED` | `0d5123d` | ✅ Complete |
+| **Audit Log Writer — Phase 1B (Patients)** | Patients: `CREATE`, `UPDATE`, `SOFT_DELETE` | `1bbaada` | ✅ Complete |
+| **Audit Log Writer — Phase 1B (Labs)** | Labs: `CREATE`, `STATUS_TRANSITION`, `RESULT_ENTERED`, `RESULT_REVIEWED`, `SOFT_DELETE` | `284ec94` | ✅ Complete |
+| **Audit Log Writer — Phase 1B (Radiology)** | Radiology: `CREATE`, `STATUS_TRANSITION`, `REPORT_ENTERED`, `REPORT_REVIEWED`, `SOFT_DELETE` | `5819b94` | ✅ Complete |
 
 ---
 
@@ -308,12 +311,116 @@ log(input: { caller: JwtPayload; action: string; resource: string; resourceId?: 
 
 ### 8. What Is NOT Logged Yet (future phases)
 
-- `BillingService.create()`, `addItem()`, `removeItem()` — Phase 1B
+- `BillingService.create()`, `addItem()`, `removeItem()` — future
 - `BillingService.update()` — excluded by design (generic DRAFT edits not audited)
-- Patients, Labs, Radiology — Phase 2
-- Encounters, Prescriptions, Appointments, Medical Files, Allergies — Phase 3
-- `oldData` / `newData` snapshots — Phase 2
-- `ipAddress` / `userAgent` — Phase 3
+- Patients, Labs, Radiology — **completed in Phase 1B** (see section below)
+- Encounters, Prescriptions, Appointments, Medical Files, Allergies — future phase
+- `oldData` / `newData` snapshots — future phase
+- `ipAddress` / `userAgent` — future phase
+
+---
+
+## Technical Handoff — Audit Log Writer (Phase 1B)
+
+### 1. Description
+Extends the `AuditLogsWriterService` integration from Billing (Phase 1A) to Patients, Labs, and Radiology. Each module was committed separately after independent type-check and curl validation. No schema changes, no migrations, no auth/package/docker changes, no Prisma middleware, no global interceptors.
+
+**Commits:**
+- `1bbaada` — Patients
+- `284ec94` — Labs
+- `5819b94` — Radiology
+
+---
+
+### 2. Files Modified
+
+| File | Change |
+|---|---|
+| `modules/patients/patients.module.ts` | Added `AuditLogsModule` to `imports` |
+| `modules/patients/patients.service.ts` | Injected `AuditLogsWriterService`; added log calls in `create()`, `update()`, `remove()` |
+| `modules/labs/labs.module.ts` | Added `AuditLogsModule` to `imports` |
+| `modules/labs/labs.service.ts` | Injected `AuditLogsWriterService`; added log calls in `create()`, `updateStatus()`, `upsertResult()`, `reviewResult()`, `remove()` |
+| `modules/radiology/radiology.module.ts` | Added `AuditLogsModule` to `imports` |
+| `modules/radiology/radiology.service.ts` | Injected `AuditLogsWriterService`; added log calls in `create()`, `updateStatus()`, `upsertReport()`, `reviewReport()`, `remove()` |
+
+No files created. No other files modified.
+
+---
+
+### 3. Actions Logged — Phase 1B
+
+**Patients** (`resource = 'patient'`)
+
+| Method | `action` | `resourceId` |
+|---|---|---|
+| `PatientsService.create()` | `CREATE` | `result.id` |
+| `PatientsService.update()` | `UPDATE` | route `id` |
+| `PatientsService.remove()` | `SOFT_DELETE` | route `id` |
+
+**Labs** (`resource = 'lab_order'`)
+
+| Method | `action` | `resourceId` |
+|---|---|---|
+| `LabsService.create()` | `CREATE` | `result.id` |
+| `LabsService.updateStatus()` | `STATUS_TRANSITION` | route `id` |
+| `LabsService.upsertResult()` | `RESULT_ENTERED` | route `id` |
+| `LabsService.reviewResult()` | `RESULT_REVIEWED` | route `id` |
+| `LabsService.remove()` | `SOFT_DELETE` | route `id` |
+
+**Radiology** (`resource = 'radiology_order'`)
+
+| Method | `action` | `resourceId` |
+|---|---|---|
+| `RadiologyService.create()` | `CREATE` | `result.id` |
+| `RadiologyService.updateStatus()` | `STATUS_TRANSITION` | route `id` |
+| `RadiologyService.upsertReport()` | `REPORT_ENTERED` | route `id` |
+| `RadiologyService.reviewReport()` | `REPORT_REVIEWED` | route `id` |
+| `RadiologyService.remove()` | `SOFT_DELETE` | route `id` |
+
+`newData` and `oldData` are **not** passed on any call. `resourceId` is always present — including on `CREATE` (the created record's `id` is captured before returning).
+
+---
+
+### 4. Key Implementation Rules Applied
+
+- **Log call always after primary operation** — never before. Failed operations (4xx/5xx throw before the primary DB call or before the log call) produce no audit entry.
+- **Log call always outside `$transaction` arrays** — `upsertResult`, `reviewResult`, `upsertReport`, `reviewReport` all use Prisma `$transaction([...])`. The `auditWriter.log()` call is placed after the transaction resolves, never inside the array. If the transaction rolls back, no false log is created.
+- **`AuditLogsWriterService.log()` never rethrows** — audit write failures are caught internally and logged via NestJS `Logger`. Primary operation return value and HTTP response are unaffected.
+- **Read methods not instrumented** — `findAll`, `findOne`, `findByPatient` produce no audit entries.
+- **Each module committed separately** — Patients, Labs, Radiology each have an isolated commit after independent validation.
+
+---
+
+### 5. Validation Results
+
+All three modules validated with `pnpm type-check` (0 errors) and curl tests before commit.
+
+| Module | Type-check | CREATE log | Mutation logs | Read — no log | passwordHash absent |
+|---|---|---|---|---|---|
+| Patients | PASS | `CREATE, resourceId=<id>` | UPDATE, SOFT_DELETE | PASS | PASS |
+| Labs | PASS | `CREATE, resourceId=<id>` | STATUS_TRANSITION ×2, RESULT_ENTERED, RESULT_REVIEWED, SOFT_DELETE | PASS | PASS |
+| Radiology | PASS | `CREATE, resourceId=<id>` | STATUS_TRANSITION ×2, REPORT_ENTERED, REPORT_REVIEWED, SOFT_DELETE | PASS | PASS |
+
+---
+
+### 6. What Is NOT Logged (by design)
+
+- All read-only methods (`findAll`, `findOne`, `findByPatient`)
+- Failed requests — role guards, validation errors, and not-found checks throw before the primary operation; the log call is never reached
+- `newData` / `oldData` snapshots — deliberately omitted; no Prisma object is passed into `newData`
+
+---
+
+### 7. Next Recommended Steps
+
+Modules completed as of this phase: Billing, Patients, Labs, Radiology, Audit Log Writer (1A + 1B).
+
+Recommended next (in priority order):
+
+1. **Audit Log Writer — Phase 1C (Remaining modules)** — extend `AuditLogsWriterService` to Encounters, Prescriptions, Appointments, Medical Files, Allergies. Same pattern; no schema changes needed.
+2. **Billing remaining audit actions** — `BillingService.create()` → `INVOICE_CREATED`; `addItem()` → `ITEM_ADDED`; `removeItem()` → `ITEM_REMOVED`. Excluded from Phase 1A by design; low effort to add.
+3. **Notifications** — requires a new `Notification` model and migration. In-app notification fan-out; lower complexity than remaining clinical modules.
+4. **System stabilization** — pagination on all unbounded list endpoints, rate limiting, structured logging, and health check endpoint hardening before production.
 
 ---
 

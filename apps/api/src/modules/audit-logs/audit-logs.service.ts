@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { AuditLogQueryDto } from './dto/audit-log-query.dto';
 
 // ── Select constants ───────────────────────────────────────────────────────
@@ -35,19 +36,32 @@ const LOG_SELECT = {
 export class AuditLogsService {
   constructor(private prisma: PrismaService) {}
 
-  findAll(query: AuditLogQueryDto, _caller: JwtPayload) {
-    return this.prisma.auditLog.findMany({
-      where: {
-        ...(query.organizationId ? { organizationId: query.organizationId } : {}),
-        ...(query.userId ? { userId: query.userId } : {}),
-        ...(query.action ? { action: query.action } : {}),
-        ...(query.resource ? { resource: query.resource } : {}),
-        ...(query.resourceId ? { resourceId: query.resourceId } : {}),
-        ...this.createdAtFilter(query.from, query.to),
-      },
-      select: LOG_SELECT,
-      orderBy: { createdAt: 'desc' },
-    });
+  async findAll(query: AuditLogQueryDto, _caller: JwtPayload): Promise<PaginatedResponse<unknown>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const skip = (page - 1) * limit;
+
+    const where = {
+      ...(query.organizationId ? { organizationId: query.organizationId } : {}),
+      ...(query.userId ? { userId: query.userId } : {}),
+      ...(query.action ? { action: query.action } : {}),
+      ...(query.resource ? { resource: query.resource } : {}),
+      ...(query.resourceId ? { resourceId: query.resourceId } : {}),
+      ...this.createdAtFilter(query.from, query.to),
+    };
+
+    const [data, total] = await Promise.all([
+      this.prisma.auditLog.findMany({
+        where,
+        select: LOG_SELECT,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.auditLog.count({ where }),
+    ]);
+
+    return { data, total, page, limit };
   }
 
   async findOne(id: string, _caller: JwtPayload) {

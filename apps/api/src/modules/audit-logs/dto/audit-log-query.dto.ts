@@ -1,7 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDateString, IsOptional, IsString } from 'class-validator';
+import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
 
-export class AuditLogQueryDto {
+export class AuditLogQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Filter by organization' })
   @IsOptional()
   @IsString()

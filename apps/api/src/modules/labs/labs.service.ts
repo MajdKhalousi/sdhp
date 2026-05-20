@@ -11,6 +11,7 @@ import { CreateLabOrderDto } from './dto/create-lab-order.dto';
 import { UpdateLabOrderStatusDto } from './dto/update-lab-order-status.dto';
 import { UpsertLabResultDto } from './dto/upsert-lab-result.dto';
 import { LabQueryDto } from './dto/lab-query.dto';
+import { AuditLogsWriterService } from '../audit-logs/audit-logs-writer.service';
 
 // ── Select constants ───────────────────────────────────────────────────────
 
@@ -91,7 +92,10 @@ const VALID_TRANSITIONS: Partial<Record<LabOrderStatus, LabOrderStatus[]>> = {
 
 @Injectable()
 export class LabsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditWriter: AuditLogsWriterService,
+  ) {}
 
   async create(dto: CreateLabOrderDto, caller: JwtPayload) {
     const orgId = await this.resolveCreateOrgId(dto, caller);
@@ -122,7 +126,7 @@ export class LabsService {
       orderedById = dto.orderedById;
     }
 
-    return this.prisma.labOrder.create({
+    const result = await this.prisma.labOrder.create({
       data: {
         organizationId: orgId,
         branchId: dto.branchId,
@@ -136,6 +140,8 @@ export class LabsService {
       },
       select: ORDER_SELECT,
     });
+    await this.auditWriter.log({ caller, action: 'CREATE', resource: 'lab_order', resourceId: result.id });
+    return result;
   }
 
   async findAll(query: LabQueryDto, caller: JwtPayload) {
@@ -194,11 +200,13 @@ export class LabsService {
       if (dto.cancelReason) data.cancelReason = dto.cancelReason;
     }
 
-    return this.prisma.labOrder.update({
+    const result = await this.prisma.labOrder.update({
       where: { id },
       data,
       select: ORDER_SELECT,
     });
+    await this.auditWriter.log({ caller, action: 'STATUS_TRANSITION', resource: 'lab_order', resourceId: id });
+    return result;
   }
 
   async upsertResult(id: string, dto: UpsertLabResultDto, caller: JwtPayload) {
@@ -238,7 +246,7 @@ export class LabsService {
         select: ORDER_SELECT,
       }),
     ]);
-
+    await this.auditWriter.log({ caller, action: 'RESULT_ENTERED', resource: 'lab_order', resourceId: id });
     return updatedOrder;
   }
 
@@ -287,7 +295,7 @@ export class LabsService {
         select: ORDER_SELECT,
       }),
     ]);
-
+    await this.auditWriter.log({ caller, action: 'RESULT_REVIEWED', resource: 'lab_order', resourceId: id });
     return updatedOrder;
   }
 
@@ -302,11 +310,13 @@ export class LabsService {
       }
     }
 
-    return this.prisma.labOrder.update({
+    const result = await this.prisma.labOrder.update({
       where: { id },
       data: { deletedAt: new Date() },
       select: ORDER_SELECT,
     });
+    await this.auditWriter.log({ caller, action: 'SOFT_DELETE', resource: 'lab_order', resourceId: id });
+    return result;
   }
 
   async findByPatient(patientId: string, query: LabQueryDto, caller: JwtPayload) {

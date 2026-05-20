@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Version,
 } from '@nestjs/common';
 import {
@@ -19,6 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { DepartmentsService } from './departments.service';
+import { DepartmentQueryDto } from './dto/department-query.dto';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -35,8 +37,8 @@ export class DepartmentsController {
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
   @ApiOperation({ summary: 'List departments — SUPER_ADMIN: all | ORG_ADMIN: own org only' })
-  findAll(@CurrentUser() user: JwtPayload) {
-    return this.service.findAll(user);
+  findAll(@Query() query: DepartmentQueryDto, @CurrentUser() user: JwtPayload) {
+    return this.service.findAll(query, user);
   }
 
   @Get(':id')

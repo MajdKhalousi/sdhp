@@ -7,6 +7,8 @@ import {
 import { UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { PaginatedResponse } from '../../common/types/paginated-response.type';
+import { DepartmentQueryDto } from './dto/department-query.dto';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
 
@@ -26,17 +28,22 @@ const SELECT = {
 export class DepartmentsService {
   constructor(private prisma: PrismaService) {}
 
-  findAll(user: JwtPayload) {
+  async findAll(query: DepartmentQueryDto, user: JwtPayload): Promise<PaginatedResponse<unknown>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const skip = (page - 1) * limit;
+
     const where =
       user.role === UserRole.SUPER_ADMIN
         ? { deletedAt: null }
         : { organizationId: user.organizationId, deletedAt: null };
 
-    return this.prisma.department.findMany({
-      where,
-      select: SELECT,
-      orderBy: { createdAt: 'desc' },
-    });
+    const [data, total] = await Promise.all([
+      this.prisma.department.findMany({ where, select: SELECT, orderBy: { createdAt: 'desc' }, skip, take: limit }),
+      this.prisma.department.count({ where }),
+    ]);
+
+    return { data, total, page, limit };
   }
 
   async findOne(id: string, user: JwtPayload) {

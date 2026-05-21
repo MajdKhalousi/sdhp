@@ -2,6 +2,8 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { PaginatedResponse } from '../../common/types/paginated-response.type';
+import { OrganizationQueryDto } from './dto/organization-query.dto';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 
@@ -25,20 +27,22 @@ const SELECT = {
 export class OrganizationsService {
   constructor(private prisma: PrismaService) {}
 
-  findAll(user: JwtPayload) {
-    if (user.role === UserRole.SUPER_ADMIN) {
-      return this.prisma.organization.findMany({
-        where: { deletedAt: null },
-        select: SELECT,
-        orderBy: { createdAt: 'desc' },
-      });
-    }
+  async findAll(query: OrganizationQueryDto, user: JwtPayload): Promise<PaginatedResponse<unknown>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const skip = (page - 1) * limit;
 
-    // ORG_ADMIN: scoped to their own organization only.
-    return this.prisma.organization.findMany({
-      where: { id: user.organizationId, deletedAt: null },
-      select: SELECT,
-    });
+    const where =
+      user.role === UserRole.SUPER_ADMIN
+        ? { deletedAt: null }
+        : { id: user.organizationId, deletedAt: null };
+
+    const [data, total] = await Promise.all([
+      this.prisma.organization.findMany({ where, select: SELECT, orderBy: { createdAt: 'desc' }, skip, take: limit }),
+      this.prisma.organization.count({ where }),
+    ]);
+
+    return { data, total, page, limit };
   }
 
   async findOne(id: string, user: JwtPayload) {

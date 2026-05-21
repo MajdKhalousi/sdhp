@@ -8,11 +8,13 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Version,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { OrganizationsService } from './organizations.service';
+import { OrganizationQueryDto } from './dto/organization-query.dto';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -29,8 +31,8 @@ export class OrganizationsController {
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
   @ApiOperation({ summary: 'List organizations — SUPER_ADMIN: all | ORG_ADMIN: own only' })
-  findAll(@CurrentUser() user: JwtPayload) {
-    return this.service.findAll(user);
+  findAll(@Query() query: OrganizationQueryDto, @CurrentUser() user: JwtPayload) {
+    return this.service.findAll(query, user);
   }
 
   @Get(':id')

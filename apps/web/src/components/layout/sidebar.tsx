@@ -24,7 +24,7 @@ const navItems = [
     icon: LayoutDashboard,
   },
   {
-    href: '/patients',
+    href: '/dashboard/patients',
     label: 'Patients',
     labelAr: 'المرضى',
     icon: Users,

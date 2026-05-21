@@ -125,6 +125,7 @@ model Branch {
   radiologyOrders RadiologyOrder[]
   invoices        Invoice[]
 
+  @@index([organizationId])
   @@map("branches")
 }
 
@@ -183,6 +184,7 @@ model Department {
   branch       Branch?      @relation(fields: [branchId], references: [id])
   doctors      Doctor[]
 
+  @@index([organizationId])
   @@map("departments")
 }
 
@@ -298,6 +300,10 @@ model Appointment {
   encounter    Encounter?
   invoices     Invoice[]
 
+  @@index([organizationId])
+  @@index([doctorId])
+  @@index([scheduledAt])
+  @@index([patientId])
   @@map("appointments")
 }
 

@@ -26,6 +26,7 @@ interface Props {
   to: string;
   onFromChange(value: string): void;
   onToChange(value: string): void;
+  disabled?: boolean;
 }
 
 export function TimelineFilters({
@@ -35,10 +36,12 @@ export function TimelineFilters({
   to,
   onFromChange,
   onToChange,
+  disabled = false,
 }: Props) {
   const isAll = selectedTypes.length === 0;
 
   function toggleType(type: TimelineEventType) {
+    if (disabled) return;
     if (selectedTypes.includes(type)) {
       onTypesChange(selectedTypes.filter((t) => t !== type));
     } else {
@@ -47,7 +50,7 @@ export function TimelineFilters({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className={cn('flex flex-wrap items-center gap-3', disabled && 'opacity-60 pointer-events-none')}>
       <div className="flex flex-wrap items-center gap-1.5">
         <button
           type="button"
@@ -86,7 +89,8 @@ export function TimelineFilters({
           type="date"
           value={from}
           onChange={(e) => onFromChange(e.target.value)}
-          className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          disabled={disabled}
+          className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed"
           aria-label="From date"
         />
         <span className="text-xs text-muted-foreground">—</span>
@@ -94,7 +98,8 @@ export function TimelineFilters({
           type="date"
           value={to}
           onChange={(e) => onToChange(e.target.value)}
-          className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          disabled={disabled}
+          className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed"
           aria-label="To date"
         />
       </div>

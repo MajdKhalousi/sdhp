@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import type { BadgeProps } from '@/components/ui/badge';
 import type { RadiologyOrderStatus, TimelineEvent } from '@/types/timeline';
+import { formatTime } from './format-time';
 
 type Props = { event: Extract<TimelineEvent, { type: 'RADIOLOGY_ORDER' }> };
 
@@ -21,10 +22,6 @@ const STATUS_LABEL: Record<RadiologyOrderStatus, string> = {
   REVIEWED:    'Reviewed',
   CANCELLED:   'Cancelled',
 };
-
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
-}
 
 export function RadiologyOrderCard({ event }: Props) {
   const { data } = event;

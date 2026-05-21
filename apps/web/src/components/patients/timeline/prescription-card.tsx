@@ -1,10 +1,7 @@
 import type { TimelineEvent } from '@/types/timeline';
+import { formatTime } from './format-time';
 
 type Props = { event: Extract<TimelineEvent, { type: 'PRESCRIPTION' }> };
-
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
-}
 
 export function PrescriptionCard({ event }: Props) {
   const { data } = event;

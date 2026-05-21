@@ -35,6 +35,11 @@ async function request<T>(
   });
 
   if (!res.ok) {
+    if (res.status === 401) {
+      useAuthStore.getState().logout();
+      if (typeof window !== 'undefined') window.location.href = '/login';
+      throw new Error('Session expired. Please sign in again.');
+    }
     const err = await res.json().catch(() => ({ message: res.statusText }));
     throw new Error((err as { message?: string }).message ?? `HTTP ${res.status}`);
   }

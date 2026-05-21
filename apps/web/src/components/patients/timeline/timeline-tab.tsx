@@ -48,7 +48,7 @@ export function TimelineTab({ patientId }: Props) {
     setPage(1);
   }, []);
 
-  const { data, isLoading, isError, error } = usePatientTimeline(patientId, {
+  const { data, isLoading, isFetching, isError, error } = usePatientTimeline(patientId, {
     types: selectedTypes,
     from: from || undefined,
     to: to || undefined,
@@ -67,6 +67,7 @@ export function TimelineTab({ patientId }: Props) {
         to={to}
         onFromChange={handleFromChange}
         onToChange={handleToChange}
+        disabled={isFetching}
       />
 
       {isLoading && <TimelineSkeleton />}
@@ -91,7 +92,7 @@ export function TimelineTab({ patientId }: Props) {
             <div className="flex items-center justify-between border-t border-border pt-4">
               <button
                 type="button"
-                disabled={page <= 1}
+                disabled={page <= 1 || isFetching}
                 onClick={() => setPage((p) => p - 1)}
                 className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
               >
@@ -102,7 +103,7 @@ export function TimelineTab({ patientId }: Props) {
               </span>
               <button
                 type="button"
-                disabled={page >= totalPages}
+                disabled={page >= totalPages || isFetching}
                 onClick={() => setPage((p) => p + 1)}
                 className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
               >

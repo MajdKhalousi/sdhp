@@ -7,10 +7,11 @@ interface ErrorProps {
   reset(): void;
 }
 
-function classify(message: string): '404' | '403' | 'generic' {
+function classify(message: string): '404' | '403' | '401' | 'generic' {
   const m = message.toLowerCase();
   if (m.includes('not found') || m.includes('404')) return '404';
   if (m.includes('not allowed') || m.includes('forbidden') || m.includes('403')) return '403';
+  if (m.includes('session expired') || m.includes('unauthorized') || m.includes('401')) return '401';
   return 'generic';
 }
 
@@ -35,7 +36,17 @@ export default function PatientError({ error, reset }: ErrorProps) {
             <p className="text-4xl font-bold text-muted-foreground">403</p>
             <h2 className="text-lg font-semibold">Access denied</h2>
             <p className="text-sm text-muted-foreground">
-              You do not have permission to view this patient's records.
+              You do not have permission to view this patient&apos;s records.
+            </p>
+          </>
+        )}
+
+        {kind === '401' && (
+          <>
+            <p className="text-4xl font-bold text-muted-foreground">401</p>
+            <h2 className="text-lg font-semibold">Session expired</h2>
+            <p className="text-sm text-muted-foreground">
+              Your session has expired. Please sign in again.
             </p>
           </>
         )}
@@ -59,12 +70,21 @@ export default function PatientError({ error, reset }: ErrorProps) {
               Try again
             </button>
           )}
-          <Link
-            href="/dashboard/patients"
-            className="rounded-md border px-4 py-2 text-sm font-medium text-foreground hover:bg-accent transition-colors"
-          >
-            Back to Patients
-          </Link>
+          {kind === '401' ? (
+            <Link
+              href="/login"
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              Sign In
+            </Link>
+          ) : (
+            <Link
+              href="/dashboard/patients"
+              className="rounded-md border px-4 py-2 text-sm font-medium text-foreground hover:bg-accent transition-colors"
+            >
+              Back to Patients
+            </Link>
+          )}
         </div>
       </div>
     </div>

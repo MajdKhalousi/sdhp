@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Version,
 } from '@nestjs/common';
 import {
@@ -19,6 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { AppointmentsService } from './appointments.service';
+import { AppointmentQueryDto } from './dto/appointment-query.dto';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -38,8 +40,8 @@ export class AppointmentsController {
     summary:
       'List appointments — SUPER_ADMIN: all | ORG_ADMIN: own org | DOCTOR: own appointments in org',
   })
-  findAll(@CurrentUser() user: JwtPayload) {
-    return this.service.findAll(user);
+  findAll(@Query() query: AppointmentQueryDto, @CurrentUser() user: JwtPayload) {
+    return this.service.findAll(query, user);
   }
 
   @Get(':id')

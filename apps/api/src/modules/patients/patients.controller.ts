@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Version,
 } from '@nestjs/common';
 import {
@@ -20,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { PatientsService } from './patients.service';
+import { PatientQueryDto } from './dto/patient-query.dto';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -36,8 +38,8 @@ export class PatientsController {
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
   @ApiOperation({ summary: 'List patients — SUPER_ADMIN: all | ORG_ADMIN/DOCTOR: own org only' })
-  findAll(@CurrentUser() user: JwtPayload) {
-    return this.service.findAll(user);
+  findAll(@Query() query: PatientQueryDto, @CurrentUser() user: JwtPayload) {
+    return this.service.findAll(query, user);
   }
 
   @Get(':id')

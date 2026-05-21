@@ -8,8 +8,10 @@ import {
 import { Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { PatientQueryDto } from './dto/patient-query.dto';
 import { AuditLogsWriterService } from '../audit-logs/audit-logs-writer.service';
 
 const SELECT = {
@@ -35,6 +37,8 @@ const SELECT = {
   updatedAt: true,
 } as const;
 
+type PatientRecord = Prisma.PatientGetPayload<{ select: typeof SELECT }>;
+
 @Injectable()
 export class PatientsService {
   constructor(
@@ -42,17 +46,22 @@ export class PatientsService {
     private auditWriter: AuditLogsWriterService,
   ) {}
 
-  findAll(caller: JwtPayload) {
+  async findAll(query: PatientQueryDto, caller: JwtPayload): Promise<PaginatedResponse<PatientRecord>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const skip = (page - 1) * limit;
+
     const where =
       caller.role === UserRole.SUPER_ADMIN
         ? { deletedAt: null }
         : { organizationId: caller.organizationId, deletedAt: null };
 
-    return this.prisma.patient.findMany({
-      where,
-      select: SELECT,
-      orderBy: { createdAt: 'desc' },
-    });
+    const [data, total] = await Promise.all([
+      this.prisma.patient.findMany({ where, select: SELECT, orderBy: { createdAt: 'desc' }, skip, take: limit }),
+      this.prisma.patient.count({ where }),
+    ]);
+
+    return { data, total, page, limit };
   }
 
   async findOne(id: string, caller: JwtPayload) {

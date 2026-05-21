@@ -229,8 +229,9 @@ Invariants:
 | patients     | `{ createdAt: 'desc' }`      | Newest registrations first              |
 | doctors      | `{ createdAt: 'desc' }`      | Newest first                            |
 | appointments | `{ scheduledAt: 'desc' }`    | Most recent scheduled time first        |
-| encounters   | `{ startedAt: 'desc' }`      | Most recent clinical visit first; `startedAt` ≠ `createdAt` — visits can be backdated |
-| queue        | `{ ticketNumber: 'asc' }`    | Queue order — lowest ticket served next |
+| encounters    | `{ startedAt: 'desc' }`      | Most recent clinical visit first; `startedAt` ≠ `createdAt` — visits can be backdated |
+| prescriptions | `{ createdAt: 'desc' }`      | Newest prescriptions first; no clinical timestamp on the record itself |
+| queue         | `{ ticketNumber: 'asc' }`    | Queue order — lowest ticket served next |
 
 Do not change these orderings without updating this document and the relevant index coverage.
 
@@ -271,20 +272,21 @@ When writing a `buildWhere` for a model without `deletedAt`, omit `deletedAt: nu
 
 ## Current Paginated Modules
 
-As of B6.C1:
+As of B6.C2:
 
-| Module       | Service file                          | Query DTO                   | Strong type                     | buildWhere |
-|--------------|---------------------------------------|-----------------------------|---------------------------------|------------|
-| users        | `modules/users/users.service.ts`      | `UserQueryDto`              | `UserRecord`                    | inline     |
-| branches     | `modules/branches/branches.service.ts`| `BranchQueryDto`            | `BranchRecord`                  | inline     |
-| departments  | `modules/departments/departments.service.ts` | `DepartmentQueryDto`  | `DepartmentRecord`              | inline     |
-| patients     | `modules/patients/patients.service.ts`| `PatientQueryDto`           | `PatientRecord`                 | inline     |
-| doctors      | `modules/doctors/doctors.service.ts`  | `DoctorQueryDto`            | `DoctorRecord`                  | inline     |
-| appointments | `modules/appointments/appointments.service.ts` | `AppointmentQueryDto` | `AppointmentRecord`          | extracted  |
-| encounters   | `modules/encounters/encounters.service.ts` | `EncounterQueryDto`    | `EncounterRecord`               | extracted  |
-| queue        | `modules/queue/queue.service.ts`      | `QueueQueryDto`             | `QueueEntryRecord`              | extracted  |
+| Module        | Service file                                        | Query DTO                | Strong type              | buildWhere |
+|---------------|-----------------------------------------------------|--------------------------|--------------------------|------------|
+| users         | `modules/users/users.service.ts`                   | `UserQueryDto`           | `UserRecord`             | inline     |
+| branches      | `modules/branches/branches.service.ts`             | `BranchQueryDto`         | `BranchRecord`           | inline     |
+| departments   | `modules/departments/departments.service.ts`       | `DepartmentQueryDto`     | `DepartmentRecord`       | inline     |
+| patients      | `modules/patients/patients.service.ts`             | `PatientQueryDto`        | `PatientRecord`          | inline     |
+| doctors       | `modules/doctors/doctors.service.ts`               | `DoctorQueryDto`         | `DoctorRecord`           | inline     |
+| appointments  | `modules/appointments/appointments.service.ts`     | `AppointmentQueryDto`    | `AppointmentRecord`      | extracted  |
+| encounters    | `modules/encounters/encounters.service.ts`         | `EncounterQueryDto`      | `EncounterRecord`        | extracted  |
+| prescriptions | `modules/prescriptions/prescriptions.service.ts`   | `PrescriptionQueryDto`   | `PrescriptionRecord`     | extracted  |
+| queue         | `modules/queue/queue.service.ts`                   | `QueueQueryDto`          | `QueueEntryRecord`       | extracted  |
 
-Modules not yet paginated: `prescriptions`, `labs` (partial), `radiology` (partial), `billing` (partial), `allergies`.
+Modules not yet paginated: `labs` (partial), `radiology` (partial), `billing` (partial), `allergies`.
 
 ---
 
@@ -303,4 +305,4 @@ Indexes added in migration `20260521011417_add_core_indexes` (backend-stabilizat
 
 `patients.organizationId` was intentionally omitted — already covered as the leading key of `@@unique([organizationId, mrn])`.
 
-Modules still lacking indexes: `encounters`, `users`, `prescriptions`.
+Modules still lacking indexes: `encounters` (`organizationId`, `doctorId`, `patientId`), `users` (`organizationId`), `prescriptions` (`encounterId`).

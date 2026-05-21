@@ -9,6 +9,8 @@ import { Prisma, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { PaginatedResponse } from '../../common/types/paginated-response.type';
+import { UserQueryDto } from './dto/user-query.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -29,23 +31,30 @@ const SELECT = {
   updatedAt: true,
 } as const;
 
+type UserRecord = Prisma.UserGetPayload<{ select: typeof SELECT }>;
+
 const BCRYPT_ROUNDS = 12;
 
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  findAll(user: JwtPayload) {
+  async findAll(query: UserQueryDto, user: JwtPayload): Promise<PaginatedResponse<UserRecord>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const skip = (page - 1) * limit;
+
     const where =
       user.role === UserRole.SUPER_ADMIN
         ? { deletedAt: null }
         : { organizationId: user.organizationId, deletedAt: null };
 
-    return this.prisma.user.findMany({
-      where,
-      select: SELECT,
-      orderBy: { createdAt: 'desc' },
-    });
+    const [data, total] = await Promise.all([
+      this.prisma.user.findMany({ where, select: SELECT, orderBy: { createdAt: 'desc' }, skip, take: limit }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    return { data, total, page, limit };
   }
 
   async findOne(id: string, user: JwtPayload) {

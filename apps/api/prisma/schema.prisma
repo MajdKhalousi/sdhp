@@ -160,6 +160,7 @@ model User {
   createdInvoices  Invoice[]     @relation("InvoicesCreated")
   receivedPayments Payment[]     @relation("PaymentsReceived")
 
+  @@index([organizationId])
   @@map("users")
 }
 
@@ -357,6 +358,9 @@ model Encounter {
   medicalFiles    MedicalFile[]
   invoices        Invoice[]
 
+  @@index([organizationId])
+  @@index([doctorId])
+  @@index([patientId])
   @@map("encounters")
 }
 
@@ -381,6 +385,7 @@ model Prescription {
 
   encounter Encounter @relation(fields: [encounterId], references: [id])
 
+  @@index([encounterId])
   @@map("prescriptions")
 }
 

@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Version,
 } from '@nestjs/common';
 import {
@@ -20,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { EncountersService } from './encounters.service';
+import { EncounterQueryDto } from './dto/encounter-query.dto';
 import { CreateEncounterDto } from './dto/create-encounter.dto';
 import { UpdateEncounterDto } from './dto/update-encounter.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -39,8 +41,8 @@ export class EncountersController {
     summary:
       'List encounters — SUPER_ADMIN: all | ORG_ADMIN: own org | DOCTOR: own encounters in org',
   })
-  findAll(@CurrentUser() user: JwtPayload) {
-    return this.service.findAll(user);
+  findAll(@Query() query: EncounterQueryDto, @CurrentUser() user: JwtPayload) {
+    return this.service.findAll(query, user);
   }
 
   @Get(':id')

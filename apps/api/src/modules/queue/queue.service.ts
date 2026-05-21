@@ -7,8 +7,10 @@ import {
 import { AppointmentStatus, Prisma, QueueStatus, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { CreateQueueEntryDto } from './dto/create-queue-entry.dto';
 import { UpdateQueueEntryDto } from './dto/update-queue-entry.dto';
+import { QueueQueryDto } from './dto/queue-query.dto';
 
 const PATIENT_SELECT = {
   id: true,
@@ -57,38 +59,25 @@ const SELECT = {
   appointment: { select: APPOINTMENT_SELECT },
 } as const;
 
+type QueueEntryRecord = Prisma.QueueEntryGetPayload<{ select: typeof SELECT }>;
+
 @Injectable()
 export class QueueService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(caller: JwtPayload) {
-    if (caller.role === UserRole.SUPER_ADMIN) {
-      return this.prisma.queueEntry.findMany({
-        select: SELECT,
-        orderBy: { ticketNumber: 'asc' },
-      });
-    }
+  async findAll(query: QueueQueryDto, caller: JwtPayload): Promise<PaginatedResponse<QueueEntryRecord>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const skip = (page - 1) * limit;
 
-    if (caller.role === UserRole.DOCTOR) {
-      const doctorProfile = await this.prisma.doctor.findFirst({
-        where: { userId: caller.sub, deletedAt: null },
-        select: { id: true },
-      });
-      const where = doctorProfile
-        ? { appointment: { organizationId: caller.organizationId, doctorId: doctorProfile.id } }
-        : { appointment: { organizationId: caller.organizationId } };
-      return this.prisma.queueEntry.findMany({
-        where,
-        select: SELECT,
-        orderBy: { ticketNumber: 'asc' },
-      });
-    }
+    const where = await this.buildWhere(caller);
 
-    return this.prisma.queueEntry.findMany({
-      where: { appointment: { organizationId: caller.organizationId } },
-      select: SELECT,
-      orderBy: { ticketNumber: 'asc' },
-    });
+    const [data, total] = await Promise.all([
+      this.prisma.queueEntry.findMany({ where, select: SELECT, orderBy: { ticketNumber: 'asc' }, skip, take: limit }),
+      this.prisma.queueEntry.count({ where }),
+    ]);
+
+    return { data, total, page, limit };
   }
 
   async findOne(id: string, caller: JwtPayload) {
@@ -178,6 +167,25 @@ export class QueueService {
 
     // QueueEntry has no deletedAt — hard delete.
     await this.prisma.queueEntry.delete({ where: { id } });
+  }
+
+  private async buildWhere(caller: JwtPayload): Promise<Prisma.QueueEntryWhereInput> {
+    if (caller.role === UserRole.SUPER_ADMIN) {
+      return {};
+    }
+
+    if (caller.role === UserRole.DOCTOR) {
+      const doctorProfile = await this.prisma.doctor.findFirst({
+        where: { userId: caller.sub, deletedAt: null },
+        select: { id: true },
+      });
+      if (doctorProfile) {
+        return { appointment: { organizationId: caller.organizationId, doctorId: doctorProfile.id } };
+      }
+      return { appointment: { organizationId: caller.organizationId } };
+    }
+
+    return { appointment: { organizationId: caller.organizationId } };
   }
 
   private assertOwnership(orgId: string, caller: JwtPayload): void {

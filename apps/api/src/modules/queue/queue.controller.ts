@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Version,
 } from '@nestjs/common';
 import {
@@ -20,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { QueueService } from './queue.service';
+import { QueueQueryDto } from './dto/queue-query.dto';
 import { CreateQueueEntryDto } from './dto/create-queue-entry.dto';
 import { UpdateQueueEntryDto } from './dto/update-queue-entry.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -39,8 +41,8 @@ export class QueueController {
     summary:
       'List queue entries — SUPER_ADMIN: all | ORG_ADMIN: own org | DOCTOR: own entries in org',
   })
-  findAll(@CurrentUser() user: JwtPayload) {
-    return this.service.findAll(user);
+  findAll(@Query() query: QueueQueryDto, @CurrentUser() user: JwtPayload) {
+    return this.service.findAll(query, user);
   }
 
   @Get(':id')

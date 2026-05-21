@@ -4,11 +4,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { CreatePrescriptionDto } from './dto/create-prescription.dto';
 import { UpdatePrescriptionDto } from './dto/update-prescription.dto';
+import { PrescriptionQueryDto } from './dto/prescription-query.dto';
 
 const PATIENT_SELECT = {
   id: true,
@@ -62,42 +64,25 @@ const SELECT = {
   encounter: { select: ENCOUNTER_SELECT },
 } as const;
 
+type PrescriptionRecord = Prisma.PrescriptionGetPayload<{ select: typeof SELECT }>;
+
 @Injectable()
 export class PrescriptionsService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(caller: JwtPayload) {
-    if (caller.role === UserRole.SUPER_ADMIN) {
-      return this.prisma.prescription.findMany({
-        where: { deletedAt: null },
-        select: SELECT,
-        orderBy: { createdAt: 'desc' },
-      });
-    }
+  async findAll(query: PrescriptionQueryDto, caller: JwtPayload): Promise<PaginatedResponse<PrescriptionRecord>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const skip = (page - 1) * limit;
 
-    if (caller.role === UserRole.DOCTOR) {
-      const doctorProfile = await this.prisma.doctor.findFirst({
-        where: { userId: caller.sub, deletedAt: null },
-        select: { id: true },
-      });
-      const encounterWhere = doctorProfile
-        ? { organizationId: caller.organizationId, doctorId: doctorProfile.id, deletedAt: null }
-        : { organizationId: caller.organizationId, deletedAt: null };
-      return this.prisma.prescription.findMany({
-        where: { deletedAt: null, encounter: encounterWhere },
-        select: SELECT,
-        orderBy: { createdAt: 'desc' },
-      });
-    }
+    const where = await this.buildWhere(caller);
 
-    return this.prisma.prescription.findMany({
-      where: {
-        deletedAt: null,
-        encounter: { organizationId: caller.organizationId, deletedAt: null },
-      },
-      select: SELECT,
-      orderBy: { createdAt: 'desc' },
-    });
+    const [data, total] = await Promise.all([
+      this.prisma.prescription.findMany({ where, select: SELECT, orderBy: { createdAt: 'desc' }, skip, take: limit }),
+      this.prisma.prescription.count({ where }),
+    ]);
+
+    return { data, total, page, limit };
   }
 
   async findOne(id: string, caller: JwtPayload) {
@@ -186,6 +171,32 @@ export class PrescriptionsService {
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────
+
+  private async buildWhere(caller: JwtPayload): Promise<Prisma.PrescriptionWhereInput> {
+    if (caller.role === UserRole.SUPER_ADMIN) {
+      return { deletedAt: null };
+    }
+    if (caller.role === UserRole.DOCTOR) {
+      const doctorProfile = await this.prisma.doctor.findFirst({
+        where: { userId: caller.sub, deletedAt: null },
+        select: { id: true },
+      });
+      if (doctorProfile) {
+        return {
+          deletedAt: null,
+          encounter: { organizationId: caller.organizationId, doctorId: doctorProfile.id, deletedAt: null },
+        };
+      }
+      return {
+        deletedAt: null,
+        encounter: { organizationId: caller.organizationId, deletedAt: null },
+      };
+    }
+    return {
+      deletedAt: null,
+      encounter: { organizationId: caller.organizationId, deletedAt: null },
+    };
+  }
 
   private assertOwnership(encOrgId: string, caller: JwtPayload): void {
     if (caller.role === UserRole.SUPER_ADMIN) return;

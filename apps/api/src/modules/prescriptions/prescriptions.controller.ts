@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Version,
 } from '@nestjs/common';
 import {
@@ -19,6 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { PrescriptionsService } from './prescriptions.service';
+import { PrescriptionQueryDto } from './dto/prescription-query.dto';
 import { CreatePrescriptionDto } from './dto/create-prescription.dto';
 import { UpdatePrescriptionDto } from './dto/update-prescription.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -38,8 +40,8 @@ export class PrescriptionsController {
     summary:
       'List prescriptions — SUPER_ADMIN: all | ORG_ADMIN: own org | DOCTOR: own encounters in org',
   })
-  findAll(@CurrentUser() user: JwtPayload) {
-    return this.service.findAll(user);
+  findAll(@Query() query: PrescriptionQueryDto, @CurrentUser() user: JwtPayload) {
+    return this.service.findAll(query, user);
   }
 
   @Get(':id')

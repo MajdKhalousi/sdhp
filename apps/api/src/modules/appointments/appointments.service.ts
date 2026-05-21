@@ -67,7 +67,7 @@ export class AppointmentsService {
     const limit = query.limit ?? 20;
     const skip = (page - 1) * limit;
 
-    const where = await this.buildWhere(caller);
+    const where = await this.buildWhere(query, caller);
 
     const [data, total] = await Promise.all([
       this.prisma.appointment.findMany({ where, select: SELECT, orderBy: { scheduledAt: 'desc' }, skip, take: limit }),
@@ -158,9 +158,22 @@ export class AppointmentsService {
     });
   }
 
-  private async buildWhere(caller: JwtPayload): Promise<Prisma.AppointmentWhereInput> {
+  private async buildWhere(query: AppointmentQueryDto, caller: JwtPayload): Promise<Prisma.AppointmentWhereInput> {
+    const dateFilter = query.date ? this.buildDayRange(query.date) : undefined;
+
+    const queryFilters: Prisma.AppointmentWhereInput = {
+      ...(query.status?.length ? { status: { in: query.status } } : {}),
+      ...(query.patientId ? { patientId: query.patientId } : {}),
+      ...(query.branchId ? { branchId: query.branchId } : {}),
+      ...(dateFilter ? { scheduledAt: dateFilter } : {}),
+    };
+
     if (caller.role === UserRole.SUPER_ADMIN) {
-      return { deletedAt: null };
+      return {
+        ...queryFilters,
+        ...(query.doctorId ? { doctorId: query.doctorId } : {}),
+        deletedAt: null,
+      };
     }
 
     if (caller.role === UserRole.DOCTOR) {
@@ -168,13 +181,28 @@ export class AppointmentsService {
         where: { userId: caller.sub, deletedAt: null },
         select: { id: true },
       });
-      if (doctorProfile) {
-        return { organizationId: caller.organizationId, doctorId: doctorProfile.id, deletedAt: null };
-      }
-      return { organizationId: caller.organizationId, deletedAt: null };
+      return {
+        ...queryFilters,
+        organizationId: caller.organizationId,
+        // DOCTOR is always scoped to their own profile; query.doctorId is ignored for security.
+        ...(doctorProfile ? { doctorId: doctorProfile.id } : {}),
+        deletedAt: null,
+      };
     }
 
-    return { organizationId: caller.organizationId, deletedAt: null };
+    return {
+      ...queryFilters,
+      organizationId: caller.organizationId,
+      ...(query.doctorId ? { doctorId: query.doctorId } : {}),
+      deletedAt: null,
+    };
+  }
+
+  private buildDayRange(date: string): { gte: Date; lt: Date } {
+    const start = new Date(`${date}T00:00:00.000Z`);
+    const end = new Date(`${date}T00:00:00.000Z`);
+    end.setUTCDate(end.getUTCDate() + 1);
+    return { gte: start, lt: end };
   }
 
   private assertOwnership(apptOrgId: string, caller: JwtPayload): void {

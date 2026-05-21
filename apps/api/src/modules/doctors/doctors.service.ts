@@ -8,8 +8,10 @@ import {
 import { Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
+import { DoctorQueryDto } from './dto/doctor-query.dto';
 
 // Safe user fields — passwordHash is never selected.
 const USER_SELECT = {
@@ -38,21 +40,28 @@ const SELECT = {
   user: { select: USER_SELECT },
 } as const;
 
+type DoctorRecord = Prisma.DoctorGetPayload<{ select: typeof SELECT }>;
+
 @Injectable()
 export class DoctorsService {
   constructor(private prisma: PrismaService) {}
 
-  findAll(caller: JwtPayload) {
+  async findAll(query: DoctorQueryDto, caller: JwtPayload): Promise<PaginatedResponse<DoctorRecord>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const skip = (page - 1) * limit;
+
     const where =
       caller.role === UserRole.SUPER_ADMIN
         ? { deletedAt: null }
         : { user: { organizationId: caller.organizationId }, deletedAt: null };
 
-    return this.prisma.doctor.findMany({
-      where,
-      select: SELECT,
-      orderBy: { createdAt: 'desc' },
-    });
+    const [data, total] = await Promise.all([
+      this.prisma.doctor.findMany({ where, select: SELECT, orderBy: { createdAt: 'desc' }, skip, take: limit }),
+      this.prisma.doctor.count({ where }),
+    ]);
+
+    return { data, total, page, limit };
   }
 
   async findOne(id: string, caller: JwtPayload) {

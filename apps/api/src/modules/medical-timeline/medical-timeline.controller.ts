@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Version } from '@nestjs/common';
+import { Controller, Get, Param, Query, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiForbiddenResponse,
@@ -9,6 +9,7 @@ import {
 } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { MedicalTimelineService } from './medical-timeline.service';
+import { PatientTimelineQueryDto } from './dto/patient-timeline-query.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
@@ -24,12 +25,16 @@ export class MedicalTimelineController {
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
   @ApiOperation({
     summary:
-      'Get chronological medical timeline for a patient — aggregates appointments, queue check-ins, encounters, and prescriptions sorted newest first.',
+      'Patient clinical timeline — paginated chronological feed of encounters, prescriptions, lab orders, radiology orders, and medical files. Filter by type, date range, and page.',
   })
-  @ApiOkResponse({ description: 'Sorted array of normalized timeline events' })
+  @ApiOkResponse({ description: 'Paginated timeline with patient summary and typed events' })
   @ApiNotFoundResponse({ description: 'Patient not found' })
-  @ApiForbiddenResponse({ description: 'Access to this patient timeline is not allowed' })
-  getTimeline(@Param('patientId') patientId: string, @CurrentUser() user: JwtPayload) {
-    return this.service.getPatientTimeline(patientId, user);
+  @ApiForbiddenResponse({ description: 'Access to this patient is not allowed' })
+  getTimeline(
+    @Param('patientId') patientId: string,
+    @Query() query: PatientTimelineQueryDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.service.getPatientTimeline(patientId, query, user);
   }
 }

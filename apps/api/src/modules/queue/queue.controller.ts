@@ -36,10 +36,10 @@ export class QueueController {
 
   @Get()
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY, UserRole.DOCTOR)
   @ApiOperation({
     summary:
-      'List queue entries — SUPER_ADMIN: all | ORG_ADMIN: own org | DOCTOR: own entries in org',
+      'List queue entries — SUPER_ADMIN: all | ORG_ADMIN/SECRETARY: own org | DOCTOR: own entries in org',
   })
   findAll(@Query() query: QueueQueryDto, @CurrentUser() user: JwtPayload) {
     return this.service.findAll(query, user);
@@ -47,8 +47,8 @@ export class QueueController {
 
   @Get(':id')
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
-  @ApiOperation({ summary: 'Get queue entry by ID — ORG_ADMIN/DOCTOR restricted to own org' })
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY, UserRole.DOCTOR)
+  @ApiOperation({ summary: 'Get queue entry by ID — ORG_ADMIN/SECRETARY/DOCTOR restricted to own org' })
   @ApiNotFoundResponse({ description: 'Queue entry not found' })
   findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.service.findOne(id, user);
@@ -56,7 +56,7 @@ export class QueueController {
 
   @Post()
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY)
   @ApiOperation({
     summary:
       'Check patient in — creates queue entry from an existing appointment. Ticket number auto-generated. Appointment status updated to CHECKED_IN.',
@@ -69,10 +69,10 @@ export class QueueController {
 
   @Patch(':id')
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
   @ApiOperation({
     summary:
-      'Update queue entry status — CALLED auto-sets calledAt; DONE auto-sets completedAt.',
+      'Update queue entry status — CALLED auto-sets calledAt; DONE auto-sets completedAt. DOCTOR restricted to own appointment entries.',
   })
   @ApiNotFoundResponse({ description: 'Queue entry not found' })
   update(

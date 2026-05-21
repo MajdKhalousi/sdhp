@@ -35,10 +35,10 @@ export class AppointmentsController {
 
   @Get()
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY, UserRole.DOCTOR)
   @ApiOperation({
     summary:
-      'List appointments — SUPER_ADMIN: all | ORG_ADMIN: own org | DOCTOR: own appointments in org',
+      'List appointments — SUPER_ADMIN: all | ORG_ADMIN/SECRETARY: own org | DOCTOR: own appointments in org',
   })
   findAll(@Query() query: AppointmentQueryDto, @CurrentUser() user: JwtPayload) {
     return this.service.findAll(query, user);
@@ -46,8 +46,8 @@ export class AppointmentsController {
 
   @Get(':id')
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
-  @ApiOperation({ summary: 'Get appointment by ID — ORG_ADMIN/DOCTOR restricted to own org' })
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY, UserRole.DOCTOR)
+  @ApiOperation({ summary: 'Get appointment by ID — ORG_ADMIN/SECRETARY/DOCTOR restricted to own org' })
   @ApiNotFoundResponse({ description: 'Appointment not found' })
   findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.service.findOne(id, user);
@@ -55,7 +55,7 @@ export class AppointmentsController {
 
   @Post()
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY)
   @ApiOperation({
     summary:
       'Create appointment — patientId and doctorId must belong to the same org. SUPER_ADMIN must supply organizationId.',
@@ -66,7 +66,7 @@ export class AppointmentsController {
 
   @Patch(':id')
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY)
   @ApiOperation({
     summary:
       'Update appointment — organizationId/patientId/doctorId cannot be changed. Setting status to CANCELLED auto-sets cancelledAt.',

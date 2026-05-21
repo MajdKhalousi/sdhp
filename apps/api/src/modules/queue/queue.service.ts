@@ -134,11 +134,21 @@ export class QueueService {
   async update(id: string, dto: UpdateQueueEntryDto, caller: JwtPayload) {
     const entry = await this.prisma.queueEntry.findFirst({
       where: { id },
-      select: { id: true, calledAt: true, completedAt: true, appointment: { select: { organizationId: true } } },
+      select: { id: true, calledAt: true, completedAt: true, appointment: { select: { organizationId: true, doctorId: true } } },
     });
 
     if (!entry) throw new NotFoundException('Queue entry not found');
     this.assertOwnership(entry.appointment.organizationId, caller);
+
+    if (caller.role === UserRole.DOCTOR) {
+      const doctorProfile = await this.prisma.doctor.findFirst({
+        where: { userId: caller.sub, deletedAt: null },
+        select: { id: true },
+      });
+      if (!doctorProfile || doctorProfile.id !== entry.appointment.doctorId) {
+        throw new ForbiddenException('You can only update queue entries for your own appointments');
+      }
+    }
 
     const calledAt =
       dto.status === QueueStatus.CALLED && !entry.calledAt ? new Date() : undefined;

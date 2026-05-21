@@ -229,6 +229,7 @@ Invariants:
 | patients     | `{ createdAt: 'desc' }`      | Newest registrations first              |
 | doctors      | `{ createdAt: 'desc' }`      | Newest first                            |
 | appointments | `{ scheduledAt: 'desc' }`    | Most recent scheduled time first        |
+| encounters   | `{ startedAt: 'desc' }`      | Most recent clinical visit first; `startedAt` ≠ `createdAt` — visits can be backdated |
 | queue        | `{ ticketNumber: 'asc' }`    | Queue order — lowest ticket served next |
 
 Do not change these orderings without updating this document and the relevant index coverage.
@@ -270,7 +271,7 @@ When writing a `buildWhere` for a model without `deletedAt`, omit `deletedAt: nu
 
 ## Current Paginated Modules
 
-As of backend-stabilization-v1:
+As of B6.C1:
 
 | Module       | Service file                          | Query DTO                   | Strong type                     | buildWhere |
 |--------------|---------------------------------------|-----------------------------|---------------------------------|------------|
@@ -280,9 +281,10 @@ As of backend-stabilization-v1:
 | patients     | `modules/patients/patients.service.ts`| `PatientQueryDto`           | `PatientRecord`                 | inline     |
 | doctors      | `modules/doctors/doctors.service.ts`  | `DoctorQueryDto`            | `DoctorRecord`                  | inline     |
 | appointments | `modules/appointments/appointments.service.ts` | `AppointmentQueryDto` | `AppointmentRecord`          | extracted  |
+| encounters   | `modules/encounters/encounters.service.ts` | `EncounterQueryDto`    | `EncounterRecord`               | extracted  |
 | queue        | `modules/queue/queue.service.ts`      | `QueueQueryDto`             | `QueueEntryRecord`              | extracted  |
 
-Modules not yet paginated: `encounters`, `prescriptions`, `labs` (partial), `radiology` (partial), `billing` (partial), `allergies`.
+Modules not yet paginated: `prescriptions`, `labs` (partial), `radiology` (partial), `billing` (partial), `allergies`.
 
 ---
 

@@ -5,6 +5,7 @@ import { AlertTriangle } from 'lucide-react';
 import { useEncounter, useUpdateEncounter } from '@/hooks/use-encounters';
 import { useAllergies } from '@/hooks/use-allergies';
 import { VitalsForm } from './vitals-form';
+import { PrescriptionPanel } from './prescription-panel';
 import { EndEncounterButton } from './end-encounter-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -277,6 +278,12 @@ export function EncounterWorkspace({ encounterId }: Props) {
             />
           </div>
         </div>
+      </div>
+
+      {/* ── Prescriptions ───────────────────────────────────────────────── */}
+      <div className="rounded-xl border border-border bg-card p-5">
+        <SectionHeading>Prescriptions</SectionHeading>
+        <PrescriptionPanel encounterId={encounterId} readOnly={readOnly} />
       </div>
 
       {/* ── Actions ─────────────────────────────────────────────────────── */}

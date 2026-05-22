@@ -21,6 +21,10 @@ function relativeWait(iso: string) {
   return `${Math.floor(mins / 60)}h ${mins % 60}m`;
 }
 
+function waitMins(iso: string) {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
+}
+
 export function DoctorQueuePanel() {
   const { data, isLoading, isError, error, refetch, isFetching } = useQueue({
     status: ['WAITING', 'CALLED'],
@@ -98,6 +102,8 @@ export function DoctorQueuePanel() {
         {data.data.map((entry) => {
           const { appointment } = entry;
           const { patient, doctor } = appointment;
+          const waited = waitMins(entry.createdAt);
+          const isLong = waited >= 20;
           return (
             <div key={entry.id} className="rounded-xl border border-border bg-card p-4">
               <div className="flex items-start gap-4">
@@ -114,7 +120,9 @@ export function DoctorQueuePanel() {
                   </p>
                   <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
                     <span>Scheduled {formatScheduled(appointment.scheduledAt)}</span>
-                    <span>Waited {relativeWait(entry.createdAt)}</span>
+                    <span className={isLong ? 'font-medium text-amber-600 dark:text-amber-400' : ''}>
+                      Waited {relativeWait(entry.createdAt)}
+                    </span>
                   </div>
                   <div className="mt-1.5">
                     <QueueStatusBadge status={entry.status} />

@@ -43,7 +43,7 @@ export function StartEncounterButton({ patientId, doctorId, appointmentId }: Sta
             Starting…
           </>
         ) : (
-          'Start Encounter →'
+          'Start Visit'
         )}
       </button>
       {error && (

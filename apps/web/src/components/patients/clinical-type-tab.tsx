@@ -1,5 +1,6 @@
 'use client';
 
+import { FolderOpen } from 'lucide-react';
 import { usePatientTimeline } from '@/hooks/use-patient-timeline';
 import { TimelineEventCard } from './timeline/timeline-event-card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -48,8 +49,9 @@ export function ClinicalTypeTab({ patientId, type, emptyMessage }: Props) {
 
   if (events.length === 0) {
     return (
-      <div className="flex h-48 items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">
-        {emptyMessage}
+      <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
+        <FolderOpen className="h-8 w-8 text-muted-foreground/40" />
+        <p className="text-sm text-muted-foreground">{emptyMessage}</p>
       </div>
     );
   }

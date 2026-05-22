@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { BookOpen } from 'lucide-react';
 import { usePatientTimeline } from '@/hooks/use-patient-timeline';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TimelineFilters } from './timeline-filters';
@@ -79,8 +80,20 @@ export function TimelineTab({ patientId }: Props) {
       )}
 
       {data && data.data.length === 0 && (
-        <div className="flex h-48 items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">
-          No events found for the selected filters.
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
+          <BookOpen className="h-8 w-8 text-muted-foreground/40" />
+          <div>
+            <p className="text-sm font-medium text-foreground">
+              {selectedTypes.length > 0 || from || to
+                ? 'No records match the selected filters'
+                : 'No medical history on record'}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {selectedTypes.length > 0 || from || to
+                ? 'Try adjusting the filters to see more events.'
+                : 'Events will appear here as encounters, prescriptions, and orders are recorded.'}
+            </p>
+          </div>
         </div>
       )}
 

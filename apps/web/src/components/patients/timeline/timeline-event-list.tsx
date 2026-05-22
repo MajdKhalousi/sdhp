@@ -67,9 +67,11 @@ export function TimelineEventList({ events }: Props) {
               {relativePrefix(group.key)}{group.dateLabel}
             </p>
             <div className="flex-1 border-t border-border" />
-            <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-              {group.events.length}
-            </span>
+            {group.events.length > 1 && (
+              <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                {group.events.length}
+              </span>
+            )}
           </div>
           <div className="space-y-3">
             {group.events.map((event) => (

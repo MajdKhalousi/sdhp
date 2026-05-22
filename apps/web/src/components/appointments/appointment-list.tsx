@@ -110,7 +110,8 @@ export function AppointmentList() {
       <div className="space-y-4">
         {filters}
         <div className="overflow-hidden rounded-xl border border-border">
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px]">
             <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
               <tr>
                 {['Patient', 'Doctor', 'Scheduled', 'Duration', 'Status', ''].map((h) => (
@@ -130,6 +131,7 @@ export function AppointmentList() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     );
@@ -179,7 +181,8 @@ export function AppointmentList() {
       {filters}
 
       <div className="overflow-hidden rounded-xl border border-border">
-        <table className="w-full">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px]">
           <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
             <tr>
               <th className="px-4 py-3 text-left font-medium">Patient</th>
@@ -234,6 +237,7 @@ export function AppointmentList() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Pagination */}

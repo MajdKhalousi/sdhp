@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { ChevronLeft, ChevronRight, CalendarX2 } from 'lucide-react';
 import { useAppointments, useDoctorsList } from '@/hooks/use-appointments';
 import { AppointmentStatusBadge } from './appointment-status-badge';
@@ -221,16 +220,10 @@ export function AppointmentList() {
                   <AppointmentStatusBadge status={appt.status} />
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex items-center justify-end gap-2">
+                  <div className="flex items-center justify-end">
                     {NO_SHOW_ELIGIBLE.includes(appt.status) && (
                       <NoShowButton appointmentId={appt.id} />
                     )}
-                    <Link
-                      href={`/dashboard/appointments/${appt.id}`}
-                      className="rounded-md px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                    >
-                      View
-                    </Link>
                   </div>
                 </td>
               </tr>

@@ -51,3 +51,24 @@ export interface CreateEncounterPayload {
   doctorId: string;
   appointmentId?: string;
 }
+
+export interface VitalsPayload {
+  temperature?: string;
+  bloodPressure?: string;
+  heartRate?: string;
+  oxygenSaturation?: string;
+  respiratoryRate?: string;
+  weight?: string;
+  height?: string;
+}
+
+export interface UpdateEncounterPayload {
+  chiefComplaint?: string;
+  notes?: string;
+  diagnosis?: string;
+  diagnosisCode?: string;
+  treatmentPlan?: string;
+  followUpDate?: string;
+  vitals?: VitalsPayload;
+  endedAt?: string;
+}

@@ -1,0 +1,289 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useEncounter, useUpdateEncounter } from '@/hooks/use-encounters';
+import { VitalsForm } from './vitals-form';
+import { EndEncounterButton } from './end-encounter-button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import type { VitalsPayload, UpdateEncounterPayload } from '@/types/encounter';
+
+interface WorkspaceForm {
+  chiefComplaint: string;
+  notes: string;
+  diagnosis: string;
+  diagnosisCode: string;
+  treatmentPlan: string;
+  followUpDate: string;
+  vitals: VitalsPayload;
+}
+
+function toVitals(raw: Record<string, unknown> | null): VitalsPayload {
+  if (!raw) return {};
+  const s = (v: unknown) => (typeof v === 'string' ? v : '');
+  return {
+    temperature:      s(raw.temperature),
+    bloodPressure:    s(raw.bloodPressure),
+    heartRate:        s(raw.heartRate),
+    oxygenSaturation: s(raw.oxygenSaturation),
+    respiratoryRate:  s(raw.respiratoryRate),
+    weight:           s(raw.weight),
+    height:           s(raw.height),
+  };
+}
+
+function formatDateTime(iso: string | null) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit',
+  });
+}
+
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      {children}
+    </h2>
+  );
+}
+
+interface Props { encounterId: string }
+
+export function EncounterWorkspace({ encounterId }: Props) {
+  const { data: encounter, isLoading, isError, error, refetch } = useEncounter(encounterId);
+  const { mutate: update, isPending: saving } = useUpdateEncounter();
+
+  const [form, setForm] = useState<WorkspaceForm | null>(null);
+  const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState('');
+
+  useEffect(() => {
+    if (encounter && !form) {
+      setForm({
+        chiefComplaint: encounter.chiefComplaint ?? '',
+        notes:          encounter.notes ?? '',
+        diagnosis:      encounter.diagnosis ?? '',
+        diagnosisCode:  encounter.diagnosisCode ?? '',
+        treatmentPlan:  encounter.treatmentPlan ?? '',
+        followUpDate:   encounter.followUpDate ? encounter.followUpDate.slice(0, 10) : '',
+        vitals:         toVitals(encounter.vitals),
+      });
+    }
+  }, [encounter, form]);
+
+  function setField<K extends keyof WorkspaceForm>(key: K, value: WorkspaceForm[K]) {
+    setForm((prev) => prev ? { ...prev, [key]: value } : prev);
+    setSavedAt(null);
+    setSaveError('');
+  }
+
+  function handleSave() {
+    if (!form) return;
+    setSaveError('');
+
+    const payload: UpdateEncounterPayload = {
+      chiefComplaint: form.chiefComplaint || undefined,
+      notes:          form.notes || undefined,
+      diagnosis:      form.diagnosis || undefined,
+      diagnosisCode:  form.diagnosisCode || undefined,
+      treatmentPlan:  form.treatmentPlan || undefined,
+      followUpDate:   form.followUpDate || undefined,
+      vitals:         Object.values(form.vitals).some(Boolean) ? form.vitals : undefined,
+    };
+
+    update(
+      { id: encounterId, payload },
+      {
+        onSuccess: () => setSavedAt(new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })),
+        onError: (e) => setSaveError(e instanceof Error ? e.message : 'Save failed'),
+      },
+    );
+  }
+
+  // ── Loading ──────────────────────────────────────────────────────────────
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-40 w-full rounded-xl" />
+        <Skeleton className="h-32 w-full rounded-xl" />
+        <Skeleton className="h-40 w-full rounded-xl" />
+      </div>
+    );
+  }
+
+  // ── Error ────────────────────────────────────────────────────────────────
+  if (isError || !encounter) {
+    return (
+      <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-16 text-center">
+        <p className="text-sm font-medium text-destructive">Failed to load encounter</p>
+        <p className="max-w-xs text-xs text-muted-foreground">
+          {error instanceof Error ? error.message : 'Encounter not found.'}
+        </p>
+        <button
+          onClick={() => refetch()}
+          className="mt-1 h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
+
+  if (!form) return null;
+
+  const { patient, doctor } = encounter;
+  const isEnded = !!encounter.endedAt;
+
+  return (
+    <div className="space-y-6">
+      {/* ── Patient / header card ───────────────────────────────────────── */}
+      <div className="rounded-xl border border-border bg-card p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold">
+              {patient.firstName} {patient.lastName}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              MRN {patient.mrn}
+              {patient.dateOfBirth && ` · DOB ${patient.dateOfBirth.slice(0, 10)}`}
+              {patient.gender && ` · ${patient.gender}`}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Dr. {doctor.user.firstName} {doctor.user.lastName}
+              {doctor.specialization && ` · ${doctor.specialization}`}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-right text-xs text-muted-foreground">
+            <Badge variant={isEnded ? 'success' : 'warning'}>
+              {isEnded ? 'Completed' : 'In Progress'}
+            </Badge>
+            <span>Started {formatDateTime(encounter.startedAt ?? encounter.createdAt)}</span>
+            {isEnded && <span>Ended {formatDateTime(encounter.endedAt)}</span>}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Clinical ────────────────────────────────────────────────────── */}
+      <div className="rounded-xl border border-border bg-card p-5">
+        <SectionHeading>Clinical Notes</SectionHeading>
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" htmlFor="chiefComplaint">Chief Complaint</label>
+            <input
+              id="chiefComplaint"
+              type="text"
+              value={form.chiefComplaint}
+              onChange={(e) => setField('chiefComplaint', e.target.value)}
+              placeholder="Primary reason for visit"
+              disabled={saving}
+              className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" htmlFor="notes">Notes</label>
+            <textarea
+              id="notes"
+              rows={4}
+              value={form.notes}
+              onChange={(e) => setField('notes', e.target.value)}
+              placeholder="Clinical observations, history, exam findings…"
+              disabled={saving}
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Vitals ──────────────────────────────────────────────────────── */}
+      <div className="rounded-xl border border-border bg-card p-5">
+        <SectionHeading>Vitals</SectionHeading>
+        <VitalsForm
+          vitals={form.vitals}
+          onChange={(v) => setField('vitals', v)}
+          disabled={saving}
+        />
+      </div>
+
+      {/* ── Diagnosis & Treatment ────────────────────────────────────────── */}
+      <div className="rounded-xl border border-border bg-card p-5">
+        <SectionHeading>Diagnosis &amp; Treatment</SectionHeading>
+        <div className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium" htmlFor="diagnosis">Diagnosis</label>
+              <input
+                id="diagnosis"
+                type="text"
+                value={form.diagnosis}
+                onChange={(e) => setField('diagnosis', e.target.value)}
+                placeholder="Diagnosis description"
+                disabled={saving}
+                className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium" htmlFor="diagnosisCode">ICD Code</label>
+              <input
+                id="diagnosisCode"
+                type="text"
+                value={form.diagnosisCode}
+                onChange={(e) => setField('diagnosisCode', e.target.value)}
+                placeholder="e.g. I20.9"
+                disabled={saving}
+                className="h-9 w-full rounded-md border bg-background px-3 text-sm font-mono outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
+              />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" htmlFor="treatmentPlan">Treatment Plan</label>
+            <textarea
+              id="treatmentPlan"
+              rows={3}
+              value={form.treatmentPlan}
+              onChange={(e) => setField('treatmentPlan', e.target.value)}
+              placeholder="Medications, procedures, referrals…"
+              disabled={saving}
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" htmlFor="followUpDate">Follow-up Date</label>
+            <input
+              id="followUpDate"
+              type="date"
+              value={form.followUpDate}
+              onChange={(e) => setField('followUpDate', e.target.value)}
+              disabled={saving}
+              className="h-9 w-48 rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Actions ─────────────────────────────────────────────────────── */}
+      <div className="rounded-xl border border-border bg-card p-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {saving ? 'Saving…' : 'Save Changes'}
+            </button>
+            {savedAt && (
+              <span className="text-xs text-muted-foreground">Saved at {savedAt}</span>
+            )}
+            {saveError && (
+              <span className="text-xs text-destructive">{saveError}</span>
+            )}
+          </div>
+
+          <EndEncounterButton encounterId={encounterId} alreadyEnded={isEnded} />
+        </div>
+      </div>
+    </div>
+  );
+}

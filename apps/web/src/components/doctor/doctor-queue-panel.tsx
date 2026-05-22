@@ -85,7 +85,7 @@ export function DoctorQueuePanel() {
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
           <Stethoscope className="h-8 w-8 text-muted-foreground/50" />
           <p className="text-sm font-medium">No patients waiting</p>
-          <p className="text-xs text-muted-foreground">Your queue is clear for today.</p>
+          <p className="text-xs text-muted-foreground">All scheduled patients have been seen.</p>
         </div>
       </div>
     );

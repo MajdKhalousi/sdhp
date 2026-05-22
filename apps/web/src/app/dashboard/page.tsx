@@ -58,6 +58,7 @@ export default function DashboardPage() {
     queryKey: ['dashboard', 'queue-waiting'],
     queryFn: () => api.get<PagedMeta>('/v1/queue', { status: 'WAITING', limit: 1 }),
     staleTime: 30_000,
+    refetchInterval: 30_000,
   });
 
   const { data: patientStats } = useQuery({
@@ -106,6 +107,7 @@ export default function DashboardPage() {
       icon: ListOrdered,
       href: '/dashboard/queue',
       urgent: (queueStats?.total ?? 0) > 0,
+      live: true,
     },
     {
       label: 'Total Patients',
@@ -156,7 +158,15 @@ export default function DashboardPage() {
               <p className={`mt-2 text-3xl font-bold tabular-nums ${stat.urgent ? 'text-primary' : ''}`}>
                 {stat.value}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">{stat.sub}</p>
+              <div className="mt-1 flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">{stat.sub}</p>
+                {'live' in stat && stat.live && (
+                  <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-500" />
+                    Live
+                  </span>
+                )}
+              </div>
             </Link>
           );
         })}

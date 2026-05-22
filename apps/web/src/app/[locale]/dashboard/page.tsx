@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { Calendar, Users, ListOrdered, CheckCircle2, Clock } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/auth';
 import { AppointmentStatusBadge } from '@/components/appointments/appointment-status-badge';
@@ -42,6 +43,7 @@ function formatRole(role: string) {
 }
 
 export default function DashboardPage() {
+  const t = useTranslations('dashboard');
   const user = useAuthStore((s) => s.user);
   const role = user?.role ?? '';
 
@@ -94,32 +96,32 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      label: "Today's Appointments",
+      label: t('stats.todayAppointments.label'),
       value: apptStats?.total ?? '—',
-      sub: 'scheduled today',
+      sub:   t('stats.todayAppointments.sub'),
       icon: Calendar,
       href: '/dashboard/appointments',
     },
     {
-      label: 'Waiting Now',
+      label: t('stats.waitingNow.label'),
       value: queueStats?.total ?? '—',
-      sub: 'patients in queue',
+      sub:   t('stats.waitingNow.sub'),
       icon: ListOrdered,
       href: '/dashboard/queue',
       urgent: (queueStats?.total ?? 0) > 0,
       live: true,
     },
     {
-      label: 'Total Patients',
+      label: t('stats.totalPatients.label'),
       value: canReadPatients ? (patientStats?.total ?? '—') : '—',
-      sub: 'registered',
+      sub:   t('stats.totalPatients.sub'),
       icon: Users,
       href: '/dashboard/patients',
     },
     {
-      label: 'Completed Today',
+      label: t('stats.completedToday.label'),
       value: completedStats?.total ?? '—',
-      sub: 'encounters finished',
+      sub:   t('stats.completedToday.sub'),
       icon: CheckCircle2,
       href: '/dashboard/appointments',
     },
@@ -131,11 +133,11 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t('title')}</h1>
         <p className="text-sm text-muted-foreground">
           {user
             ? `${user.firstName} ${user.lastName} · ${formatRole(role)}`
-            : 'Loading...'}
+            : '…'}
         </p>
       </div>
 
@@ -163,7 +165,7 @@ export default function DashboardPage() {
                 {'live' in stat && stat.live && (
                   <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-500" />
-                    Live
+                    {t('live')}
                   </span>
                 )}
               </div>
@@ -178,12 +180,12 @@ export default function DashboardPage() {
         {/* Today's appointments — wider column */}
         <div className="rounded-xl border bg-card shadow-sm lg:col-span-3">
           <div className="flex items-center justify-between border-b px-6 py-4">
-            <h2 className="text-base font-semibold">Today's Appointments</h2>
+            <h2 className="text-base font-semibold">{t('sections.todayAppointments')}</h2>
             <Link
               href="/dashboard/appointments"
               className="text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
-              View all →
+              {t('actions.viewAll')}
             </Link>
           </div>
 
@@ -191,13 +193,13 @@ export default function DashboardPage() {
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Calendar className="h-8 w-8 text-muted-foreground/30" />
               <p className="mt-3 text-sm text-muted-foreground">
-                No appointments scheduled for today
+                {t('empty.noAppointmentsToday')}
               </p>
               <Link
                 href="/dashboard/appointments/new"
                 className="mt-3 text-xs text-primary hover:underline"
               >
-                Schedule an appointment
+                {t('actions.scheduleAppointment')}
               </Link>
             </div>
           ) : (
@@ -226,7 +228,7 @@ export default function DashboardPage() {
         <div className="rounded-xl border bg-card shadow-sm lg:col-span-2">
           <div className="flex items-center justify-between border-b px-5 py-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-semibold">Live Queue</h2>
+              <h2 className="text-base font-semibold">{t('sections.liveQueue')}</h2>
               {activeQueue.length > 0 && (
                 <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground">
                   {activeQueue.length}
@@ -237,14 +239,14 @@ export default function DashboardPage() {
               href="/dashboard/queue"
               className="text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
-              Manage →
+              {t('actions.manage')}
             </Link>
           </div>
 
           {activeQueue.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">
               <Clock className="h-7 w-7 text-muted-foreground/30" />
-              <p className="mt-2 text-sm text-muted-foreground">Queue is clear</p>
+              <p className="mt-2 text-sm text-muted-foreground">{t('empty.queueClear')}</p>
             </div>
           ) : (
             <ul className="divide-y">

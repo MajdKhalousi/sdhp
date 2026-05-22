@@ -15,7 +15,7 @@ export default function EncounterPage({ params }: Props) {
           className="inline-flex h-8 w-8 items-center justify-center rounded-md border transition-colors hover:bg-accent"
           aria-label="Back to queue"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
         </Link>
         <div>
           <h1 className="text-xl font-semibold">Active Visit</h1>

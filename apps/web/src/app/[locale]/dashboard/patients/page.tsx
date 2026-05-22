@@ -62,13 +62,13 @@ export default function PatientsPage() {
         </div>
 
         <div className="relative w-64">
-          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
             placeholder="Search name, MRN, phone…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-8 w-full rounded-md border bg-background pl-8 pr-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring"
+            className="h-8 w-full rounded-md border bg-background ps-8 pe-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring"
           />
         </div>
       </div>
@@ -110,7 +110,7 @@ export default function PatientsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[560px] text-sm">
                   <thead>
-                    <tr className="border-b bg-muted/40 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    <tr className="border-b bg-muted/40 text-start text-xs font-medium uppercase tracking-wide text-muted-foreground">
                       <th className="px-4 py-3">Patient</th>
                       <th className="px-4 py-3">MRN</th>
                       <th className="px-4 py-3">Date of Birth</th>
@@ -133,7 +133,7 @@ export default function PatientsPage() {
                             {patient.firstName} {patient.lastName}
                             {patient.firstNameAr && (
                               <span
-                                className="ml-2 text-xs font-normal text-muted-foreground"
+                                className="ms-2 text-xs font-normal text-muted-foreground"
                                 dir="rtl"
                               >
                                 {patient.firstNameAr} {patient.lastNameAr}
@@ -141,7 +141,7 @@ export default function PatientsPage() {
                             )}
                           </Link>
                         </td>
-                        <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                        <td className="px-4 py-3 font-mono text-xs text-muted-foreground" dir="ltr">
                           {patient.mrn}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">
@@ -150,7 +150,7 @@ export default function PatientsPage() {
                         <td className="px-4 py-3 text-muted-foreground">
                           {formatGender(patient.gender)}
                         </td>
-                        <td className="px-4 py-3 text-muted-foreground">
+                        <td className="px-4 py-3 text-muted-foreground" dir="ltr">
                           {patient.phone ?? '—'}
                         </td>
                         <td className="px-4 py-3">

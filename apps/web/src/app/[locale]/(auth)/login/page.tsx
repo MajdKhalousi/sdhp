@@ -140,13 +140,13 @@ export default function LoginPage() {
                     key={acct.phone}
                     type="button"
                     onClick={() => fillDemo(acct.phone)}
-                    className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-xs transition-colors hover:bg-accent"
+                    className="flex w-full items-center justify-between rounded-md px-3 py-2 text-start text-xs transition-colors hover:bg-accent"
                   >
                     <div>
                       <span className="font-medium text-foreground">{acct.name}</span>
-                      <span className="ml-2 text-muted-foreground">{acct.role}</span>
+                      <span className="ms-2 text-muted-foreground">{acct.role}</span>
                     </div>
-                    <span className="font-mono text-muted-foreground">{acct.phone}</span>
+                    <span className="font-mono text-muted-foreground" dir="ltr">{acct.phone}</span>
                   </button>
                 ))}
               </div>

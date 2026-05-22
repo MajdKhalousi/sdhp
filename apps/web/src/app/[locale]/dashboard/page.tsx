@@ -207,7 +207,7 @@ export default function DashboardPage() {
                   <div className="min-w-0">
                     <p className="text-sm font-medium">
                       {appt.patient.firstName} {appt.patient.lastName}
-                      <span className="ml-2 text-xs font-normal text-muted-foreground">
+                      <span className="ms-2 text-xs font-normal text-muted-foreground" dir="ltr">
                         {appt.patient.mrn}
                       </span>
                     </p>

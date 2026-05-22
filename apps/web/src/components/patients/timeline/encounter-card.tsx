@@ -33,8 +33,8 @@ export function EncounterCard({ event }: Props) {
           {data.diagnosisCode && (
             <span className="font-mono text-xs text-foreground">{data.diagnosisCode}</span>
           )}
-          {data.hasDiagnosis && (
-            <Badge variant="outline" className="text-xs">Has Diagnosis</Badge>
+          {data.hasDiagnosis && !data.diagnosisCode && (
+            <Badge variant="outline" className="text-xs">Diagnosis on record</Badge>
           )}
         </div>
       )}

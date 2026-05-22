@@ -14,8 +14,8 @@ export default function WalkInPage() {
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
-          <h1 className="text-xl font-semibold">Walk-in Check-in</h1>
-          <p className="text-sm text-muted-foreground">Register a walk-in patient and issue a queue ticket</p>
+          <h1 className="text-xl font-semibold">Check In Patient</h1>
+          <p className="text-sm text-muted-foreground">Create an appointment and issue a queue ticket</p>
         </div>
       </div>
 

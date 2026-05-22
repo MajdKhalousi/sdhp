@@ -94,9 +94,9 @@ export default function DashboardPage() {
       href: '/dashboard/patients',
     },
     {
-      label: 'Doctors on Staff',
+      label: 'Doctors',
       value: canReadDoctors ? (doctorStats?.total ?? '—') : '—',
-      sub: 'active profiles',
+      sub: 'active on staff',
       icon: Stethoscope,
       href: '/dashboard/appointments',
     },

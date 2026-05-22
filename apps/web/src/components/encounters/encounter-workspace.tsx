@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Activity, FileText, Stethoscope, Pill, CheckCircle2 } from 'lucide-react';
 import { useEncounter, useUpdateEncounter } from '@/hooks/use-encounters';
 import { useAllergies } from '@/hooks/use-allergies';
 import { VitalsForm } from './vitals-form';
@@ -43,11 +43,18 @@ function formatDateTime(iso: string | null) {
   });
 }
 
-function SectionHeading({ children }: { children: React.ReactNode }) {
+function SectionHeading({
+  children,
+  icon: Icon,
+}: {
+  children: React.ReactNode;
+  icon?: React.ElementType;
+}) {
   return (
-    <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-      {children}
-    </h2>
+    <div className="mb-4 flex items-center gap-2 border-b border-border pb-3">
+      {Icon && <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />}
+      <h2 className="text-sm font-semibold text-foreground">{children}</h2>
+    </div>
   );
 }
 
@@ -185,7 +192,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
 
       {/* ── Clinical ────────────────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card p-5">
-        <SectionHeading>Clinical Notes</SectionHeading>
+        <SectionHeading icon={FileText}>Subjective — Chief Complaint & Notes</SectionHeading>
         <div className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-sm font-medium" htmlFor="chiefComplaint">Chief Complaint</label>
@@ -216,7 +223,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
 
       {/* ── Vitals ──────────────────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card p-5">
-        <SectionHeading>Vitals</SectionHeading>
+        <SectionHeading icon={Activity}>Objective — Vitals</SectionHeading>
         <VitalsForm
           vitals={form.vitals}
           onChange={(v) => setField('vitals', v)}
@@ -226,7 +233,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
 
       {/* ── Diagnosis & Treatment ────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card p-5">
-        <SectionHeading>Diagnosis &amp; Treatment</SectionHeading>
+        <SectionHeading icon={Stethoscope}>Assessment &amp; Plan</SectionHeading>
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
@@ -282,17 +289,18 @@ export function EncounterWorkspace({ encounterId }: Props) {
 
       {/* ── Prescriptions ───────────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card p-5">
-        <SectionHeading>Prescriptions</SectionHeading>
+        <SectionHeading icon={Pill}>Prescriptions</SectionHeading>
         <PrescriptionPanel encounterId={encounterId} readOnly={readOnly} />
       </div>
 
       {/* ── Actions ─────────────────────────────────────────────────────── */}
-      <div className="rounded-xl border border-border bg-card p-5">
+      <div className={`rounded-xl border border-border bg-card p-5 ${!isEnded ? 'sticky bottom-4 shadow-lg' : ''}`}>
         {isEnded ? (
           <div className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Encounter Summary
-            </p>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600 dark:text-green-400" />
+              <p className="text-sm font-semibold text-foreground">Encounter Complete</p>
+            </div>
             <div className="grid gap-3 sm:grid-cols-3">
               <div>
                 <p className="text-xs text-muted-foreground">Diagnosis</p>

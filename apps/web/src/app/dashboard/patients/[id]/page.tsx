@@ -38,11 +38,24 @@ function formatBloodType(raw: string | null): string {
   return raw.replace('_POS', '+').replace('_NEG', '−');
 }
 
-const SEVERITY_CLASSES: Record<string, { badge: string; row: string }> = {
-  MILD:     { badge: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400', row: '' },
-  MODERATE: { badge: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400', row: '' },
-  SEVERE:   { badge: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400', row: '' },
+const SEVERITY_BADGE: Record<string, string> = {
+  MILD:     'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+  MODERATE: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
+  SEVERE:   'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
 };
+
+const SEVERITY_CARD: Record<string, { card: string; icon: string; heading: string }> = {
+  SEVERE:   { card: 'border-red-300 bg-red-50 dark:border-red-900/40 dark:bg-red-950/20',        icon: 'text-red-600 dark:text-red-400',    heading: 'text-red-700 dark:text-red-400'    },
+  MODERATE: { card: 'border-orange-200 bg-orange-50 dark:border-orange-900/40 dark:bg-orange-950/20', icon: 'text-orange-600 dark:text-orange-400', heading: 'text-orange-700 dark:text-orange-400' },
+  MILD:     { card: 'border-yellow-200 bg-yellow-50 dark:border-yellow-900/40 dark:bg-yellow-950/20', icon: 'text-yellow-600 dark:text-yellow-400', heading: 'text-yellow-700 dark:text-yellow-400' },
+};
+
+function maxSeverity(allergies: Allergy[]): string | null {
+  for (const s of ['SEVERE', 'MODERATE', 'MILD']) {
+    if (allergies.some((a) => a.severity === s)) return s;
+  }
+  return null;
+}
 
 function AllergiesCard({ allergies }: { allergies: Allergy[] }) {
   if (allergies.length === 0) {
@@ -56,22 +69,25 @@ function AllergiesCard({ allergies }: { allergies: Allergy[] }) {
     );
   }
 
+  const top = maxSeverity(allergies);
+  const cardStyle = top ? (SEVERITY_CARD[top] ?? SEVERITY_CARD.MILD) : SEVERITY_CARD.MILD;
+
   return (
-    <div className="rounded-xl border border-orange-200 bg-orange-50 px-5 py-3 shadow-sm dark:border-orange-900/40 dark:bg-orange-950/20 sm:col-span-2">
+    <div className={`rounded-xl border px-5 py-3 shadow-sm sm:col-span-2 ${cardStyle.card}`}>
       <div className="mb-2 flex items-center gap-2">
-        <AlertTriangle className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400" />
-        <p className="text-xs font-semibold uppercase tracking-wide text-orange-700 dark:text-orange-400">
+        <AlertTriangle className={`h-3.5 w-3.5 ${cardStyle.icon}`} />
+        <p className={`text-xs font-semibold uppercase tracking-wide ${cardStyle.heading}`}>
           Known Allergies
         </p>
       </div>
       <div className="space-y-2">
         {allergies.map((a) => {
-          const style = a.severity ? (SEVERITY_CLASSES[a.severity] ?? SEVERITY_CLASSES.MILD) : null;
+          const badge = a.severity ? (SEVERITY_BADGE[a.severity] ?? SEVERITY_BADGE.MILD) : null;
           return (
             <div key={a.id} className="flex flex-wrap items-start gap-2">
               <span className="text-sm font-semibold text-foreground">{a.substance}</span>
-              {a.severity && style && (
-                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${style.badge}`}>
+              {a.severity && badge && (
+                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${badge}`}>
                   {a.severity.charAt(0) + a.severity.slice(1).toLowerCase()}
                 </span>
               )}

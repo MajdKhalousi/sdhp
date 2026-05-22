@@ -21,5 +21,5 @@ export function AppointmentStatusBadge({ status }: { status: AppointmentStatus }
   const t = useTranslations('appointment.status');
   const variant = STATUS_VARIANT[status] ?? 'outline';
   const label = t(status as Parameters<typeof t>[0]);
-  return <Badge variant={variant}>{label}</Badge>;
+  return <Badge variant={variant} className="whitespace-nowrap">{label}</Badge>;
 }

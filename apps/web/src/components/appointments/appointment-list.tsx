@@ -221,7 +221,7 @@ export function AppointmentList() {
                     <p className="text-xs text-muted-foreground">{appt.doctor.specialization}</p>
                   )}
                 </td>
-                <td className="px-4 py-3 text-sm" dir="ltr">{formatDateTime(appt.scheduledAt)}</td>
+                <td className="px-4 py-3 text-sm whitespace-nowrap" dir="ltr">{formatDateTime(appt.scheduledAt)}</td>
                 <td className="px-4 py-3 text-sm text-muted-foreground">
                   {t('list.durationMinutes', { count: appt.durationMin })}
                 </td>

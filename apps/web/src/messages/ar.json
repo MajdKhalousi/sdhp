@@ -366,6 +366,9 @@
       "active":   "نشط",
       "inactive": "غير نشط"
     },
+    "header": {
+      "dob": "تاريخ الميلاد:"
+    },
     "list": {
       "title":             "المرضى",
       "searchPlaceholder": "بحث بالاسم أو MRN…",

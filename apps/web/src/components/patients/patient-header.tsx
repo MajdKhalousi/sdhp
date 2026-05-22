@@ -42,7 +42,7 @@ function Initials({ name }: { name: string }) {
 }
 
 export function PatientHeader({ patient, isLoading }: PatientHeaderProps) {
-  const t = useTranslations('patient.status');
+  const t = useTranslations('patient');
 
   if (isLoading) {
     return (
@@ -77,14 +77,14 @@ export function PatientHeader({ patient, isLoading }: PatientHeaderProps) {
               </span>
             )}
             <Badge variant={patient.isActive ? 'success' : 'outline'}>
-              {patient.isActive ? t('active') : t('inactive')}
+              {patient.isActive ? t('status.active') : t('status.inactive')}
             </Badge>
           </div>
 
           <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
             <span className="font-mono text-xs" dir="ltr">{patient.mrn}</span>
             {patient.dateOfBirth && (
-              <span>DOB: {formatDate(patient.dateOfBirth)}</span>
+              <span>{t('header.dob')} {formatDate(patient.dateOfBirth)}</span>
             )}
             {patient.gender && <span>{formatGender(patient.gender)}</span>}
             {patient.bloodType && (

@@ -46,7 +46,7 @@ export function QueueTicket({ entry }: { entry: QueueEntry }) {
             {patient.mrn}
           </span>
         </p>
-        <p className="truncate text-xs text-muted-foreground">
+        <p className="truncate text-xs text-muted-foreground" dir="ltr">
           Dr. {doctor.user.firstName} {doctor.user.lastName}
           {doctor.specialization ? ` · ${doctor.specialization}` : ''}
           {patient.phone ? ` · ${patient.phone}` : ''}

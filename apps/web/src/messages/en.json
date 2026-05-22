@@ -366,6 +366,9 @@
       "active":   "Active",
       "inactive": "Inactive"
     },
+    "header": {
+      "dob": "DOB:"
+    },
     "list": {
       "title":             "Patients",
       "searchPlaceholder": "Search by name, MRN…",

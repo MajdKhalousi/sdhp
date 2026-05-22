@@ -126,7 +126,7 @@ export default function PatientsPage() {
                         key={patient.id}
                         className="transition-colors hover:bg-muted/30"
                       >
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 whitespace-nowrap">
                           <Link
                             href={`/dashboard/patients/${patient.id}`}
                             className="font-medium text-foreground transition-colors hover:text-primary"
@@ -145,7 +145,7 @@ export default function PatientsPage() {
                         <td className="px-4 py-3 font-mono text-xs text-muted-foreground" dir="ltr">
                           {patient.mrn}
                         </td>
-                        <td className="px-4 py-3 text-muted-foreground">
+                        <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                           {formatDate(patient.dateOfBirth)}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">

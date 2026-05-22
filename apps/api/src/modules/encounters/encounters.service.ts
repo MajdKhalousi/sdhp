@@ -167,7 +167,7 @@ export class EncountersService {
   async update(id: string, dto: UpdateEncounterDto, caller: JwtPayload) {
     const encounter = await this.prisma.encounter.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true, organizationId: true, doctorId: true },
+      select: { id: true, organizationId: true, doctorId: true, endedAt: true, appointmentId: true },
     });
 
     if (!encounter) throw new NotFoundException('Encounter not found');
@@ -188,15 +188,41 @@ export class EncountersService {
       await this.assertBranchBelongsToOrg(dto.branchId, encounter.organizationId);
     }
 
-    return this.prisma.encounter.update({
-      where: { id },
-      data: {
-        ...dto,
-        followUpDate: dto.followUpDate ? new Date(dto.followUpDate) : undefined,
-        endedAt: dto.endedAt ? new Date(dto.endedAt) : undefined,
-        vitals: dto.vitals !== undefined ? (dto.vitals as Prisma.InputJsonValue) : undefined,
-      },
-      select: SELECT,
+    const updateData = {
+      ...dto,
+      followUpDate: dto.followUpDate ? new Date(dto.followUpDate) : undefined,
+      endedAt: dto.endedAt ? new Date(dto.endedAt) : undefined,
+      vitals: dto.vitals !== undefined ? (dto.vitals as Prisma.InputJsonValue) : undefined,
+    };
+
+    // Only propagate on null → value transition; safe no-op if no appointmentId.
+    const shouldPropagate = !!dto.endedAt && !encounter.endedAt;
+    const appointmentId = encounter.appointmentId;
+
+    if (!shouldPropagate || !appointmentId) {
+      return this.prisma.encounter.update({ where: { id }, data: updateData, select: SELECT });
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.encounter.update({ where: { id }, data: updateData, select: SELECT });
+
+      await tx.appointment.update({
+        where: { id: appointmentId },
+        data: { status: AppointmentStatus.COMPLETED },
+      });
+
+      const queueEntry = await tx.queueEntry.findUnique({
+        where: { appointmentId },
+        select: { id: true },
+      });
+      if (queueEntry) {
+        await tx.queueEntry.update({
+          where: { id: queueEntry.id },
+          data: { status: QueueStatus.DONE, completedAt: new Date() },
+        });
+      }
+
+      return updated;
     });
   }
 

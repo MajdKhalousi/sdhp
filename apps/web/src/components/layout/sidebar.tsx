@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   Activity,
   LayoutDashboard,
@@ -11,31 +12,23 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const navItems = [
-  {
-    href: '/dashboard',
-    label: 'Dashboard',
-    icon: LayoutDashboard,
-  },
-  {
-    href: '/dashboard/patients',
-    label: 'Patients',
-    icon: Users,
-  },
-  {
-    href: '/dashboard/appointments',
-    label: 'Appointments',
-    icon: Calendar,
-  },
-  {
-    href: '/dashboard/queue',
-    label: 'Queue',
-    icon: ListOrdered,
-  },
-];
+const NAV_ITEMS = [
+  { href: '/dashboard',              icon: LayoutDashboard },
+  { href: '/dashboard/patients',     icon: Users           },
+  { href: '/dashboard/appointments', icon: Calendar        },
+  { href: '/dashboard/queue',        icon: ListOrdered     },
+] as const;
 
 export function Sidebar() {
+  const t = useTranslations('nav');
   const pathname = usePathname();
+
+  const navItemLabels = {
+    '/dashboard':              t('items.dashboard'),
+    '/dashboard/patients':     t('items.patients'),
+    '/dashboard/appointments': t('items.appointments'),
+    '/dashboard/queue':        t('items.queue'),
+  } as const;
 
   return (
     <aside className="flex h-screen w-64 flex-col border-r bg-sidebar">
@@ -46,10 +39,10 @@ export function Sidebar() {
         </div>
         <div>
           <p className="text-sm font-bold text-sidebar-foreground leading-none">
-            SDHP
+            {t('brand')}
           </p>
           <p className="text-xs text-sidebar-foreground/60 mt-0.5">
-            Health Platform
+            {t('brandSubtitle')}
           </p>
         </div>
       </div>
@@ -57,7 +50,7 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 overflow-auto py-4">
         <ul className="space-y-0.5 px-3">
-          {navItems.map((item) => {
+          {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive =
               item.href === '/dashboard'
@@ -76,7 +69,7 @@ export function Sidebar() {
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
-                  {item.label}
+                  {navItemLabels[item.href]}
                 </Link>
               </li>
             );
@@ -87,7 +80,7 @@ export function Sidebar() {
       {/* Footer */}
       <div className="border-t border-sidebar-border p-4">
         <p className="text-center text-xs text-sidebar-foreground/40">
-          Syrian Digital Health Platform
+          {t('footer')}
         </p>
       </div>
     </aside>

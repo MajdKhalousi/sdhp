@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronDown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api';
 import { useAuthStore, type AuthUser } from '@/store/auth';
 
@@ -21,6 +22,7 @@ const DEMO_ACCOUNTS = [
 const DEMO_PASSWORD = 'password123';
 
 export default function LoginPage() {
+  const t = useTranslations('auth');
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
 
@@ -40,7 +42,7 @@ export default function LoginPage() {
       login(res.accessToken, res.user);
       router.push('/dashboard');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? err.message : t('login.loginFailed'));
     } finally {
       setLoading(false);
     }
@@ -57,21 +59,21 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-5">
         <div className="rounded-xl border bg-card p-8 shadow-sm space-y-6">
           <div className="text-center space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight">SDHP</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t('login.title')}</h1>
             <p className="text-sm text-muted-foreground">
-              Syrian Digital Health Platform
+              {t('login.subtitle')}
             </p>
           </div>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="phone">
-                Phone Number
+                {t('login.phoneLabel')}
               </label>
               <input
                 id="phone"
                 type="tel"
-                placeholder="+963 XXX XXX XXX"
+                placeholder={t('login.phonePlaceholder')}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 required
@@ -82,7 +84,7 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="password">
-                Password
+                {t('login.passwordLabel')}
               </label>
               <input
                 id="password"
@@ -107,12 +109,12 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full rounded-md bg-primary py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? 'Signing in…' : 'Sign In'}
+              {loading ? t('login.signingIn') : t('login.signIn')}
             </button>
           </form>
 
           <p className="text-center text-xs text-muted-foreground">
-            Authorized personnel only
+            {t('login.authorizedOnly')}
           </p>
         </div>
 
@@ -123,7 +125,7 @@ export default function LoginPage() {
             onClick={() => setShowDemo((v) => !v)}
             className="flex w-full items-center justify-between px-5 py-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
-            <span>Demo accounts</span>
+            <span>{t('demo.heading')}</span>
             <ChevronDown
               className={`h-3.5 w-3.5 transition-transform ${showDemo ? 'rotate-180' : ''}`}
             />
@@ -132,7 +134,8 @@ export default function LoginPage() {
           {showDemo && (
             <div className="border-t px-5 pb-4">
               <p className="py-2 text-xs text-muted-foreground">
-                Password for all accounts: <span className="font-mono font-medium text-foreground">password123</span>
+                {t('demo.passwordNote')}{' '}
+                <span className="font-mono font-medium text-foreground">{DEMO_PASSWORD}</span>
               </p>
               <div className="space-y-1">
                 {DEMO_ACCOUNTS.map((acct) => (

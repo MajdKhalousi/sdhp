@@ -47,7 +47,7 @@ export function StartEncounterButton({ patientId, doctorId, appointmentId }: Sta
         )}
       </button>
       {error && (
-        <p className="max-w-[16rem] text-right text-xs text-destructive">{error}</p>
+        <p className="max-w-[16rem] text-end text-xs text-destructive">{error}</p>
       )}
     </div>
   );

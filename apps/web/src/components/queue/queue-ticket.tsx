@@ -11,11 +11,11 @@ function relativeTime(iso: string) {
 }
 
 const STATUS_LEFT: Record<QueueStatus, string> = {
-  WAITING:     'border-l-4 border-l-border',
-  CALLED:      'border-l-4 border-l-amber-400',
-  IN_PROGRESS: 'border-l-4 border-l-primary',
-  DONE:        'border-l-4 border-l-green-400',
-  SKIPPED:     'border-l-4 border-l-muted-foreground/30',
+  WAITING:     'border-s-4 border-s-border',
+  CALLED:      'border-s-4 border-s-amber-400',
+  IN_PROGRESS: 'border-s-4 border-s-primary',
+  DONE:        'border-s-4 border-s-green-400',
+  SKIPPED:     'border-s-4 border-s-muted-foreground/30',
 };
 
 export function QueueTicket({ entry }: { entry: QueueEntry }) {
@@ -40,7 +40,7 @@ export function QueueTicket({ entry }: { entry: QueueEntry }) {
           >
             {patient.firstName} {patient.lastName}
           </Link>
-          <span className="ml-1.5 font-mono text-xs font-normal text-muted-foreground">
+          <span className="ms-1.5 font-mono text-xs font-normal text-muted-foreground" dir="ltr">
             {patient.mrn}
           </span>
         </p>
@@ -51,7 +51,7 @@ export function QueueTicket({ entry }: { entry: QueueEntry }) {
         </p>
       </div>
 
-      <div className="hidden shrink-0 text-right sm:block">
+      <div className="hidden shrink-0 text-end sm:block">
         {status === 'CALLED' && calledAt ? (
           <>
             <p className="text-xs text-muted-foreground">Called</p>

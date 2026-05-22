@@ -90,7 +90,7 @@ export function QueueBoard() {
         </button>
       )}
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ms-auto flex items-center gap-2">
         {dataUpdatedAt > 0 && !isFetching && (
           <span className="text-xs text-muted-foreground">
             Updated {new Date(dataUpdatedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
@@ -149,7 +149,7 @@ export function QueueBoard() {
   const staleErrorBanner = isError && data ? (
     <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-400">
       <span>Live refresh failed — showing cached data.</span>
-      <button onClick={() => refetch()} className="ml-2 underline hover:no-underline">
+      <button onClick={() => refetch()} className="ms-2 underline hover:no-underline">
         Retry
       </button>
     </div>

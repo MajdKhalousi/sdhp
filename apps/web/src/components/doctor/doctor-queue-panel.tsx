@@ -114,7 +114,7 @@ export function DoctorQueuePanel() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">
                     {patient.firstName} {patient.lastName}
-                    <span className="ml-1.5 font-mono text-xs font-normal text-muted-foreground">
+                    <span className="ms-1.5 font-mono text-xs font-normal text-muted-foreground" dir="ltr">
                       {patient.mrn}
                     </span>
                   </p>

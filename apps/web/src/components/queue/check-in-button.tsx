@@ -33,7 +33,7 @@ export function CheckInButton({ appointmentId, onSuccess }: CheckInButtonProps) 
         {isPending ? 'Checking in…' : 'Check In'}
       </button>
       {error && (
-        <p className="max-w-[16rem] text-right text-xs text-destructive">{error}</p>
+        <p className="max-w-[16rem] text-end text-xs text-destructive">{error}</p>
       )}
     </div>
   );

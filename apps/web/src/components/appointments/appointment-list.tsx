@@ -5,8 +5,11 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight, CalendarX2 } from 'lucide-react';
 import { useAppointments, useDoctorsList } from '@/hooks/use-appointments';
 import { AppointmentStatusBadge } from './appointment-status-badge';
+import { NoShowButton } from './no-show-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AppointmentStatus } from '@/types/appointment';
+
+const NO_SHOW_ELIGIBLE: AppointmentStatus[] = ['SCHEDULED', 'CONFIRMED'];
 
 const ALL_STATUSES: { value: AppointmentStatus; label: string }[] = [
   { value: 'SCHEDULED',   label: 'Scheduled'   },
@@ -214,13 +217,18 @@ export function AppointmentList() {
                 <td className="px-4 py-3">
                   <AppointmentStatusBadge status={appt.status} />
                 </td>
-                <td className="px-4 py-3 text-right">
-                  <Link
-                    href={`/dashboard/appointments/${appt.id}`}
-                    className="rounded-md px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    View
-                  </Link>
+                <td className="px-4 py-3">
+                  <div className="flex items-center justify-end gap-2">
+                    {NO_SHOW_ELIGIBLE.includes(appt.status) && (
+                      <NoShowButton appointmentId={appt.id} />
+                    )}
+                    <Link
+                      href={`/dashboard/appointments/${appt.id}`}
+                      className="rounded-md px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                      View
+                    </Link>
+                  </div>
                 </td>
               </tr>
             ))}

@@ -5,6 +5,7 @@ import type {
   AppointmentQuery,
   AppointmentsResponse,
   CreateAppointmentDto,
+  UpdateAppointmentDto,
   DoctorRef,
 } from '@/types/appointment';
 import type { Patient } from '@/hooks/use-patient';
@@ -48,6 +49,18 @@ export function useCreateAppointment() {
       api.post<Appointment>('/v1/appointments', dto),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['appointments'] });
+    },
+  });
+}
+
+export function useUpdateAppointment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, dto }: { id: string; dto: UpdateAppointmentDto }) =>
+      api.patch<Appointment>(`/v1/appointments/${id}`, dto),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['appointments'] });
+      qc.invalidateQueries({ queryKey: ['queue'] });
     },
   });
 }

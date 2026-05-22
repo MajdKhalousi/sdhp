@@ -76,3 +76,9 @@ export interface AppointmentsResponse {
   page: number;
   limit: number;
 }
+
+export interface UpdateAppointmentDto {
+  status?: AppointmentStatus;
+  cancelReason?: string;
+  notes?: string;
+}

@@ -1,8 +1,17 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { LogOut } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
+import { useRouter, usePathname } from '@/i18n/navigation';
+
+function todayLabel(locale: string): string {
+  return new Date().toLocaleDateString(locale === 'ar' ? 'ar-SY' : 'en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
+}
 
 function formatRole(role: string): string {
   return role
@@ -11,22 +20,21 @@ function formatRole(role: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function todayLabel(): string {
-  return new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
-}
-
 export function Header() {
+  const locale = useLocale();
   const router = useRouter();
+  const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
 
   function handleLogout() {
     logout();
     router.replace('/login');
+  }
+
+  function toggleLocale() {
+    const next = locale === 'ar' ? 'en' : 'ar';
+    router.replace(pathname, { locale: next });
   }
 
   const initials = user
@@ -37,9 +45,18 @@ export function Header() {
 
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b bg-card px-6">
-      <p className="text-sm font-medium text-muted-foreground">{todayLabel()}</p>
+      <p className="text-sm font-medium text-muted-foreground">{todayLabel(locale)}</p>
 
       <div className="flex items-center gap-2">
+        {/* Language toggle */}
+        <button
+          onClick={toggleLocale}
+          className="rounded-md border px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          aria-label="Switch language"
+        >
+          {locale === 'ar' ? 'EN' : 'عربي'}
+        </button>
+
         <div className="flex items-center gap-2 rounded-md px-2 py-1">
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
             {initials}

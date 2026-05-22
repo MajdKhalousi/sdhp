@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import type { TimelineEvent } from '@/types/timeline';
 import { TimelineEventCard } from './timeline-event-card';
 
@@ -31,24 +34,15 @@ function groupByLocalDate(events: TimelineEvent[]): DateGroup[] {
   });
 }
 
-function relativePrefix(key: string): string {
-  const today = new Date();
-  const todayKey = [
-    today.getFullYear(),
-    String(today.getMonth() + 1).padStart(2, '0'),
-    String(today.getDate()).padStart(2, '0'),
-  ].join('-');
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayKey = [
-    yesterday.getFullYear(),
-    String(yesterday.getMonth() + 1).padStart(2, '0'),
-    String(yesterday.getDate()).padStart(2, '0'),
-  ].join('-');
+function todayKey() {
+  const d = new Date();
+  return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+}
 
-  if (key === todayKey) return 'Today — ';
-  if (key === yesterdayKey) return 'Yesterday — ';
-  return '';
+function yesterdayKey() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
 }
 
 interface Props {
@@ -56,30 +50,41 @@ interface Props {
 }
 
 export function TimelineEventList({ events }: Props) {
+  const t = useTranslations('timeline.dateGroups');
   const groups = groupByLocalDate(events);
+  const today = todayKey();
+  const yesterday = yesterdayKey();
 
   return (
     <div className="space-y-8">
-      {groups.map((group) => (
-        <div key={group.key}>
-          <div className="mb-3 flex items-center gap-3">
-            <p className="shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {relativePrefix(group.key)}{group.dateLabel}
-            </p>
-            <div className="flex-1 border-t border-border" />
-            {group.events.length > 1 && (
-              <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                {group.events.length}
-              </span>
-            )}
+      {groups.map((group) => {
+        const prefix = group.key === today
+          ? `${t('today')} `
+          : group.key === yesterday
+            ? `${t('yesterday')} `
+            : '';
+
+        return (
+          <div key={group.key}>
+            <div className="mb-3 flex items-center gap-3">
+              <p className="shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {prefix}{group.dateLabel}
+              </p>
+              <div className="flex-1 border-t border-border" />
+              {group.events.length > 1 && (
+                <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                  {group.events.length}
+                </span>
+              )}
+            </div>
+            <div className="space-y-3">
+              {group.events.map((event) => (
+                <TimelineEventCard key={event.id} event={event} />
+              ))}
+            </div>
           </div>
-          <div className="space-y-3">
-            {group.events.map((event) => (
-              <TimelineEventCard key={event.id} event={event} />
-            ))}
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

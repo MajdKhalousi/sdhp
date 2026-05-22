@@ -1,6 +1,7 @@
 'use client';
 
 import { FolderOpen } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { usePatientTimeline } from '@/hooks/use-patient-timeline';
 import { TimelineEventCard } from './timeline/timeline-event-card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -13,6 +14,9 @@ interface Props {
 }
 
 export function ClinicalTypeTab({ patientId, type, emptyMessage }: Props) {
+  const t = useTranslations('patient.detail.error');
+  const tCommon = useTranslations('common');
+
   const { data, isLoading, isError, error, refetch } = usePatientTimeline(patientId, {
     types: [type],
     limit: 50,
@@ -31,15 +35,15 @@ export function ClinicalTypeTab({ patientId, type, emptyMessage }: Props) {
   if (isError) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-12 text-center">
-        <p className="text-sm font-medium text-destructive">Failed to load records</p>
+        <p className="text-sm font-medium text-destructive">{t('loadFailed')}</p>
         <p className="max-w-xs text-xs text-muted-foreground">
-          {error instanceof Error ? error.message : 'An error occurred.'}
+          {error instanceof Error ? error.message : t('occurred')}
         </p>
         <button
           onClick={() => refetch()}
           className="mt-1 h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
         >
-          Try again
+          {tCommon('actions.tryAgain')}
         </button>
       </div>
     );

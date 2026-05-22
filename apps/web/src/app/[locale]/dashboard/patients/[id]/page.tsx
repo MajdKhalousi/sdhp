@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { usePatient } from '@/hooks/use-patient';
 import { useAllergies } from '@/hooks/use-allergies';
 import { PatientHeader } from '@/components/patients/patient-header';
@@ -12,15 +13,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { Patient } from '@/hooks/use-patient';
 import type { Allergy } from '@/hooks/use-allergies';
-
-const TABS: TabItem[] = [
-  { value: 'overview',      label: 'Overview'        },
-  { value: 'timeline',      label: 'Medical History' },
-  { value: 'prescriptions', label: 'Prescriptions'   },
-  { value: 'labs',          label: 'Lab Orders'      },
-  { value: 'radiology',     label: 'Radiology'       },
-  { value: 'files',         label: 'Medical Files'   },
-];
 
 function formatDate(iso: string | null): string {
   if (!iso) return '—';
@@ -58,14 +50,18 @@ function maxSeverity(allergies: Allergy[]): string | null {
   return null;
 }
 
-function AllergiesCard({ allergies }: { allergies: Allergy[] }) {
+function AllergiesCard({ allergies, headingLabel, noneLabel }: {
+  allergies: Allergy[];
+  headingLabel: string;
+  noneLabel: string;
+}) {
   if (allergies.length === 0) {
     return (
       <div className="rounded-xl border bg-card px-5 py-3 shadow-sm sm:col-span-2">
         <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Known Allergies
+          {headingLabel}
         </p>
-        <p className="text-sm text-muted-foreground">No known allergies on record.</p>
+        <p className="text-sm text-muted-foreground">{noneLabel}</p>
       </div>
     );
   }
@@ -78,7 +74,7 @@ function AllergiesCard({ allergies }: { allergies: Allergy[] }) {
       <div className="mb-2 flex items-center gap-2">
         <AlertTriangle className={`h-3.5 w-3.5 ${cardStyle.icon}`} />
         <p className={`text-xs font-semibold uppercase tracking-wide ${cardStyle.heading}`}>
-          Known Allergies
+          {headingLabel}
         </p>
       </div>
       <div className="space-y-2">
@@ -113,54 +109,59 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Allergy[] }) {
+  const t = useTranslations('patient');
   const registeredDate = formatDate(patient.createdAt);
 
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <div className="rounded-xl border bg-card px-5 py-3 shadow-sm">
         <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Demographics
+          {t('detail.overview.demographics')}
         </p>
-        <InfoRow label="Date of Birth" value={formatDate(patient.dateOfBirth)} />
-        <InfoRow label="Gender" value={formatGender(patient.gender)} />
-        <InfoRow label="Blood Type" value={formatBloodType(patient.bloodType)} />
+        <InfoRow label={t('detail.overview.fields.dateOfBirth')} value={formatDate(patient.dateOfBirth)} />
+        <InfoRow label={t('detail.overview.fields.gender')} value={formatGender(patient.gender)} />
+        <InfoRow label={t('detail.overview.fields.bloodType')} value={formatBloodType(patient.bloodType)} />
         <InfoRow
-          label="Status"
+          label={t('detail.overview.fields.status')}
           value={
             <Badge variant={patient.isActive ? 'success' : 'outline'}>
-              {patient.isActive ? 'Active' : 'Inactive'}
+              {patient.isActive ? t('status.active') : t('status.inactive')}
             </Badge>
           }
         />
-        <InfoRow label="Registered" value={registeredDate} />
+        <InfoRow label={t('detail.overview.fields.registered')} value={registeredDate} />
       </div>
 
       <div className="rounded-xl border bg-card px-5 py-3 shadow-sm">
         <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Contact
+          {t('detail.overview.contact')}
         </p>
-        <InfoRow label="Phone" value={patient.phone} />
-        <InfoRow label="Email" value={patient.email} />
-        <InfoRow label="National ID" value={patient.nationalId} />
-        <InfoRow label="Address" value={patient.address} />
+        <InfoRow label={t('detail.overview.fields.phone')} value={patient.phone} />
+        <InfoRow label={t('detail.overview.fields.email')} value={patient.email} />
+        <InfoRow label={t('detail.overview.fields.nationalId')} value={patient.nationalId} />
+        <InfoRow label={t('detail.overview.fields.address')} value={patient.address} />
       </div>
 
       {(patient.emergencyName || patient.emergencyPhone) && (
         <div className="rounded-xl border bg-card px-5 py-3 shadow-sm sm:col-span-2">
           <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Emergency Contact
+            {t('detail.overview.emergencyContact')}
           </p>
-          <InfoRow label="Name" value={patient.emergencyName} />
-          <InfoRow label="Phone" value={patient.emergencyPhone} />
+          <InfoRow label={t('detail.overview.fields.name')} value={patient.emergencyName} />
+          <InfoRow label={t('detail.overview.fields.phone')} value={patient.emergencyPhone} />
         </div>
       )}
 
-      <AllergiesCard allergies={allergies} />
+      <AllergiesCard
+        allergies={allergies}
+        headingLabel={t('detail.allergies.heading')}
+        noneLabel={t('detail.allergies.none')}
+      />
 
       {patient.notes && (
         <div className="rounded-xl border bg-card px-5 py-3 shadow-sm sm:col-span-2">
           <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Clinical Notes
+            {t('detail.overview.clinicalNotes')}
           </p>
           <p className="text-sm text-foreground">{patient.notes}</p>
         </div>
@@ -171,12 +172,22 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
 
 export default function PatientPage({ params }: { params: { id: string } }) {
   const { id } = params;
+  const t = useTranslations('patient');
   const [activeTab, setActiveTab] = useState('overview');
 
   const { data: patient, isLoading, isError, error } = usePatient(id);
   const { data: allergies = [] } = useAllergies(id);
 
   if (isError) throw error;
+
+  const TABS: TabItem[] = [
+    { value: 'overview',      label: t('detail.tabs.overview')      },
+    { value: 'timeline',      label: t('detail.tabs.timeline')      },
+    { value: 'prescriptions', label: t('detail.tabs.prescriptions') },
+    { value: 'labs',          label: t('detail.tabs.labs')          },
+    { value: 'radiology',     label: t('detail.tabs.radiology')     },
+    { value: 'files',         label: t('detail.tabs.files')         },
+  ];
 
   return (
     <div className="space-y-4">
@@ -212,7 +223,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
           <ClinicalTypeTab
             patientId={id}
             type="PRESCRIPTION"
-            emptyMessage="No prescriptions recorded for this patient."
+            emptyMessage={t('detail.clinicalTab.emptyPrescriptions')}
           />
         </TabPanel>
 
@@ -220,7 +231,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
           <ClinicalTypeTab
             patientId={id}
             type="LAB_ORDER"
-            emptyMessage="No lab orders recorded for this patient."
+            emptyMessage={t('detail.clinicalTab.emptyLabOrders')}
           />
         </TabPanel>
 
@@ -228,7 +239,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
           <ClinicalTypeTab
             patientId={id}
             type="RADIOLOGY_ORDER"
-            emptyMessage="No radiology orders recorded for this patient."
+            emptyMessage={t('detail.clinicalTab.emptyRadiology')}
           />
         </TabPanel>
 
@@ -236,7 +247,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
           <ClinicalTypeTab
             patientId={id}
             type="MEDICAL_FILE"
-            emptyMessage="No medical files uploaded for this patient."
+            emptyMessage={t('detail.clinicalTab.emptyFiles')}
           />
         </TabPanel>
       </div>

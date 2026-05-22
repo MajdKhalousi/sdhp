@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { TimelineEventType } from '@/types/timeline';
 
@@ -10,14 +11,6 @@ const ALL_TYPES: TimelineEventType[] = [
   'RADIOLOGY_ORDER',
   'MEDICAL_FILE',
 ];
-
-const TYPE_LABELS: Record<TimelineEventType, string> = {
-  ENCOUNTER:       'Encounters',
-  PRESCRIPTION:    'Prescriptions',
-  LAB_ORDER:       'Lab Orders',
-  RADIOLOGY_ORDER: 'Radiology',
-  MEDICAL_FILE:    'Files',
-};
 
 interface Props {
   selectedTypes: TimelineEventType[];
@@ -38,12 +31,13 @@ export function TimelineFilters({
   onToChange,
   disabled = false,
 }: Props) {
+  const t = useTranslations('timeline');
   const isAll = selectedTypes.length === 0;
 
   function toggleType(type: TimelineEventType) {
     if (disabled) return;
     if (selectedTypes.includes(type)) {
-      onTypesChange(selectedTypes.filter((t) => t !== type));
+      onTypesChange(selectedTypes.filter((x) => x !== type));
     } else {
       onTypesChange([...selectedTypes, type]);
     }
@@ -62,7 +56,7 @@ export function TimelineFilters({
               : 'border-border bg-transparent text-muted-foreground hover:bg-accent hover:text-foreground',
           )}
         >
-          All
+          {t('filter.all')}
         </button>
         {ALL_TYPES.map((type) => {
           const isSelected = selectedTypes.includes(type);
@@ -78,7 +72,7 @@ export function TimelineFilters({
                   : 'border-border bg-transparent text-muted-foreground hover:bg-accent hover:text-foreground',
               )}
             >
-              {TYPE_LABELS[type]}
+              {t(`filter.types.${type}` as Parameters<typeof t>[0])}
             </button>
           );
         })}
@@ -91,7 +85,7 @@ export function TimelineFilters({
           onChange={(e) => onFromChange(e.target.value)}
           disabled={disabled}
           className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed"
-          aria-label="From date"
+          aria-label={t('filter.fromAriaLabel')}
         />
         <span className="text-xs text-muted-foreground">—</span>
         <input
@@ -100,7 +94,7 @@ export function TimelineFilters({
           onChange={(e) => onToChange(e.target.value)}
           disabled={disabled}
           className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed"
-          aria-label="To date"
+          aria-label={t('filter.toAriaLabel')}
         />
       </div>
     </div>

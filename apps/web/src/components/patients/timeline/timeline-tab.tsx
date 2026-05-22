@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { BookOpen } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { usePatientTimeline } from '@/hooks/use-patient-timeline';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TimelineFilters } from './timeline-filters';
@@ -29,6 +30,9 @@ function TimelineSkeleton() {
 }
 
 export function TimelineTab({ patientId }: Props) {
+  const t = useTranslations('timeline');
+  const tCommon = useTranslations('common');
+
   const [selectedTypes, setSelectedTypes] = useState<TimelineEventType[]>([]);
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
@@ -75,7 +79,7 @@ export function TimelineTab({ patientId }: Props) {
 
       {isError && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-          {(error as Error)?.message || 'Failed to load timeline.'}
+          {(error as Error)?.message || t('error.loadFailed')}
         </div>
       )}
 
@@ -85,13 +89,13 @@ export function TimelineTab({ patientId }: Props) {
           <div>
             <p className="text-sm font-medium text-foreground">
               {selectedTypes.length > 0 || from || to
-                ? 'No records match the selected filters'
-                : 'No medical history on record'}
+                ? t('empty.noMatches')
+                : t('empty.noRecords')}
             </p>
             <p className="mt-0.5 text-xs text-muted-foreground">
               {selectedTypes.length > 0 || from || to
-                ? 'Try adjusting the filters to see more events.'
-                : 'Events will appear here as encounters, prescriptions, and orders are recorded.'}
+                ? t('empty.noMatchesSub')
+                : t('empty.noRecordsSub')}
             </p>
           </div>
         </div>
@@ -109,10 +113,10 @@ export function TimelineTab({ patientId }: Props) {
                 onClick={() => setPage((p) => p - 1)}
                 className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Previous
+                {tCommon('pagination.previous')}
               </button>
               <span className="text-xs text-muted-foreground">
-                Page {page} of {totalPages}
+                {tCommon('pagination.pageOf', { page, total: totalPages })}
               </span>
               <button
                 type="button"
@@ -120,7 +124,7 @@ export function TimelineTab({ patientId }: Props) {
                 onClick={() => setPage((p) => p + 1)}
                 className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Next
+                {tCommon('pagination.next')}
               </button>
             </div>
           )}

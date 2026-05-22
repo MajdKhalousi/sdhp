@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import type { BadgeProps } from '@/components/ui/badge';
 import type { RadiologyOrderStatus, TimelineEvent } from '@/types/timeline';
@@ -14,16 +17,8 @@ const STATUS_VARIANT: Record<RadiologyOrderStatus, BadgeProps['variant']> = {
   CANCELLED:   'danger',
 };
 
-const STATUS_LABEL: Record<RadiologyOrderStatus, string> = {
-  ORDERED:     'Ordered',
-  SCHEDULED:   'Scheduled',
-  IN_PROGRESS: 'In Progress',
-  RESULTED:    'Resulted',
-  REVIEWED:    'Reviewed',
-  CANCELLED:   'Cancelled',
-};
-
 export function RadiologyOrderCard({ event }: Props) {
+  const t = useTranslations('timeline');
   const { data } = event;
   const doctor = `Dr. ${data.orderedBy.firstName} ${data.orderedBy.lastName}`;
 
@@ -31,7 +26,7 @@ export function RadiologyOrderCard({ event }: Props) {
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-s-4 border-s-purple-400">
       <div className="flex items-start justify-between gap-2 mb-2">
         <span className="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
-          Radiology
+          {t('cards.radiology')}
         </span>
         <span className="text-xs text-muted-foreground">{formatTime(event.timestamp)}</span>
       </div>
@@ -44,7 +39,9 @@ export function RadiologyOrderCard({ event }: Props) {
       </p>
 
       <div className="mt-1.5 flex flex-wrap items-center gap-2">
-        <Badge variant={STATUS_VARIANT[data.status]}>{STATUS_LABEL[data.status]}</Badge>
+        <Badge variant={STATUS_VARIANT[data.status]}>
+          {t(`radiologyStatus.${data.status}` as Parameters<typeof t>[0])}
+        </Badge>
         {data.priority && (
           <span className="text-xs text-muted-foreground">· {data.priority}</span>
         )}

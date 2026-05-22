@@ -362,9 +362,15 @@
   },
 
   "patient": {
+    "status": {
+      "active":   "Active",
+      "inactive": "Inactive"
+    },
     "list": {
       "title":             "Patients",
       "searchPlaceholder": "Search by name, MRN…",
+      "registeredCount": "{count, plural, one {# patient registered} other {# patients registered}}",
+      "showingOf":        "Showing {shown} of {total} patients",
       "columns": {
         "patient": "Patient",
         "mrn":     "MRN",
@@ -385,19 +391,40 @@
     },
     "detail": {
       "tabs": {
-        "timeline":      "Timeline",
-        "encounters":    "Encounters",
+        "overview":      "Overview",
+        "timeline":      "Medical History",
         "prescriptions": "Prescriptions",
-        "labOrders":     "Lab Orders",
+        "labs":          "Lab Orders",
         "radiology":     "Radiology",
-        "files":         "Files"
+        "files":         "Medical Files"
+      },
+      "overview": {
+        "demographics":      "Demographics",
+        "contact":           "Contact",
+        "emergencyContact":  "Emergency Contact",
+        "clinicalNotes":     "Clinical Notes",
+        "fields": {
+          "dateOfBirth": "Date of Birth",
+          "gender":      "Gender",
+          "bloodType":   "Blood Type",
+          "status":      "Status",
+          "registered":  "Registered",
+          "phone":       "Phone",
+          "email":       "Email",
+          "nationalId":  "National ID",
+          "address":     "Address",
+          "name":        "Name"
+        }
+      },
+      "allergies": {
+        "heading": "Known Allergies",
+        "none":    "No known allergies on record."
       },
       "clinicalTab": {
-        "emptyEncounters":    "No encounters on record.",
-        "emptyPrescriptions": "No prescriptions on record.",
-        "emptyLabOrders":     "No lab orders on record.",
-        "emptyRadiology":     "No radiology orders on record.",
-        "emptyFiles":         "No files uploaded."
+        "emptyPrescriptions": "No prescriptions recorded for this patient.",
+        "emptyLabOrders":     "No lab orders recorded for this patient.",
+        "emptyRadiology":     "No radiology orders recorded for this patient.",
+        "emptyFiles":         "No medical files uploaded for this patient."
       },
       "error": {
         "loadFailed": "Failed to load records",
@@ -419,6 +446,10 @@
       "fromAriaLabel": "From date",
       "toAriaLabel":   "To date"
     },
+    "dateGroups": {
+      "today":     "Today —",
+      "yesterday": "Yesterday —"
+    },
     "empty": {
       "noRecords":     "No medical history on record",
       "noRecordsSub":  "Events will appear here as encounters, prescriptions, and orders are recorded.",
@@ -437,6 +468,34 @@
       "inProgress":   "In Progress",
       "diagnosisOnRecord": "Diagnosis on record",
       "uploadedBy":   "Uploaded by {uploader}"
+    },
+    "labOrderStatus": {
+      "ORDERED":          "Ordered",
+      "SAMPLE_COLLECTED": "Sample Collected",
+      "IN_PROGRESS":      "In Progress",
+      "RESULTED":         "Resulted",
+      "REVIEWED":         "Reviewed",
+      "CANCELLED":        "Cancelled"
+    },
+    "radiologyStatus": {
+      "ORDERED":     "Ordered",
+      "SCHEDULED":   "Scheduled",
+      "IN_PROGRESS": "In Progress",
+      "RESULTED":    "Resulted",
+      "REVIEWED":    "Reviewed",
+      "CANCELLED":   "Cancelled"
+    },
+    "fileCategories": {
+      "LAB_RESULT":        "Lab Result",
+      "RADIOLOGY_IMAGE":   "Radiology Image",
+      "PRESCRIPTION":      "Prescription",
+      "REFERRAL":          "Referral",
+      "DISCHARGE_SUMMARY": "Discharge Summary",
+      "CONSENT_FORM":      "Consent Form",
+      "INSURANCE":         "Insurance",
+      "CLINICAL_NOTE":     "Clinical Note",
+      "ID_DOCUMENT":       "ID Document",
+      "OTHER":             "Other"
     }
   }
 }

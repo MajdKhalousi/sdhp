@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { Patient } from '@/hooks/use-patient';
@@ -39,6 +42,8 @@ function Initials({ name }: { name: string }) {
 }
 
 export function PatientHeader({ patient, isLoading }: PatientHeaderProps) {
+  const t = useTranslations('patient.status');
+
   if (isLoading) {
     return (
       <div className="rounded-xl border bg-card p-6 shadow-sm">
@@ -72,7 +77,7 @@ export function PatientHeader({ patient, isLoading }: PatientHeaderProps) {
               </span>
             )}
             <Badge variant={patient.isActive ? 'success' : 'outline'}>
-              {patient.isActive ? 'Active' : 'Inactive'}
+              {patient.isActive ? t('active') : t('inactive')}
             </Badge>
           </div>
 

@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import type { TimelineEvent } from '@/types/timeline';
 import { formatTime } from './format-time';
@@ -13,6 +16,7 @@ function encounterDuration(start: string, end: string | null): string {
 }
 
 export function EncounterCard({ event }: Props) {
+  const t = useTranslations('timeline.cards');
   const { data } = event;
   const doctor = `Dr. ${data.doctor.firstName} ${data.doctor.lastName}`;
   const isActive = !data.endedAt;
@@ -22,11 +26,11 @@ export function EncounterCard({ event }: Props) {
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-1.5">
           <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-            Encounter
+            {t('encounter')}
           </span>
           {isActive && (
             <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
-              In Progress
+              {t('inProgress')}
             </span>
           )}
         </div>
@@ -53,7 +57,7 @@ export function EncounterCard({ event }: Props) {
             <span className="font-mono text-xs text-foreground" dir="ltr">{data.diagnosisCode}</span>
           )}
           {data.hasDiagnosis && !data.diagnosisCode && (
-            <Badge variant="outline" className="text-xs">Diagnosis on record</Badge>
+            <Badge variant="outline" className="text-xs">{t('diagnosisOnRecord')}</Badge>
           )}
         </div>
       )}

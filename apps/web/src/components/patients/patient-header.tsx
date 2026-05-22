@@ -77,7 +77,7 @@ export function PatientHeader({ patient, isLoading }: PatientHeaderProps) {
           </div>
 
           <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            <span className="font-mono text-xs">{patient.mrn}</span>
+            <span className="font-mono text-xs" dir="ltr">{patient.mrn}</span>
             {patient.dateOfBirth && (
               <span>DOB: {formatDate(patient.dateOfBirth)}</span>
             )}
@@ -87,7 +87,7 @@ export function PatientHeader({ patient, isLoading }: PatientHeaderProps) {
                 {formatBloodType(patient.bloodType)}
               </span>
             )}
-            {patient.phone && <span>{patient.phone}</span>}
+            {patient.phone && <span dir="ltr">{patient.phone}</span>}
           </div>
         </div>
       </div>

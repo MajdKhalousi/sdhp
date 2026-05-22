@@ -116,7 +116,7 @@ export function AppointmentList() {
             <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
               <tr>
                 {['Patient', 'Doctor', 'Scheduled', 'Duration', 'Status', ''].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left font-medium">{h}</th>
+                  <th key={h} className="px-4 py-3 text-start font-medium">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -186,11 +186,11 @@ export function AppointmentList() {
         <table className="w-full min-w-[640px]">
           <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
             <tr>
-              <th className="px-4 py-3 text-left font-medium">Patient</th>
-              <th className="px-4 py-3 text-left font-medium">Doctor</th>
-              <th className="px-4 py-3 text-left font-medium">Scheduled</th>
-              <th className="px-4 py-3 text-left font-medium">Duration</th>
-              <th className="px-4 py-3 text-left font-medium">Status</th>
+              <th className="px-4 py-3 text-start font-medium">Patient</th>
+              <th className="px-4 py-3 text-start font-medium">Doctor</th>
+              <th className="px-4 py-3 text-start font-medium">Scheduled</th>
+              <th className="px-4 py-3 text-start font-medium">Duration</th>
+              <th className="px-4 py-3 text-start font-medium">Status</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -206,7 +206,7 @@ export function AppointmentList() {
                       {appt.patient.firstName} {appt.patient.lastName}
                     </p>
                   </Link>
-                  <p className="text-xs text-muted-foreground">{appt.patient.mrn}</p>
+                  <p className="text-xs text-muted-foreground" dir="ltr">{appt.patient.mrn}</p>
                 </td>
                 <td className="px-4 py-3">
                   <p className="text-sm">
@@ -216,7 +216,7 @@ export function AppointmentList() {
                     <p className="text-xs text-muted-foreground">{appt.doctor.specialization}</p>
                   )}
                 </td>
-                <td className="px-4 py-3 text-sm">{formatDateTime(appt.scheduledAt)}</td>
+                <td className="px-4 py-3 text-sm" dir="ltr">{formatDateTime(appt.scheduledAt)}</td>
                 <td className="px-4 py-3 text-sm text-muted-foreground">
                   {appt.durationMin} min
                 </td>
@@ -253,7 +253,7 @@ export function AppointmentList() {
               className="inline-flex h-7 w-7 items-center justify-center rounded-md border transition-colors hover:bg-accent disabled:opacity-40"
               aria-label="Previous page"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
             </button>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
@@ -261,7 +261,7 @@ export function AppointmentList() {
               className="inline-flex h-7 w-7 items-center justify-center rounded-md border transition-colors hover:bg-accent disabled:opacity-40"
               aria-label="Next page"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4 rtl:rotate-180" />
             </button>
           </div>
         </div>

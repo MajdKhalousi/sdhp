@@ -91,8 +91,9 @@ export class QueueService {
     return entry;
   }
 
+  private readonly MAX_TICKET_RETRIES = 5;
+
   async create(dto: CreateQueueEntryDto, caller: JwtPayload) {
-    // Validate appointment and derive organization.
     const appointment = await this.prisma.appointment.findFirst({
       where: { id: dto.appointmentId, deletedAt: null },
       select: { id: true, organizationId: true },
@@ -103,32 +104,51 @@ export class QueueService {
 
     const organizationId = appointment.organizationId;
 
-    // Auto-generate ticket number if not provided.
-    const ticketNumber = dto.ticketNumber ?? (await this.nextTicketNumber(organizationId));
+    for (let attempt = 0; attempt < this.MAX_TICKET_RETRIES; attempt++) {
+      try {
+        return await this.prisma.$transaction(async (tx) => {
+          // Compute next ticket inside the transaction so the MAX read is serialized.
+          const max = await tx.queueEntry.findFirst({
+            where: { organizationId },
+            orderBy: { ticketNumber: 'desc' },
+            select: { ticketNumber: true },
+          });
+          const ticketNumber = dto.ticketNumber ?? ((max?.ticketNumber ?? 0) + 1);
 
-    // Create queue entry and update appointment status in one transaction.
-    try {
-      const [entry] = await this.prisma.$transaction([
-        this.prisma.queueEntry.create({
-          data: {
-            appointmentId: dto.appointmentId,
-            ticketNumber,
-            status: dto.status,
-          },
-          select: SELECT,
-        }),
-        this.prisma.appointment.update({
-          where: { id: dto.appointmentId },
-          data: { status: AppointmentStatus.CHECKED_IN },
-        }),
-      ]);
-      return entry;
-    } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
-        throw new ConflictException('A queue entry already exists for this appointment');
+          const entry = await tx.queueEntry.create({
+            data: {
+              appointmentId: dto.appointmentId,
+              organizationId,
+              ticketNumber,
+              status: dto.status,
+            },
+            select: SELECT,
+          });
+
+          await tx.appointment.update({
+            where: { id: dto.appointmentId },
+            data: { status: AppointmentStatus.CHECKED_IN },
+          });
+
+          return entry;
+        });
+      } catch (e) {
+        if (!(e instanceof Prisma.PrismaClientKnownRequestError) || e.code !== 'P2002') throw e;
+
+        const target = (e.meta?.target as string[] | string | undefined) ?? [];
+        const targetArr = Array.isArray(target) ? target : [target];
+        if (targetArr.some((t) => t === 'appointmentId' || t === 'appointment_id')) {
+          throw new ConflictException('A queue entry already exists for this appointment');
+        }
+
+        // Ticket number collision — retry if auto-generated, fail immediately if manual.
+        if (dto.ticketNumber !== undefined || attempt === this.MAX_TICKET_RETRIES - 1) {
+          throw new ConflictException('Ticket number already in use for this organization');
+        }
       }
-      throw e;
     }
+
+    throw new ConflictException('Could not assign a unique ticket number');
   }
 
   async update(id: string, dto: UpdateQueueEntryDto, caller: JwtPayload) {
@@ -238,12 +258,4 @@ export class QueueService {
     }
   }
 
-  private async nextTicketNumber(organizationId: string): Promise<number> {
-    const max = await this.prisma.queueEntry.findFirst({
-      where: { appointment: { organizationId } },
-      orderBy: { ticketNumber: 'desc' },
-      select: { ticketNumber: true },
-    });
-    return (max?.ticketNumber ?? 0) + 1;
-  }
 }

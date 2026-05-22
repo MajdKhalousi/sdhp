@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, CalendarX2 } from 'lucide-react';
+import Link from 'next/link';
 import { useAppointments, useDoctorsList } from '@/hooks/use-appointments';
 import { AppointmentStatusBadge } from './appointment-status-badge';
+import { CheckInButton } from '@/components/queue/check-in-button';
 import { NoShowButton } from './no-show-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AppointmentStatus } from '@/types/appointment';
@@ -199,9 +201,11 @@ export function AppointmentList() {
                 className="border-t border-border transition-colors hover:bg-muted/20"
               >
                 <td className="px-4 py-3">
-                  <p className="text-sm font-medium">
-                    {appt.patient.firstName} {appt.patient.lastName}
-                  </p>
+                  <Link href={`/dashboard/patients/${appt.patient.id}`}>
+                    <p className="text-sm font-medium hover:underline">
+                      {appt.patient.firstName} {appt.patient.lastName}
+                    </p>
+                  </Link>
                   <p className="text-xs text-muted-foreground">{appt.patient.mrn}</p>
                 </td>
                 <td className="px-4 py-3">
@@ -220,7 +224,10 @@ export function AppointmentList() {
                   <AppointmentStatusBadge status={appt.status} />
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex items-center justify-end">
+                  <div className="flex items-center justify-end gap-2">
+                    {NO_SHOW_ELIGIBLE.includes(appt.status) && (
+                      <CheckInButton appointmentId={appt.id} />
+                    )}
                     {NO_SHOW_ELIGIBLE.includes(appt.status) && (
                       <NoShowButton appointmentId={appt.id} />
                     )}

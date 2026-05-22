@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { Calendar, Users, ListOrdered, Stethoscope, Clock } from 'lucide-react';
+import { Calendar, Users, ListOrdered, CheckCircle2, Clock } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/auth';
 import { AppointmentStatusBadge } from '@/components/appointments/appointment-status-badge';
@@ -46,7 +46,6 @@ export default function DashboardPage() {
   const role = user?.role ?? '';
 
   const canReadPatients = role !== 'SECRETARY';
-  const canReadDoctors = role === 'SUPER_ADMIN' || role === 'ORG_ADMIN';
   const today = todayStr();
 
   const { data: apptStats } = useQuery({
@@ -68,11 +67,10 @@ export default function DashboardPage() {
     staleTime: 60_000,
   });
 
-  const { data: doctorStats } = useQuery({
-    queryKey: ['dashboard', 'doctors-total'],
-    queryFn: () => api.get<PagedMeta>('/v1/doctors', { limit: 1 }),
-    enabled: canReadDoctors,
-    staleTime: 60_000,
+  const { data: completedStats } = useQuery({
+    queryKey: ['dashboard', 'appts-completed-today'],
+    queryFn: () => api.get<PagedMeta>('/v1/appointments', { date: today, status: 'COMPLETED', limit: 1 }),
+    staleTime: 30_000,
   });
 
   const { data: todayAppts } = useQuery({
@@ -117,10 +115,10 @@ export default function DashboardPage() {
       href: '/dashboard/patients',
     },
     {
-      label: 'Doctors',
-      value: canReadDoctors ? (doctorStats?.total ?? '—') : '—',
-      sub: 'active on staff',
-      icon: Stethoscope,
+      label: 'Completed Today',
+      value: completedStats?.total ?? '—',
+      sub: 'encounters finished',
+      icon: CheckCircle2,
       href: '/dashboard/appointments',
     },
   ];

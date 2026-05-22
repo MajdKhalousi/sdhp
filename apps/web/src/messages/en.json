@@ -1,1 +1,443 @@
-{}
+{
+  "common": {
+    "actions": {
+      "save": "Save Changes",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "tryAgain": "Try again",
+      "back": "Back",
+      "viewAll": "View all",
+      "manage": "Manage"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageOf": "Page {page} of {total}",
+      "summary": "Page {page} of {total} — {count} total"
+    },
+    "states": {
+      "loading": "Loading…",
+      "error": "An unexpected error occurred."
+    },
+    "filter": {
+      "clearFilters": "Clear filters",
+      "allStatuses": "All statuses",
+      "allDoctors": "All doctors",
+      "all": "All"
+    }
+  },
+
+  "auth": {
+    "login": {
+      "title": "SDHP",
+      "subtitle": "Syrian Digital Health Platform",
+      "phoneLabel": "Phone Number",
+      "phonePlaceholder": "+963 XXX XXX XXX",
+      "passwordLabel": "Password",
+      "signIn": "Sign In",
+      "signingIn": "Signing in…",
+      "authorizedOnly": "Authorized personnel only",
+      "loginFailed": "Login failed"
+    },
+    "demo": {
+      "heading": "Demo accounts",
+      "passwordNote": "Password for all accounts:"
+    }
+  },
+
+  "nav": {
+    "brand": "SDHP",
+    "brandSubtitle": "Health Platform",
+    "footer": "Syrian Digital Health Platform",
+    "items": {
+      "dashboard": "Dashboard",
+      "patients": "Patients",
+      "appointments": "Appointments",
+      "queue": "Queue"
+    }
+  },
+
+  "dashboard": {
+    "title": "Dashboard",
+    "live": "Live",
+    "stats": {
+      "todayAppointments": {
+        "label": "Today's Appointments",
+        "sub": "scheduled today"
+      },
+      "waitingNow": {
+        "label": "Waiting Now",
+        "sub": "patients in queue"
+      },
+      "totalPatients": {
+        "label": "Total Patients",
+        "sub": "registered"
+      },
+      "completedToday": {
+        "label": "Completed Today",
+        "sub": "encounters finished"
+      }
+    },
+    "sections": {
+      "todayAppointments": "Today's Appointments",
+      "liveQueue": "Live Queue"
+    },
+    "actions": {
+      "viewAll": "View all →",
+      "manage": "Manage →",
+      "scheduleAppointment": "Schedule an appointment"
+    },
+    "empty": {
+      "noAppointmentsToday": "No appointments scheduled for today",
+      "queueClear": "Queue is clear"
+    }
+  },
+
+  "appointment": {
+    "status": {
+      "SCHEDULED":   "Scheduled",
+      "CONFIRMED":   "Confirmed",
+      "CHECKED_IN":  "Checked In",
+      "IN_QUEUE":    "In Queue",
+      "IN_PROGRESS": "In Progress",
+      "COMPLETED":   "Completed",
+      "CANCELLED":   "Cancelled",
+      "NO_SHOW":     "No Show"
+    },
+    "list": {
+      "title": "Appointments",
+      "columns": {
+        "patient":   "Patient",
+        "doctor":    "Doctor",
+        "scheduled": "Scheduled",
+        "duration":  "Duration",
+        "status":    "Status"
+      },
+      "filter": {
+        "byStatus": "Filter by status",
+        "byDate":   "Filter by date",
+        "byDoctor": "Filter by doctor"
+      },
+      "durationMinutes": "{count} min",
+      "empty": {
+        "heading":    "No appointments found",
+        "withFilters": "Try adjusting your filters.",
+        "noData":     "Create the first appointment to get started."
+      }
+    },
+    "form": {
+      "title": "New Appointment",
+      "fields": {
+        "patientLabel":   "Patient",
+        "doctorLabel":    "Doctor",
+        "dateTimeLabel":  "Date & Time",
+        "durationLabel":  "Duration (minutes)",
+        "notesLabel":     "Notes",
+        "notesOptional":  "(optional)",
+        "notesPlaceholder": "e.g., Referred by Dr. Khalil — chest pain, follow-up required"
+      },
+      "select": {
+        "selectPatient":  "Select a patient",
+        "selectDoctor":   "Select a doctor",
+        "loadingPatients": "Loading patients…",
+        "loadingDoctors":  "Loading doctors…"
+      },
+      "actions": {
+        "submit":     "Schedule Appointment",
+        "submitting": "Scheduling…"
+      },
+      "validation": {
+        "patientRequired":   "Please select a patient.",
+        "doctorRequired":    "Please select a doctor.",
+        "dateTimeRequired":  "Please set the appointment date and time.",
+        "durationMinimum":   "Duration must be at least 5 minutes."
+      }
+    },
+    "noShow": {
+      "trigger":  "No-show",
+      "confirm":  "Confirm",
+      "cancel":   "Cancel",
+      "skipping": "…"
+    }
+  },
+
+  "queue": {
+    "status": {
+      "WAITING":     "Waiting",
+      "CALLED":      "Called",
+      "IN_PROGRESS": "In Progress",
+      "DONE":        "Done",
+      "SKIPPED":     "Skipped"
+    },
+    "board": {
+      "title": "Queue",
+      "filter": {
+        "active":    "Active patients",
+        "all":       "All statuses",
+        "todayOnly": "Today only",
+        "byStatus":  "Filter by status",
+        "byDoctor":  "Filter by doctor"
+      },
+      "refreshLabel": "Refresh now",
+      "refreshing":   "Refreshing…",
+      "updatedAt":    "Updated {time}",
+      "stale":        "Live refresh failed — showing cached data.",
+      "retry":        "Retry",
+      "activeCount":  "{count, plural, one {# patient active} other {# patients active}}",
+      "filteredCount": "{count, plural, one {# result} other {# results}}",
+      "empty": {
+        "heading":     "Queue is empty",
+        "noCheckins":  "No patients checked in yet today.",
+        "withFilters": "Try adjusting your filters."
+      },
+      "error": {
+        "loadFailed": "Failed to load queue"
+      }
+    },
+    "ticket": {
+      "called":  "Called",
+      "inQueue": "In queue"
+    },
+    "walkIn": {
+      "title": "Walk-in Registration",
+      "steps": {
+        "createAppointment": "Create Appointment",
+        "checkIn":           "Check In"
+      },
+      "booked": "Appointment booked. Issue a queue ticket to add this patient to the waiting list.",
+      "fields": {
+        "patientLabel":   "Patient",
+        "doctorLabel":    "Doctor",
+        "dateTimeLabel":  "Date & Time",
+        "durationLabel":  "Duration (minutes)"
+      },
+      "select": {
+        "selectPatient":   "Select a patient",
+        "selectDoctor":    "Select a doctor",
+        "loadingPatients": "Loading patients…",
+        "loadingDoctors":  "Loading doctors…"
+      },
+      "actions": {
+        "next":        "Next: Check In →",
+        "booking":     "Booking…",
+        "checkIn":     "Check In & Issue Ticket",
+        "checkingIn":  "Checking in…",
+        "backToQueue": "Back to Queue",
+        "cancel":      "Cancel"
+      },
+      "validation": {
+        "patientRequired":  "Please select a patient.",
+        "doctorRequired":   "Please select a doctor.",
+        "dateTimeRequired": "Please set the appointment date and time.",
+        "durationMinimum":  "Duration must be at least 5 minutes."
+      }
+    },
+    "checkIn": {
+      "trigger":    "Check In",
+      "checkingIn": "Checking in…",
+      "error":      "Check-in failed"
+    },
+    "advance": {
+      "callIn": "Call In",
+      "begin":  "Begin"
+    },
+    "skip": {
+      "trigger": "Skip",
+      "confirm": "Skip",
+      "cancel":  "No",
+      "failed":  "Failed to skip"
+    }
+  },
+
+  "encounter": {
+    "status": {
+      "inProgress": "In Progress",
+      "completed":  "Completed"
+    },
+    "sections": {
+      "clinicalNotes":       "Chief Complaint & Clinical Notes",
+      "vitals":              "Vitals & Measurements",
+      "diagnosisAndTreatment": "Diagnosis & Treatment Plan",
+      "prescriptions":       "Prescriptions"
+    },
+    "fields": {
+      "chiefComplaintLabel":       "Chief Complaint",
+      "chiefComplaintPlaceholder": "e.g. Persistent headache for 3 days, worsening at night",
+      "examinationLabel":          "Examination & Findings",
+      "examinationPlaceholder":    "e.g. BP 138/88, HR 76 bpm. Throat mildly inflamed. No fever. Lungs clear.",
+      "diagnosisLabel":            "Diagnosis",
+      "diagnosisPlaceholder":      "e.g. Acute pharyngitis with hypertensive episode",
+      "icdCodeLabel":              "ICD Code",
+      "icdCodePlaceholder":        "e.g. I20.9",
+      "treatmentPlanLabel":        "Treatment Plan",
+      "treatmentPlanPlaceholder":  "e.g. Ibuprofen 400mg TID × 7 days. ENT referral if no improvement in 1 week.",
+      "followUpDateLabel":         "Follow-up Date"
+    },
+    "actions": {
+      "saveChanges":  "Save Changes",
+      "saving":       "Saving…",
+      "savedAt":      "Saved at {time}",
+      "closeVisit":   "Close Visit",
+      "closing":      "Closing…"
+    },
+    "close": {
+      "confirm":    "Close this visit? The encounter will be locked and the appointment marked complete.",
+      "alreadyEnded": "Encounter already ended",
+      "failed":     "Failed to end encounter"
+    },
+    "complete": {
+      "heading":         "Encounter Complete",
+      "diagnosisLabel":  "Diagnosis",
+      "followUpLabel":   "Follow-up",
+      "endedLabel":      "Ended",
+      "notScheduled":    "Not scheduled",
+      "diagnosisOnRecord": "Diagnosis on record",
+      "readOnly":        "This encounter is complete. The record is read-only."
+    },
+    "allergies": {
+      "heading": "Known Allergies"
+    },
+    "timestamps": {
+      "started": "Started",
+      "ended":   "Ended"
+    },
+    "error": {
+      "loadFailed": "Failed to load encounter",
+      "notFound":   "Encounter not found."
+    },
+    "prescription": {
+      "empty":              "No medications prescribed for this encounter.",
+      "addMedication":      "Add Medication",
+      "adding":             "Adding…",
+      "fields": {
+        "medicationLabel":    "Medication",
+        "dosageLabel":        "Dosage",
+        "frequencyLabel":     "Frequency",
+        "durationLabel":      "Duration",
+        "instructionsLabel":  "Instructions"
+      },
+      "placeholders": {
+        "medication":    "e.g. Amoxicillin 500mg",
+        "dosage":        "e.g. 500mg",
+        "frequency":     "e.g. Twice daily",
+        "duration":      "e.g. 7 days",
+        "instructions":  "e.g. Take with food"
+      },
+      "validation": {
+        "medicationRequired": "Medication name is required."
+      },
+      "error": {
+        "addFailed": "Failed to add medication"
+      }
+    },
+    "vitals": {
+      "fields": {
+        "temperature":       "Temperature",
+        "bloodPressure":     "Blood Pressure",
+        "heartRate":         "Heart Rate",
+        "oxygenSaturation":  "O₂ Saturation",
+        "respiratoryRate":   "Respiratory Rate",
+        "weight":            "Weight",
+        "height":            "Height"
+      },
+      "units": {
+        "temperature":       "°C",
+        "bloodPressure":     "mmHg",
+        "heartRate":         "bpm",
+        "oxygenSaturation":  "%",
+        "respiratoryRate":   "/min",
+        "weight":            "kg",
+        "height":            "cm"
+      },
+      "placeholders": {
+        "temperature":       "36.5",
+        "systolic":          "120",
+        "diastolic":         "80",
+        "heartRate":         "72",
+        "oxygenSaturation":  "98",
+        "respiratoryRate":   "16",
+        "weight":            "70",
+        "height":            "175"
+      }
+    }
+  },
+
+  "patient": {
+    "list": {
+      "title":             "Patients",
+      "searchPlaceholder": "Search by name, MRN…",
+      "columns": {
+        "patient": "Patient",
+        "mrn":     "MRN",
+        "phone":   "Phone",
+        "gender":  "Gender",
+        "dob":     "Date of Birth",
+        "actions": ""
+      },
+      "view": "View",
+      "empty": {
+        "heading":    "No patients found",
+        "withSearch": "Try a different search term.",
+        "noData":     "Add the first patient to get started."
+      },
+      "error": {
+        "loadFailed": "Failed to load patients"
+      }
+    },
+    "detail": {
+      "tabs": {
+        "timeline":      "Timeline",
+        "encounters":    "Encounters",
+        "prescriptions": "Prescriptions",
+        "labOrders":     "Lab Orders",
+        "radiology":     "Radiology",
+        "files":         "Files"
+      },
+      "clinicalTab": {
+        "emptyEncounters":    "No encounters on record.",
+        "emptyPrescriptions": "No prescriptions on record.",
+        "emptyLabOrders":     "No lab orders on record.",
+        "emptyRadiology":     "No radiology orders on record.",
+        "emptyFiles":         "No files uploaded."
+      },
+      "error": {
+        "loadFailed": "Failed to load records",
+        "occurred":   "An error occurred."
+      }
+    }
+  },
+
+  "timeline": {
+    "filter": {
+      "all": "All",
+      "types": {
+        "ENCOUNTER":        "Encounters",
+        "PRESCRIPTION":     "Prescriptions",
+        "LAB_ORDER":        "Lab Orders",
+        "RADIOLOGY_ORDER":  "Radiology",
+        "MEDICAL_FILE":     "Files"
+      },
+      "fromAriaLabel": "From date",
+      "toAriaLabel":   "To date"
+    },
+    "empty": {
+      "noRecords":     "No medical history on record",
+      "noRecordsSub":  "Events will appear here as encounters, prescriptions, and orders are recorded.",
+      "noMatches":     "No records match the selected filters",
+      "noMatchesSub":  "Try adjusting the filters to see more events."
+    },
+    "error": {
+      "loadFailed": "Failed to load timeline."
+    },
+    "cards": {
+      "encounter":    "Encounter",
+      "prescription": "Prescription",
+      "labOrder":     "Lab Order",
+      "radiology":    "Radiology",
+      "file":         "File",
+      "inProgress":   "In Progress",
+      "diagnosisOnRecord": "Diagnosis on record",
+      "uploadedBy":   "Uploaded by {uploader}"
+    }
+  }
+}

@@ -110,7 +110,7 @@ export function WalkInWizard() {
         {stepIndicator}
 
         <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-900/40 dark:bg-green-900/20 dark:text-green-400">
-          Appointment created successfully. Issue a queue ticket to check this patient in.
+          Appointment booked. Issue a queue ticket to add this patient to the waiting list.
         </div>
 
         {displayError && (
@@ -133,7 +133,7 @@ export function WalkInWizard() {
             disabled={checkingIn}
             className="inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-60"
           >
-            Skip
+            Back to Queue
           </button>
         </div>
       </div>
@@ -227,7 +227,7 @@ export function WalkInWizard() {
           disabled={creatingAppt}
           className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {creatingAppt ? 'Creating…' : 'Next: Check In →'}
+          {creatingAppt ? 'Booking…' : 'Next: Check In →'}
         </button>
         <button
           type="button"

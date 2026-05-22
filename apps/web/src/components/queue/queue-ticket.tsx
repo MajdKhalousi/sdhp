@@ -22,6 +22,9 @@ export function QueueTicket({ entry }: { entry: QueueEntry }) {
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold">
           {patient.firstName} {patient.lastName}
+          <span className="ml-1.5 font-mono text-xs font-normal text-muted-foreground">
+            {patient.mrn}
+          </span>
         </p>
         <p className="truncate text-xs text-muted-foreground">
           Dr. {doctor.user.firstName} {doctor.user.lastName}

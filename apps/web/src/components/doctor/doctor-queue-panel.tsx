@@ -108,6 +108,9 @@ export function DoctorQueuePanel() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">
                     {patient.firstName} {patient.lastName}
+                    <span className="ml-1.5 font-mono text-xs font-normal text-muted-foreground">
+                      {patient.mrn}
+                    </span>
                   </p>
                   <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
                     <span>Scheduled {formatScheduled(appointment.scheduledAt)}</span>

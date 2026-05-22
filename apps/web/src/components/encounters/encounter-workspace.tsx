@@ -135,6 +135,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
 
   const { patient, doctor } = encounter;
   const isEnded = !!encounter.endedAt;
+  const readOnly = isEnded || saving;
 
   return (
     <div className="space-y-6">
@@ -177,7 +178,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
               value={form.chiefComplaint}
               onChange={(e) => setField('chiefComplaint', e.target.value)}
               placeholder="Primary reason for visit"
-              disabled={saving}
+              disabled={readOnly}
               className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
           </div>
@@ -189,7 +190,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
               value={form.notes}
               onChange={(e) => setField('notes', e.target.value)}
               placeholder="Clinical observations, history, exam findings…"
-              disabled={saving}
+              disabled={readOnly}
               className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
           </div>
@@ -202,7 +203,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
         <VitalsForm
           vitals={form.vitals}
           onChange={(v) => setField('vitals', v)}
-          disabled={saving}
+          disabled={readOnly}
         />
       </div>
 
@@ -219,7 +220,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
                 value={form.diagnosis}
                 onChange={(e) => setField('diagnosis', e.target.value)}
                 placeholder="Diagnosis description"
-                disabled={saving}
+                disabled={readOnly}
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
               />
             </div>
@@ -231,7 +232,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
                 value={form.diagnosisCode}
                 onChange={(e) => setField('diagnosisCode', e.target.value)}
                 placeholder="e.g. I20.9"
-                disabled={saving}
+                disabled={readOnly}
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm font-mono outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
               />
             </div>
@@ -244,7 +245,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
               value={form.treatmentPlan}
               onChange={(e) => setField('treatmentPlan', e.target.value)}
               placeholder="Medications, procedures, referrals…"
-              disabled={saving}
+              disabled={readOnly}
               className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
           </div>
@@ -255,7 +256,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
               type="date"
               value={form.followUpDate}
               onChange={(e) => setField('followUpDate', e.target.value)}
-              disabled={saving}
+              disabled={readOnly}
               className="h-9 w-48 rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
           </div>
@@ -264,25 +265,31 @@ export function EncounterWorkspace({ encounterId }: Props) {
 
       {/* ── Actions ─────────────────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card p-5">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {saving ? 'Saving…' : 'Save Changes'}
-            </button>
-            {savedAt && (
-              <span className="text-xs text-muted-foreground">Saved at {savedAt}</span>
-            )}
-            {saveError && (
-              <span className="text-xs text-destructive">{saveError}</span>
-            )}
-          </div>
+        {isEnded ? (
+          <p className="text-sm text-muted-foreground">
+            This encounter is complete. The record is read-only.
+          </p>
+        ) : (
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {saving ? 'Saving…' : 'Save Changes'}
+              </button>
+              {savedAt && (
+                <span className="text-xs text-muted-foreground">Saved at {savedAt}</span>
+              )}
+              {saveError && (
+                <span className="text-xs text-destructive">{saveError}</span>
+              )}
+            </div>
 
-          <EndEncounterButton encounterId={encounterId} alreadyEnded={isEnded} />
-        </div>
+            <EndEncounterButton encounterId={encounterId} alreadyEnded={isEnded} />
+          </div>
+        )}
       </div>
     </div>
   );

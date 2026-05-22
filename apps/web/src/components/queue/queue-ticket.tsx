@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { QueueStatusBadge } from './queue-status-badge';
 import type { QueueEntry, QueueStatus } from '@/types/queue';
 
@@ -18,7 +19,7 @@ const STATUS_LEFT: Record<QueueStatus, string> = {
 };
 
 export function QueueTicket({ entry }: { entry: QueueEntry }) {
-  const { ticketNumber, status, createdAt, appointment } = entry;
+  const { ticketNumber, status, createdAt, calledAt, appointment } = entry;
   const { patient, doctor } = appointment;
 
   const isDim = status === 'DONE' || status === 'SKIPPED';
@@ -33,7 +34,12 @@ export function QueueTicket({ entry }: { entry: QueueEntry }) {
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold">
-          {patient.firstName} {patient.lastName}
+          <Link
+            href={`/dashboard/patients/${patient.id}`}
+            className="hover:underline"
+          >
+            {patient.firstName} {patient.lastName}
+          </Link>
           <span className="ml-1.5 font-mono text-xs font-normal text-muted-foreground">
             {patient.mrn}
           </span>
@@ -45,8 +51,17 @@ export function QueueTicket({ entry }: { entry: QueueEntry }) {
       </div>
 
       <div className="hidden shrink-0 text-right sm:block">
-        <p className="text-xs text-muted-foreground">Wait</p>
-        <p className="text-sm tabular-nums">{relativeTime(createdAt)}</p>
+        {status === 'CALLED' && calledAt ? (
+          <>
+            <p className="text-xs text-muted-foreground">Called</p>
+            <p className="text-sm tabular-nums">{relativeTime(calledAt)}</p>
+          </>
+        ) : (
+          <>
+            <p className="text-xs text-muted-foreground">Wait</p>
+            <p className="text-sm tabular-nums">{relativeTime(createdAt)}</p>
+          </>
+        )}
       </div>
 
       <QueueStatusBadge status={status} />

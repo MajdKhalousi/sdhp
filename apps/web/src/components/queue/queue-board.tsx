@@ -5,6 +5,7 @@ import { RefreshCw, Inbox } from 'lucide-react';
 import { useQueue } from '@/hooks/use-queue';
 import { useDoctorsList } from '@/hooks/use-appointments';
 import { QueueTicket } from './queue-ticket';
+import { AdvanceQueueButton } from './advance-queue-button';
 import { SkipQueueButton } from './skip-queue-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { QueueStatus } from '@/types/queue';
@@ -178,7 +179,8 @@ export function QueueBoard() {
           <div key={entry.id} className="space-y-1">
             <QueueTicket entry={entry} />
             {SKIPPABLE.includes(entry.status) && (
-              <div className="flex justify-end px-1">
+              <div className="flex items-center justify-end gap-2 px-1">
+                <AdvanceQueueButton entryId={entry.id} status={entry.status} />
                 <SkipQueueButton entryId={entry.id} />
               </div>
             )}

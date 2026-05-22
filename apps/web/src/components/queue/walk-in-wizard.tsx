@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCreateAppointment, usePatientsList, useDoctorsList } from '@/hooks/use-appointments';
 import { useCheckIn } from '@/hooks/use-queue';
 
@@ -20,6 +21,8 @@ const INITIAL: Step1Form = {
 };
 
 export function WalkInWizard() {
+  const t = useTranslations('queue.walkIn');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
   const [form, setForm] = useState<Step1Form>(INITIAL);
@@ -40,11 +43,11 @@ export function WalkInWizard() {
 
   function handleStep1Submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.patientId)  { setValidationError('Please select a patient.'); return; }
-    if (!form.doctorId)   { setValidationError('Please select a doctor.'); return; }
-    if (!form.scheduledAt){ setValidationError('Please set the appointment date and time.'); return; }
+    if (!form.patientId)   { setValidationError(t('validation.patientRequired'));  return; }
+    if (!form.doctorId)    { setValidationError(t('validation.doctorRequired'));   return; }
+    if (!form.scheduledAt) { setValidationError(t('validation.dateTimeRequired')); return; }
     const duration = parseInt(form.durationMin, 10);
-    if (!duration || duration < 5) { setValidationError('Duration must be at least 5 minutes.'); return; }
+    if (!duration || duration < 5) { setValidationError(t('validation.durationMinimum')); return; }
 
     createAppt(
       {
@@ -86,7 +89,7 @@ export function WalkInWizard() {
         {step === 1 ? '1' : '✓'}
       </span>
       <span className={`text-sm font-medium ${step === 1 ? '' : 'text-muted-foreground'}`}>
-        Create Appointment
+        {t('steps.createAppointment')}
       </span>
       <span className="text-muted-foreground">→</span>
       <span
@@ -99,7 +102,7 @@ export function WalkInWizard() {
         2
       </span>
       <span className={`text-sm ${step === 2 ? 'font-medium' : 'text-muted-foreground'}`}>
-        Check In
+        {t('steps.checkIn')}
       </span>
     </div>
   );
@@ -110,7 +113,7 @@ export function WalkInWizard() {
         {stepIndicator}
 
         <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-900/40 dark:bg-green-900/20 dark:text-green-400">
-          Appointment booked. Issue a queue ticket to add this patient to the waiting list.
+          {t('booked')}
         </div>
 
         {displayError && (
@@ -125,7 +128,7 @@ export function WalkInWizard() {
             disabled={checkingIn}
             className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {checkingIn ? 'Checking in…' : 'Check In & Issue Ticket'}
+            {checkingIn ? t('actions.checkingIn') : t('actions.checkIn')}
           </button>
           <button
             type="button"
@@ -133,7 +136,7 @@ export function WalkInWizard() {
             disabled={checkingIn}
             className="inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-60"
           >
-            Back to Queue
+            {t('actions.backToQueue')}
           </button>
         </div>
       </div>
@@ -152,7 +155,7 @@ export function WalkInWizard() {
 
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground" htmlFor="wi-patientId">
-          Patient <span className="text-destructive">*</span>
+          {t('fields.patientLabel')} <span className="text-destructive">*</span>
         </label>
         <select
           id="wi-patientId"
@@ -161,7 +164,7 @@ export function WalkInWizard() {
           disabled={creatingAppt || patientsLoading}
           className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
         >
-          <option value="">{patientsLoading ? 'Loading patients…' : 'Select a patient'}</option>
+          <option value="">{patientsLoading ? t('select.loadingPatients') : t('select.selectPatient')}</option>
           {patientsData?.data.map((p) => (
             <option key={p.id} value={p.id}>
               {p.firstName} {p.lastName} — {p.mrn}
@@ -172,7 +175,7 @@ export function WalkInWizard() {
 
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground" htmlFor="wi-doctorId">
-          Doctor <span className="text-destructive">*</span>
+          {t('fields.doctorLabel')} <span className="text-destructive">*</span>
         </label>
         <select
           id="wi-doctorId"
@@ -181,7 +184,7 @@ export function WalkInWizard() {
           disabled={creatingAppt || doctorsLoading}
           className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
         >
-          <option value="">{doctorsLoading ? 'Loading doctors…' : 'Select a doctor'}</option>
+          <option value="">{doctorsLoading ? t('select.loadingDoctors') : t('select.selectDoctor')}</option>
           {doctorsData?.data.map((d) => (
             <option key={d.id} value={d.id}>
               Dr. {d.user.firstName} {d.user.lastName}
@@ -193,7 +196,7 @@ export function WalkInWizard() {
 
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground" htmlFor="wi-scheduledAt">
-          Date &amp; Time <span className="text-destructive">*</span>
+          {t('fields.dateTimeLabel')} <span className="text-destructive">*</span>
         </label>
         <input
           id="wi-scheduledAt"
@@ -207,7 +210,7 @@ export function WalkInWizard() {
 
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground" htmlFor="wi-durationMin">
-          Duration (minutes) <span className="text-destructive">*</span>
+          {t('fields.durationLabel')} <span className="text-destructive">*</span>
         </label>
         <input
           id="wi-durationMin"
@@ -227,7 +230,7 @@ export function WalkInWizard() {
           disabled={creatingAppt}
           className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {creatingAppt ? 'Booking…' : 'Next: Check In →'}
+          {creatingAppt ? t('actions.booking') : t('actions.next')}
         </button>
         <button
           type="button"
@@ -235,7 +238,7 @@ export function WalkInWizard() {
           disabled={creatingAppt}
           className="inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-60"
         >
-          Cancel
+          {tCommon('actions.cancel')}
         </button>
       </div>
     </form>

@@ -1,17 +1,22 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import type { QueueStatus } from '@/types/queue';
 
 type BadgeVariant = BadgeProps['variant'];
 
-const STATUS_CONFIG: Record<QueueStatus, { label: string; variant: BadgeVariant }> = {
-  WAITING:     { label: 'Waiting',     variant: 'outline'  },
-  CALLED:      { label: 'Called',      variant: 'warning'  },
-  IN_PROGRESS: { label: 'In Progress', variant: 'default'  },
-  DONE:        { label: 'Done',        variant: 'success'  },
-  SKIPPED:     { label: 'Skipped',     variant: 'danger'   },
+const STATUS_VARIANT: Record<QueueStatus, BadgeVariant> = {
+  WAITING:     'outline',
+  CALLED:      'warning',
+  IN_PROGRESS: 'default',
+  DONE:        'success',
+  SKIPPED:     'danger',
 };
 
 export function QueueStatusBadge({ status }: { status: QueueStatus }) {
-  const { label, variant } = STATUS_CONFIG[status] ?? { label: status, variant: 'outline' };
+  const t = useTranslations('queue.status');
+  const variant = STATUS_VARIANT[status] ?? 'outline';
+  const label = t(status as Parameters<typeof t>[0]);
   return <Badge variant={variant}>{label}</Badge>;
 }

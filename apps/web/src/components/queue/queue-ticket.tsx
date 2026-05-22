@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { QueueStatusBadge } from './queue-status-badge';
 import type { QueueEntry, QueueStatus } from '@/types/queue';
 
@@ -19,6 +20,7 @@ const STATUS_LEFT: Record<QueueStatus, string> = {
 };
 
 export function QueueTicket({ entry }: { entry: QueueEntry }) {
+  const t = useTranslations('queue.ticket');
   const { ticketNumber, status, createdAt, calledAt, appointment } = entry;
   const { patient, doctor } = appointment;
 
@@ -54,12 +56,12 @@ export function QueueTicket({ entry }: { entry: QueueEntry }) {
       <div className="hidden shrink-0 text-end sm:block">
         {status === 'CALLED' && calledAt ? (
           <>
-            <p className="text-xs text-muted-foreground">Called</p>
+            <p className="text-xs text-muted-foreground">{t('called')}</p>
             <p className="text-sm tabular-nums">{relativeTime(calledAt)}</p>
           </>
         ) : (
           <>
-            <p className="text-xs text-muted-foreground">In queue</p>
+            <p className="text-xs text-muted-foreground">{t('inQueue')}</p>
             <p className="text-sm tabular-nums">{relativeTime(createdAt)}</p>
           </>
         )}

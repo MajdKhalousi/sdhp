@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { RefreshCw, Inbox } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useQueue } from '@/hooks/use-queue';
 import { useDoctorsList } from '@/hooks/use-appointments';
 import { QueueTicket } from './queue-ticket';
@@ -12,13 +13,7 @@ import type { QueueStatus } from '@/types/queue';
 
 const SKIPPABLE: QueueStatus[] = ['WAITING', 'CALLED'];
 
-const ALL_STATUSES: { value: QueueStatus; label: string }[] = [
-  { value: 'WAITING',     label: 'Waiting'     },
-  { value: 'CALLED',      label: 'Called'      },
-  { value: 'IN_PROGRESS', label: 'In Progress' },
-  { value: 'DONE',        label: 'Done'        },
-  { value: 'SKIPPED',     label: 'Skipped'     },
-];
+const ALL_STATUSES: QueueStatus[] = ['WAITING', 'CALLED', 'IN_PROGRESS', 'DONE', 'SKIPPED'];
 
 function todayDate() {
   return new Date().toISOString().slice(0, 10);
@@ -27,6 +22,9 @@ function todayDate() {
 const ACTIVE_STATUSES: QueueStatus[] = ['WAITING', 'CALLED', 'IN_PROGRESS'];
 
 export function QueueBoard() {
+  const t = useTranslations('queue');
+  const tCommon = useTranslations('common');
+
   const [status, setStatus] = useState<QueueStatus | '' | 'ALL'>('');
   const [todayOnly, setTodayOnly] = useState(true);
   const [doctorId, setDoctorId] = useState('');
@@ -48,22 +46,22 @@ export function QueueBoard() {
         value={status}
         onChange={(e) => setStatus(e.target.value as QueueStatus | '' | 'ALL')}
         className="h-8 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-        aria-label="Filter by status"
+        aria-label={t('board.filter.byStatus')}
       >
-        <option value="">Active patients</option>
+        <option value="">{t('board.filter.active')}</option>
         {ALL_STATUSES.map((s) => (
-          <option key={s.value} value={s.value}>{s.label}</option>
+          <option key={s} value={s}>{t(`status.${s}` as Parameters<ReturnType<typeof useTranslations<'queue'>>>[0])}</option>
         ))}
-        <option value="ALL">All statuses</option>
+        <option value="ALL">{t('board.filter.all')}</option>
       </select>
 
       <select
         value={doctorId}
         onChange={(e) => setDoctorId(e.target.value)}
         className="h-8 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-        aria-label="Filter by doctor"
+        aria-label={t('board.filter.byDoctor')}
       >
-        <option value="">All doctors</option>
+        <option value="">{tCommon('filter.allDoctors')}</option>
         {doctorsData?.data.map((d) => (
           <option key={d.id} value={d.id}>
             Dr. {d.user.firstName} {d.user.lastName}
@@ -78,7 +76,7 @@ export function QueueBoard() {
           onChange={(e) => setTodayOnly(e.target.checked)}
           className="rounded border"
         />
-        Today only
+        {t('board.filter.todayOnly')}
       </label>
 
       {(status || doctorId || !todayOnly) && (
@@ -86,24 +84,26 @@ export function QueueBoard() {
           onClick={() => { setStatus(''); setDoctorId(''); setTodayOnly(true); }}
           className="h-8 rounded-md border px-3 text-xs text-muted-foreground transition-colors hover:bg-accent"
         >
-          Clear filters
+          {tCommon('filter.clearFilters')}
         </button>
       )}
 
       <div className="ms-auto flex items-center gap-2">
         {dataUpdatedAt > 0 && !isFetching && (
           <span className="text-xs text-muted-foreground">
-            Updated {new Date(dataUpdatedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+            {t('board.updatedAt', {
+              time: new Date(dataUpdatedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+            })}
           </span>
         )}
         {isFetching && !isLoading && (
-          <span className="text-xs text-muted-foreground">Refreshing…</span>
+          <span className="text-xs text-muted-foreground">{t('board.refreshing')}</span>
         )}
         <button
           onClick={() => refetch()}
           disabled={isFetching}
           className="inline-flex h-8 w-8 items-center justify-center rounded-md border transition-colors hover:bg-accent disabled:opacity-40"
-          aria-label="Refresh now"
+          aria-label={t('board.refreshLabel')}
         >
           <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin' : ''}`} />
         </button>
@@ -124,33 +124,31 @@ export function QueueBoard() {
     );
   }
 
-  // Full error — no cached data to fall back on
   if (isError && !data) {
     return (
       <div className="space-y-4">
         {filters}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-16 text-center">
-          <p className="text-sm font-medium text-destructive">Failed to load queue</p>
+          <p className="text-sm font-medium text-destructive">{t('board.error.loadFailed')}</p>
           <p className="max-w-xs text-xs text-muted-foreground">
-            {error instanceof Error ? error.message : 'An unexpected error occurred.'}
+            {error instanceof Error ? error.message : tCommon('states.error')}
           </p>
           <button
             onClick={() => refetch()}
             className="mt-1 h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
           >
-            Try again
+            {tCommon('actions.tryAgain')}
           </button>
         </div>
       </div>
     );
   }
 
-  // Stale-data banner — background refresh failed but previous data still shown
   const staleErrorBanner = isError && data ? (
     <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-400">
-      <span>Live refresh failed — showing cached data.</span>
+      <span>{t('board.stale')}</span>
       <button onClick={() => refetch()} className="ms-2 underline hover:no-underline">
-        Retry
+        {t('board.retry')}
       </button>
     </div>
   ) : null;
@@ -162,11 +160,11 @@ export function QueueBoard() {
         {staleErrorBanner}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
           <Inbox className="h-8 w-8 text-muted-foreground/50" />
-          <p className="text-sm font-medium">Queue is empty</p>
+          <p className="text-sm font-medium">{t('board.empty.heading')}</p>
           <p className="text-xs text-muted-foreground">
             {status || doctorId || !todayOnly
-              ? 'Try adjusting your filters.'
-              : 'No patients checked in yet today.'}
+              ? t('board.empty.withFilters')
+              : t('board.empty.noCheckins')}
           </p>
         </div>
       </div>
@@ -191,7 +189,7 @@ export function QueueBoard() {
         ))}
       </div>
       <p className="text-xs text-muted-foreground">
-        {data.total} patient{data.total !== 1 ? 's' : ''}{status === '' ? ' active' : ''}
+        {t('board.activeCount', { count: data.total })}
       </p>
     </div>
   );

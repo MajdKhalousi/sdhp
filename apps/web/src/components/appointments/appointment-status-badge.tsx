@@ -8,7 +8,7 @@ const STATUS_CONFIG: Record<AppointmentStatus, { label: string; variant: BadgeVa
   CONFIRMED:   { label: 'Confirmed',   variant: 'default'  },
   CHECKED_IN:  { label: 'Checked In',  variant: 'warning'  },
   IN_QUEUE:    { label: 'In Queue',    variant: 'warning'  },
-  IN_PROGRESS: { label: 'In Progress', variant: 'warning'  },
+  IN_PROGRESS: { label: 'In Progress', variant: 'default'  },
   COMPLETED:   { label: 'Completed',   variant: 'success'  },
   CANCELLED:   { label: 'Cancelled',   variant: 'danger'   },
   NO_SHOW:     { label: 'No Show',     variant: 'danger'   },

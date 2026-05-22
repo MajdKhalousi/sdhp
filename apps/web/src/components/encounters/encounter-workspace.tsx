@@ -192,7 +192,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
 
       {/* ── Clinical ────────────────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card p-5">
-        <SectionHeading icon={FileText}>Subjective — Chief Complaint & Notes</SectionHeading>
+        <SectionHeading icon={FileText}>Chief Complaint & Clinical Notes</SectionHeading>
         <div className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-sm font-medium" htmlFor="chiefComplaint">Chief Complaint</label>
@@ -201,19 +201,19 @@ export function EncounterWorkspace({ encounterId }: Props) {
               type="text"
               value={form.chiefComplaint}
               onChange={(e) => setField('chiefComplaint', e.target.value)}
-              placeholder="Primary reason for visit"
+              placeholder="e.g. Persistent headache for 3 days, worsening at night"
               disabled={readOnly}
               className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium" htmlFor="notes">Notes</label>
+            <label className="text-sm font-medium" htmlFor="notes">Examination & Findings</label>
             <textarea
               id="notes"
               rows={4}
               value={form.notes}
               onChange={(e) => setField('notes', e.target.value)}
-              placeholder="Clinical observations, history, exam findings…"
+              placeholder="e.g. BP 138/88, HR 76 bpm. Throat mildly inflamed. No fever. Lungs clear."
               disabled={readOnly}
               className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
@@ -223,7 +223,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
 
       {/* ── Vitals ──────────────────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card p-5">
-        <SectionHeading icon={Activity}>Objective — Vitals</SectionHeading>
+        <SectionHeading icon={Activity}>Vitals & Measurements</SectionHeading>
         <VitalsForm
           vitals={form.vitals}
           onChange={(v) => setField('vitals', v)}
@@ -233,7 +233,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
 
       {/* ── Diagnosis & Treatment ────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card p-5">
-        <SectionHeading icon={Stethoscope}>Assessment &amp; Plan</SectionHeading>
+        <SectionHeading icon={Stethoscope}>Diagnosis &amp; Treatment Plan</SectionHeading>
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
@@ -243,7 +243,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
                 type="text"
                 value={form.diagnosis}
                 onChange={(e) => setField('diagnosis', e.target.value)}
-                placeholder="Diagnosis description"
+                placeholder="e.g. Acute pharyngitis with hypertensive episode"
                 disabled={readOnly}
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
               />
@@ -268,7 +268,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
               rows={3}
               value={form.treatmentPlan}
               onChange={(e) => setField('treatmentPlan', e.target.value)}
-              placeholder="Medications, procedures, referrals…"
+              placeholder="e.g. Ibuprofen 400mg TID × 7 days. ENT referral if no improvement in 1 week."
               disabled={readOnly}
               className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />

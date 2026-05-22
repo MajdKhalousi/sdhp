@@ -18,8 +18,8 @@ export default function EncounterPage({ params }: Props) {
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
-          <h1 className="text-xl font-semibold">Encounter Workspace</h1>
-          <p className="text-sm text-muted-foreground">Document clinical findings and end the encounter when complete</p>
+          <h1 className="text-xl font-semibold">Active Visit</h1>
+          <p className="text-sm text-muted-foreground">Document clinical findings and close the visit when complete</p>
         </div>
       </div>
 

@@ -8,11 +8,6 @@ import {
   Users,
   Calendar,
   ListOrdered,
-  Stethoscope,
-  Building2,
-  UserCog,
-  ClipboardList,
-  Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -20,56 +15,22 @@ const navItems = [
   {
     href: '/dashboard',
     label: 'Dashboard',
-    labelAr: 'لوحة التحكم',
     icon: LayoutDashboard,
   },
   {
     href: '/dashboard/patients',
     label: 'Patients',
-    labelAr: 'المرضى',
     icon: Users,
   },
   {
     href: '/dashboard/appointments',
     label: 'Appointments',
-    labelAr: 'المواعيد',
     icon: Calendar,
   },
   {
     href: '/dashboard/queue',
     label: 'Queue',
-    labelAr: 'الطابور',
     icon: ListOrdered,
-  },
-  {
-    href: '/dashboard/encounters',
-    label: 'Encounters',
-    labelAr: 'الزيارات',
-    icon: ClipboardList,
-  },
-  {
-    href: '/dashboard/doctors',
-    label: 'Doctors',
-    labelAr: 'الأطباء',
-    icon: Stethoscope,
-  },
-  {
-    href: '/dashboard/departments',
-    label: 'Departments',
-    labelAr: 'الأقسام',
-    icon: Building2,
-  },
-  {
-    href: '/dashboard/staff',
-    label: 'Staff',
-    labelAr: 'الكوادر',
-    icon: UserCog,
-  },
-  {
-    href: '/dashboard/settings',
-    label: 'Settings',
-    labelAr: 'الإعدادات',
-    icon: Settings,
   },
 ];
 

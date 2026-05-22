@@ -8,6 +8,7 @@ import { PatientHeader } from '@/components/patients/patient-header';
 import { Tabs, TabPanel, type TabItem } from '@/components/ui/tabs';
 import { TimelineTab } from '@/components/patients/timeline/timeline-tab';
 import { ClinicalTypeTab } from '@/components/patients/clinical-type-tab';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { Patient } from '@/hooks/use-patient';
 import type { Allergy } from '@/hooks/use-allergies';
@@ -195,7 +196,11 @@ export default function PatientPage({ params }: { params: { id: string } }) {
           {patient ? (
             <OverviewTab patient={patient} allergies={allergies} />
           ) : (
-            <div className="h-48" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Skeleton className="h-52 rounded-xl" />
+              <Skeleton className="h-52 rounded-xl" />
+              <Skeleton className="h-24 rounded-xl sm:col-span-2" />
+            </div>
           )}
         </TabPanel>
 

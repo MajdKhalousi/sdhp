@@ -39,7 +39,7 @@ export function EndEncounterButton({ encounterId, alreadyEnded }: EndEncounterBu
     return (
       <div className="flex flex-col gap-2">
         <p className="text-sm font-medium text-foreground">
-          End this encounter? This will mark the appointment as completed.
+          Close this visit? The encounter will be locked and the appointment marked complete.
         </p>
         {error && <p className="text-xs text-destructive">{error}</p>}
         <div className="flex items-center gap-2">
@@ -48,7 +48,7 @@ export function EndEncounterButton({ encounterId, alreadyEnded }: EndEncounterBu
             disabled={isPending}
             className="inline-flex h-8 items-center gap-1.5 rounded-md bg-destructive px-3 text-xs font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isPending ? 'Ending…' : 'Yes, End Encounter'}
+            {isPending ? 'Closing…' : 'Close Visit'}
           </button>
           <button
             onClick={() => setConfirming(false)}
@@ -68,7 +68,7 @@ export function EndEncounterButton({ encounterId, alreadyEnded }: EndEncounterBu
         onClick={() => setConfirming(true)}
         className="inline-flex h-9 items-center rounded-md border border-destructive/40 px-4 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
       >
-        End Encounter
+        Close Visit
       </button>
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>

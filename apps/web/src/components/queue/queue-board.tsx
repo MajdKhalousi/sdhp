@@ -24,15 +24,17 @@ function todayDate() {
   return new Date().toISOString().slice(0, 10);
 }
 
+const ACTIVE_STATUSES: QueueStatus[] = ['WAITING', 'CALLED', 'IN_PROGRESS'];
+
 export function QueueBoard() {
-  const [status, setStatus] = useState<QueueStatus | ''>('');
+  const [status, setStatus] = useState<QueueStatus | '' | 'ALL'>('');
   const [todayOnly, setTodayOnly] = useState(true);
   const [doctorId, setDoctorId] = useState('');
 
   const date = todayOnly ? todayDate() : '';
 
   const { data, isLoading, isError, error, refetch, isFetching, dataUpdatedAt } = useQueue({
-    ...(status ? { status: [status] } : {}),
+    ...(status === 'ALL' ? {} : { status: status ? [status as QueueStatus] : ACTIVE_STATUSES }),
     ...(date ? { date } : {}),
     ...(doctorId ? { doctorId } : {}),
     limit: 100,
@@ -44,14 +46,15 @@ export function QueueBoard() {
     <div className="flex flex-wrap items-center gap-2">
       <select
         value={status}
-        onChange={(e) => setStatus(e.target.value as QueueStatus | '')}
+        onChange={(e) => setStatus(e.target.value as QueueStatus | '' | 'ALL')}
         className="h-8 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
         aria-label="Filter by status"
       >
-        <option value="">All statuses</option>
+        <option value="">Active patients</option>
         {ALL_STATUSES.map((s) => (
           <option key={s.value} value={s.value}>{s.label}</option>
         ))}
+        <option value="ALL">All statuses</option>
       </select>
 
       <select
@@ -187,7 +190,9 @@ export function QueueBoard() {
           </div>
         ))}
       </div>
-      <p className="text-xs text-muted-foreground">{data.total} entries total</p>
+      <p className="text-xs text-muted-foreground">
+        {data.total} patient{data.total !== 1 ? 's' : ''}{status === '' ? ' active' : ''}
+      </p>
     </div>
   );
 }

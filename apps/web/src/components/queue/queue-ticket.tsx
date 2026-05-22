@@ -5,9 +5,9 @@ import type { QueueEntry, QueueStatus } from '@/types/queue';
 function relativeTime(iso: string) {
   const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
   if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 60) return `${mins}m`;
   const hrs = Math.floor(mins / 60);
-  return `${hrs}h ${mins % 60}m ago`;
+  return `${hrs}h ${mins % 60}m`;
 }
 
 const STATUS_LEFT: Record<QueueStatus, string> = {
@@ -47,6 +47,7 @@ export function QueueTicket({ entry }: { entry: QueueEntry }) {
         <p className="truncate text-xs text-muted-foreground">
           Dr. {doctor.user.firstName} {doctor.user.lastName}
           {doctor.specialization ? ` · ${doctor.specialization}` : ''}
+          {patient.phone ? ` · ${patient.phone}` : ''}
         </p>
       </div>
 
@@ -58,7 +59,7 @@ export function QueueTicket({ entry }: { entry: QueueEntry }) {
           </>
         ) : (
           <>
-            <p className="text-xs text-muted-foreground">Wait</p>
+            <p className="text-xs text-muted-foreground">In queue</p>
             <p className="text-sm tabular-nums">{relativeTime(createdAt)}</p>
           </>
         )}

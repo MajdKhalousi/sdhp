@@ -5,8 +5,11 @@ import { RefreshCw, Inbox } from 'lucide-react';
 import { useQueue } from '@/hooks/use-queue';
 import { useDoctorsList } from '@/hooks/use-appointments';
 import { QueueTicket } from './queue-ticket';
+import { SkipQueueButton } from './skip-queue-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { QueueStatus } from '@/types/queue';
+
+const SKIPPABLE: QueueStatus[] = ['WAITING', 'CALLED'];
 
 const ALL_STATUSES: { value: QueueStatus; label: string }[] = [
   { value: 'WAITING',     label: 'Waiting'     },
@@ -152,7 +155,14 @@ export function QueueBoard() {
       {filters}
       <div className="space-y-3">
         {data.data.map((entry) => (
-          <QueueTicket key={entry.id} entry={entry} />
+          <div key={entry.id} className="space-y-1">
+            <QueueTicket entry={entry} />
+            {SKIPPABLE.includes(entry.status) && (
+              <div className="flex justify-end px-1">
+                <SkipQueueButton entryId={entry.id} />
+              </div>
+            )}
+          </div>
         ))}
       </div>
       <p className="text-xs text-muted-foreground">{data.total} entries total</p>

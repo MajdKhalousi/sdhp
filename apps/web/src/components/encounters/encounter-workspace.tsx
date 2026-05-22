@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { useEncounter, useUpdateEncounter } from '@/hooks/use-encounters';
+import { useAllergies } from '@/hooks/use-allergies';
 import { VitalsForm } from './vitals-form';
 import { EndEncounterButton } from './end-encounter-button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -53,6 +55,7 @@ interface Props { encounterId: string }
 export function EncounterWorkspace({ encounterId }: Props) {
   const { data: encounter, isLoading, isError, error, refetch } = useEncounter(encounterId);
   const { mutate: update, isPending: saving } = useUpdateEncounter();
+  const { data: allergies = [] } = useAllergies(encounter?.patient.id ?? '');
 
   const [form, setForm] = useState<WorkspaceForm | null>(null);
   const [savedAt, setSavedAt] = useState<string | null>(null);
@@ -166,6 +169,19 @@ export function EncounterWorkspace({ encounterId }: Props) {
         </div>
       </div>
 
+      {/* ── Allergies banner ────────────────────────────────────────────── */}
+      {allergies.length > 0 && (
+        <div className="flex items-start gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 dark:border-orange-900/40 dark:bg-orange-950/20">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-orange-600 dark:text-orange-400" />
+          <div>
+            <p className="text-xs font-semibold text-orange-700 dark:text-orange-400">Known Allergies</p>
+            <p className="mt-0.5 text-xs text-orange-700/80 dark:text-orange-400/80">
+              {allergies.map((a) => a.substance).join(' · ')}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ── Clinical ────────────────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card p-5">
         <SectionHeading>Clinical Notes</SectionHeading>
@@ -266,9 +282,37 @@ export function EncounterWorkspace({ encounterId }: Props) {
       {/* ── Actions ─────────────────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card p-5">
         {isEnded ? (
-          <p className="text-sm text-muted-foreground">
-            This encounter is complete. The record is read-only.
-          </p>
+          <div className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Encounter Summary
+            </p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div>
+                <p className="text-xs text-muted-foreground">Diagnosis</p>
+                <p className="mt-0.5 text-sm font-medium">
+                  {encounter.diagnosis || '—'}
+                  {encounter.diagnosisCode && (
+                    <span className="ml-1.5 font-mono text-xs text-muted-foreground">
+                      ({encounter.diagnosisCode})
+                    </span>
+                  )}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Follow-up</p>
+                <p className="mt-0.5 text-sm font-medium">
+                  {encounter.followUpDate
+                    ? formatDateTime(encounter.followUpDate)
+                    : 'Not scheduled'}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Ended</p>
+                <p className="mt-0.5 text-sm font-medium">{formatDateTime(encounter.endedAt)}</p>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">This encounter is complete. The record is read-only.</p>
+          </div>
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">

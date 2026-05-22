@@ -167,7 +167,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
               {doctor.specialization && ` · ${doctor.specialization}`}
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-right text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-2 text-end text-xs text-muted-foreground">
             <Badge variant={isEnded ? 'success' : 'warning'}>
               {isEnded ? 'Completed' : 'In Progress'}
             </Badge>
@@ -199,6 +199,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
             <input
               id="chiefComplaint"
               type="text"
+              dir="auto"
               value={form.chiefComplaint}
               onChange={(e) => setField('chiefComplaint', e.target.value)}
               placeholder="e.g. Persistent headache for 3 days, worsening at night"
@@ -211,6 +212,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
             <textarea
               id="notes"
               rows={4}
+              dir="auto"
               value={form.notes}
               onChange={(e) => setField('notes', e.target.value)}
               placeholder="e.g. BP 138/88, HR 76 bpm. Throat mildly inflamed. No fever. Lungs clear."
@@ -241,6 +243,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
               <input
                 id="diagnosis"
                 type="text"
+                dir="auto"
                 value={form.diagnosis}
                 onChange={(e) => setField('diagnosis', e.target.value)}
                 placeholder="e.g. Acute pharyngitis with hypertensive episode"
@@ -253,6 +256,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
               <input
                 id="diagnosisCode"
                 type="text"
+                dir="ltr"
                 value={form.diagnosisCode}
                 onChange={(e) => setField('diagnosisCode', e.target.value)}
                 placeholder="e.g. I20.9"
@@ -266,6 +270,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
             <textarea
               id="treatmentPlan"
               rows={3}
+              dir="auto"
               value={form.treatmentPlan}
               onChange={(e) => setField('treatmentPlan', e.target.value)}
               placeholder="e.g. Ibuprofen 400mg TID × 7 days. ENT referral if no improvement in 1 week."
@@ -278,6 +283,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
             <input
               id="followUpDate"
               type="date"
+              dir="ltr"
               value={form.followUpDate}
               onChange={(e) => setField('followUpDate', e.target.value)}
               disabled={readOnly}
@@ -307,7 +313,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
                 <p className="mt-0.5 text-sm font-medium">
                   {encounter.diagnosis || '—'}
                   {encounter.diagnosisCode && (
-                    <span className="ml-1.5 font-mono text-xs text-muted-foreground">
+                    <span className="ms-1.5 font-mono text-xs text-muted-foreground" dir="ltr">
                       ({encounter.diagnosisCode})
                     </span>
                   )}

@@ -32,13 +32,14 @@ export function VitalsForm({ vitals, onChange, disabled }: VitalsFormProps) {
             <input
               id={`vital-${key}`}
               type="text"
+              dir="ltr"
               value={vitals[key] ?? ''}
               onChange={(e) => handleChange(key, e.target.value)}
               placeholder={placeholder}
               disabled={disabled}
-              className="h-8 w-full rounded-md border bg-background px-2.5 pr-10 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
+              className="h-8 w-full rounded-md border bg-background px-2.5 pe-10 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
-            <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+            <span className="pointer-events-none absolute end-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
               {unit}
             </span>
           </div>

@@ -8,7 +8,7 @@ export function PrescriptionCard({ event }: Props) {
   const details = [data.dosage, data.frequency, data.duration].filter(Boolean).join(' · ');
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-l-4 border-l-green-400">
+    <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-s-4 border-s-green-400">
       <div className="flex items-start justify-between gap-2 mb-2">
         <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
           Prescription
@@ -19,7 +19,7 @@ export function PrescriptionCard({ event }: Props) {
       <p className="font-medium text-sm text-foreground">{data.medication}</p>
 
       {details && (
-        <p className="mt-1 text-xs text-muted-foreground">{details}</p>
+        <p className="mt-1 text-xs text-muted-foreground" dir="ltr">{details}</p>
       )}
     </div>
   );

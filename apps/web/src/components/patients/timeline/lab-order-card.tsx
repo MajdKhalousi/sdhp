@@ -28,7 +28,7 @@ export function LabOrderCard({ event }: Props) {
   const doctor = `Dr. ${data.orderedBy.firstName} ${data.orderedBy.lastName}`;
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-l-4 border-l-amber-400">
+    <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-s-4 border-s-amber-400">
       <div className="flex items-start justify-between gap-2 mb-2">
         <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
           Lab Order
@@ -39,7 +39,7 @@ export function LabOrderCard({ event }: Props) {
       <p className="font-medium text-sm text-foreground">
         {data.testName}
         {data.testCode && (
-          <span className="ml-1.5 font-mono text-xs text-muted-foreground">({data.testCode})</span>
+          <span className="ms-1.5 font-mono text-xs text-muted-foreground" dir="ltr">({data.testCode})</span>
         )}
       </p>
 

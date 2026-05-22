@@ -28,7 +28,7 @@ export function RadiologyOrderCard({ event }: Props) {
   const doctor = `Dr. ${data.orderedBy.firstName} ${data.orderedBy.lastName}`;
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-l-4 border-l-purple-400">
+    <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-s-4 border-s-purple-400">
       <div className="flex items-start justify-between gap-2 mb-2">
         <span className="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
           Radiology
@@ -39,7 +39,7 @@ export function RadiologyOrderCard({ event }: Props) {
       <p className="font-medium text-sm text-foreground">
         {data.modality}
         {data.bodyPart && (
-          <span className="ml-1.5 text-xs text-muted-foreground">— {data.bodyPart}</span>
+          <span className="ms-1.5 text-xs text-muted-foreground">— {data.bodyPart}</span>
         )}
       </p>
 

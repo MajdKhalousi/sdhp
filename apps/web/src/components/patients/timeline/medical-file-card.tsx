@@ -27,7 +27,7 @@ export function MedicalFileCard({ event }: Props) {
   const uploader = `${data.uploadedBy.firstName} ${data.uploadedBy.lastName}`;
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-l-4 border-l-slate-400">
+    <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-s-4 border-s-slate-400">
       <div className="flex items-start justify-between gap-2 mb-2">
         <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-400">
           File
@@ -37,7 +37,7 @@ export function MedicalFileCard({ event }: Props) {
 
       <p className="font-medium text-sm text-foreground">{CATEGORY_LABELS[data.category]}</p>
 
-      <p className="mt-1 text-xs text-muted-foreground">
+      <p className="mt-1 text-xs text-muted-foreground" dir="ltr">
         {data.mimeType} · {formatBytes(data.sizeBytes)}
       </p>
 

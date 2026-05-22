@@ -18,7 +18,7 @@ export function EncounterCard({ event }: Props) {
   const isActive = !data.endedAt;
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-l-4 border-l-blue-400">
+    <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-s-4 border-s-blue-400">
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-1.5">
           <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
@@ -50,7 +50,7 @@ export function EncounterCard({ event }: Props) {
       {(data.diagnosisCode || data.hasDiagnosis) && (
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {data.diagnosisCode && (
-            <span className="font-mono text-xs text-foreground">{data.diagnosisCode}</span>
+            <span className="font-mono text-xs text-foreground" dir="ltr">{data.diagnosisCode}</span>
           )}
           {data.hasDiagnosis && !data.diagnosisCode && (
             <Badge variant="outline" className="text-xs">Diagnosis on record</Badge>

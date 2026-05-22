@@ -350,14 +350,13 @@
         "height":            "cm"
       },
       "placeholders": {
-        "temperature":       "36.5",
-        "systolic":          "120",
-        "diastolic":         "80",
+        "temperature":       "37.0",
+        "bloodPressure":     "120/80",
         "heartRate":         "72",
         "oxygenSaturation":  "98",
         "respiratoryRate":   "16",
         "weight":            "70",
-        "height":            "175"
+        "height":            "170"
       }
     }
   },

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useUpdateEncounter } from '@/hooks/use-encounters';
 
 interface EndEncounterButtonProps {
@@ -10,6 +11,8 @@ interface EndEncounterButtonProps {
 }
 
 export function EndEncounterButton({ encounterId, alreadyEnded }: EndEncounterButtonProps) {
+  const t = useTranslations('encounter');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState('');
@@ -17,7 +20,7 @@ export function EndEncounterButton({ encounterId, alreadyEnded }: EndEncounterBu
 
   if (alreadyEnded) {
     return (
-      <span className="text-xs text-muted-foreground">Encounter already ended</span>
+      <span className="text-xs text-muted-foreground">{t('close.alreadyEnded')}</span>
     );
   }
 
@@ -29,7 +32,7 @@ export function EndEncounterButton({ encounterId, alreadyEnded }: EndEncounterBu
         onSuccess: () => router.push('/dashboard/doctor/queue'),
         onError: (e) => {
           setConfirming(false);
-          setError(e instanceof Error ? e.message : 'Failed to end encounter');
+          setError(e instanceof Error ? e.message : t('close.failed'));
         },
       },
     );
@@ -39,7 +42,7 @@ export function EndEncounterButton({ encounterId, alreadyEnded }: EndEncounterBu
     return (
       <div className="flex flex-col gap-2">
         <p className="text-sm font-medium text-foreground">
-          Close this visit? The encounter will be locked and the appointment marked complete.
+          {t('close.confirm')}
         </p>
         {error && <p className="text-xs text-destructive">{error}</p>}
         <div className="flex items-center gap-2">
@@ -48,14 +51,14 @@ export function EndEncounterButton({ encounterId, alreadyEnded }: EndEncounterBu
             disabled={isPending}
             className="inline-flex h-8 items-center gap-1.5 rounded-md bg-destructive px-3 text-xs font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isPending ? 'Closing…' : 'Close Visit'}
+            {isPending ? t('actions.closing') : t('actions.closeVisit')}
           </button>
           <button
             onClick={() => setConfirming(false)}
             disabled={isPending}
             className="h-8 rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-60"
           >
-            Cancel
+            {tCommon('actions.cancel')}
           </button>
         </div>
       </div>
@@ -68,7 +71,7 @@ export function EndEncounterButton({ encounterId, alreadyEnded }: EndEncounterBu
         onClick={() => setConfirming(true)}
         className="inline-flex h-9 items-center rounded-md border border-destructive/40 px-4 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
       >
-        Close Visit
+        {t('actions.closeVisit')}
       </button>
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>

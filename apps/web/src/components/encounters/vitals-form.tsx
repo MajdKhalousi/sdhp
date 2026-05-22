@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import type { VitalsPayload } from '@/types/encounter';
 
 interface VitalsFormProps {
@@ -6,27 +9,26 @@ interface VitalsFormProps {
   disabled?: boolean;
 }
 
-const VITALS_FIELDS: { key: keyof VitalsPayload; label: string; placeholder: string; unit: string }[] = [
-  { key: 'temperature',      label: 'Temperature',       placeholder: '37.0',    unit: '°C'         },
-  { key: 'bloodPressure',    label: 'Blood Pressure',    placeholder: '120/80',  unit: 'mmHg'       },
-  { key: 'heartRate',        label: 'Heart Rate',        placeholder: '72',      unit: 'bpm'        },
-  { key: 'oxygenSaturation', label: 'O₂ Saturation',    placeholder: '98',      unit: '%'          },
-  { key: 'respiratoryRate',  label: 'Respiratory Rate',  placeholder: '16',      unit: 'breaths/min'},
-  { key: 'weight',           label: 'Weight',            placeholder: '70',      unit: 'kg'         },
-  { key: 'height',           label: 'Height',            placeholder: '170',     unit: 'cm'         },
+const VITALS_KEYS: (keyof VitalsPayload)[] = [
+  'temperature', 'bloodPressure', 'heartRate',
+  'oxygenSaturation', 'respiratoryRate', 'weight', 'height',
 ];
 
+type VitalsKey = keyof VitalsPayload;
+
 export function VitalsForm({ vitals, onChange, disabled }: VitalsFormProps) {
-  function handleChange(key: keyof VitalsPayload, value: string) {
+  const t = useTranslations('encounter.vitals');
+
+  function handleChange(key: VitalsKey, value: string) {
     onChange({ ...vitals, [key]: value });
   }
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-      {VITALS_FIELDS.map(({ key, label, placeholder, unit }) => (
+      {VITALS_KEYS.map((key) => (
         <div key={key} className="space-y-1">
           <label className="text-xs font-medium text-muted-foreground" htmlFor={`vital-${key}`}>
-            {label}
+            {t(`fields.${key}` as Parameters<typeof t>[0])}
           </label>
           <div className="relative">
             <input
@@ -35,12 +37,12 @@ export function VitalsForm({ vitals, onChange, disabled }: VitalsFormProps) {
               dir="ltr"
               value={vitals[key] ?? ''}
               onChange={(e) => handleChange(key, e.target.value)}
-              placeholder={placeholder}
+              placeholder={t(`placeholders.${key}` as Parameters<typeof t>[0])}
               disabled={disabled}
               className="h-8 w-full rounded-md border bg-background px-2.5 pe-10 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
             <span className="pointer-events-none absolute end-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-              {unit}
+              {t(`units.${key}` as Parameters<typeof t>[0])}
             </span>
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { AlertTriangle, Activity, FileText, Stethoscope, Pill, CheckCircle2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEncounter, useUpdateEncounter } from '@/hooks/use-encounters';
 import { useAllergies } from '@/hooks/use-allergies';
 import { VitalsForm } from './vitals-form';
@@ -61,6 +62,9 @@ function SectionHeading({
 interface Props { encounterId: string }
 
 export function EncounterWorkspace({ encounterId }: Props) {
+  const t = useTranslations('encounter');
+  const tCommon = useTranslations('common');
+
   const { data: encounter, isLoading, isError, error, refetch } = useEncounter(encounterId);
   const { mutate: update, isPending: saving } = useUpdateEncounter();
   const { data: allergies = [] } = useAllergies(encounter?.patient.id ?? '');
@@ -128,15 +132,15 @@ export function EncounterWorkspace({ encounterId }: Props) {
   if (isError || !encounter) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-16 text-center">
-        <p className="text-sm font-medium text-destructive">Failed to load encounter</p>
+        <p className="text-sm font-medium text-destructive">{t('error.loadFailed')}</p>
         <p className="max-w-xs text-xs text-muted-foreground">
-          {error instanceof Error ? error.message : 'Encounter not found.'}
+          {error instanceof Error ? error.message : t('error.notFound')}
         </p>
         <button
           onClick={() => refetch()}
           className="mt-1 h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
         >
-          Try again
+          {tCommon('actions.tryAgain')}
         </button>
       </div>
     );
@@ -169,10 +173,10 @@ export function EncounterWorkspace({ encounterId }: Props) {
           </div>
           <div className="flex flex-wrap items-center gap-2 text-end text-xs text-muted-foreground">
             <Badge variant={isEnded ? 'success' : 'warning'}>
-              {isEnded ? 'Completed' : 'In Progress'}
+              {isEnded ? t('status.completed') : t('status.inProgress')}
             </Badge>
-            <span>Started {formatDateTime(encounter.startedAt ?? encounter.createdAt)}</span>
-            {isEnded && <span>Ended {formatDateTime(encounter.endedAt)}</span>}
+            <span>{t('timestamps.started')} {formatDateTime(encounter.startedAt ?? encounter.createdAt)}</span>
+            {isEnded && <span>{t('timestamps.ended')} {formatDateTime(encounter.endedAt)}</span>}
           </div>
         </div>
       </div>
@@ -182,7 +186,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
         <div className="flex items-start gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 dark:border-orange-900/40 dark:bg-orange-950/20">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-orange-600 dark:text-orange-400" />
           <div>
-            <p className="text-xs font-semibold text-orange-700 dark:text-orange-400">Known Allergies</p>
+            <p className="text-xs font-semibold text-orange-700 dark:text-orange-400">{t('allergies.heading')}</p>
             <p className="mt-0.5 text-xs text-orange-700/80 dark:text-orange-400/80">
               {allergies.map((a) => a.substance).join(' · ')}
             </p>
@@ -192,30 +196,34 @@ export function EncounterWorkspace({ encounterId }: Props) {
 
       {/* ── Clinical ────────────────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card p-5">
-        <SectionHeading icon={FileText}>Chief Complaint & Clinical Notes</SectionHeading>
+        <SectionHeading icon={FileText}>{t('sections.clinicalNotes')}</SectionHeading>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium" htmlFor="chiefComplaint">Chief Complaint</label>
+            <label className="text-sm font-medium" htmlFor="chiefComplaint">
+              {t('fields.chiefComplaintLabel')}
+            </label>
             <input
               id="chiefComplaint"
               type="text"
               dir="auto"
               value={form.chiefComplaint}
               onChange={(e) => setField('chiefComplaint', e.target.value)}
-              placeholder="e.g. Persistent headache for 3 days, worsening at night"
+              placeholder={t('fields.chiefComplaintPlaceholder')}
               disabled={readOnly}
               className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium" htmlFor="notes">Examination & Findings</label>
+            <label className="text-sm font-medium" htmlFor="notes">
+              {t('fields.examinationLabel')}
+            </label>
             <textarea
               id="notes"
               rows={4}
               dir="auto"
               value={form.notes}
               onChange={(e) => setField('notes', e.target.value)}
-              placeholder="e.g. BP 138/88, HR 76 bpm. Throat mildly inflamed. No fever. Lungs clear."
+              placeholder={t('fields.examinationPlaceholder')}
               disabled={readOnly}
               className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
@@ -225,7 +233,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
 
       {/* ── Vitals ──────────────────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card p-5">
-        <SectionHeading icon={Activity}>Vitals & Measurements</SectionHeading>
+        <SectionHeading icon={Activity}>{t('sections.vitals')}</SectionHeading>
         <VitalsForm
           vitals={form.vitals}
           onChange={(v) => setField('vitals', v)}
@@ -235,51 +243,59 @@ export function EncounterWorkspace({ encounterId }: Props) {
 
       {/* ── Diagnosis & Treatment ────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card p-5">
-        <SectionHeading icon={Stethoscope}>Diagnosis &amp; Treatment Plan</SectionHeading>
+        <SectionHeading icon={Stethoscope}>{t('sections.diagnosisAndTreatment')}</SectionHeading>
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium" htmlFor="diagnosis">Diagnosis</label>
+              <label className="text-sm font-medium" htmlFor="diagnosis">
+                {t('fields.diagnosisLabel')}
+              </label>
               <input
                 id="diagnosis"
                 type="text"
                 dir="auto"
                 value={form.diagnosis}
                 onChange={(e) => setField('diagnosis', e.target.value)}
-                placeholder="e.g. Acute pharyngitis with hypertensive episode"
+                placeholder={t('fields.diagnosisPlaceholder')}
                 disabled={readOnly}
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium" htmlFor="diagnosisCode">ICD Code</label>
+              <label className="text-sm font-medium" htmlFor="diagnosisCode">
+                {t('fields.icdCodeLabel')}
+              </label>
               <input
                 id="diagnosisCode"
                 type="text"
                 dir="ltr"
                 value={form.diagnosisCode}
                 onChange={(e) => setField('diagnosisCode', e.target.value)}
-                placeholder="e.g. I20.9"
+                placeholder={t('fields.icdCodePlaceholder')}
                 disabled={readOnly}
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm font-mono outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
               />
             </div>
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium" htmlFor="treatmentPlan">Treatment Plan</label>
+            <label className="text-sm font-medium" htmlFor="treatmentPlan">
+              {t('fields.treatmentPlanLabel')}
+            </label>
             <textarea
               id="treatmentPlan"
               rows={3}
               dir="auto"
               value={form.treatmentPlan}
               onChange={(e) => setField('treatmentPlan', e.target.value)}
-              placeholder="e.g. Ibuprofen 400mg TID × 7 days. ENT referral if no improvement in 1 week."
+              placeholder={t('fields.treatmentPlanPlaceholder')}
               disabled={readOnly}
               className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium" htmlFor="followUpDate">Follow-up Date</label>
+            <label className="text-sm font-medium" htmlFor="followUpDate">
+              {t('fields.followUpDateLabel')}
+            </label>
             <input
               id="followUpDate"
               type="date"
@@ -295,7 +311,7 @@ export function EncounterWorkspace({ encounterId }: Props) {
 
       {/* ── Prescriptions ───────────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card p-5">
-        <SectionHeading icon={Pill}>Prescriptions</SectionHeading>
+        <SectionHeading icon={Pill}>{t('sections.prescriptions')}</SectionHeading>
         <PrescriptionPanel encounterId={encounterId} readOnly={readOnly} />
       </div>
 
@@ -305,11 +321,11 @@ export function EncounterWorkspace({ encounterId }: Props) {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600 dark:text-green-400" />
-              <p className="text-sm font-semibold text-foreground">Encounter Complete</p>
+              <p className="text-sm font-semibold text-foreground">{t('complete.heading')}</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               <div>
-                <p className="text-xs text-muted-foreground">Diagnosis</p>
+                <p className="text-xs text-muted-foreground">{t('complete.diagnosisLabel')}</p>
                 <p className="mt-0.5 text-sm font-medium">
                   {encounter.diagnosis || '—'}
                   {encounter.diagnosisCode && (
@@ -320,19 +336,19 @@ export function EncounterWorkspace({ encounterId }: Props) {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Follow-up</p>
+                <p className="text-xs text-muted-foreground">{t('complete.followUpLabel')}</p>
                 <p className="mt-0.5 text-sm font-medium">
                   {encounter.followUpDate
                     ? formatDateTime(encounter.followUpDate)
-                    : 'Not scheduled'}
+                    : t('complete.notScheduled')}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Ended</p>
+                <p className="text-xs text-muted-foreground">{t('complete.endedLabel')}</p>
                 <p className="mt-0.5 text-sm font-medium">{formatDateTime(encounter.endedAt)}</p>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">This encounter is complete. The record is read-only.</p>
+            <p className="text-xs text-muted-foreground">{t('complete.readOnly')}</p>
           </div>
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -342,10 +358,12 @@ export function EncounterWorkspace({ encounterId }: Props) {
                 disabled={saving}
                 className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {saving ? 'Saving…' : 'Save Changes'}
+                {saving ? t('actions.saving') : t('actions.saveChanges')}
               </button>
               {savedAt && (
-                <span className="text-xs text-muted-foreground">Saved at {savedAt}</span>
+                <span className="text-xs text-muted-foreground">
+                  {t('actions.savedAt', { time: savedAt })}
+                </span>
               )}
               {saveError && (
                 <span className="text-xs text-destructive">{saveError}</span>

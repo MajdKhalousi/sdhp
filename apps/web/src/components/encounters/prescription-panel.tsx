@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   useEncounterPrescriptions,
   useCreatePrescription,
@@ -34,6 +35,8 @@ const FIELD_CLASS =
   'h-8 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring';
 
 export function PrescriptionPanel({ encounterId, readOnly }: Props) {
+  const t = useTranslations('encounter.prescription');
+  const tCommon = useTranslations('common');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<PrescriptionForm>(EMPTY_FORM);
   const [formError, setFormError] = useState('');
@@ -50,7 +53,7 @@ export function PrescriptionPanel({ encounterId, readOnly }: Props) {
 
   function handleAdd() {
     if (!form.medication.trim()) {
-      setFormError('Medication name is required.');
+      setFormError(t('validation.medicationRequired'));
       return;
     }
     const payload: CreatePrescriptionPayload = {
@@ -67,7 +70,7 @@ export function PrescriptionPanel({ encounterId, readOnly }: Props) {
         setShowForm(false);
         setFormError('');
       },
-      onError: (e) => setFormError(e instanceof Error ? e.message : 'Failed to add medication'),
+      onError: (e) => setFormError(e instanceof Error ? e.message : t('error.addFailed')),
     });
   }
 
@@ -89,7 +92,7 @@ export function PrescriptionPanel({ encounterId, readOnly }: Props) {
   return (
     <div className="space-y-2">
       {prescriptions.length === 0 && !showForm && (
-        <p className="text-sm text-muted-foreground">No medications prescribed for this encounter.</p>
+        <p className="text-sm text-muted-foreground">{t('empty')}</p>
       )}
 
       {prescriptions.map((rx) => {
@@ -117,53 +120,63 @@ export function PrescriptionPanel({ encounterId, readOnly }: Props) {
           <div className="rounded-lg border border-dashed border-border p-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1 sm:col-span-2">
-                <label className="text-xs font-medium text-muted-foreground">Medication *</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  {t('fields.medicationLabel')} *
+                </label>
                 <input
                   type="text"
                   value={form.medication}
                   onChange={(e) => setField('medication', e.target.value)}
-                  placeholder="e.g. Amoxicillin 500mg"
+                  placeholder={t('placeholders.medication')}
                   className={FIELD_CLASS}
                   autoFocus
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Dosage</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  {t('fields.dosageLabel')}
+                </label>
                 <input
                   type="text"
                   value={form.dosage}
                   onChange={(e) => setField('dosage', e.target.value)}
-                  placeholder="e.g. 500mg"
+                  placeholder={t('placeholders.dosage')}
                   className={FIELD_CLASS}
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Frequency</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  {t('fields.frequencyLabel')}
+                </label>
                 <input
                   type="text"
                   value={form.frequency}
                   onChange={(e) => setField('frequency', e.target.value)}
-                  placeholder="e.g. Twice daily"
+                  placeholder={t('placeholders.frequency')}
                   className={FIELD_CLASS}
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Duration</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  {t('fields.durationLabel')}
+                </label>
                 <input
                   type="text"
                   value={form.duration}
                   onChange={(e) => setField('duration', e.target.value)}
-                  placeholder="e.g. 7 days"
+                  placeholder={t('placeholders.duration')}
                   className={FIELD_CLASS}
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Instructions</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  {t('fields.instructionsLabel')}
+                </label>
                 <input
                   type="text"
                   value={form.instructions}
                   onChange={(e) => setField('instructions', e.target.value)}
-                  placeholder="e.g. Take with food"
+                  placeholder={t('placeholders.instructions')}
                   className={FIELD_CLASS}
                 />
               </div>
@@ -179,14 +192,14 @@ export function PrescriptionPanel({ encounterId, readOnly }: Props) {
                 disabled={creating}
                 className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {creating ? 'Adding…' : 'Add Medication'}
+                {creating ? t('adding') : t('addMedication')}
               </button>
               <button
                 onClick={handleCancel}
                 disabled={creating}
                 className="inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-60"
               >
-                Cancel
+                {tCommon('actions.cancel')}
               </button>
             </div>
           </div>
@@ -196,7 +209,7 @@ export function PrescriptionPanel({ encounterId, readOnly }: Props) {
             className="mt-1 inline-flex h-8 items-center gap-1.5 rounded-md border border-dashed px-3 text-xs font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary"
           >
             <Plus className="h-3.5 w-3.5" />
-            Add Medication
+            {t('addMedication')}
           </button>
         )
       )}

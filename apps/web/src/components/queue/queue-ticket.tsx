@@ -1,5 +1,5 @@
 import { QueueStatusBadge } from './queue-status-badge';
-import type { QueueEntry } from '@/types/queue';
+import type { QueueEntry, QueueStatus } from '@/types/queue';
 
 function relativeTime(iso: string) {
   const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
@@ -9,12 +9,24 @@ function relativeTime(iso: string) {
   return `${hrs}h ${mins % 60}m ago`;
 }
 
+const STATUS_LEFT: Record<QueueStatus, string> = {
+  WAITING:     'border-l-4 border-l-border',
+  CALLED:      'border-l-4 border-l-amber-400',
+  IN_PROGRESS: 'border-l-4 border-l-primary',
+  DONE:        'border-l-4 border-l-green-400',
+  SKIPPED:     'border-l-4 border-l-muted-foreground/30',
+};
+
 export function QueueTicket({ entry }: { entry: QueueEntry }) {
   const { ticketNumber, status, createdAt, appointment } = entry;
   const { patient, doctor } = appointment;
 
+  const isDim = status === 'DONE' || status === 'SKIPPED';
+
   return (
-    <div className="flex items-center gap-4 rounded-xl border border-border bg-card px-5 py-4">
+    <div
+      className={`flex items-center gap-4 rounded-xl border border-border bg-card px-5 py-4 transition-opacity ${STATUS_LEFT[status]} ${isDim ? 'opacity-55' : ''}`}
+    >
       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-lg font-bold text-primary">
         #{ticketNumber}
       </div>
@@ -34,7 +46,7 @@ export function QueueTicket({ entry }: { entry: QueueEntry }) {
 
       <div className="hidden shrink-0 text-right sm:block">
         <p className="text-xs text-muted-foreground">Wait</p>
-        <p className="text-sm">{relativeTime(createdAt)}</p>
+        <p className="text-sm tabular-nums">{relativeTime(createdAt)}</p>
       </div>
 
       <QueueStatusBadge status={status} />

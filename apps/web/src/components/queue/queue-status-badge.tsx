@@ -4,9 +4,9 @@ import type { QueueStatus } from '@/types/queue';
 type BadgeVariant = BadgeProps['variant'];
 
 const STATUS_CONFIG: Record<QueueStatus, { label: string; variant: BadgeVariant }> = {
-  WAITING:     { label: 'Waiting',     variant: 'default'  },
+  WAITING:     { label: 'Waiting',     variant: 'outline'  },
   CALLED:      { label: 'Called',      variant: 'warning'  },
-  IN_PROGRESS: { label: 'In Progress', variant: 'warning'  },
+  IN_PROGRESS: { label: 'In Progress', variant: 'default'  },
   DONE:        { label: 'Done',        variant: 'success'  },
   SKIPPED:     { label: 'Skipped',     variant: 'danger'   },
 };

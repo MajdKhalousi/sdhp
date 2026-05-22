@@ -75,7 +75,7 @@ export class PrescriptionsService {
     const limit = query.limit ?? 20;
     const skip = (page - 1) * limit;
 
-    const where = await this.buildWhere(caller);
+    const where = await this.buildWhere(caller, query.encounterId);
 
     const [data, total] = await Promise.all([
       this.prisma.prescription.findMany({ where, select: SELECT, orderBy: { createdAt: 'desc' }, skip, take: limit }),
@@ -172,29 +172,32 @@ export class PrescriptionsService {
 
   // ── Private helpers ────────────────────────────────────────────────────────
 
-  private async buildWhere(caller: JwtPayload): Promise<Prisma.PrescriptionWhereInput> {
+  private async buildWhere(caller: JwtPayload, encounterId?: string): Promise<Prisma.PrescriptionWhereInput> {
+    const encounterBase: Prisma.EncounterWhereInput = {
+      deletedAt: null,
+      ...(encounterId ? { id: encounterId } : {}),
+    };
+
     if (caller.role === UserRole.SUPER_ADMIN) {
-      return { deletedAt: null };
+      return { deletedAt: null, ...(encounterId ? { encounter: { id: encounterId } } : {}) };
     }
     if (caller.role === UserRole.DOCTOR) {
       const doctorProfile = await this.prisma.doctor.findFirst({
         where: { userId: caller.sub, deletedAt: null },
         select: { id: true },
       });
-      if (doctorProfile) {
-        return {
-          deletedAt: null,
-          encounter: { organizationId: caller.organizationId, doctorId: doctorProfile.id, deletedAt: null },
-        };
-      }
       return {
         deletedAt: null,
-        encounter: { organizationId: caller.organizationId, deletedAt: null },
+        encounter: {
+          ...encounterBase,
+          organizationId: caller.organizationId,
+          ...(doctorProfile ? { doctorId: doctorProfile.id } : {}),
+        },
       };
     }
     return {
       deletedAt: null,
-      encounter: { organizationId: caller.organizationId, deletedAt: null },
+      encounter: { ...encounterBase, organizationId: caller.organizationId },
     };
   }
 

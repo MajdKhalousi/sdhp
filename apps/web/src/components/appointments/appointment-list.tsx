@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, CalendarX2 } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useAppointments, useDoctorsList } from '@/hooks/use-appointments';
 import { AppointmentStatusBadge } from './appointment-status-badge';
 import { CheckInButton } from '@/components/queue/check-in-button';
@@ -12,15 +13,9 @@ import type { AppointmentStatus } from '@/types/appointment';
 
 const NO_SHOW_ELIGIBLE: AppointmentStatus[] = ['SCHEDULED', 'CONFIRMED'];
 
-const ALL_STATUSES: { value: AppointmentStatus; label: string }[] = [
-  { value: 'SCHEDULED',   label: 'Scheduled'   },
-  { value: 'CONFIRMED',   label: 'Confirmed'   },
-  { value: 'CHECKED_IN',  label: 'Checked In'  },
-  { value: 'IN_QUEUE',    label: 'In Queue'    },
-  { value: 'IN_PROGRESS', label: 'In Progress' },
-  { value: 'COMPLETED',   label: 'Completed'   },
-  { value: 'CANCELLED',   label: 'Cancelled'   },
-  { value: 'NO_SHOW',     label: 'No Show'     },
+const ALL_STATUSES: AppointmentStatus[] = [
+  'SCHEDULED', 'CONFIRMED', 'CHECKED_IN', 'IN_QUEUE',
+  'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW',
 ];
 
 function formatDateTime(iso: string) {
@@ -36,6 +31,9 @@ function formatDateTime(iso: string) {
 const LIMIT = 20;
 
 export function AppointmentList() {
+  const t = useTranslations('appointment');
+  const tCommon = useTranslations('common');
+
   const [status, setStatus] = useState<AppointmentStatus | ''>('');
   const [date, setDate] = useState('');
   const [doctorId, setDoctorId] = useState('');
@@ -64,11 +62,11 @@ export function AppointmentList() {
         value={status}
         onChange={(e) => { setStatus(e.target.value as AppointmentStatus | ''); handleFilterChange(); }}
         className="h-8 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-        aria-label="Filter by status"
+        aria-label={t('list.filter.byStatus')}
       >
-        <option value="">All statuses</option>
+        <option value="">{tCommon('filter.allStatuses')}</option>
         {ALL_STATUSES.map((s) => (
-          <option key={s.value} value={s.value}>{s.label}</option>
+          <option key={s} value={s}>{t(`status.${s}` as Parameters<typeof t>[0])}</option>
         ))}
       </select>
 
@@ -77,16 +75,16 @@ export function AppointmentList() {
         value={date}
         onChange={(e) => { setDate(e.target.value); handleFilterChange(); }}
         className="h-8 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-        aria-label="Filter by date"
+        aria-label={t('list.filter.byDate')}
       />
 
       <select
         value={doctorId}
         onChange={(e) => { setDoctorId(e.target.value); handleFilterChange(); }}
         className="h-8 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-        aria-label="Filter by doctor"
+        aria-label={t('list.filter.byDoctor')}
       >
-        <option value="">All doctors</option>
+        <option value="">{tCommon('filter.allDoctors')}</option>
         {doctorsData?.data.map((d) => (
           <option key={d.id} value={d.id}>
             Dr. {d.user.firstName} {d.user.lastName}
@@ -99,7 +97,7 @@ export function AppointmentList() {
           onClick={() => { setStatus(''); setDate(''); setDoctorId(''); setPage(1); }}
           className="h-8 rounded-md border px-3 text-xs text-muted-foreground transition-colors hover:bg-accent"
         >
-          Clear filters
+          {tCommon('filter.clearFilters')}
         </button>
       )}
     </div>
@@ -115,7 +113,14 @@ export function AppointmentList() {
           <table className="w-full min-w-[640px]">
             <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
               <tr>
-                {['Patient', 'Doctor', 'Scheduled', 'Duration', 'Status', ''].map((h) => (
+                {[
+                  t('list.columns.patient'),
+                  t('list.columns.doctor'),
+                  t('list.columns.scheduled'),
+                  t('list.columns.duration'),
+                  t('list.columns.status'),
+                  '',
+                ].map((h) => (
                   <th key={h} className="px-4 py-3 text-start font-medium">{h}</th>
                 ))}
               </tr>
@@ -146,13 +151,13 @@ export function AppointmentList() {
         <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-16 text-center">
           <p className="text-sm font-medium text-destructive">Failed to load appointments</p>
           <p className="max-w-xs text-xs text-muted-foreground">
-            {error instanceof Error ? error.message : 'An unexpected error occurred.'}
+            {error instanceof Error ? error.message : tCommon('states.error')}
           </p>
           <button
             onClick={() => refetch()}
             className="mt-1 h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
           >
-            Try again
+            {tCommon('actions.tryAgain')}
           </button>
         </div>
       </div>
@@ -166,11 +171,11 @@ export function AppointmentList() {
         {filters}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
           <CalendarX2 className="h-8 w-8 text-muted-foreground/50" />
-          <p className="text-sm font-medium">No appointments found</p>
+          <p className="text-sm font-medium">{t('list.empty.heading')}</p>
           <p className="text-xs text-muted-foreground">
             {status || date || doctorId
-              ? 'Try adjusting your filters.'
-              : 'Create the first appointment to get started.'}
+              ? t('list.empty.withFilters')
+              : t('list.empty.noData')}
           </p>
         </div>
       </div>
@@ -186,11 +191,11 @@ export function AppointmentList() {
         <table className="w-full min-w-[640px]">
           <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
             <tr>
-              <th className="px-4 py-3 text-start font-medium">Patient</th>
-              <th className="px-4 py-3 text-start font-medium">Doctor</th>
-              <th className="px-4 py-3 text-start font-medium">Scheduled</th>
-              <th className="px-4 py-3 text-start font-medium">Duration</th>
-              <th className="px-4 py-3 text-start font-medium">Status</th>
+              <th className="px-4 py-3 text-start font-medium">{t('list.columns.patient')}</th>
+              <th className="px-4 py-3 text-start font-medium">{t('list.columns.doctor')}</th>
+              <th className="px-4 py-3 text-start font-medium">{t('list.columns.scheduled')}</th>
+              <th className="px-4 py-3 text-start font-medium">{t('list.columns.duration')}</th>
+              <th className="px-4 py-3 text-start font-medium">{t('list.columns.status')}</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -218,7 +223,7 @@ export function AppointmentList() {
                 </td>
                 <td className="px-4 py-3 text-sm" dir="ltr">{formatDateTime(appt.scheduledAt)}</td>
                 <td className="px-4 py-3 text-sm text-muted-foreground">
-                  {appt.durationMin} min
+                  {t('list.durationMinutes', { count: appt.durationMin })}
                 </td>
                 <td className="px-4 py-3">
                   <AppointmentStatusBadge status={appt.status} />
@@ -244,14 +249,14 @@ export function AppointmentList() {
       {totalPages > 1 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
-            Page {page} of {totalPages} &mdash; {data.total} total
+            {tCommon('pagination.summary', { page, total: totalPages, count: data.total })}
           </span>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
               className="inline-flex h-7 w-7 items-center justify-center rounded-md border transition-colors hover:bg-accent disabled:opacity-40"
-              aria-label="Previous page"
+              aria-label={tCommon('pagination.previous')}
             >
               <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
             </button>
@@ -259,7 +264,7 @@ export function AppointmentList() {
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               className="inline-flex h-7 w-7 items-center justify-center rounded-md border transition-colors hover:bg-accent disabled:opacity-40"
-              aria-label="Next page"
+              aria-label={tCommon('pagination.next')}
             >
               <ChevronRight className="h-4 w-4 rtl:rotate-180" />
             </button>

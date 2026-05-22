@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCreateAppointment, usePatientsList, useDoctorsList } from '@/hooks/use-appointments';
 
 interface FormState {
@@ -21,6 +22,8 @@ const INITIAL: FormState = {
 };
 
 export function AppointmentForm() {
+  const t = useTranslations('appointment.form');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [form, setForm] = useState<FormState>(INITIAL);
   const [validationError, setValidationError] = useState('');
@@ -39,12 +42,12 @@ export function AppointmentForm() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!form.patientId) { setValidationError('Please select a patient.'); return; }
-    if (!form.doctorId)  { setValidationError('Please select a doctor.');  return; }
-    if (!form.scheduledAt) { setValidationError('Please set the appointment date and time.'); return; }
+    if (!form.patientId)  { setValidationError(t('validation.patientRequired'));  return; }
+    if (!form.doctorId)   { setValidationError(t('validation.doctorRequired'));   return; }
+    if (!form.scheduledAt){ setValidationError(t('validation.dateTimeRequired')); return; }
 
     const duration = parseInt(form.durationMin, 10);
-    if (!duration || duration < 5) { setValidationError('Duration must be at least 5 minutes.'); return; }
+    if (!duration || duration < 5) { setValidationError(t('validation.durationMinimum')); return; }
 
     mutate(
       {
@@ -72,7 +75,7 @@ export function AppointmentForm() {
       {/* Patient */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground" htmlFor="patientId">
-          Patient <span className="text-destructive">*</span>
+          {t('fields.patientLabel')} <span className="text-destructive">*</span>
         </label>
         <select
           id="patientId"
@@ -81,7 +84,7 @@ export function AppointmentForm() {
           disabled={isPending || patientsLoading}
           className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
         >
-          <option value="">{patientsLoading ? 'Loading patients…' : 'Select a patient'}</option>
+          <option value="">{patientsLoading ? t('select.loadingPatients') : t('select.selectPatient')}</option>
           {patientsData?.data.map((p) => (
             <option key={p.id} value={p.id}>
               {p.firstName} {p.lastName} — {p.mrn}
@@ -93,7 +96,7 @@ export function AppointmentForm() {
       {/* Doctor */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground" htmlFor="doctorId">
-          Doctor <span className="text-destructive">*</span>
+          {t('fields.doctorLabel')} <span className="text-destructive">*</span>
         </label>
         <select
           id="doctorId"
@@ -102,7 +105,7 @@ export function AppointmentForm() {
           disabled={isPending || doctorsLoading}
           className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
         >
-          <option value="">{doctorsLoading ? 'Loading doctors…' : 'Select a doctor'}</option>
+          <option value="">{doctorsLoading ? t('select.loadingDoctors') : t('select.selectDoctor')}</option>
           {doctorsData?.data.map((d) => (
             <option key={d.id} value={d.id}>
               Dr. {d.user.firstName} {d.user.lastName}
@@ -115,7 +118,7 @@ export function AppointmentForm() {
       {/* Scheduled At */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground" htmlFor="scheduledAt">
-          Date &amp; Time <span className="text-destructive">*</span>
+          {t('fields.dateTimeLabel')} <span className="text-destructive">*</span>
         </label>
         <input
           id="scheduledAt"
@@ -130,7 +133,7 @@ export function AppointmentForm() {
       {/* Duration */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground" htmlFor="durationMin">
-          Duration (minutes) <span className="text-destructive">*</span>
+          {t('fields.durationLabel')} <span className="text-destructive">*</span>
         </label>
         <input
           id="durationMin"
@@ -147,7 +150,8 @@ export function AppointmentForm() {
       {/* Notes */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground" htmlFor="notes">
-          Notes <span className="text-muted-foreground text-xs">(optional)</span>
+          {t('fields.notesLabel')}{' '}
+          <span className="text-muted-foreground text-xs">{t('fields.notesOptional')}</span>
         </label>
         <textarea
           id="notes"
@@ -155,7 +159,7 @@ export function AppointmentForm() {
           value={form.notes}
           onChange={set('notes')}
           disabled={isPending}
-          placeholder="e.g., Referred by Dr. Khalil — chest pain, follow-up required"
+          placeholder={t('fields.notesPlaceholder')}
           className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
         />
       </div>
@@ -167,7 +171,7 @@ export function AppointmentForm() {
           disabled={isPending}
           className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isPending ? 'Scheduling…' : 'Schedule Appointment'}
+          {isPending ? t('actions.submitting') : t('actions.submit')}
         </button>
         <button
           type="button"
@@ -175,7 +179,7 @@ export function AppointmentForm() {
           disabled={isPending}
           className="inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-60"
         >
-          Cancel
+          {tCommon('actions.cancel')}
         </button>
       </div>
     </form>

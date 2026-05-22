@@ -1,20 +1,25 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import type { AppointmentStatus } from '@/types/appointment';
 
 type BadgeVariant = BadgeProps['variant'];
 
-const STATUS_CONFIG: Record<AppointmentStatus, { label: string; variant: BadgeVariant }> = {
-  SCHEDULED:   { label: 'Scheduled',   variant: 'outline'  },
-  CONFIRMED:   { label: 'Confirmed',   variant: 'default'  },
-  CHECKED_IN:  { label: 'Checked In',  variant: 'warning'  },
-  IN_QUEUE:    { label: 'In Queue',    variant: 'warning'  },
-  IN_PROGRESS: { label: 'In Progress', variant: 'default'  },
-  COMPLETED:   { label: 'Completed',   variant: 'success'  },
-  CANCELLED:   { label: 'Cancelled',   variant: 'danger'   },
-  NO_SHOW:     { label: 'No Show',     variant: 'danger'   },
+const STATUS_VARIANT: Record<AppointmentStatus, BadgeVariant> = {
+  SCHEDULED:   'outline',
+  CONFIRMED:   'default',
+  CHECKED_IN:  'warning',
+  IN_QUEUE:    'warning',
+  IN_PROGRESS: 'default',
+  COMPLETED:   'success',
+  CANCELLED:   'danger',
+  NO_SHOW:     'danger',
 };
 
 export function AppointmentStatusBadge({ status }: { status: AppointmentStatus }) {
-  const { label, variant } = STATUS_CONFIG[status] ?? { label: status, variant: 'outline' };
+  const t = useTranslations('appointment.status');
+  const variant = STATUS_VARIANT[status] ?? 'outline';
+  const label = t(status as Parameters<typeof t>[0]);
   return <Badge variant={variant}>{label}</Badge>;
 }

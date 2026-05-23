@@ -368,11 +368,19 @@ export class EncountersService {
   private async validateAppointment(appointmentId: string, organizationId: string): Promise<void> {
     const appt = await this.prisma.appointment.findFirst({
       where: { id: appointmentId, deletedAt: null },
-      select: { id: true, organizationId: true },
+      select: { id: true, organizationId: true, status: true },
     });
     if (!appt) throw new NotFoundException('Appointment not found');
     if (appt.organizationId !== organizationId) {
       throw new ForbiddenException('Appointment does not belong to this organization');
+    }
+    if (
+      appt.status === AppointmentStatus.CANCELLED ||
+      appt.status === AppointmentStatus.NO_SHOW
+    ) {
+      throw new BadRequestException(
+        `Cannot create an encounter for a ${appt.status.replace('_', ' ').toLowerCase()} appointment`,
+      );
     }
   }
 

@@ -292,9 +292,11 @@ export class EncountersService {
   }
 
   private buildDayRange(date: string): { gte: Date; lt: Date } {
-    const start = new Date(`${date}T00:00:00.000Z`);
-    const end = new Date(`${date}T00:00:00.000Z`);
-    end.setUTCDate(end.getUTCDate() + 1);
+    // 'date' is a calendar date in Asia/Damascus (UTC+3, no DST since 2022).
+    // Damascus midnight = date T00:00:00+03:00 = (date-1)T21:00:00Z.
+    const TZ_OFFSET_MS = 3 * 60 * 60 * 1000;
+    const start = new Date(new Date(`${date}T00:00:00.000Z`).getTime() - TZ_OFFSET_MS);
+    const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
     return { gte: start, lt: end };
   }
 

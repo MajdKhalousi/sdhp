@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AlertTriangle, Activity, FileText, Stethoscope, Pill, CheckCircle2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useEncounter, useUpdateEncounter } from '@/hooks/use-encounters';
 import { useAllergies } from '@/hooks/use-allergies';
 import { VitalsForm } from './vitals-form';
@@ -36,9 +36,9 @@ function toVitals(raw: Record<string, unknown> | null): VitalsPayload {
   };
 }
 
-function formatDateTime(iso: string | null) {
+function formatDateTime(iso: string | null, locale = 'en-US') {
   if (!iso) return '—';
-  return new Date(iso).toLocaleString('en-US', {
+  return new Date(iso).toLocaleString(locale, {
     month: 'short', day: 'numeric', year: 'numeric',
     hour: 'numeric', minute: '2-digit',
   });
@@ -64,6 +64,8 @@ interface Props { encounterId: string }
 export function EncounterWorkspace({ encounterId }: Props) {
   const t = useTranslations('encounter');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
+  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
 
   const { data: encounter, isLoading, isError, error, refetch } = useEncounter(encounterId);
   const { mutate: update, isPending: saving } = useUpdateEncounter();
@@ -73,28 +75,32 @@ export function EncounterWorkspace({ encounterId }: Props) {
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [saveError, setSaveError] = useState('');
 
+  // isDirtyRef: true when the user has unsaved edits; blocks server re-sync
+  // so a background refetch never overwrites in-progress work.
+  const isDirtyRef = useRef(false);
+
   useEffect(() => {
-    if (encounter && !form) {
-      setForm({
-        chiefComplaint: encounter.chiefComplaint ?? '',
-        notes:          encounter.notes ?? '',
-        diagnosis:      encounter.diagnosis ?? '',
-        diagnosisCode:  encounter.diagnosisCode ?? '',
-        treatmentPlan:  encounter.treatmentPlan ?? '',
-        followUpDate:   encounter.followUpDate ? encounter.followUpDate.slice(0, 10) : '',
-        vitals:         toVitals(encounter.vitals),
-      });
-    }
-  }, [encounter, form]);
+    if (!encounter || isDirtyRef.current) return;
+    setForm({
+      chiefComplaint: encounter.chiefComplaint ?? '',
+      notes:          encounter.notes ?? '',
+      diagnosis:      encounter.diagnosis ?? '',
+      diagnosisCode:  encounter.diagnosisCode ?? '',
+      treatmentPlan:  encounter.treatmentPlan ?? '',
+      followUpDate:   encounter.followUpDate ? encounter.followUpDate.slice(0, 10) : '',
+      vitals:         toVitals(encounter.vitals as Record<string, unknown> | null),
+    });
+  }, [encounter]);
 
   function setField<K extends keyof WorkspaceForm>(key: K, value: WorkspaceForm[K]) {
     setForm((prev) => prev ? { ...prev, [key]: value } : prev);
+    isDirtyRef.current = true;
     setSavedAt(null);
     setSaveError('');
   }
 
   function handleSave() {
-    if (!form) return;
+    if (!form || saving) return; // guard against double-submit
     setSaveError('');
 
     const payload: UpdateEncounterPayload = {
@@ -110,7 +116,10 @@ export function EncounterWorkspace({ encounterId }: Props) {
     update(
       { id: encounterId, payload },
       {
-        onSuccess: () => setSavedAt(new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })),
+        onSuccess: () => {
+          isDirtyRef.current = false; // allow server re-sync after successful save
+          setSavedAt(new Date().toLocaleTimeString(displayLocale, { hour: 'numeric', minute: '2-digit' }));
+        },
         onError: (e) => setSaveError(e instanceof Error ? e.message : 'Save failed'),
       },
     );
@@ -175,8 +184,8 @@ export function EncounterWorkspace({ encounterId }: Props) {
             <Badge variant={isEnded ? 'success' : 'warning'}>
               {isEnded ? t('status.completed') : t('status.inProgress')}
             </Badge>
-            <span>{t('timestamps.started')} {formatDateTime(encounter.startedAt ?? encounter.createdAt)}</span>
-            {isEnded && <span>{t('timestamps.ended')} {formatDateTime(encounter.endedAt)}</span>}
+            <span>{t('timestamps.started')} {formatDateTime(encounter.startedAt ?? encounter.createdAt, displayLocale)}</span>
+            {isEnded && <span>{t('timestamps.ended')} {formatDateTime(encounter.endedAt, displayLocale)}</span>}
           </div>
         </div>
       </div>
@@ -339,13 +348,13 @@ export function EncounterWorkspace({ encounterId }: Props) {
                 <p className="text-xs text-muted-foreground">{t('complete.followUpLabel')}</p>
                 <p className="mt-0.5 text-sm font-medium">
                   {encounter.followUpDate
-                    ? formatDateTime(encounter.followUpDate)
+                    ? formatDateTime(encounter.followUpDate, displayLocale)
                     : t('complete.notScheduled')}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">{t('complete.endedLabel')}</p>
-                <p className="mt-0.5 text-sm font-medium">{formatDateTime(encounter.endedAt)}</p>
+                <p className="mt-0.5 text-sm font-medium">{formatDateTime(encounter.endedAt, displayLocale)}</p>
               </div>
             </div>
             <p className="text-xs text-muted-foreground">{t('complete.readOnly')}</p>

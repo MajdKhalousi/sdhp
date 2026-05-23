@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { Search, UserX } from 'lucide-react';
@@ -34,25 +34,27 @@ export default function PatientsPage() {
   const tCommon = useTranslations('common');
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // 350 ms debounce — avoids firing on every keystroke
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(search.trim()), 350);
+    return () => clearTimeout(id);
+  }, [search]);
 
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['patients', 'list'],
-    queryFn: () => api.get<PatientsResponse>('/v1/patients', { limit: 100 }),
+    queryKey: ['patients', 'list', debouncedSearch],
+    queryFn: () =>
+      api.get<PatientsResponse>('/v1/patients', {
+        limit: 100,
+        ...(debouncedSearch ? { search: debouncedSearch } : {}),
+      }),
     staleTime: 60_000,
   });
 
-  const filtered = useMemo(() => {
-    if (!data?.data) return [];
-    const q = search.trim().toLowerCase();
-    if (!q) return data.data;
-    return data.data.filter(
-      (p) =>
-        `${p.firstName} ${p.lastName}`.toLowerCase().includes(q) ||
-        p.mrn.toLowerCase().includes(q) ||
-        (p.phone ?? '').includes(q),
-    );
-  }, [data, search]);
+  const patients = data?.data ?? [];
 
   return (
     <div className="space-y-6">
@@ -100,12 +102,12 @@ export default function PatientsPage() {
 
       {data && (
         <>
-          {filtered.length === 0 ? (
+          {patients.length === 0 ? (
             <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
               <UserX className="h-8 w-8 text-muted-foreground/30" />
               <p className="text-sm font-medium">{t('list.empty.heading')}</p>
               <p className="text-xs text-muted-foreground">
-                {search ? t('list.empty.withSearch') : t('list.empty.noData')}
+                {debouncedSearch ? t('list.empty.withSearch') : t('list.empty.noData')}
               </p>
             </div>
           ) : (
@@ -123,7 +125,7 @@ export default function PatientsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {filtered.map((patient) => (
+                    {patients.map((patient) => (
                       <tr
                         key={patient.id}
                         className="transition-colors hover:bg-muted/30"
@@ -169,9 +171,9 @@ export default function PatientsPage() {
             </div>
           )}
 
-          {search && filtered.length < data.total && (
+          {debouncedSearch && data.total > patients.length && (
             <p className="text-xs text-muted-foreground">
-              {t('list.showingOf', { shown: filtered.length, total: data.total })}
+              {t('list.showingOf', { shown: patients.length, total: data.total })}
             </p>
           )}
         </>

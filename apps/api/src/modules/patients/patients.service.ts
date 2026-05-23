@@ -51,10 +51,24 @@ export class PatientsService {
     const limit = query.limit ?? 20;
     const skip = (page - 1) * limit;
 
-    const where =
+    const baseWhere: Prisma.PatientWhereInput =
       caller.role === UserRole.SUPER_ADMIN
         ? { deletedAt: null }
         : { organizationId: caller.organizationId, deletedAt: null };
+
+    const where: Prisma.PatientWhereInput = query.search
+      ? {
+          ...baseWhere,
+          OR: [
+            { firstName:   { contains: query.search, mode: 'insensitive' } },
+            { lastName:    { contains: query.search, mode: 'insensitive' } },
+            { firstNameAr: { contains: query.search, mode: 'insensitive' } },
+            { lastNameAr:  { contains: query.search, mode: 'insensitive' } },
+            { mrn:         { contains: query.search, mode: 'insensitive' } },
+            { phone:       { contains: query.search } },
+          ],
+        }
+      : baseWhere;
 
     const [data, total] = await Promise.all([
       this.prisma.patient.findMany({ where, select: SELECT, orderBy: { createdAt: 'desc' }, skip, take: limit }),

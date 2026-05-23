@@ -22,7 +22,7 @@ export function useQueue(query: QueueQuery = {}) {
         ...(limit ? { limit } : {}),
       }),
     refetchInterval: 30_000,
-    staleTime: 0,
+    staleTime: 15_000,
   });
 }
 

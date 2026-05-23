@@ -1,0 +1,64 @@
+# ─────────────────────────────────────────────────────────────
+# Stage 1 — base: enable pnpm via corepack
+# ─────────────────────────────────────────────────────────────
+FROM node:20-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable && corepack prepare pnpm@11.1.2 --activate
+
+# ─────────────────────────────────────────────────────────────
+# Stage 2 — builder: install deps + compile
+# ─────────────────────────────────────────────────────────────
+FROM base AS builder
+WORKDIR /repo
+
+# Copy workspace manifests only — lets Docker cache the install layer
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY apps/api/package.json ./apps/api/
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile
+
+# Copy source after deps (keeps source-change rebuilds fast)
+COPY apps/api ./apps/api
+
+# Generate Prisma client
+RUN pnpm --filter @sdhp/api exec prisma generate
+
+# Compile NestJS
+RUN pnpm --filter @sdhp/api run build
+
+# Create a pruned, production-only deployment directory
+RUN pnpm --filter @sdhp/api deploy --prod /prod
+
+# ─────────────────────────────────────────────────────────────
+# Stage 3 — runner: minimal production image
+# ─────────────────────────────────────────────────────────────
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+
+# Non-root user for security
+RUN addgroup --system --gid 1001 sdhp \
+ && adduser  --system --uid 1001 sdhp
+
+# Production node_modules from pnpm deploy
+COPY --from=builder --chown=sdhp:sdhp /prod/node_modules ./node_modules
+
+# Compiled application
+COPY --from=builder --chown=sdhp:sdhp /repo/apps/api/dist ./dist
+
+# Prisma schema + migrations (needed for migrate deploy at startup)
+COPY --from=builder --chown=sdhp:sdhp /repo/apps/api/prisma ./prisma
+
+# Entrypoint: runs migrations then starts the server
+COPY --chown=sdhp:sdhp docker/scripts/docker-entrypoint.api.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
+USER sdhp
+EXPOSE 3001
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD wget -qO- http://localhost:3001/api/v1/auth/me 2>&1 | grep -q 'Unauthorized\|message' || exit 1
+
+ENTRYPOINT ["./entrypoint.sh"]

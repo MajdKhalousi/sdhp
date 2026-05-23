@@ -59,6 +59,17 @@ const SELECT = {
 
 type AppointmentRecord = Prisma.AppointmentGetPayload<{ select: typeof SELECT }>;
 
+const VALID_TRANSITIONS: Record<AppointmentStatus, AppointmentStatus[]> = {
+  [AppointmentStatus.SCHEDULED]:  [AppointmentStatus.CONFIRMED,   AppointmentStatus.CANCELLED, AppointmentStatus.NO_SHOW],
+  [AppointmentStatus.CONFIRMED]:  [AppointmentStatus.CHECKED_IN,  AppointmentStatus.CANCELLED, AppointmentStatus.NO_SHOW],
+  [AppointmentStatus.CHECKED_IN]: [AppointmentStatus.IN_QUEUE,    AppointmentStatus.IN_PROGRESS, AppointmentStatus.CANCELLED],
+  [AppointmentStatus.IN_QUEUE]:   [AppointmentStatus.IN_PROGRESS, AppointmentStatus.CANCELLED],
+  [AppointmentStatus.IN_PROGRESS]:[AppointmentStatus.COMPLETED,   AppointmentStatus.CANCELLED],
+  [AppointmentStatus.COMPLETED]:  [],
+  [AppointmentStatus.CANCELLED]:  [AppointmentStatus.SCHEDULED],
+  [AppointmentStatus.NO_SHOW]:    [AppointmentStatus.SCHEDULED],
+};
+
 @Injectable()
 export class AppointmentsService {
   constructor(private prisma: PrismaService) {}
@@ -120,11 +131,20 @@ export class AppointmentsService {
   async update(id: string, dto: UpdateAppointmentDto, caller: JwtPayload) {
     const appt = await this.prisma.appointment.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true, organizationId: true, cancelledAt: true },
+      select: { id: true, organizationId: true, cancelledAt: true, status: true },
     });
 
     if (!appt) throw new NotFoundException('Appointment not found');
     this.assertOwnership(appt.organizationId, caller);
+
+    if (dto.status && dto.status !== appt.status) {
+      const allowed = VALID_TRANSITIONS[appt.status];
+      if (!allowed.includes(dto.status)) {
+        throw new BadRequestException(
+          `Transition from ${appt.status} to ${dto.status} is not allowed`,
+        );
+      }
+    }
 
     if (dto.branchId) {
       await this.assertBranchBelongsToOrg(dto.branchId, appt.organizationId);

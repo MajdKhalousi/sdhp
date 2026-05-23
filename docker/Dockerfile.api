@@ -31,6 +31,13 @@ RUN pnpm --filter @sdhp/api run build
 # Create a pruned, production-only deployment directory
 RUN pnpm --filter @sdhp/api deploy --prod /prod
 
+# pnpm deploy --prod installs @prisma/client from the registry but does NOT
+# run prisma generate. Copy the prisma schema to /prod so generate writes
+# the query-engine binary into /prod/node_modules/.prisma — the path the
+# runner image will use at runtime.
+RUN cp -r apps/api/prisma /prod/prisma \
+ && cd /prod && node_modules/.bin/prisma generate
+
 # ─────────────────────────────────────────────────────────────
 # Stage 3 — runner: minimal production image
 # ─────────────────────────────────────────────────────────────
@@ -48,8 +55,10 @@ COPY --from=builder --chown=sdhp:sdhp /prod/node_modules ./node_modules
 # Compiled application
 COPY --from=builder --chown=sdhp:sdhp /repo/apps/api/dist ./dist
 
-# Prisma schema + migrations (needed for migrate deploy at startup)
-COPY --from=builder --chown=sdhp:sdhp /repo/apps/api/prisma ./prisma
+# Prisma schema + migrations (needed for migrate deploy at startup).
+# Source is /prod/prisma because that is where prisma generate was run —
+# the generated client in /prod/node_modules/.prisma matches this schema copy.
+COPY --from=builder --chown=sdhp:sdhp /prod/prisma ./prisma
 
 # Entrypoint: runs migrations then starts the server
 COPY --chown=sdhp:sdhp docker/scripts/docker-entrypoint.api.sh ./entrypoint.sh

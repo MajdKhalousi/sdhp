@@ -36,16 +36,16 @@ export class PatientsController {
 
   @Get()
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
-  @ApiOperation({ summary: 'List patients — SUPER_ADMIN: all | ORG_ADMIN/DOCTOR: own org only' })
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR, UserRole.SECRETARY, UserRole.NURSE)
+  @ApiOperation({ summary: 'List patients — SUPER_ADMIN: all | others: own org only' })
   findAll(@Query() query: PatientQueryDto, @CurrentUser() user: JwtPayload) {
     return this.service.findAll(query, user);
   }
 
   @Get(':id')
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
-  @ApiOperation({ summary: 'Get patient by ID — ORG_ADMIN/DOCTOR restricted to own org' })
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR, UserRole.SECRETARY, UserRole.NURSE)
+  @ApiOperation({ summary: 'Get patient by ID — ORG_ADMIN/DOCTOR/SECRETARY/NURSE restricted to own org' })
   @ApiNotFoundResponse({ description: 'Patient not found' })
   findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.service.findOne(id, user);

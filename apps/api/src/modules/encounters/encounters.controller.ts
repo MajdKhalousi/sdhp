@@ -36,10 +36,10 @@ export class EncountersController {
 
   @Get()
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR, UserRole.NURSE, UserRole.SECRETARY)
   @ApiOperation({
     summary:
-      'List encounters — SUPER_ADMIN: all | ORG_ADMIN: own org | DOCTOR: own encounters in org',
+      'List encounters — SUPER_ADMIN: all | ORG_ADMIN/NURSE/SECRETARY: own org | DOCTOR: own encounters in org',
   })
   findAll(@Query() query: EncounterQueryDto, @CurrentUser() user: JwtPayload) {
     return this.service.findAll(query, user);
@@ -47,8 +47,8 @@ export class EncountersController {
 
   @Get(':id')
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
-  @ApiOperation({ summary: 'Get encounter by ID — ORG_ADMIN/DOCTOR restricted to own org' })
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR, UserRole.NURSE, UserRole.SECRETARY)
+  @ApiOperation({ summary: 'Get encounter by ID — ORG_ADMIN/DOCTOR/NURSE/SECRETARY restricted to own org' })
   @ApiNotFoundResponse({ description: 'Encounter not found' })
   findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.service.findOne(id, user);

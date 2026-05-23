@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { TimelineEvent } from '@/types/timeline';
 import { EncounterCard } from './encounter-card';
 import { PrescriptionCard } from './prescription-card';
@@ -9,7 +10,7 @@ interface Props {
   event: TimelineEvent;
 }
 
-export function TimelineEventCard({ event }: Props) {
+export const TimelineEventCard = memo(function TimelineEventCard({ event }: Props) {
   switch (event.type) {
     case 'ENCOUNTER':
       return <EncounterCard event={event} />;
@@ -22,4 +23,4 @@ export function TimelineEventCard({ event }: Props) {
     case 'MEDICAL_FILE':
       return <MedicalFileCard event={event} />;
   }
-}
+});

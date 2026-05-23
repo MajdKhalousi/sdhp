@@ -31,6 +31,7 @@ interface DoctorUserRef {
 export interface DoctorRef {
   id: string;
   specialization: string | null;
+  consultationMinutes: number;
   user: DoctorUserRef;
 }
 

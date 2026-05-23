@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useCreateAppointment, usePatientsList, useDoctorsList } from '@/hooks/use-appointments';
 import { useCheckIn } from '@/hooks/use-queue';
 
@@ -24,12 +25,14 @@ export function WalkInWizard() {
   const t = useTranslations('queue.walkIn');
   const tCommon = useTranslations('common');
   const router = useRouter();
+  const locale = useLocale();
   const [step, setStep] = useState<1 | 2>(1);
   const [form, setForm] = useState<Step1Form>(INITIAL);
   const [validationError, setValidationError] = useState('');
   const [createdAppointmentId, setCreatedAppointmentId] = useState('');
 
   const { mutate: createAppt, isPending: creatingAppt, error: apptError } = useCreateAppointment();
+  const [checkInConflict, setCheckInConflict] = useState(false);
   const { mutate: checkIn, isPending: checkingIn, error: checkInError } = useCheckIn();
   const { data: patientsData, isLoading: patientsLoading } = usePatientsList();
   const { data: doctorsData, isLoading: doctorsLoading } = useDoctorsList();
@@ -39,6 +42,17 @@ export function WalkInWizard() {
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
       setValidationError('');
     };
+  }
+
+  function handleDoctorChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const doctorId = e.target.value;
+    const doc = doctorsData?.data.find((d) => d.id === doctorId);
+    setForm((prev) => ({
+      ...prev,
+      doctorId,
+      durationMin: doc ? String(doc.consultationMinutes) : prev.durationMin,
+    }));
+    setValidationError('');
   }
 
   function handleStep1Submit(e: React.FormEvent) {
@@ -66,15 +80,24 @@ export function WalkInWizard() {
   }
 
   function handleCheckIn() {
+    setCheckInConflict(false);
     checkIn(
       { appointmentId: createdAppointmentId },
-      { onSuccess: () => router.push('/dashboard/queue') },
+      {
+        onSuccess: () => router.push('/dashboard/queue'),
+        onError: (e) => {
+          if (e instanceof Error && e.name === 'ConflictError') {
+            setCheckInConflict(true);
+          }
+        },
+      },
     );
   }
 
-  const apiError =
-    (apptError instanceof Error ? apptError.message : null) ||
-    (checkInError instanceof Error ? checkInError.message : null);
+  const apptApiError = apptError instanceof Error ? apptError.message : null;
+  const checkInApiError =
+    checkInError instanceof Error && !checkInConflict ? checkInError.message : null;
+  const apiError = apptApiError || checkInApiError;
   const displayError = validationError || apiError;
 
   const stepIndicator = (
@@ -122,10 +145,22 @@ export function WalkInWizard() {
           </div>
         )}
 
+        {checkInConflict && (
+          <div className="rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800 dark:border-orange-900/40 dark:bg-orange-950/20 dark:text-orange-400">
+            {t('conflict')}{' '}
+            <Link
+              href={`/${locale}/dashboard/queue`}
+              className="font-medium underline hover:no-underline"
+            >
+              {t('actions.viewQueue')}
+            </Link>
+          </div>
+        )}
+
         <div className="flex items-center gap-3">
           <button
             onClick={handleCheckIn}
-            disabled={checkingIn}
+            disabled={checkingIn || checkInConflict}
             className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {checkingIn ? t('actions.checkingIn') : t('actions.checkIn')}
@@ -180,7 +215,7 @@ export function WalkInWizard() {
         <select
           id="wi-doctorId"
           value={form.doctorId}
-          onChange={set('doctorId')}
+          onChange={handleDoctorChange}
           disabled={creatingAppt || doctorsLoading}
           className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
         >

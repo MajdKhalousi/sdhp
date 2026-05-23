@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo, memo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { TimelineEvent } from '@/types/timeline';
 import { TimelineEventCard } from './timeline-event-card';
@@ -49,9 +50,9 @@ interface Props {
   events: TimelineEvent[];
 }
 
-export function TimelineEventList({ events }: Props) {
+export const TimelineEventList = memo(function TimelineEventList({ events }: Props) {
   const t = useTranslations('timeline.dateGroups');
-  const groups = groupByLocalDate(events);
+  const groups = useMemo(() => groupByLocalDate(events), [events]);
   const today = todayKey();
   const yesterday = yesterdayKey();
 
@@ -87,4 +88,4 @@ export function TimelineEventList({ events }: Props) {
       })}
     </div>
   );
-}
+});

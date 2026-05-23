@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { AlertTriangle, Activity, FileText, Stethoscope, Pill, CheckCircle2 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useEncounter, useUpdateEncounter } from '@/hooks/use-encounters';
@@ -59,9 +59,12 @@ function SectionHeading({
   );
 }
 
-interface Props { encounterId: string }
+interface Props {
+  encounterId: string;
+  onDirtyChange?: (dirty: boolean) => void;
+}
 
-export function EncounterWorkspace({ encounterId }: Props) {
+export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const t = useTranslations('encounter');
   const tCommon = useTranslations('common');
   const locale = useLocale();
@@ -92,9 +95,20 @@ export function EncounterWorkspace({ encounterId }: Props) {
     });
   }, [encounter]);
 
+  useEffect(() => {
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      if (!isDirtyRef.current) return;
+      e.preventDefault();
+      e.returnValue = '';
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
   function setField<K extends keyof WorkspaceForm>(key: K, value: WorkspaceForm[K]) {
     setForm((prev) => prev ? { ...prev, [key]: value } : prev);
     isDirtyRef.current = true;
+    onDirtyChange?.(true);
     setSavedAt(null);
     setSaveError('');
   }
@@ -117,7 +131,8 @@ export function EncounterWorkspace({ encounterId }: Props) {
       { id: encounterId, payload },
       {
         onSuccess: () => {
-          isDirtyRef.current = false; // allow server re-sync after successful save
+          isDirtyRef.current = false;
+          onDirtyChange?.(false);
           setSavedAt(new Date().toLocaleTimeString(displayLocale, { hour: 'numeric', minute: '2-digit' }));
         },
         onError: (e) => setSaveError(e instanceof Error ? e.message : 'Save failed'),

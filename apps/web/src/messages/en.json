@@ -217,12 +217,14 @@
         "loadingPatients": "Loading patients…",
         "loadingDoctors":  "Loading doctors…"
       },
+      "conflict": "This patient already has a queue ticket for today.",
       "actions": {
         "next":        "Next: Check In →",
         "booking":     "Booking…",
         "checkIn":     "Check In & Issue Ticket",
         "checkingIn":  "Checking in…",
         "backToQueue": "Back to Queue",
+        "viewQueue":   "View queue →",
         "cancel":      "Cancel"
       },
       "validation": {
@@ -235,7 +237,9 @@
     "checkIn": {
       "trigger":    "Check In",
       "checkingIn": "Checking in…",
-      "error":      "Check-in failed"
+      "error":      "Check-in failed",
+      "duplicate":  "This patient is already in the queue.",
+      "viewQueue":  "View queue →"
     },
     "advance": {
       "callIn": "Call In",
@@ -273,12 +277,17 @@
       "treatmentPlanPlaceholder":  "e.g. Ibuprofen 400mg TID × 7 days. ENT referral if no improvement in 1 week.",
       "followUpDateLabel":         "Follow-up Date"
     },
+    "page": {
+      "title":    "Active Visit",
+      "subtitle": "Document clinical findings and close the visit when complete"
+    },
     "actions": {
-      "saveChanges":  "Save Changes",
-      "saving":       "Saving…",
-      "savedAt":      "Saved at {time}",
-      "closeVisit":   "Close Visit",
-      "closing":      "Closing…"
+      "saveChanges":            "Save Changes",
+      "saving":                 "Saving…",
+      "savedAt":                "Saved at {time}",
+      "closeVisit":             "Close Visit",
+      "closing":                "Closing…",
+      "unsavedChangesConfirm":  "You have unsaved changes. Leave without saving?"
     },
     "close": {
       "confirm":    "Close this visit? The encounter will be locked and the appointment marked complete.",

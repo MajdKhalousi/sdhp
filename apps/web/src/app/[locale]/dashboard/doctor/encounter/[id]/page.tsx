@@ -1,5 +1,9 @@
-import Link from 'next/link';
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { EncounterWorkspace } from '@/components/encounters/encounter-workspace';
 
 interface Props {
@@ -7,23 +11,32 @@ interface Props {
 }
 
 export default function EncounterPage({ params }: Props) {
+  const t = useTranslations('encounter');
+  const router = useRouter();
+  const [isDirty, setIsDirty] = useState(false);
+
+  function handleBack() {
+    if (isDirty && !window.confirm(t('actions.unsavedChangesConfirm'))) return;
+    router.push('/dashboard/doctor/queue');
+  }
+
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center gap-3">
-        <Link
-          href="/dashboard/doctor/queue"
+        <button
+          onClick={handleBack}
           className="inline-flex h-8 w-8 items-center justify-center rounded-md border transition-colors hover:bg-accent"
           aria-label="Back to queue"
         >
           <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
-        </Link>
+        </button>
         <div>
-          <h1 className="text-xl font-semibold">Active Visit</h1>
-          <p className="text-sm text-muted-foreground">Document clinical findings and close the visit when complete</p>
+          <h1 className="text-xl font-semibold">{t('page.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('page.subtitle')}</p>
         </div>
       </div>
 
-      <EncounterWorkspace encounterId={params.id} />
+      <EncounterWorkspace encounterId={params.id} onDirtyChange={setIsDirty} />
     </div>
   );
 }

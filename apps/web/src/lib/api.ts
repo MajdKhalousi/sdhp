@@ -82,7 +82,9 @@ async function request<T>(
       throw new Error('Server error — please try again later.');
     }
     const err = await res.json().catch(() => ({ message: res.statusText }));
-    throw new Error((err as { message?: string }).message ?? `HTTP ${res.status}`);
+    const e = new Error((err as { message?: string }).message ?? `HTTP ${res.status}`);
+    if (res.status === 409) e.name = 'ConflictError';
+    throw e;
   }
 
   return res.json() as Promise<T>;

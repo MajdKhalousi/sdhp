@@ -39,6 +39,17 @@ export function AppointmentForm() {
     };
   }
 
+  function handleDoctorChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const doctorId = e.target.value;
+    const doc = doctorsData?.data.find((d) => d.id === doctorId);
+    setForm((prev) => ({
+      ...prev,
+      doctorId,
+      durationMin: doc ? String(doc.consultationMinutes) : prev.durationMin,
+    }));
+    setValidationError('');
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
@@ -101,7 +112,7 @@ export function AppointmentForm() {
         <select
           id="doctorId"
           value={form.doctorId}
-          onChange={set('doctorId')}
+          onChange={handleDoctorChange}
           disabled={isPending || doctorsLoading}
           className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
         >

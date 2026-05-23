@@ -132,14 +132,21 @@ export class EncountersService {
           select: SELECT,
         });
 
-        // Update linked appointment → IN_PROGRESS.
+        // Propagate status to appointment + queue.
+        // If the encounter is created already closed (endedAt set), jump straight to
+        // terminal states — same transition that update() performs on the null→value edge.
         if (appointmentId) {
+          const isClosed = !!dto.endedAt;
+
           await tx.appointment.update({
             where: { id: appointmentId },
-            data: { status: AppointmentStatus.IN_PROGRESS },
+            data: {
+              status: isClosed
+                ? AppointmentStatus.COMPLETED
+                : AppointmentStatus.IN_PROGRESS,
+            },
           });
 
-          // Update linked queue entry → IN_PROGRESS if present.
           const queueEntry = await tx.queueEntry.findUnique({
             where: { appointmentId },
             select: { id: true },
@@ -147,7 +154,9 @@ export class EncountersService {
           if (queueEntry) {
             await tx.queueEntry.update({
               where: { id: queueEntry.id },
-              data: { status: QueueStatus.IN_PROGRESS },
+              data: isClosed
+                ? { status: QueueStatus.DONE, completedAt: new Date() }
+                : { status: QueueStatus.IN_PROGRESS },
             });
           }
         }

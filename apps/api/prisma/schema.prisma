@@ -319,6 +319,7 @@ model QueueEntry {
   id             String      @id @default(cuid())
   appointmentId  String      @unique
   organizationId String
+  businessDate   String      // YYYY-MM-DD in Asia/Damascus — used for daily ticket reset
   ticketNumber   Int
   status         QueueStatus @default(WAITING)
   calledAt       DateTime?
@@ -330,7 +331,7 @@ model QueueEntry {
   organization Organization @relation(fields: [organizationId], references: [id])
   appointment  Appointment  @relation(fields: [appointmentId], references: [id])
 
-  @@unique([organizationId, ticketNumber])
+  @@unique([organizationId, businessDate, ticketNumber])
   @@index([organizationId])
   @@map("queue_entries")
 }

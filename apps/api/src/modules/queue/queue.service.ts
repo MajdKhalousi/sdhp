@@ -50,6 +50,7 @@ const APPOINTMENT_SELECT = {
 const SELECT = {
   id: true,
   appointmentId: true,
+  businessDate: true,
   ticketNumber: true,
   status: true,
   calledAt: true,
@@ -107,9 +108,10 @@ export class QueueService {
     for (let attempt = 0; attempt < this.MAX_TICKET_RETRIES; attempt++) {
       try {
         return await this.prisma.$transaction(async (tx) => {
-          // Compute next ticket inside the transaction so the MAX read is serialized.
+          // Scope MAX to today's business day so ticket numbers reset daily.
+          const today = this.todayDamascus();
           const max = await tx.queueEntry.findFirst({
-            where: { organizationId },
+            where: { organizationId, businessDate: today },
             orderBy: { ticketNumber: 'desc' },
             select: { ticketNumber: true },
           });
@@ -119,6 +121,7 @@ export class QueueService {
             data: {
               appointmentId: dto.appointmentId,
               organizationId,
+              businessDate: today,
               ticketNumber,
               status: dto.status,
             },
@@ -245,10 +248,17 @@ export class QueueService {
   }
 
   private buildDayRange(date: string): { gte: Date; lt: Date } {
-    const start = new Date(`${date}T00:00:00.000Z`);
-    const end = new Date(`${date}T00:00:00.000Z`);
-    end.setUTCDate(end.getUTCDate() + 1);
+    // 'date' is a calendar date in Asia/Damascus (UTC+3, no DST since 2022).
+    // Damascus midnight = date T00:00:00+03:00 = (date-1)T21:00:00Z.
+    const TZ_OFFSET_MS = 3 * 60 * 60 * 1000;
+    const start = new Date(new Date(`${date}T00:00:00.000Z`).getTime() - TZ_OFFSET_MS);
+    const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
     return { gte: start, lt: end };
+  }
+
+  private todayDamascus(): string {
+    // Returns current date as YYYY-MM-DD in Asia/Damascus timezone.
+    return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
   }
 
   private assertOwnership(orgId: string, caller: JwtPayload): void {

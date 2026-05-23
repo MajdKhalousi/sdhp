@@ -690,6 +690,7 @@ async function main() {
         id: 'seed-queue-009',
         appointmentId: 'seed-appt-009',
         organizationId: 'seed-org-001',
+        businessDate: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' }),
         ticketNumber: 9001,
         status: QueueStatus.WAITING,
       },

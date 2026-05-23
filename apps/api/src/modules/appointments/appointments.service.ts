@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -97,6 +98,8 @@ export class AppointmentsService {
     if (dto.branchId) {
       await this.assertBranchBelongsToOrg(dto.branchId, organizationId);
     }
+
+    await this.assertNoDoubleBooking(dto.doctorId, new Date(dto.scheduledAt), dto.durationMin ?? 30);
 
     return this.prisma.appointment.create({
       data: {
@@ -250,6 +253,41 @@ export class AppointmentsService {
     if (!doctor.isActive) throw new BadRequestException('Doctor is inactive');
     if (doctor.user.organizationId !== organizationId) {
       throw new ForbiddenException('Doctor does not belong to this organization');
+    }
+  }
+
+  private async assertNoDoubleBooking(
+    doctorId: string,
+    scheduledAt: Date,
+    durationMin: number,
+    excludeId?: string,
+  ): Promise<void> {
+    const proposedEnd = new Date(scheduledAt.getTime() + durationMin * 60_000);
+
+    // Fetch candidates in a generous ±12-hour window to avoid full-table scan.
+    const windowStart = new Date(scheduledAt.getTime() - 12 * 60 * 60_000);
+    const windowEnd = new Date(scheduledAt.getTime() + 12 * 60 * 60_000);
+
+    const candidates = await this.prisma.appointment.findMany({
+      where: {
+        doctorId,
+        deletedAt: null,
+        status: { notIn: [AppointmentStatus.CANCELLED, AppointmentStatus.NO_SHOW] },
+        scheduledAt: { gte: windowStart, lt: windowEnd },
+        ...(excludeId ? { id: { not: excludeId } } : {}),
+      },
+      select: { id: true, scheduledAt: true, durationMin: true },
+    });
+
+    for (const existing of candidates) {
+      const existingEnd = new Date(
+        existing.scheduledAt.getTime() + (existing.durationMin ?? 30) * 60_000,
+      );
+      if (scheduledAt < existingEnd && proposedEnd > existing.scheduledAt) {
+        throw new ConflictException(
+          `Doctor already has an appointment at ${existing.scheduledAt.toISOString()} that overlaps with the requested time slot`,
+        );
+      }
     }
   }
 

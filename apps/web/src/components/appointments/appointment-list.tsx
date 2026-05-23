@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, CalendarX2 } from 'lucide-react';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useAppointments, useDoctorsList } from '@/hooks/use-appointments';
 import { AppointmentStatusBadge } from './appointment-status-badge';
 import { CheckInButton } from '@/components/queue/check-in-button';
@@ -18,8 +18,8 @@ const ALL_STATUSES: AppointmentStatus[] = [
   'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW',
 ];
 
-function formatDateTime(iso: string) {
-  return new Date(iso).toLocaleString('en-US', {
+function formatDateTime(iso: string, locale = 'en-US') {
+  return new Date(iso).toLocaleString(locale, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -33,6 +33,8 @@ const LIMIT = 20;
 export function AppointmentList() {
   const t = useTranslations('appointment');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
+  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
 
   const [status, setStatus] = useState<AppointmentStatus | ''>('');
   const [date, setDate] = useState('');
@@ -221,7 +223,7 @@ export function AppointmentList() {
                     <p className="text-xs text-muted-foreground">{appt.doctor.specialization}</p>
                   )}
                 </td>
-                <td className="px-4 py-3 text-sm whitespace-nowrap" dir="ltr">{formatDateTime(appt.scheduledAt)}</td>
+                <td className="px-4 py-3 text-sm whitespace-nowrap" dir="ltr">{formatDateTime(appt.scheduledAt, displayLocale)}</td>
                 <td className="px-4 py-3 text-sm text-muted-foreground">
                   {t('list.durationMinutes', { count: appt.durationMin })}
                 </td>

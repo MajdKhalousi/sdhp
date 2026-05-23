@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { Calendar, Users, ListOrdered, CheckCircle2, Clock } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/auth';
 import { AppointmentStatusBadge } from '@/components/appointments/appointment-status-badge';
@@ -16,11 +16,12 @@ interface PagedMeta {
 }
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  // Damascus local date — consistent with the backend's Asia/Damascus day boundary.
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
 }
 
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString('en-US', {
+function formatTime(iso: string, locale = 'en-US') {
+  return new Date(iso).toLocaleTimeString(locale, {
     hour: '2-digit',
     minute: '2-digit',
     hour12: true,
@@ -44,6 +45,8 @@ function formatRole(role: string) {
 
 export default function DashboardPage() {
   const t = useTranslations('dashboard');
+  const locale = useLocale();
+  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
   const user = useAuthStore((s) => s.user);
   const role = user?.role ?? '';
 
@@ -214,7 +217,7 @@ export default function DashboardPage() {
                       </span>
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {formatTime(appt.scheduledAt)} · Dr. {appt.doctor.user.lastName}
+                      {formatTime(appt.scheduledAt, displayLocale)} · Dr. {appt.doctor.user.lastName}
                     </p>
                   </div>
                   <AppointmentStatusBadge status={appt.status} />

@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { Search, UserX } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { api } from '@/lib/api';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -17,9 +17,9 @@ interface PatientsResponse {
   limit: number;
 }
 
-function formatDate(iso: string | null): string {
+function formatDate(iso: string | null, locale = 'en-US'): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-US', {
+  return new Date(iso).toLocaleDateString(locale, {
     year: 'numeric', month: 'short', day: 'numeric',
   });
 }
@@ -32,6 +32,8 @@ function formatGender(raw: string | null): string {
 export default function PatientsPage() {
   const t = useTranslations('patient');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
+  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
   const [search, setSearch] = useState('');
 
   const { data, isLoading, isError, error, refetch } = useQuery({
@@ -146,7 +148,7 @@ export default function PatientsPage() {
                           {patient.mrn}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
-                          {formatDate(patient.dateOfBirth)}
+                          {formatDate(patient.dateOfBirth, displayLocale)}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">
                           {formatGender(patient.gender)}

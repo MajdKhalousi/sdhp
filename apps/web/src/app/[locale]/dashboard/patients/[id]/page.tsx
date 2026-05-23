@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { usePatient } from '@/hooks/use-patient';
 import { useAllergies } from '@/hooks/use-allergies';
 import { PatientHeader } from '@/components/patients/patient-header';
@@ -14,9 +14,9 @@ import { Badge } from '@/components/ui/badge';
 import type { Patient } from '@/hooks/use-patient';
 import type { Allergy } from '@/hooks/use-allergies';
 
-function formatDate(iso: string | null): string {
+function formatDate(iso: string | null, locale = 'en-US'): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-US', {
+  return new Date(iso).toLocaleDateString(locale, {
     year: 'numeric', month: 'short', day: 'numeric',
   });
 }
@@ -110,7 +110,9 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 
 function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Allergy[] }) {
   const t = useTranslations('patient');
-  const registeredDate = formatDate(patient.createdAt);
+  const locale = useLocale();
+  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const registeredDate = formatDate(patient.createdAt, displayLocale);
 
   return (
     <div className="grid gap-4 sm:grid-cols-2">
@@ -118,7 +120,7 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
         <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {t('detail.overview.demographics')}
         </p>
-        <InfoRow label={t('detail.overview.fields.dateOfBirth')} value={formatDate(patient.dateOfBirth)} />
+        <InfoRow label={t('detail.overview.fields.dateOfBirth')} value={formatDate(patient.dateOfBirth, displayLocale)} />
         <InfoRow label={t('detail.overview.fields.gender')} value={formatGender(patient.gender)} />
         <InfoRow label={t('detail.overview.fields.bloodType')} value={formatBloodType(patient.bloodType)} />
         <InfoRow

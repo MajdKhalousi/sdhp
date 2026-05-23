@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { RefreshCw, Inbox } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useQueue } from '@/hooks/use-queue';
 import { useDoctorsList } from '@/hooks/use-appointments';
 import { QueueTicket } from './queue-ticket';
@@ -16,7 +16,8 @@ const SKIPPABLE: QueueStatus[] = ['WAITING', 'CALLED'];
 const ALL_STATUSES: QueueStatus[] = ['WAITING', 'CALLED', 'IN_PROGRESS', 'DONE', 'SKIPPED'];
 
 function todayDate() {
-  return new Date().toISOString().slice(0, 10);
+  // Damascus local date — must match the backend's Asia/Damascus day boundary.
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
 }
 
 const ACTIVE_STATUSES: QueueStatus[] = ['WAITING', 'CALLED', 'IN_PROGRESS'];
@@ -24,6 +25,8 @@ const ACTIVE_STATUSES: QueueStatus[] = ['WAITING', 'CALLED', 'IN_PROGRESS'];
 export function QueueBoard() {
   const t = useTranslations('queue');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
+  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
 
   const [status, setStatus] = useState<QueueStatus | '' | 'ALL'>('');
   const [todayOnly, setTodayOnly] = useState(true);
@@ -92,7 +95,7 @@ export function QueueBoard() {
         {dataUpdatedAt > 0 && !isFetching && (
           <span className="text-xs text-muted-foreground">
             {t('board.updatedAt', {
-              time: new Date(dataUpdatedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+              time: new Date(dataUpdatedAt).toLocaleTimeString(displayLocale, { hour: 'numeric', minute: '2-digit' }),
             })}
           </span>
         )}

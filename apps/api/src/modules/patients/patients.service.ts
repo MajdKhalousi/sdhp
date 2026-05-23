@@ -12,7 +12,7 @@ import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { PatientQueryDto } from './dto/patient-query.dto';
-import { AuditLogsWriterService } from '../audit-logs/audit-logs-writer.service';
+import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
 
 const SELECT = {
   id: true,
@@ -77,7 +77,7 @@ export class PatientsService {
 
   async create(dto: CreatePatientDto, caller: JwtPayload) {
     const organizationId = await this.resolveOrgId(dto.organizationId, caller);
-    const mrn = dto.mrn ?? this.generateMrn();
+    const mrn = dto.mrn ?? await this.generateMrn(organizationId);
 
     try {
       const result = await this.prisma.patient.create({
@@ -102,7 +102,13 @@ export class PatientsService {
         },
         select: SELECT,
       });
-      await this.auditWriter.log({ caller, action: 'CREATE', resource: 'patient' });
+      await this.auditWriter.log({
+        caller,
+        action: 'CREATE',
+        resource: 'patient',
+        resourceId: result.id,
+        newData: toSnapshot(result),
+      });
       return result;
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
@@ -115,7 +121,7 @@ export class PatientsService {
   async update(id: string, dto: UpdatePatientDto, caller: JwtPayload) {
     const patient = await this.prisma.patient.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true, organizationId: true },
+      select: SELECT,
     });
 
     if (!patient) throw new NotFoundException('Patient not found');
@@ -131,14 +137,21 @@ export class PatientsService {
       },
       select: SELECT,
     });
-    await this.auditWriter.log({ caller, action: 'UPDATE', resource: 'patient', resourceId: id });
+    await this.auditWriter.log({
+      caller,
+      action: 'UPDATE',
+      resource: 'patient',
+      resourceId: id,
+      oldData: toSnapshot(patient),
+      newData: toSnapshot(result),
+    });
     return result;
   }
 
   async remove(id: string, caller: JwtPayload) {
     const patient = await this.prisma.patient.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true, organizationId: true },
+      select: SELECT,
     });
 
     if (!patient) throw new NotFoundException('Patient not found');
@@ -148,7 +161,13 @@ export class PatientsService {
       where: { id },
       data: { deletedAt: new Date(), isActive: false },
     });
-    await this.auditWriter.log({ caller, action: 'SOFT_DELETE', resource: 'patient', resourceId: id });
+    await this.auditWriter.log({
+      caller,
+      action: 'SOFT_DELETE',
+      resource: 'patient',
+      resourceId: id,
+      oldData: toSnapshot(patient),
+    });
   }
 
   private assertOwnership(patientOrgId: string, caller: JwtPayload): void {
@@ -175,10 +194,19 @@ export class PatientsService {
     return caller.organizationId;
   }
 
-  private generateMrn(): string {
-    const date = new Date();
-    const yyyymmdd = date.toISOString().slice(0, 10).replace(/-/g, '');
-    const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
-    return `P-${yyyymmdd}-${rand}`;
+  private async generateMrn(organizationId: string): Promise<string> {
+    // Find the highest-numbered MRN in this org (format MRN-NNNNNN).
+    // Lexicographic DESC works correctly because all suffixes are zero-padded to 6 digits.
+    const last = await this.prisma.patient.findFirst({
+      where: { organizationId, mrn: { startsWith: 'MRN-' } },
+      orderBy: { mrn: 'desc' },
+      select: { mrn: true },
+    });
+    let next = 1;
+    if (last?.mrn) {
+      const n = parseInt(last.mrn.slice(4), 10);
+      if (!isNaN(n)) next = n + 1;
+    }
+    return `MRN-${String(next).padStart(6, '0')}`;
   }
 }

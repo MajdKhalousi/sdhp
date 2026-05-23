@@ -7,6 +7,7 @@ import {
   IsEnum,
   IsOptional,
   IsString,
+  Matches,
   MinLength,
 } from 'class-validator';
 
@@ -32,11 +33,12 @@ export class CreatePatientDto {
   lastNameAr?: string;
 
   @ApiPropertyOptional({
-    description: 'Medical Record Number. Auto-generated if not provided.',
-    example: 'P-20260518-A1B2',
+    description: 'Medical Record Number. Auto-generated if not provided. Format: MRN-XXXXXX',
+    example: 'MRN-000042',
   })
   @IsOptional()
   @IsString()
+  @Matches(/^MRN-\d{6}$/, { message: 'MRN must follow the format MRN-XXXXXX (e.g. MRN-000042)' })
   mrn?: string;
 
   @ApiPropertyOptional({ example: '1990-04-15' })

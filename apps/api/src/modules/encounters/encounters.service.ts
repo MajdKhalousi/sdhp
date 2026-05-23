@@ -12,6 +12,7 @@ import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { CreateEncounterDto } from './dto/create-encounter.dto';
 import { UpdateEncounterDto } from './dto/update-encounter.dto';
 import { EncounterQueryDto } from './dto/encounter-query.dto';
+import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
 
 const PATIENT_SELECT = {
   id: true,
@@ -63,9 +64,33 @@ const SELECT = {
 
 type EncounterRecord = Prisma.EncounterGetPayload<{ select: typeof SELECT }>;
 
+// Flat clinical columns — exclude nested patient/doctor relations from snapshots.
+const SNAPSHOT_SELECT = {
+  id: true,
+  organizationId: true,
+  branchId: true,
+  patientId: true,
+  doctorId: true,
+  appointmentId: true,
+  chiefComplaint: true,
+  notes: true,
+  diagnosis: true,
+  diagnosisCode: true,
+  treatmentPlan: true,
+  followUpDate: true,
+  vitals: true,
+  startedAt: true,
+  endedAt: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
 @Injectable()
 export class EncountersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditWriter: AuditLogsWriterService,
+  ) {}
 
   async findAll(query: EncounterQueryDto, caller: JwtPayload): Promise<PaginatedResponse<EncounterRecord>> {
     const page = query.page ?? 1;
@@ -176,7 +201,7 @@ export class EncountersService {
   async update(id: string, dto: UpdateEncounterDto, caller: JwtPayload) {
     const encounter = await this.prisma.encounter.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true, organizationId: true, doctorId: true, endedAt: true, appointmentId: true },
+      select: { ...SNAPSHOT_SELECT, doctorId: true, appointmentId: true },
     });
 
     if (!encounter) throw new NotFoundException('Encounter not found');
@@ -207,32 +232,46 @@ export class EncountersService {
     // Only propagate on null → value transition; safe no-op if no appointmentId.
     const shouldPropagate = !!dto.endedAt && !encounter.endedAt;
     const appointmentId = encounter.appointmentId;
+    const action = dto.endedAt && !encounter.endedAt ? 'CLOSE' : 'UPDATE';
+
+    let result: Prisma.EncounterGetPayload<{ select: typeof SELECT }>;
 
     if (!shouldPropagate || !appointmentId) {
-      return this.prisma.encounter.update({ where: { id }, data: updateData, select: SELECT });
+      result = await this.prisma.encounter.update({ where: { id }, data: updateData, select: SELECT });
+    } else {
+      result = await this.prisma.$transaction(async (tx) => {
+        const updated = await tx.encounter.update({ where: { id }, data: updateData, select: SELECT });
+
+        await tx.appointment.update({
+          where: { id: appointmentId },
+          data: { status: AppointmentStatus.COMPLETED },
+        });
+
+        const queueEntry = await tx.queueEntry.findUnique({
+          where: { appointmentId },
+          select: { id: true },
+        });
+        if (queueEntry) {
+          await tx.queueEntry.update({
+            where: { id: queueEntry.id },
+            data: { status: QueueStatus.DONE, completedAt: new Date() },
+          });
+        }
+
+        return updated;
+      });
     }
 
-    return this.prisma.$transaction(async (tx) => {
-      const updated = await tx.encounter.update({ where: { id }, data: updateData, select: SELECT });
-
-      await tx.appointment.update({
-        where: { id: appointmentId },
-        data: { status: AppointmentStatus.COMPLETED },
-      });
-
-      const queueEntry = await tx.queueEntry.findUnique({
-        where: { appointmentId },
-        select: { id: true },
-      });
-      if (queueEntry) {
-        await tx.queueEntry.update({
-          where: { id: queueEntry.id },
-          data: { status: QueueStatus.DONE, completedAt: new Date() },
-        });
-      }
-
-      return updated;
+    await this.auditWriter.log({
+      caller,
+      action,
+      resource: 'encounter',
+      resourceId: id,
+      oldData: toSnapshot(encounter),
+      newData: toSnapshot({ ...encounter, ...updateData }),
     });
+
+    return result;
   }
 
   async remove(id: string, caller: JwtPayload) {

@@ -288,12 +288,12 @@ async function main() {
 
   // ── Patients ───────────────────────────────────────────────────────────────
   const saraMahmoud = await prisma.patient.upsert({
-    where: { organizationId_mrn: { organizationId: 'seed-org-001', mrn: 'MRN-001' } },
+    where: { organizationId_mrn: { organizationId: 'seed-org-001', mrn: 'MRN-000001' } },
     update: { firstName: 'Sara', lastName: 'Mahmoud', phone: '+963912100001', gender: Gender.FEMALE },
     create: {
       id: 'seed-pat-sara',
       organizationId: 'seed-org-001',
-      mrn: 'MRN-001',
+      mrn: 'MRN-000001',
       firstName: 'Sara',
       lastName: 'Mahmoud',
       dateOfBirth: new Date('1992-03-14'),
@@ -309,7 +309,7 @@ async function main() {
     create: {
       id: 'seed-pat-001',
       organizationId: 'seed-org-001',
-      mrn: 'MRN-002',
+      mrn: 'MRN-000002',
       firstName: 'Khalid',
       lastName: 'Mousa',
       dateOfBirth: new Date('1981-03-15'),
@@ -328,7 +328,7 @@ async function main() {
     create: {
       id: 'seed-pat-002',
       organizationId: 'seed-org-001',
-      mrn: 'MRN-003',
+      mrn: 'MRN-000003',
       firstName: 'Nour',
       lastName: 'Ibrahim',
       dateOfBirth: new Date('1994-07-22'),
@@ -344,7 +344,7 @@ async function main() {
     create: {
       id: 'seed-pat-003',
       organizationId: 'seed-org-001',
-      mrn: 'MRN-004',
+      mrn: 'MRN-000004',
       firstName: 'Tariq',
       lastName: 'Saleh',
       dateOfBirth: new Date('1968-01-10'),
@@ -361,7 +361,7 @@ async function main() {
     create: {
       id: 'seed-pat-004',
       organizationId: 'seed-org-001',
-      mrn: 'MRN-005',
+      mrn: 'MRN-000005',
       firstName: 'Lina',
       lastName: 'Ahmad',
       dateOfBirth: new Date('2018-04-05'),
@@ -378,7 +378,7 @@ async function main() {
     create: {
       id: 'seed-pat-005',
       organizationId: 'seed-org-001',
-      mrn: 'MRN-006',
+      mrn: 'MRN-000006',
       firstName: 'Mohammad',
       lastName: 'Diab',
       dateOfBirth: new Date('1961-11-30'),
@@ -395,7 +395,7 @@ async function main() {
     create: {
       id: 'seed-pat-006',
       organizationId: 'seed-org-001',
-      mrn: 'MRN-007',
+      mrn: 'MRN-000007',
       firstName: 'Rima',
       lastName: 'Hamdan',
       dateOfBirth: new Date('1984-09-18'),
@@ -411,7 +411,7 @@ async function main() {
     create: {
       id: 'seed-pat-007',
       organizationId: 'seed-org-001',
-      mrn: 'MRN-008',
+      mrn: 'MRN-000008',
       firstName: 'Basel',
       lastName: 'Haddad',
       dateOfBirth: new Date('1988-02-27'),
@@ -428,7 +428,7 @@ async function main() {
     create: {
       id: 'seed-pat-008',
       organizationId: 'seed-org-001',
-      mrn: 'MRN-009',
+      mrn: 'MRN-000009',
       firstName: 'Hana',
       lastName: 'Yousef',
       dateOfBirth: new Date('1991-05-11'),
@@ -443,7 +443,7 @@ async function main() {
     create: {
       id: 'seed-pat-009',
       organizationId: 'seed-org-001',
-      mrn: 'MRN-010',
+      mrn: 'MRN-000010',
       firstName: 'Wissam',
       lastName: 'Khoury',
       dateOfBirth: new Date('1976-08-03'),

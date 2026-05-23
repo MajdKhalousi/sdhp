@@ -188,7 +188,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
     { value: 'prescriptions', label: t('detail.tabs.prescriptions') },
     { value: 'labs',          label: t('detail.tabs.labs')          },
     { value: 'radiology',     label: t('detail.tabs.radiology')     },
-    { value: 'files',         label: t('detail.tabs.files')         },
+    // 'files' tab hidden — no upload pipeline exists yet (B13.6.4)
   ];
 
   return (
@@ -245,13 +245,6 @@ export default function PatientPage({ params }: { params: { id: string } }) {
           />
         </TabPanel>
 
-        <TabPanel value="files" activeValue={activeTab}>
-          <ClinicalTypeTab
-            patientId={id}
-            type="MEDICAL_FILE"
-            emptyMessage={t('detail.clinicalTab.emptyFiles')}
-          />
-        </TabPanel>
       </div>
     </div>
   );

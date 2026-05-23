@@ -1,73 +1,54 @@
-# ─────────────────────────────────────────────────────────────
-# Stage 1 — base: enable pnpm via corepack
-# ─────────────────────────────────────────────────────────────
-FROM node:20-alpine AS base
+# ─────────────────────────────────────────────
+# Builder
+# ─────────────────────────────────────────────
+FROM node:22-alpine AS builder
+
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
+
 RUN corepack enable && corepack prepare pnpm@11.1.2 --activate
 
-# ─────────────────────────────────────────────────────────────
-# Stage 2 — builder: install deps + compile
-# ─────────────────────────────────────────────────────────────
-FROM base AS builder
-WORKDIR /repo
+WORKDIR /app
 
-# Copy workspace manifests only — lets Docker cache the install layer
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY apps/api/package.json ./apps/api/
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
-# Copy source after deps (keeps source-change rebuilds fast)
 COPY apps/api ./apps/api
 
-# Generate Prisma client
 RUN pnpm --filter @sdhp/api exec prisma generate
-
-# Compile NestJS
 RUN pnpm --filter @sdhp/api run build
 
-# Create a pruned, production-only deployment directory
-RUN pnpm --filter @sdhp/api deploy --prod /prod
+# ─────────────────────────────────────────────
+# Runner
+# ─────────────────────────────────────────────
+FROM node:22-alpine AS runner
 
-# pnpm deploy --prod installs @prisma/client from the registry but does NOT
-# run prisma generate. Copy the prisma schema to /prod so generate writes
-# the query-engine binary into /prod/node_modules/.prisma — the path the
-# runner image will use at runtime.
-RUN cp -r apps/api/prisma /prod/prisma \
- && cd /prod && node_modules/.bin/prisma generate
-
-# ─────────────────────────────────────────────────────────────
-# Stage 3 — runner: minimal production image
-# ─────────────────────────────────────────────────────────────
-FROM node:20-alpine AS runner
-WORKDIR /app
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
 ENV NODE_ENV=production
 
-# Non-root user for security
+RUN apk add --no-cache openssl libc6-compat
+
+RUN corepack enable && corepack prepare pnpm@11.1.2 --activate
+
+WORKDIR /app
+
 RUN addgroup --system --gid 1001 sdhp \
- && adduser  --system --uid 1001 sdhp
+ && adduser --system --uid 1001 sdhp
 
-# Production node_modules from pnpm deploy
-COPY --from=builder --chown=sdhp:sdhp /prod/node_modules ./node_modules
+COPY --from=builder --chown=sdhp:sdhp /app/node_modules ./node_modules
+COPY --from=builder --chown=sdhp:sdhp /app/apps/api ./apps/api
 
-# Compiled application
-COPY --from=builder --chown=sdhp:sdhp /repo/apps/api/dist ./dist
+COPY --chown=sdhp:sdhp docker/scripts/docker-entrypoint.api.sh ./apps/api/entrypoint.sh
 
-# Prisma schema + migrations (needed for migrate deploy at startup).
-# Source is /prod/prisma because that is where prisma generate was run —
-# the generated client in /prod/node_modules/.prisma matches this schema copy.
-COPY --from=builder --chown=sdhp:sdhp /prod/prisma ./prisma
-
-# Entrypoint: runs migrations then starts the server
-COPY --chown=sdhp:sdhp docker/scripts/docker-entrypoint.api.sh ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
+RUN chmod +x ./apps/api/entrypoint.sh
 
 USER sdhp
-EXPOSE 3001
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD wget -qO- http://localhost:3001/api/v1/auth/me 2>&1 | grep -q 'Unauthorized\|message' || exit 1
+WORKDIR /app/apps/api
+
+EXPOSE 3001
 
 ENTRYPOINT ["./entrypoint.sh"]

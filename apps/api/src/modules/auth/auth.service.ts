@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -8,6 +8,8 @@ import { LoginResponseDto } from './dto/auth-response.dto';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
@@ -64,6 +66,13 @@ export class AuthService {
         branchId: user.branchId,
       },
     };
+  }
+
+  logout(caller: JwtPayload): void {
+    // Server-side token revocation is deferred — requires Redis denylist integration.
+    // The client MUST discard the token immediately on receiving this response.
+    // Current JWT lifetime is 24 h in production (see JWT_EXPIRES_IN in env).
+    this.logger.log(`Logout — userId=${caller.sub}`);
   }
 
   async getMe(userId: string) {

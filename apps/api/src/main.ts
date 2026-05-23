@@ -5,6 +5,19 @@ import { AppModule } from './app.module';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
 
 async function bootstrap() {
+  // Fail fast in production if JWT_SECRET is missing or too short.
+  // A weak secret allows any attacker to forge valid tokens.
+  if (process.env.NODE_ENV === 'production') {
+    const secret = process.env.JWT_SECRET ?? '';
+    if (secret.length < 64) {
+      console.error(
+        '\n[STARTUP] FATAL: JWT_SECRET must be at least 64 characters in production.\n' +
+        '         Generate one with:  openssl rand -base64 64\n',
+      );
+      process.exit(1);
+    }
+  }
+
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('api');

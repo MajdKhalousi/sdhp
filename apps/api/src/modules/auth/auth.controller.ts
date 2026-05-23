@@ -31,4 +31,19 @@ export class AuthController {
   me(@CurrentUser() user: JwtPayload) {
     return this.authService.getMe(user.sub);
   }
+
+  @Post('logout')
+  @Version('1')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Logout — client must discard the token immediately',
+    description:
+      'Server-side token revocation is deferred (pending Redis denylist). ' +
+      'The client is responsible for deleting the JWT. ' +
+      'Token lifetime is limited to 24 h in production.',
+  })
+  logout(@CurrentUser() user: JwtPayload): void {
+    this.authService.logout(user);
+  }
 }

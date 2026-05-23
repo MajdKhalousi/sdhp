@@ -44,6 +44,12 @@ enum AppointmentStatus {
   NO_SHOW
 }
 
+enum AllergySeverity {
+  MILD
+  MODERATE
+  SEVERE
+}
+
 enum QueueStatus {
   WAITING
   CALLED
@@ -259,11 +265,11 @@ model Patient {
 }
 
 model Allergy {
-  id        String  @id @default(cuid())
+  id        String          @id @default(cuid())
   patientId String
   substance String
   reaction  String?
-  severity  String?
+  severity  AllergySeverity?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

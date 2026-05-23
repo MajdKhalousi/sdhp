@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { AllergySeverity } from '@prisma/client';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class CreateAllergyDto {
   @ApiProperty({ example: 'Penicillin' })
@@ -11,8 +12,8 @@ export class CreateAllergyDto {
   @IsString()
   reaction?: string;
 
-  @ApiPropertyOptional({ example: 'SEVERE' })
+  @ApiPropertyOptional({ enum: AllergySeverity, example: AllergySeverity.SEVERE })
   @IsOptional()
-  @IsString()
-  severity?: string;
+  @IsEnum(AllergySeverity)
+  severity?: AllergySeverity;
 }

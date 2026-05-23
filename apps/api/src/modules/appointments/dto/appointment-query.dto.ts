@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { AppointmentStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString, Matches } from 'class-validator';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
 
 export class AppointmentQueryDto extends PaginationQueryDto {
@@ -30,7 +30,7 @@ export class AppointmentQueryDto extends PaginationQueryDto {
     example: '2026-05-22',
   })
   @IsOptional()
-  @IsDateString()
+  @Matches(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/, { message: 'date must be a valid date in YYYY-MM-DD format' })
   date?: string;
 
   @ApiPropertyOptional({ description: 'Filter by branch ID', example: 'branch-cuid' })

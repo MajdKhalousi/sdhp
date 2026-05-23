@@ -326,6 +326,8 @@ model QueueEntry {
   status         QueueStatus @default(WAITING)
   calledAt       DateTime?
   completedAt    DateTime?
+  deletedAt      DateTime?
+  deletedBy      String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

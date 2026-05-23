@@ -11,6 +11,7 @@ import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { CreateQueueEntryDto } from './dto/create-queue-entry.dto';
 import { UpdateQueueEntryDto } from './dto/update-queue-entry.dto';
 import { QueueQueryDto } from './dto/queue-query.dto';
+import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
 
 const PATIENT_SELECT = {
   id: true,
@@ -50,6 +51,7 @@ const APPOINTMENT_SELECT = {
 const SELECT = {
   id: true,
   appointmentId: true,
+  organizationId: true,
   businessDate: true,
   ticketNumber: true,
   status: true,
@@ -64,14 +66,18 @@ type QueueEntryRecord = Prisma.QueueEntryGetPayload<{ select: typeof SELECT }>;
 
 @Injectable()
 export class QueueService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditWriter: AuditLogsWriterService,
+  ) {}
 
   async findAll(query: QueueQueryDto, caller: JwtPayload): Promise<PaginatedResponse<QueueEntryRecord>> {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
     const skip = (page - 1) * limit;
 
-    const where = await this.buildWhere(query, caller);
+    const baseWhere = await this.buildWhere(query, caller);
+    const where: Prisma.QueueEntryWhereInput = { deletedAt: null, ...baseWhere };
 
     const [data, total] = await Promise.all([
       this.prisma.queueEntry.findMany({ where, select: SELECT, orderBy: { ticketNumber: 'asc' }, skip, take: limit }),
@@ -83,7 +89,7 @@ export class QueueService {
 
   async findOne(id: string, caller: JwtPayload) {
     const entry = await this.prisma.queueEntry.findFirst({
-      where: { id },
+      where: { id, deletedAt: null },
       select: SELECT,
     });
 
@@ -109,6 +115,7 @@ export class QueueService {
       try {
         return await this.prisma.$transaction(async (tx) => {
           // Scope MAX to today's business day so ticket numbers reset daily.
+          // Do NOT filter by deletedAt — soft-deleted tickets consumed their number.
           const today = this.todayDamascus();
           const max = await tx.queueEntry.findFirst({
             where: { organizationId, businessDate: today },
@@ -156,7 +163,7 @@ export class QueueService {
 
   async update(id: string, dto: UpdateQueueEntryDto, caller: JwtPayload) {
     const entry = await this.prisma.queueEntry.findFirst({
-      where: { id },
+      where: { id, deletedAt: null },
       select: { id: true, calledAt: true, completedAt: true, appointment: { select: { organizationId: true, doctorId: true } } },
     });
 
@@ -191,15 +198,25 @@ export class QueueService {
 
   async remove(id: string, caller: JwtPayload) {
     const entry = await this.prisma.queueEntry.findFirst({
-      where: { id },
-      select: { id: true, appointment: { select: { organizationId: true } } },
+      where: { id, deletedAt: null },
+      select: SELECT,
     });
 
     if (!entry) throw new NotFoundException('Queue entry not found');
     this.assertOwnership(entry.appointment.organizationId, caller);
 
-    // QueueEntry has no deletedAt — hard delete.
-    await this.prisma.queueEntry.delete({ where: { id } });
+    await this.prisma.queueEntry.update({
+      where: { id },
+      data: { deletedAt: new Date(), deletedBy: caller.sub },
+    });
+
+    await this.auditWriter.log({
+      caller,
+      action: 'CANCEL',
+      resource: 'queue_entry',
+      resourceId: id,
+      oldData: toSnapshot(entry),
+    });
   }
 
   private async buildWhere(query: QueueQueryDto, caller: JwtPayload): Promise<Prisma.QueueEntryWhereInput> {
@@ -267,5 +284,4 @@ export class QueueService {
       throw new ForbiddenException('Access to this queue entry is not allowed');
     }
   }
-
 }

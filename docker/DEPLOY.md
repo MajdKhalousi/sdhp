@@ -128,12 +128,12 @@ curl -I https://YOUR_DOMAIN/
 docker compose -f docker/docker-compose.prod.yml --env-file .env.production up -d
 ```
 
-The startup order is enforced by `depends_on` + `condition: service_healthy`:
+The startup order is enforced by `depends_on` + health conditions:
 
 ```
 postgres (healthy) ──┐
-                      ├──> api (healthy) ──> web ──> nginx
-redis    (healthy) ──┘
+redis    (healthy) ──┼──────────────────────────> api (healthy) ──> web ──> nginx
+minio    (healthy) ──> minio-init (completed) ──┘
 ```
 
 Expect 60-90 seconds for full startup on first run (Prisma migrations run
@@ -157,15 +157,21 @@ docker logs sdhp_api --tail=50
 docker logs sdhp_nginx --tail=50
 ```
 
-### 5.2 Create the MinIO storage bucket (one-time)
+### 5.2 MinIO storage bucket
 
-MinIO does not auto-create buckets. Run this once after first startup:
+The `minio-init` service creates the bucket automatically when the stack starts.
+The api service depends on `minio-init` completing successfully, so the bucket is
+guaranteed to exist before any upload request is handled.
+
+To verify the bucket was created (or recreate it manually if minio-init failed):
 
 ```sh
-# Create the bucket (MINIO_BUCKET defaults to sdhp-files)
+docker logs sdhp_minio_init
+# Expected last line: [minio-init] Bucket ready: sdhp-files
+
+# Manual fallback if the init container failed
 docker exec sdhp_minio mc alias set local http://localhost:9000 \
   "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
-
 docker exec sdhp_minio mc mb local/sdhp-files --ignore-existing
 ```
 

@@ -82,7 +82,7 @@ services:
       DATABASE_URL:  postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
       REDIS_URL:     redis://:${REDIS_PASSWORD}@redis:6379
       JWT_SECRET:    ${JWT_SECRET}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-24h}
       API_PORT:      3001
       FRONTEND_URL:  https://${DOMAIN}
       MINIO_ENDPOINT: minio
@@ -95,6 +95,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
     networks:
       - internal
     healthcheck:
@@ -149,6 +151,30 @@ services:
       - internal
       - external
 
+  # ── MinIO bucket initialisation (one-shot) ───────────────
+  # Runs after MinIO is healthy, creates the application bucket if it does not
+  # exist, then exits. The api service depends on this completing successfully
+  # so the bucket is guaranteed to exist before any upload request is handled.
+  minio-init:
+    image: minio/mc:latest
+    container_name: sdhp_minio_init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+        mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
+        mc mb --ignore-existing local/$${MINIO_BUCKET:-sdhp-files} &&
+        echo '[minio-init] Bucket ready: '$${MINIO_BUCKET:-sdhp-files}
+      "
+    environment:
+      MINIO_ROOT_USER:     ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET:        ${MINIO_BUCKET:-sdhp-files}
+    networks:
+      - internal
+    restart: no
+
   # ── TLS Certificate (Let's Encrypt) ──────────────────────
   certbot:
     image: certbot/certbot
@@ -161,6 +187,8 @@ services:
     #     --webroot --webroot-path=/var/www/certbot -d your.domain.com \
     #     --email admin@your.domain.com --agree-tos --no-eff-email
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done'"
+    networks:
+      - external   # must reach acme-v02.api.letsencrypt.org for issuance and renewal
 
 # ── Networks ──────────────────────────────────────────────────
 networks:

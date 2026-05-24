@@ -50,3 +50,15 @@ docker/volumes/
 # Testing
 coverage/
 .claude/
+
+# SSL / Certbot
+docker/certbot/
+
+# ENV
+docker/.env.production
+
+# Certificates
+*.pem
+*.key
+private_key.json
+

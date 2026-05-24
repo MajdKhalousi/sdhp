@@ -107,16 +107,18 @@ services:
       retries:      3
 
   # ── Web (Next.js) ─────────────────────────────────────────
+
+
   web:
     build:
-      context:    ..
+      context: ..
       dockerfile: docker/Dockerfile.web
       args:
         NEXT_PUBLIC_API_URL: https://${DOMAIN}/api
     container_name: sdhp_web
     restart: unless-stopped
     environment:
-      NODE_ENV:            production
+      NODE_ENV: production
       NEXT_PUBLIC_API_URL: https://${DOMAIN}/api
     depends_on:
       api:
@@ -124,13 +126,12 @@ services:
     networks:
       - internal
     healthcheck:
-      test:         ['CMD-SHELL', 'wget -qO- http://localhost:3000/ || exit 1']
-      interval:     30s
-      timeout:      10s
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
       start_period: 20s
-      retries:      3
+      retries: 3
 
-  # ── Reverse Proxy (nginx + TLS) ───────────────────────────
   nginx:
     image: nginx:1.25-alpine
     container_name: sdhp_nginx

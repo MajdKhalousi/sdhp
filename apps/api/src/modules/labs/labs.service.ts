@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { LabOrderStatus, UserRole } from '@prisma/client';
+import { LabOrderStatus, MedicalTimelineEventType, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { CreateLabOrderDto } from './dto/create-lab-order.dto';
@@ -12,6 +12,7 @@ import { UpdateLabOrderStatusDto } from './dto/update-lab-order-status.dto';
 import { UpsertLabResultDto } from './dto/upsert-lab-result.dto';
 import { LabQueryDto } from './dto/lab-query.dto';
 import { AuditLogsWriterService } from '../audit-logs/audit-logs-writer.service';
+import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
 
 // ── Select constants ───────────────────────────────────────────────────────
 
@@ -95,6 +96,7 @@ export class LabsService {
   constructor(
     private prisma: PrismaService,
     private auditWriter: AuditLogsWriterService,
+    private timelineWriter: MedicalTimelineWriterService,
   ) {}
 
   async create(dto: CreateLabOrderDto, caller: JwtPayload) {
@@ -141,6 +143,17 @@ export class LabsService {
       select: ORDER_SELECT,
     });
     await this.auditWriter.log({ caller, action: 'CREATE', resource: 'lab_order', resourceId: result.id });
+    await this.timelineWriter.log({
+      organizationId: result.organizationId,
+      patientId: result.patientId,
+      eventType: MedicalTimelineEventType.LAB_ORDERED,
+      createdById: caller.sub,
+      metadata: {
+        labOrderId: result.id,
+        testName: result.testName,
+        encounterId: result.encounterId ?? null,
+      },
+    });
     return result;
   }
 
@@ -247,6 +260,17 @@ export class LabsService {
       }),
     ]);
     await this.auditWriter.log({ caller, action: 'RESULT_ENTERED', resource: 'lab_order', resourceId: id });
+    await this.timelineWriter.log({
+      organizationId: order.organizationId,
+      patientId: order.patientId,
+      eventType: MedicalTimelineEventType.LAB_RESULT_ADDED,
+      createdById: caller.sub,
+      metadata: {
+        labOrderId: id,
+        testName: order.testName,
+        encounterId: order.encounterId ?? null,
+      },
+    });
     return updatedOrder;
   }
 

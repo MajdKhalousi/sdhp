@@ -5,7 +5,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, UserRole } from '@prisma/client';
+import { MedicalTimelineEventType, Prisma, UserRole } from '@prisma/client';
+import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { CreateMedicalFileDto } from './dto/create-medical-file.dto';
@@ -54,7 +55,10 @@ const FILE_SELECT = {
 
 @Injectable()
 export class MedicalFilesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private timelineWriter: MedicalTimelineWriterService,
+  ) {}
 
   async create(dto: CreateMedicalFileDto, caller: JwtPayload) {
     const orgId = await this.resolveCreateOrgId(dto, caller);
@@ -73,7 +77,7 @@ export class MedicalFilesService {
     }
 
     try {
-      return await this.prisma.medicalFile.create({
+      const result = await this.prisma.medicalFile.create({
         data: {
           organizationId: orgId,
           patientId: dto.patientId,
@@ -88,6 +92,22 @@ export class MedicalFilesService {
         },
         select: FILE_SELECT,
       });
+
+      await this.timelineWriter.log({
+        organizationId: result.organizationId,
+        patientId: result.patientId,
+        eventType: MedicalTimelineEventType.FILE_UPLOADED,
+        createdById: caller.sub,
+        metadata: {
+          medicalFileId: result.id,
+          fileName: result.fileName,
+          category: result.category,
+          mimeType: result.mimeType,
+          encounterId: result.encounterId ?? null,
+        },
+      });
+
+      return result;
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
         throw new ConflictException('A file with this storageKey already exists');

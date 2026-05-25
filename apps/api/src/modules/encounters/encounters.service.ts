@@ -5,7 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { AppointmentStatus, Prisma, QueueStatus, UserRole } from '@prisma/client';
+import { AppointmentStatus, MedicalTimelineEventType, Prisma, QueueStatus, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { PaginatedResponse } from '../../common/types/paginated-response.type';
@@ -13,6 +13,7 @@ import { CreateEncounterDto } from './dto/create-encounter.dto';
 import { UpdateEncounterDto } from './dto/update-encounter.dto';
 import { EncounterQueryDto } from './dto/encounter-query.dto';
 import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
+import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
 
 const PATIENT_SELECT = {
   id: true,
@@ -90,6 +91,7 @@ export class EncountersService {
   constructor(
     private prisma: PrismaService,
     private auditWriter: AuditLogsWriterService,
+    private timelineWriter: MedicalTimelineWriterService,
   ) {}
 
   async findAll(query: EncounterQueryDto, caller: JwtPayload): Promise<PaginatedResponse<EncounterRecord>> {
@@ -189,6 +191,23 @@ export class EncountersService {
         return created;
       });
 
+      await this.timelineWriter.log({
+        organizationId,
+        patientId: dto.patientId,
+        eventType: MedicalTimelineEventType.ENCOUNTER_STARTED,
+        createdById: caller.sub,
+        metadata: { encounterId: encounter.id, appointmentId: encounter.appointmentId ?? null },
+      });
+      if (!!dto.endedAt) {
+        await this.timelineWriter.log({
+          organizationId,
+          patientId: dto.patientId,
+          eventType: MedicalTimelineEventType.ENCOUNTER_COMPLETED,
+          createdById: caller.sub,
+          metadata: { encounterId: encounter.id, appointmentId: encounter.appointmentId ?? null },
+        });
+      }
+
       return encounter;
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
@@ -259,6 +278,14 @@ export class EncountersService {
         }
 
         return updated;
+      });
+
+      await this.timelineWriter.log({
+        organizationId: encounter.organizationId,
+        patientId: encounter.patientId,
+        eventType: MedicalTimelineEventType.ENCOUNTER_COMPLETED,
+        createdById: caller.sub,
+        metadata: { encounterId: id, appointmentId: appointmentId ?? null, endedAt: result.endedAt?.toISOString() ?? null },
       });
     }
 

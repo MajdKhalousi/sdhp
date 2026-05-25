@@ -58,6 +58,24 @@ enum QueueStatus {
   SKIPPED
 }
 
+enum MedicalTimelineEventType {
+  PATIENT_CREATED
+  PATIENT_UPDATED
+  PATIENT_ARCHIVED
+  APPOINTMENT_BOOKED
+  CHECKED_IN
+  QUEUE_JOINED
+  ENCOUNTER_STARTED
+  ENCOUNTER_COMPLETED
+  PRESCRIPTION_ADDED
+  LAB_ORDERED
+  LAB_RESULT_ADDED
+  RADIOLOGY_ORDERED
+  RADIOLOGY_RESULT_ADDED
+  FILE_UPLOADED
+  NOTE_ADDED
+}
+
 enum LabOrderStatus {
   ORDERED
   SAMPLE_COLLECTED
@@ -105,8 +123,9 @@ model Organization {
   auditLogs       AuditLog[]
   labOrders       LabOrder[]
   radiologyOrders RadiologyOrder[]
-  medicalFiles    MedicalFile[]
-  invoices        Invoice[]
+  medicalFiles          MedicalFile[]
+  invoices              Invoice[]
+  medicalTimelineEvents MedicalTimelineEvent[]
 
   @@map("organizations")
 }
@@ -164,8 +183,9 @@ model User {
   doctor           Doctor?
   auditLogs        AuditLog[]
   uploadedFiles    MedicalFile[]
-  createdInvoices  Invoice[]     @relation("InvoicesCreated")
-  receivedPayments Payment[]     @relation("PaymentsReceived")
+  createdInvoices       Invoice[]              @relation("InvoicesCreated")
+  receivedPayments      Payment[]              @relation("PaymentsReceived")
+  createdTimelineEvents MedicalTimelineEvent[] @relation("TimelineEventsCreated")
 
   @@index([organizationId])
   @@map("users")
@@ -251,17 +271,45 @@ model Patient {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization    Organization     @relation(fields: [organizationId], references: [id])
-  allergies       Allergy[]
-  appointments    Appointment[]
-  encounters      Encounter[]
-  labOrders       LabOrder[]
-  radiologyOrders RadiologyOrder[]
-  medicalFiles    MedicalFile[]
-  invoices        Invoice[]
+  organization          Organization           @relation(fields: [organizationId], references: [id])
+  allergies             Allergy[]
+  appointments          Appointment[]
+  encounters            Encounter[]
+  labOrders             LabOrder[]
+  radiologyOrders       RadiologyOrder[]
+  medicalFiles          MedicalFile[]
+  invoices              Invoice[]
+  medicalTimelineEvents MedicalTimelineEvent[]
 
   @@unique([organizationId, mrn])
+  @@index([organizationId])
+  @@index([organizationId, firstName])
+  @@index([organizationId, lastName])
+  @@index([organizationId, phone])
+  @@index([organizationId, nationalId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, isActive])
   @@map("patients")
+}
+
+model MedicalTimelineEvent {
+  id             String                   @id @default(cuid())
+  organizationId String
+  patientId      String
+  createdById    String?
+  eventType      MedicalTimelineEventType
+  metadata       Json?
+
+  createdAt DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  patient      Patient      @relation(fields: [patientId], references: [id])
+  createdBy    User?        @relation("TimelineEventsCreated", fields: [createdById], references: [id])
+
+  @@index([organizationId])
+  @@index([patientId])
+  @@index([organizationId, patientId])
+  @@map("medical_timeline_events")
 }
 
 model Allergy {

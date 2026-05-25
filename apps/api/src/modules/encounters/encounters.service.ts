@@ -279,7 +279,9 @@ export class EncountersService {
 
         return updated;
       });
+    }
 
+    if (shouldPropagate) {
       await this.timelineWriter.log({
         organizationId: encounter.organizationId,
         patientId: encounter.patientId,

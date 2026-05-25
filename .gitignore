@@ -62,3 +62,10 @@ docker/.env.production
 *.key
 private_key.json
 
+
+# Temporary QA / Playwright artifacts
+pw-temp/
+apps/web/pw-temp/
+
+# Stray npm lockfile in pnpm monorepo
+apps/web/package-lock.json

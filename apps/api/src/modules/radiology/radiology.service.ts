@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { RadiologyOrderStatus, UserRole } from '@prisma/client';
+import { MedicalTimelineEventType, RadiologyOrderStatus, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { CreateRadiologyOrderDto } from './dto/create-radiology-order.dto';
@@ -12,6 +12,7 @@ import { UpdateRadiologyOrderStatusDto } from './dto/update-radiology-order-stat
 import { UpsertRadiologyReportDto } from './dto/upsert-radiology-report.dto';
 import { RadiologyQueryDto } from './dto/radiology-query.dto';
 import { AuditLogsWriterService } from '../audit-logs/audit-logs-writer.service';
+import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
 
 // ── Select constants ───────────────────────────────────────────────────────
 
@@ -95,6 +96,7 @@ export class RadiologyService {
   constructor(
     private prisma: PrismaService,
     private auditWriter: AuditLogsWriterService,
+    private timelineWriter: MedicalTimelineWriterService,
   ) {}
 
   async create(dto: CreateRadiologyOrderDto, caller: JwtPayload) {
@@ -140,6 +142,18 @@ export class RadiologyService {
       select: ORDER_SELECT,
     });
     await this.auditWriter.log({ caller, action: 'CREATE', resource: 'radiology_order', resourceId: result.id });
+    await this.timelineWriter.log({
+      organizationId: result.organizationId,
+      patientId: result.patientId,
+      eventType: MedicalTimelineEventType.RADIOLOGY_ORDERED,
+      createdById: caller.sub,
+      metadata: {
+        radiologyOrderId: result.id,
+        modality: result.modality,
+        bodyPart: result.bodyPart ?? null,
+        encounterId: result.encounterId ?? null,
+      },
+    });
     return result;
   }
 
@@ -258,6 +272,18 @@ export class RadiologyService {
       }),
     ]);
     await this.auditWriter.log({ caller, action: 'REPORT_ENTERED', resource: 'radiology_order', resourceId: id });
+    await this.timelineWriter.log({
+      organizationId: order.organizationId,
+      patientId: order.patientId,
+      eventType: MedicalTimelineEventType.RADIOLOGY_RESULT_ADDED,
+      createdById: caller.sub,
+      metadata: {
+        radiologyOrderId: id,
+        modality: order.modality,
+        bodyPart: order.bodyPart ?? null,
+        encounterId: order.encounterId ?? null,
+      },
+    });
     return updatedOrder;
   }
 

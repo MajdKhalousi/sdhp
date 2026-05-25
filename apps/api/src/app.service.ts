@@ -6,7 +6,7 @@ export class AppService {
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),
-      service: 'SDHP API',
+      service: 'Elaji Health API',
       version: '1.0.0',
     };
   }

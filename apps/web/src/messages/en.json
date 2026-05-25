@@ -29,8 +29,8 @@
 
   "auth": {
     "login": {
-      "title": "SDHP",
-      "subtitle": "Syrian Digital Health Platform",
+      "title": "Elaji Health",
+      "subtitle": "Elaji Health Platform",
       "phoneLabel": "Phone Number",
       "phonePlaceholder": "+963 XXX XXX XXX",
       "passwordLabel": "Password",
@@ -46,9 +46,9 @@
   },
 
   "nav": {
-    "brand": "SDHP",
+    "brand": "Elaji Health",
     "brandSubtitle": "Health Platform",
-    "footer": "Syrian Digital Health Platform",
+    "footer": "Elaji Health Platform",
     "items": {
       "dashboard": "Dashboard",
       "patients": "Patients",

@@ -29,8 +29,8 @@
 
   "auth": {
     "login": {
-      "title":           "SDHP",
-      "subtitle":        "المنصة الصحية الرقمية السورية",
+      "title":           "Elaji Health",
+      "subtitle":        "منصة علاجي الصحية",
       "phoneLabel":      "رقم الهاتف",
       "phonePlaceholder": "+963 XXX XXX XXX",
       "passwordLabel":   "كلمة المرور",
@@ -46,9 +46,9 @@
   },
 
   "nav": {
-    "brand":        "SDHP",
+    "brand":        "Elaji Health",
     "brandSubtitle": "المنصة الصحية",
-    "footer":       "المنصة الصحية الرقمية السورية",
+    "footer":       "منصة علاجي الصحية",
     "items": {
       "dashboard":    "الرئيسية",
       "patients":     "المرضى",

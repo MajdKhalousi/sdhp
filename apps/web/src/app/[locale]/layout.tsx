@@ -21,7 +21,7 @@ const notoSansArabic = Noto_Sans_Arabic({
 });
 
 export const metadata: Metadata = {
-  title: 'SDHP | Syrian Digital Health Platform',
+  title: 'Elaji Health | Elaji Health Platform',
   description: 'Integrated Digital Health Management System',
 };
 

@@ -39,8 +39,8 @@ async function bootstrap() {
   });
 
   const config = new DocumentBuilder()
-    .setTitle('SDHP API')
-    .setDescription('Syrian Digital Health Platform — REST API')
+    .setTitle('Elaji Health API')
+    .setDescription('Elaji Health Platform — REST API')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
@@ -51,7 +51,7 @@ async function bootstrap() {
   const port = process.env.API_PORT || 3001;
   await app.listen(port);
 
-  console.log(`\n🏥 SDHP API running on: http://localhost:${port}/api`);
+  console.log(`\n🏥 Elaji Health API running on: http://localhost:${port}/api`);
   console.log(`📖 API Docs:             http://localhost:${port}/api/docs\n`);
 }
 

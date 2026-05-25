@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { PatientsService } from './patients.service';
 import { PatientsController } from './patients.controller';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module';
+import { MedicalTimelineModule } from '../medical-timeline/medical-timeline.module';
 
 @Module({
-  imports: [AuditLogsModule],
+  imports: [AuditLogsModule, MedicalTimelineModule],
   controllers: [PatientsController],
   providers: [PatientsService],
 })

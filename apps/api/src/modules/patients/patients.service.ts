@@ -13,6 +13,8 @@ import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { PatientQueryDto } from './dto/patient-query.dto';
 import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
+import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
+import { MedicalTimelineEventType } from '@prisma/client';
 
 const SELECT = {
   id: true,
@@ -44,6 +46,7 @@ export class PatientsService {
   constructor(
     private prisma: PrismaService,
     private auditWriter: AuditLogsWriterService,
+    private timelineWriter: MedicalTimelineWriterService,
   ) {}
 
   async findAll(query: PatientQueryDto, caller: JwtPayload): Promise<PaginatedResponse<PatientRecord>> {
@@ -123,6 +126,13 @@ export class PatientsService {
         resourceId: result.id,
         newData: toSnapshot(result),
       });
+      await this.timelineWriter.log({
+        organizationId,
+        patientId: result.id,
+        eventType: MedicalTimelineEventType.PATIENT_CREATED,
+        createdById: caller.sub,
+        metadata: { mrn: result.mrn },
+      });
       return result;
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
@@ -159,6 +169,13 @@ export class PatientsService {
       oldData: toSnapshot(patient),
       newData: toSnapshot(result),
     });
+    await this.timelineWriter.log({
+      organizationId: patient.organizationId,
+      patientId: id,
+      eventType: MedicalTimelineEventType.PATIENT_UPDATED,
+      createdById: caller.sub,
+      metadata: { fields: Object.keys(dto) },
+    });
     return result;
   }
 
@@ -181,6 +198,13 @@ export class PatientsService {
       resource: 'patient',
       resourceId: id,
       oldData: toSnapshot(patient),
+    });
+    await this.timelineWriter.log({
+      organizationId: patient.organizationId,
+      patientId: id,
+      eventType: MedicalTimelineEventType.PATIENT_ARCHIVED,
+      createdById: caller.sub,
+      metadata: null,
     });
   }
 

@@ -12,6 +12,8 @@ import { CreateQueueEntryDto } from './dto/create-queue-entry.dto';
 import { UpdateQueueEntryDto } from './dto/update-queue-entry.dto';
 import { QueueQueryDto } from './dto/queue-query.dto';
 import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
+import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
+import { MedicalTimelineEventType } from '@prisma/client';
 
 const PATIENT_SELECT = {
   id: true,
@@ -69,6 +71,7 @@ export class QueueService {
   constructor(
     private prisma: PrismaService,
     private auditWriter: AuditLogsWriterService,
+    private timelineWriter: MedicalTimelineWriterService,
   ) {}
 
   async findAll(query: QueueQueryDto, caller: JwtPayload): Promise<PaginatedResponse<QueueEntryRecord>> {
@@ -113,7 +116,7 @@ export class QueueService {
 
     for (let attempt = 0; attempt < this.MAX_TICKET_RETRIES; attempt++) {
       try {
-        return await this.prisma.$transaction(async (tx) => {
+        const entry = await this.prisma.$transaction(async (tx) => {
           // Scope MAX to today's business day so ticket numbers reset daily.
           // Do NOT filter by deletedAt — soft-deleted tickets consumed their number.
           const today = this.todayDamascus();
@@ -124,7 +127,7 @@ export class QueueService {
           });
           const ticketNumber = dto.ticketNumber ?? ((max?.ticketNumber ?? 0) + 1);
 
-          const entry = await tx.queueEntry.create({
+          const created = await tx.queueEntry.create({
             data: {
               appointmentId: dto.appointmentId,
               organizationId,
@@ -140,8 +143,25 @@ export class QueueService {
             data: { status: AppointmentStatus.CHECKED_IN },
           });
 
-          return entry;
+          return created;
         });
+
+        const patientId = entry.appointment.patient.id;
+        await this.timelineWriter.log({
+          organizationId,
+          patientId,
+          eventType: MedicalTimelineEventType.CHECKED_IN,
+          createdById: caller.sub,
+          metadata: { appointmentId: dto.appointmentId, ticketNumber: entry.ticketNumber },
+        });
+        await this.timelineWriter.log({
+          organizationId,
+          patientId,
+          eventType: MedicalTimelineEventType.QUEUE_JOINED,
+          createdById: caller.sub,
+          metadata: { appointmentId: dto.appointmentId, ticketNumber: entry.ticketNumber },
+        });
+        return entry;
       } catch (e) {
         if (!(e instanceof Prisma.PrismaClientKnownRequestError) || e.code !== 'P2002') throw e;
 

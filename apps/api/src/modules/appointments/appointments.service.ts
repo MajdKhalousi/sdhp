@@ -12,6 +12,8 @@ import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { AppointmentQueryDto } from './dto/appointment-query.dto';
+import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
+import { MedicalTimelineEventType } from '@prisma/client';
 
 const PATIENT_SELECT = {
   id: true,
@@ -72,7 +74,10 @@ const VALID_TRANSITIONS: Record<AppointmentStatus, AppointmentStatus[]> = {
 
 @Injectable()
 export class AppointmentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private timelineWriter: MedicalTimelineWriterService,
+  ) {}
 
   async findAll(query: AppointmentQueryDto, caller: JwtPayload): Promise<PaginatedResponse<AppointmentRecord>> {
     const page = query.page ?? 1;
@@ -112,7 +117,7 @@ export class AppointmentsService {
 
     await this.assertNoDoubleBooking(dto.doctorId, new Date(dto.scheduledAt), dto.durationMin ?? 30);
 
-    return this.prisma.appointment.create({
+    const result = await this.prisma.appointment.create({
       data: {
         organizationId,
         patientId: dto.patientId,
@@ -126,6 +131,14 @@ export class AppointmentsService {
       },
       select: SELECT,
     });
+    await this.timelineWriter.log({
+      organizationId,
+      patientId: result.patientId,
+      eventType: MedicalTimelineEventType.APPOINTMENT_BOOKED,
+      createdById: caller.sub,
+      metadata: { appointmentId: result.id, scheduledAt: result.scheduledAt.toISOString() },
+    });
+    return result;
   }
 
   async update(id: string, dto: UpdateAppointmentDto, caller: JwtPayload) {

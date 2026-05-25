@@ -4,13 +4,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, UserRole } from '@prisma/client';
+import { MedicalTimelineEventType, Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { CreatePrescriptionDto } from './dto/create-prescription.dto';
 import { UpdatePrescriptionDto } from './dto/update-prescription.dto';
 import { PrescriptionQueryDto } from './dto/prescription-query.dto';
+import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
 
 const PATIENT_SELECT = {
   id: true,
@@ -68,7 +69,10 @@ type PrescriptionRecord = Prisma.PrescriptionGetPayload<{ select: typeof SELECT 
 
 @Injectable()
 export class PrescriptionsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private timelineWriter: MedicalTimelineWriterService,
+  ) {}
 
   async findAll(query: PrescriptionQueryDto, caller: JwtPayload): Promise<PaginatedResponse<PrescriptionRecord>> {
     const page = query.page ?? 1;
@@ -116,7 +120,7 @@ export class PrescriptionsService {
       }
     }
 
-    return this.prisma.prescription.create({
+    const result = await this.prisma.prescription.create({
       data: {
         encounterId: dto.encounterId,
         medication: dto.medication,
@@ -129,6 +133,20 @@ export class PrescriptionsService {
       },
       select: SELECT,
     });
+
+    await this.timelineWriter.log({
+      organizationId: result.encounter.organizationId,
+      patientId: result.encounter.patientId,
+      eventType: MedicalTimelineEventType.PRESCRIPTION_ADDED,
+      createdById: caller.sub,
+      metadata: {
+        prescriptionId: result.id,
+        encounterId: result.encounterId,
+        medication: result.medication,
+      },
+    });
+
+    return result;
   }
 
   async update(id: string, dto: UpdatePrescriptionDto, caller: JwtPayload) {

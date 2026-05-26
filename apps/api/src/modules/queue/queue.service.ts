@@ -106,11 +106,16 @@ export class QueueService {
   async create(dto: CreateQueueEntryDto, caller: JwtPayload) {
     const appointment = await this.prisma.appointment.findFirst({
       where: { id: dto.appointmentId, deletedAt: null },
-      select: { id: true, organizationId: true },
+      select: { id: true, organizationId: true, status: true },
     });
 
     if (!appointment) throw new NotFoundException('Appointment not found');
     this.assertOwnership(appointment.organizationId, caller);
+
+    const ALLOWED: AppointmentStatus[] = [AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED];
+    if (!ALLOWED.includes(appointment.status)) {
+      throw new ConflictException(`Cannot check in appointment with status ${appointment.status}`);
+    }
 
     const organizationId = appointment.organizationId;
 
@@ -125,7 +130,7 @@ export class QueueService {
             orderBy: { ticketNumber: 'desc' },
             select: { ticketNumber: true },
           });
-          const ticketNumber = dto.ticketNumber ?? ((max?.ticketNumber ?? 0) + 1);
+          const ticketNumber = (max?.ticketNumber ?? 0) + 1;
 
           const created = await tx.queueEntry.create({
             data: {
@@ -133,14 +138,14 @@ export class QueueService {
               organizationId,
               businessDate: today,
               ticketNumber,
-              status: dto.status,
+              status: QueueStatus.WAITING,
             },
             select: SELECT,
           });
 
           await tx.appointment.update({
             where: { id: dto.appointmentId },
-            data: { status: AppointmentStatus.CHECKED_IN },
+            data: { status: AppointmentStatus.IN_QUEUE },
           });
 
           return created;
@@ -171,8 +176,8 @@ export class QueueService {
           throw new ConflictException('A queue entry already exists for this appointment');
         }
 
-        // Ticket number collision — retry if auto-generated, fail immediately if manual.
-        if (dto.ticketNumber !== undefined || attempt === this.MAX_TICKET_RETRIES - 1) {
+        // Ticket number collision on auto-generated number — retry.
+        if (attempt === this.MAX_TICKET_RETRIES - 1) {
           throw new ConflictException('Ticket number already in use for this organization');
         }
       }

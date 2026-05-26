@@ -7,7 +7,7 @@ import { StartEncounterButton } from './start-encounter-button';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function todayDate() {
-  return new Date().toISOString().slice(0, 10);
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
 }
 
 function formatScheduled(iso: string) {

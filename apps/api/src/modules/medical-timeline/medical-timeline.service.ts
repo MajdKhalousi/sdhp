@@ -38,6 +38,10 @@ const ENCOUNTER_TIMELINE_SELECT = {
   chiefComplaint: true,
   diagnosis: true,       // fetched to compute hasDiagnosis; not returned in response
   diagnosisCode: true,
+  notes: true,
+  treatmentPlan: true,
+  followUpDate: true,
+  updatedAt: true,
   doctor: { select: DOCTOR_REF_SELECT },
 } as const;
 
@@ -181,6 +185,10 @@ export class MedicalTimelineService {
         chiefComplaint: e.chiefComplaint,
         diagnosisCode: e.diagnosisCode,
         hasDiagnosis: e.diagnosis !== null || e.diagnosisCode !== null,
+        notes: e.notes,
+        treatmentPlan: e.treatmentPlan,
+        followUpDate: e.followUpDate,
+        updatedAt: e.updatedAt,
         doctor: {
           id: e.doctor.id,
           firstName: e.doctor.user.firstName,

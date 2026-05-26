@@ -20,6 +20,7 @@ export function useUpdateEncounter() {
       qc.setQueryData(['encounter', encounter.id], encounter);
       qc.invalidateQueries({ queryKey: ['queue'] });
       qc.invalidateQueries({ queryKey: ['appointments'] });
+      qc.invalidateQueries({ queryKey: ['patient-timeline'] });
     },
   });
 }
@@ -32,6 +33,7 @@ export function useStartEncounter() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['queue'] });
       qc.invalidateQueries({ queryKey: ['appointments'] });
+      qc.invalidateQueries({ queryKey: ['patient-timeline'] });
     },
   });
 }

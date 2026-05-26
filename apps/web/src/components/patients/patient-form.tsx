@@ -164,10 +164,9 @@ export function PatientForm({
       address: values.address.trim() || null,
       city: values.city.trim() || null,
       bloodType: values.bloodType || null,
-      allergies: values.allergies.trim() || null,
       chronicDiseases: values.chronicDiseases.trim() || null,
-      emergencyContactName: values.emergencyContactName.trim() || null,
-      emergencyContactPhone: values.emergencyContactPhone.trim() || null,
+      emergencyName: values.emergencyContactName.trim() || null,
+      emergencyPhone: values.emergencyContactPhone.trim() || null,
     };
 
     void onSubmit(payload);

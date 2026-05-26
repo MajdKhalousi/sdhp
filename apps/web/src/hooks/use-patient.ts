@@ -51,10 +51,9 @@ export interface CreatePatientInput {
   address?: string | null;
   city?: string | null;
   bloodType?: string | null;
-  allergies?: string | null;
   chronicDiseases?: string | null;
-  emergencyContactName?: string | null;
-  emergencyContactPhone?: string | null;
+  emergencyName?: string | null;
+  emergencyPhone?: string | null;
 }
 
 export type UpdatePatientInput = Partial<CreatePatientInput>;

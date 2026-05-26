@@ -59,7 +59,7 @@ export class QueueController {
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY)
   @ApiOperation({
     summary:
-      'Check patient in — creates queue entry from an existing appointment. Ticket number auto-generated. Appointment status updated to CHECKED_IN.',
+      'Check patient in — creates queue entry from an existing appointment. Ticket number auto-generated. Appointment status updated to IN_QUEUE.',
   })
   @ApiNotFoundResponse({ description: 'Appointment not found' })
   @ApiConflictResponse({ description: 'Queue entry already exists for this appointment' })
@@ -87,9 +87,9 @@ export class QueueController {
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiNoContentResponse({ description: 'Queue entry permanently deleted (no soft delete on this model)' })
+  @ApiNoContentResponse({ description: 'Queue entry soft-deleted (deletedAt set)' })
   @ApiNotFoundResponse({ description: 'Queue entry not found' })
-  @ApiOperation({ summary: 'Hard-delete queue entry (no deletedAt on QueueEntry model)' })
+  @ApiOperation({ summary: 'Soft-delete queue entry (sets deletedAt)' })
   remove(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.service.remove(id, user);
   }

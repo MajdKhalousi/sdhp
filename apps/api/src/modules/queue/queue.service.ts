@@ -66,6 +66,23 @@ const SELECT = {
 
 type QueueEntryRecord = Prisma.QueueEntryGetPayload<{ select: typeof SELECT }>;
 
+const CHECK_IN_BLOCKED_MESSAGES: Partial<Record<AppointmentStatus, string>> = {
+  [AppointmentStatus.IN_QUEUE]:    'This appointment is already in the queue.',
+  [AppointmentStatus.CANCELLED]:   'This appointment is cancelled and cannot be checked in.',
+  [AppointmentStatus.COMPLETED]:   'This appointment is already completed.',
+  [AppointmentStatus.NO_SHOW]:     'This appointment was marked as no-show and cannot be checked in.',
+  [AppointmentStatus.IN_PROGRESS]: 'This appointment is already in progress.',
+  [AppointmentStatus.CHECKED_IN]:  'This appointment has an inconsistent check-in state. Please contact admin.',
+};
+
+const QUEUE_TO_APPOINTMENT_STATUS: Partial<Record<QueueStatus, AppointmentStatus>> = {
+  [QueueStatus.WAITING]:     AppointmentStatus.IN_QUEUE,
+  [QueueStatus.CALLED]:      AppointmentStatus.IN_QUEUE,
+  [QueueStatus.IN_PROGRESS]: AppointmentStatus.IN_PROGRESS,
+  [QueueStatus.DONE]:        AppointmentStatus.COMPLETED,
+  [QueueStatus.SKIPPED]:     AppointmentStatus.NO_SHOW,
+};
+
 @Injectable()
 export class QueueService {
   constructor(
@@ -114,7 +131,10 @@ export class QueueService {
 
     const ALLOWED: AppointmentStatus[] = [AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED];
     if (!ALLOWED.includes(appointment.status)) {
-      throw new ConflictException(`Cannot check in appointment with status ${appointment.status}`);
+      const message =
+        CHECK_IN_BLOCKED_MESSAGES[appointment.status] ??
+        `Cannot check in appointment with status ${appointment.status}`;
+      throw new ConflictException(message);
     }
 
     const organizationId = appointment.organizationId;
@@ -189,7 +209,13 @@ export class QueueService {
   async update(id: string, dto: UpdateQueueEntryDto, caller: JwtPayload) {
     const entry = await this.prisma.queueEntry.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true, calledAt: true, completedAt: true, appointment: { select: { organizationId: true, doctorId: true } } },
+      select: {
+        id: true,
+        appointmentId: true,
+        calledAt: true,
+        completedAt: true,
+        appointment: { select: { organizationId: true, doctorId: true } },
+      },
     });
 
     if (!entry) throw new NotFoundException('Queue entry not found');
@@ -210,14 +236,29 @@ export class QueueService {
     const completedAt =
       dto.status === QueueStatus.DONE && !entry.completedAt ? new Date() : undefined;
 
-    return this.prisma.queueEntry.update({
-      where: { id },
-      data: {
-        status: dto.status,
-        ...(calledAt && { calledAt }),
-        ...(completedAt && { completedAt }),
-      },
-      select: SELECT,
+    const appointmentStatus = dto.status ? QUEUE_TO_APPOINTMENT_STATUS[dto.status] : undefined;
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.queueEntry.update({
+        where: { id },
+        data: {
+          status: dto.status,
+          ...(calledAt && { calledAt }),
+          ...(completedAt && { completedAt }),
+        },
+      });
+
+      if (appointmentStatus) {
+        await tx.appointment.update({
+          where: { id: entry.appointmentId },
+          data: { status: appointmentStatus },
+        });
+      }
+
+      return tx.queueEntry.findUniqueOrThrow({
+        where: { id },
+        select: SELECT,
+      });
     });
   }
 

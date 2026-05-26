@@ -275,7 +275,7 @@ export class RadiologyService {
     await this.timelineWriter.log({
       organizationId: order.organizationId,
       patientId: order.patientId,
-      eventType: MedicalTimelineEventType.RADIOLOGY_RESULT_ADDED,
+      eventType: MedicalTimelineEventType.RADIOLOGY_REPORT_ADDED,
       createdById: caller.sub,
       metadata: {
         radiologyOrderId: id,

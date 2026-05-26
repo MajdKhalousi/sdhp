@@ -96,7 +96,7 @@ export class MedicalFilesService {
       await this.timelineWriter.log({
         organizationId: result.organizationId,
         patientId: result.patientId,
-        eventType: MedicalTimelineEventType.FILE_UPLOADED,
+        eventType: MedicalTimelineEventType.MEDICAL_FILE_UPLOADED,
         createdById: caller.sub,
         metadata: {
           medicalFileId: result.id,

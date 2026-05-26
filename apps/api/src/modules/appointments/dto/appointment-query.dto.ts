@@ -37,4 +37,9 @@ export class AppointmentQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   branchId?: string;
+
+  @ApiPropertyOptional({ description: 'SUPER_ADMIN only: filter by organization ID', example: 'org-cuid' })
+  @IsOptional()
+  @IsString()
+  organizationId?: string;
 }

@@ -245,19 +245,21 @@ export class QueueService {
   }
 
   private async buildWhere(query: QueueQueryDto, caller: JwtPayload): Promise<Prisma.QueueEntryWhereInput> {
-    const dateFilter = query.date ? this.buildDayRange(query.date) : undefined;
+    // Default to today when no date supplied — queue board shows today's entries.
+    const businessDate = query.date ?? this.todayDamascus();
     const statusFilter = query.status?.length ? { status: { in: query.status } } : {};
 
-    const apptQueryFilters: Prisma.AppointmentWhereInput = {
+    const apptFilters: Prisma.AppointmentWhereInput = {
       ...(query.branchId ? { branchId: query.branchId } : {}),
-      ...(dateFilter ? { scheduledAt: dateFilter } : {}),
     };
 
     if (caller.role === UserRole.SUPER_ADMIN) {
       return {
         ...statusFilter,
+        businessDate,
         appointment: {
-          ...apptQueryFilters,
+          ...apptFilters,
+          ...(query.organizationId ? { organizationId: query.organizationId } : {}),
           ...(query.doctorId ? { doctorId: query.doctorId } : {}),
         },
       };
@@ -270,8 +272,9 @@ export class QueueService {
       });
       return {
         ...statusFilter,
+        businessDate,
         appointment: {
-          ...apptQueryFilters,
+          ...apptFilters,
           organizationId: caller.organizationId,
           // DOCTOR always scoped to own profile; query.doctorId ignored for security.
           ...(doctorProfile ? { doctorId: doctorProfile.id } : {}),
@@ -281,21 +284,13 @@ export class QueueService {
 
     return {
       ...statusFilter,
+      businessDate,
       appointment: {
-        ...apptQueryFilters,
+        ...apptFilters,
         organizationId: caller.organizationId,
         ...(query.doctorId ? { doctorId: query.doctorId } : {}),
       },
     };
-  }
-
-  private buildDayRange(date: string): { gte: Date; lt: Date } {
-    // 'date' is a calendar date in Asia/Damascus (UTC+3, no DST since 2022).
-    // Damascus midnight = date T00:00:00+03:00 = (date-1)T21:00:00Z.
-    const TZ_OFFSET_MS = 3 * 60 * 60 * 1000;
-    const start = new Date(new Date(`${date}T00:00:00.000Z`).getTime() - TZ_OFFSET_MS);
-    const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
-    return { gte: start, lt: end };
   }
 
   private todayDamascus(): string {

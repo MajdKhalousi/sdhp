@@ -21,7 +21,7 @@ export class QueueQueryDto extends PaginationQueryDto {
   doctorId?: string;
 
   @ApiPropertyOptional({
-    description: 'Filter by calendar day of appointment scheduledAt (UTC). Format: YYYY-MM-DD',
+    description: 'Filter by QueueEntry.businessDate (Asia/Damascus calendar day). Defaults to today when omitted. Format: YYYY-MM-DD',
     example: '2026-05-22',
   })
   @IsOptional()
@@ -32,4 +32,9 @@ export class QueueQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   branchId?: string;
+
+  @ApiPropertyOptional({ description: 'SUPER_ADMIN only: filter by organization ID', example: 'org-cuid' })
+  @IsOptional()
+  @IsString()
+  organizationId?: string;
 }

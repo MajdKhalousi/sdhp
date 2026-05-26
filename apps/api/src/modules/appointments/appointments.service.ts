@@ -217,6 +217,7 @@ export class AppointmentsService {
     if (caller.role === UserRole.SUPER_ADMIN) {
       return {
         ...queryFilters,
+        ...(query.organizationId ? { organizationId: query.organizationId } : {}),
         ...(query.doctorId ? { doctorId: query.doctorId } : {}),
         deletedAt: null,
       };

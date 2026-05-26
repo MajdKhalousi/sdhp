@@ -11,6 +11,7 @@ import { PatientForm } from '@/components/patients/patient-form';
 import { Tabs, TabPanel, type TabItem } from '@/components/ui/tabs';
 import { TimelineTab } from '@/components/patients/timeline/timeline-tab';
 import { ClinicalTypeTab } from '@/components/patients/clinical-type-tab';
+import { FilesTab } from '@/components/patients/files-tab';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { Patient, CreatePatientInput, UpdatePatientInput } from '@/hooks/use-patient';
@@ -228,7 +229,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
     { value: 'prescriptions', label: t('detail.tabs.prescriptions') },
     { value: 'labs',          label: t('detail.tabs.labs')          },
     { value: 'radiology',     label: t('detail.tabs.radiology')     },
-    // 'files' tab hidden — no upload pipeline exists yet (B13.6.4)
+    { value: 'files',         label: t('detail.tabs.files')         },
   ];
 
   return (
@@ -324,6 +325,10 @@ export default function PatientPage({ params }: { params: { id: string } }) {
             type="RADIOLOGY_ORDER"
             emptyMessage={t('detail.clinicalTab.emptyRadiology')}
           />
+        </TabPanel>
+
+        <TabPanel value="files" activeValue={activeTab}>
+          <FilesTab patientId={id} />
         </TabPanel>
 
       </div>

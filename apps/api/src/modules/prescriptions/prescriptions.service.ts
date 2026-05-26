@@ -102,7 +102,7 @@ export class PrescriptionsService {
   async create(dto: CreatePrescriptionDto, caller: JwtPayload) {
     const encounter = await this.prisma.encounter.findFirst({
       where: { id: dto.encounterId, deletedAt: null },
-      select: { id: true, organizationId: true, doctorId: true },
+      select: { id: true, organizationId: true, doctorId: true, endedAt: true },
     });
     if (!encounter) throw new NotFoundException('Encounter not found');
     this.assertOwnership(encounter.organizationId, caller);
@@ -118,6 +118,10 @@ export class PrescriptionsService {
       if (encounter.doctorId !== doctorProfile.id) {
         throw new ForbiddenException('DOCTOR can only create prescriptions for their own encounters');
       }
+    }
+
+    if (encounter.endedAt) {
+      throw new BadRequestException('Cannot add a prescription to a completed encounter');
     }
 
     const result = await this.prisma.prescription.create({

@@ -24,6 +24,7 @@ import { MedicalFilesService } from './medical-files.service';
 import { CreateMedicalFileDto } from './dto/create-medical-file.dto';
 import { UpdateMedicalFileDto } from './dto/update-medical-file.dto';
 import { MedicalFileQueryDto } from './dto/medical-file-query.dto';
+import { UploadUrlRequestDto } from './dto/upload-url-request.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
@@ -33,6 +34,25 @@ import { JwtPayload } from '../../common/types/jwt-payload.type';
 @Controller('medical-files')
 export class MedicalFilesController {
   constructor(private readonly service: MedicalFilesService) {}
+
+  @Post('upload-url')
+  @Version('1')
+  @Roles(
+    UserRole.SUPER_ADMIN,
+    UserRole.ORG_ADMIN,
+    UserRole.DOCTOR,
+    UserRole.NURSE,
+    UserRole.SECRETARY,
+    UserRole.TECHNICIAN,
+  )
+  @ApiOperation({
+    summary: 'Request a presigned PUT URL. Upload binary to the returned uploadUrl, then call POST /medical-files with the returned storageKey.',
+  })
+  @ApiCreatedResponse({ description: 'Presigned upload URL generated' })
+  @ApiForbiddenResponse({ description: 'Cross-org access denied or patient not found' })
+  getUploadUrl(@Body() dto: UploadUrlRequestDto, @CurrentUser() user: JwtPayload) {
+    return this.service.getUploadUrl(dto, user);
+  }
 
   @Post()
   @Version('1')
@@ -66,6 +86,24 @@ export class MedicalFilesController {
   @ApiOkResponse({ description: 'File list' })
   findAll(@Query() query: MedicalFileQueryDto, @CurrentUser() user: JwtPayload) {
     return this.service.findAll(query, user);
+  }
+
+  @Get(':id/download-url')
+  @Version('1')
+  @Roles(
+    UserRole.SUPER_ADMIN,
+    UserRole.ORG_ADMIN,
+    UserRole.DOCTOR,
+    UserRole.NURSE,
+    UserRole.SECRETARY,
+    UserRole.TECHNICIAN,
+  )
+  @ApiOperation({ summary: 'Get a short-lived presigned download URL for a medical file.' })
+  @ApiOkResponse({ description: 'Presigned download URL returned' })
+  @ApiNotFoundResponse({ description: 'File not found' })
+  @ApiForbiddenResponse({ description: 'Cross-org access denied' })
+  getDownloadUrl(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.service.getDownloadUrl(id, user);
   }
 
   @Get(':id')

@@ -7,11 +7,13 @@ import {
 } from '@nestjs/common';
 import { MedicalTimelineEventType, Prisma, UserRole } from '@prisma/client';
 import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
+import { StorageService } from '../storage/storage.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { CreateMedicalFileDto } from './dto/create-medical-file.dto';
 import { UpdateMedicalFileDto } from './dto/update-medical-file.dto';
 import { MedicalFileQueryDto } from './dto/medical-file-query.dto';
+import { UploadUrlRequestDto } from './dto/upload-url-request.dto';
 
 // ── Select constants ───────────────────────────────────────────────────────
 
@@ -58,6 +60,7 @@ export class MedicalFilesService {
   constructor(
     private prisma: PrismaService,
     private timelineWriter: MedicalTimelineWriterService,
+    private storage: StorageService,
   ) {}
 
   async create(dto: CreateMedicalFileDto, caller: JwtPayload) {
@@ -168,6 +171,51 @@ export class MedicalFilesService {
       data: { deletedAt: new Date() },
       select: FILE_SELECT,
     });
+  }
+
+  async getUploadUrl(dto: UploadUrlRequestDto, caller: JwtPayload) {
+    const patient = await this.prisma.patient.findFirst({
+      where: { id: dto.patientId, deletedAt: null },
+      select: { id: true, organizationId: true },
+    });
+    if (!patient) throw new NotFoundException('Patient not found');
+
+    const orgId = caller.role === UserRole.SUPER_ADMIN
+      ? patient.organizationId
+      : caller.organizationId;
+
+    if (patient.organizationId !== orgId) {
+      throw new ForbiddenException('Patient does not belong to this organization');
+    }
+
+    if (dto.encounterId) {
+      await this.assertEncounterBelongsToOrgAndPatient(dto.encounterId, orgId, dto.patientId);
+    }
+
+    const storageKey = this.storage.generateObjectKey(orgId, dto.patientId, dto.fileName);
+    const uploadUrl = await this.storage.presignedPutUrl(storageKey);
+
+    return {
+      uploadUrl,
+      storageKey,
+      method: 'PUT' as const,
+      expiresIn: 900,
+    };
+  }
+
+  async getDownloadUrl(id: string, caller: JwtPayload) {
+    const file = await this.fetchFile(id);
+    this.assertOrgAccess(file, caller);
+
+    const downloadUrl = await this.storage.presignedGetUrl(file.storageKey);
+
+    return {
+      downloadUrl,
+      expiresIn: 300,
+      fileName: file.fileName,
+      mimeType: file.mimeType,
+      sizeBytes: file.sizeBytes,
+    };
   }
 
   async findByPatient(patientId: string, query: MedicalFileQueryDto, caller: JwtPayload) {

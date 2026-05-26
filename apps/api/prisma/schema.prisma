@@ -184,7 +184,7 @@ model User {
   uploadedFiles    MedicalFile[]
   createdInvoices       Invoice[]              @relation("InvoicesCreated")
   receivedPayments      Payment[]              @relation("PaymentsReceived")
-  createdTimelineEvents MedicalTimelineEvent[] @relation("TimelineEventsCreated")
+  timelineEventsCreated MedicalTimelineEvent[] @relation("TimelineEventsCreated")
 
   @@index([organizationId])
   @@map("users")
@@ -259,10 +259,12 @@ model Patient {
   phone          String?
   email          String?
   nationalId     String?
-  bloodType      String?
-  address        String?
-  emergencyName  String?
-  emergencyPhone String?
+  bloodType       String?
+  address         String?
+  city            String?
+  chronicDiseases String?
+  emergencyName   String?
+  emergencyPhone  String?
   isActive       Boolean   @default(true)
   notes          String?
 
@@ -278,7 +280,8 @@ model Patient {
   radiologyOrders       RadiologyOrder[]
   medicalFiles          MedicalFile[]
   invoices              Invoice[]
-  medicalTimelineEvents MedicalTimelineEvent[]
+
+  timelineEvents  MedicalTimelineEvent[]
 
   @@unique([organizationId, mrn])
   @@index([organizationId])

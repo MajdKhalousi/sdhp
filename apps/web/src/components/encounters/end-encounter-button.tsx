@@ -8,9 +8,16 @@ import { useUpdateEncounter } from '@/hooks/use-encounters';
 interface EndEncounterButtonProps {
   encounterId: string;
   alreadyEnded: boolean;
+  disabled?: boolean;
+  disabledReason?: string;
 }
 
-export function EndEncounterButton({ encounterId, alreadyEnded }: EndEncounterButtonProps) {
+export function EndEncounterButton({
+  encounterId,
+  alreadyEnded,
+  disabled = false,
+  disabledReason,
+}: EndEncounterButtonProps) {
   const t = useTranslations('encounter');
   const tCommon = useTranslations('common');
   const router = useRouter();
@@ -21,6 +28,20 @@ export function EndEncounterButton({ encounterId, alreadyEnded }: EndEncounterBu
   if (alreadyEnded) {
     return (
       <span className="text-xs text-muted-foreground">{t('close.alreadyEnded')}</span>
+    );
+  }
+
+  if (disabled) {
+    return (
+      <div className="flex flex-col gap-1">
+        <button
+          disabled
+          className="inline-flex h-9 items-center rounded-md border border-destructive/40 px-4 text-sm font-medium text-destructive opacity-60"
+        >
+          {t('actions.closeVisit')}
+        </button>
+        {disabledReason && <p className="text-xs text-muted-foreground">{disabledReason}</p>}
+      </div>
     );
   }
 

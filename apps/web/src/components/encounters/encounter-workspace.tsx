@@ -77,6 +77,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const [form, setForm] = useState<WorkspaceForm | null>(null);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [saveError, setSaveError] = useState('');
+  const [isDirty, setIsDirty] = useState(false);
 
   // isDirtyRef: true when the user has unsaved edits; blocks server re-sync
   // so a background refetch never overwrites in-progress work.
@@ -108,6 +109,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   function setField<K extends keyof WorkspaceForm>(key: K, value: WorkspaceForm[K]) {
     setForm((prev) => prev ? { ...prev, [key]: value } : prev);
     isDirtyRef.current = true;
+    setIsDirty(true);
     onDirtyChange?.(true);
     setSavedAt(null);
     setSaveError('');
@@ -118,13 +120,13 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
     setSaveError('');
 
     const payload: UpdateEncounterPayload = {
-      chiefComplaint: form.chiefComplaint || undefined,
-      notes:          form.notes || undefined,
-      diagnosis:      form.diagnosis || undefined,
-      diagnosisCode:  form.diagnosisCode || undefined,
-      treatmentPlan:  form.treatmentPlan || undefined,
+      chiefComplaint: form.chiefComplaint.trim(),
+      notes:          form.notes.trim(),
+      diagnosis:      form.diagnosis.trim(),
+      diagnosisCode:  form.diagnosisCode.trim(),
+      treatmentPlan:  form.treatmentPlan.trim(),
       followUpDate:   form.followUpDate || undefined,
-      vitals:         Object.values(form.vitals).some(Boolean) ? form.vitals : undefined,
+      vitals:         Object.values(form.vitals).some(Boolean) ? form.vitals : {},
     };
 
     update(
@@ -132,6 +134,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
       {
         onSuccess: () => {
           isDirtyRef.current = false;
+          setIsDirty(false);
           onDirtyChange?.(false);
           setSavedAt(new Date().toLocaleTimeString(displayLocale, { hour: 'numeric', minute: '2-digit' }));
         },
@@ -384,7 +387,12 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
               >
                 {saving ? t('actions.saving') : t('actions.saveChanges')}
               </button>
-              {savedAt && (
+              {isDirty && (
+                <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                  {t('actions.unsavedChanges')}
+                </span>
+              )}
+              {!isDirty && savedAt && (
                 <span className="text-xs text-muted-foreground">
                   {t('actions.savedAt', { time: savedAt })}
                 </span>
@@ -394,7 +402,12 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
               )}
             </div>
 
-            <EndEncounterButton encounterId={encounterId} alreadyEnded={isEnded} />
+            <EndEncounterButton
+              encounterId={encounterId}
+              alreadyEnded={isEnded}
+              disabled={isDirty || saving}
+              disabledReason={isDirty ? t('actions.saveBeforeClosing') : undefined}
+            />
           </div>
         )}
       </div>

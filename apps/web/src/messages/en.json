@@ -287,7 +287,9 @@
       "savedAt":                "Saved at {time}",
       "closeVisit":             "Close Visit",
       "closing":                "Closing…",
-      "unsavedChangesConfirm":  "You have unsaved changes. Leave without saving?"
+      "unsavedChangesConfirm":  "You have unsaved changes. Leave without saving?",
+      "unsavedChanges":         "Unsaved changes",
+      "saveBeforeClosing":      "Save changes before ending the visit."
     },
     "close": {
       "confirm":    "Close this visit? The encounter will be locked and the appointment marked complete.",

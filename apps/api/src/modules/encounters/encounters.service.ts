@@ -247,6 +247,10 @@ export class EncountersService {
       await this.assertBranchBelongsToOrg(dto.branchId, encounter.organizationId);
     }
 
+    if (encounter.endedAt) {
+      throw new BadRequestException('Completed encounters are read-only');
+    }
+
     const updateData = {
       ...dto,
       followUpDate: dto.followUpDate ? new Date(dto.followUpDate) : undefined,

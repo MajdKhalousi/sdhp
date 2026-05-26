@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ConflictException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -31,6 +30,8 @@ const SELECT = {
   nationalId: true,
   bloodType: true,
   address: true,
+  city: true,
+  chronicDiseases: true,
   emergencyName: true,
   emergencyPhone: true,
   isActive: true,
@@ -112,6 +113,8 @@ export class PatientsService {
           nationalId: dto.nationalId,
           bloodType: dto.bloodType,
           address: dto.address,
+          city: dto.city,
+          chronicDiseases: dto.chronicDiseases,
           emergencyName: dto.emergencyName,
           emergencyPhone: dto.emergencyPhone,
           notes: dto.notes,
@@ -211,7 +214,7 @@ export class PatientsService {
   private assertOwnership(patientOrgId: string, caller: JwtPayload): void {
     if (caller.role === UserRole.SUPER_ADMIN) return;
     if (patientOrgId !== caller.organizationId) {
-      throw new ForbiddenException('Access to this patient is not allowed');
+      throw new NotFoundException('Patient not found');
     }
   }
 
@@ -226,9 +229,6 @@ export class PatientsService {
       return dtoOrgId;
     }
 
-    if (dtoOrgId && dtoOrgId !== caller.organizationId) {
-      throw new ForbiddenException('Cannot create a patient for another organization');
-    }
     return caller.organizationId;
   }
 

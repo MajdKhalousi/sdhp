@@ -76,6 +76,16 @@ export class CreatePatientDto {
   @IsString()
   address?: string;
 
+  @ApiPropertyOptional({ example: 'Damascus' })
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @ApiPropertyOptional({ example: 'Diabetes, hypertension' })
+  @IsOptional()
+  @IsString()
+  chronicDiseases?: string;
+
   @ApiPropertyOptional({ example: 'Fatima Khalil' })
   @IsOptional()
   @IsString()

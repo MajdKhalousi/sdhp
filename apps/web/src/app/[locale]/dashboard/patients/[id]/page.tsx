@@ -1,17 +1,19 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { AlertTriangle } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
-import { usePatient } from '@/hooks/use-patient';
+import { usePatient, useUpdatePatient, useDeletePatient } from '@/hooks/use-patient';
 import { useAllergies } from '@/hooks/use-allergies';
 import { PatientHeader } from '@/components/patients/patient-header';
+import { PatientForm } from '@/components/patients/patient-form';
 import { Tabs, TabPanel, type TabItem } from '@/components/ui/tabs';
 import { TimelineTab } from '@/components/patients/timeline/timeline-tab';
 import { ClinicalTypeTab } from '@/components/patients/clinical-type-tab';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import type { Patient } from '@/hooks/use-patient';
+import type { Patient, CreatePatientInput, UpdatePatientInput } from '@/hooks/use-patient';
 import type { Allergy } from '@/hooks/use-allergies';
 
 function formatDate(iso: string | null, locale = 'en-US'): string {
@@ -142,15 +144,25 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
         <InfoRow label={t('detail.overview.fields.email')} value={patient.email} />
         <InfoRow label={t('detail.overview.fields.nationalId')} value={patient.nationalId} />
         <InfoRow label={t('detail.overview.fields.address')} value={patient.address} />
+        {patient.city && <InfoRow label="المدينة" value={patient.city} />}
       </div>
 
-      {(patient.emergencyName || patient.emergencyPhone) && (
+      {((patient.emergencyContactName ?? patient.emergencyName) || (patient.emergencyContactPhone ?? patient.emergencyPhone)) && (
         <div className="rounded-xl border bg-card px-5 py-3 shadow-sm sm:col-span-2">
           <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {t('detail.overview.emergencyContact')}
           </p>
-          <InfoRow label={t('detail.overview.fields.name')} value={patient.emergencyName} />
-          <InfoRow label={t('detail.overview.fields.phone')} value={patient.emergencyPhone} />
+          <InfoRow label={t('detail.overview.fields.name')} value={patient.emergencyContactName ?? patient.emergencyName} />
+          <InfoRow label={t('detail.overview.fields.phone')} value={patient.emergencyContactPhone ?? patient.emergencyPhone} />
+        </div>
+      )}
+
+      {patient.chronicDiseases && (
+        <div className="rounded-xl border bg-card px-5 py-3 shadow-sm sm:col-span-2">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            الأمراض المزمنة
+          </p>
+          <p className="text-sm text-foreground">{patient.chronicDiseases}</p>
         </div>
       )}
 
@@ -174,13 +186,41 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
 
 export default function PatientPage({ params }: { params: { id: string } }) {
   const { id } = params;
+  const router = useRouter();
   const t = useTranslations('patient');
   const [activeTab, setActiveTab] = useState('overview');
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [updateError, setUpdateError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const { data: patient, isLoading, isError, error } = usePatient(id);
   const { data: allergies = [] } = useAllergies(id);
+  const updatePatient = useUpdatePatient();
+  const deletePatient = useDeletePatient();
 
   if (isError) throw error;
+
+  async function handleUpdate(formData: CreatePatientInput | UpdatePatientInput) {
+    setUpdateError(null);
+    try {
+      await updatePatient.mutateAsync({ id, data: formData as UpdatePatientInput });
+      setIsEditOpen(false);
+    } catch (err) {
+      setUpdateError(err instanceof Error ? err.message : 'حدث خطأ أثناء تعديل بيانات المريض');
+    }
+  }
+
+  async function handleDelete() {
+    const confirmed = window.confirm('هل أنت متأكد من أرشفة هذا المريض؟');
+    if (!confirmed) return;
+    setDeleteError(null);
+    try {
+      await deletePatient.mutateAsync(id);
+      router.push('/dashboard/patients');
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : 'حدث خطأ أثناء أرشفة المريض');
+    }
+  }
 
   const TABS: TabItem[] = [
     { value: 'overview',      label: t('detail.tabs.overview')      },
@@ -194,6 +234,47 @@ export default function PatientPage({ params }: { params: { id: string } }) {
   return (
     <div className="space-y-4">
       <PatientHeader patient={patient} isLoading={isLoading} />
+
+      {patient && (
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => { setIsEditOpen(true); setUpdateError(null); }}
+            className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            تعديل البيانات
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={deletePatient.isPending}
+            className="rounded-lg border border-destructive/30 px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:pointer-events-none disabled:opacity-50"
+          >
+            أرشفة المريض
+          </button>
+        </div>
+      )}
+
+      {deleteError && (
+        <div className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3">
+          <p className="text-sm text-destructive">{deleteError}</p>
+        </div>
+      )}
+
+      {isEditOpen && patient && (
+        <div>
+          {updateError && (
+            <p className="mb-3 rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-2 text-sm text-destructive">
+              {updateError}
+            </p>
+          )}
+          <PatientForm
+            mode="edit"
+            initialPatient={patient}
+            onSubmit={handleUpdate}
+            onCancel={() => { setIsEditOpen(false); setUpdateError(null); }}
+            isSubmitting={updatePatient.isPending}
+          />
+        </div>
+      )}
 
       <div className="overflow-x-auto">
         <Tabs

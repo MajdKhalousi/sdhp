@@ -12,7 +12,7 @@ export interface TimelineQueryParams {
 
 export function usePatientTimeline(patientId: string, params: TimelineQueryParams = {}) {
   const { types, from, to, page = 1, limit = 20 } = params;
-  const toParam = to ? `${to}T23:59:59` : undefined;
+  const toParam = to ? `${to}T23:59:59+03:00` : undefined;
 
   return useQuery({
     queryKey: ['patient-timeline', patientId, types, from, to, page, limit],

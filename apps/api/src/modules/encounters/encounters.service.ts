@@ -210,7 +210,7 @@ export class EncountersService {
           patientId: dto.patientId,
           eventType: MedicalTimelineEventType.ENCOUNTER_COMPLETED,
           createdById: caller.sub,
-          metadata: { encounterId: encounter.id, appointmentId: encounter.appointmentId ?? null },
+          metadata: { encounterId: encounter.id, appointmentId: encounter.appointmentId ?? null, endedAt: encounter.endedAt?.toISOString() ?? null },
         });
       }
 

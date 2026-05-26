@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import type { LabOrderStatus } from '@/types/timeline';
 
@@ -55,11 +55,32 @@ export interface LabOrder {
   result: LabResult | null;
 }
 
+export interface CreateLabOrderPayload {
+  patientId: string;
+  encounterId?: string;
+  testName: string;
+  testCode?: string;
+  priority?: string;
+  notes?: string;
+}
+
 export function usePatientLabOrders(patientId: string) {
   return useQuery({
     queryKey: ['patient-lab-orders', patientId],
     queryFn: () => api.get<LabOrder[]>(`/v1/patients/${patientId}/lab-orders`),
     enabled: !!patientId,
     staleTime: 30_000,
+  });
+}
+
+export function useCreateLabOrder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: CreateLabOrderPayload) =>
+      api.post<LabOrder>('/v1/lab-orders', payload),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ['patient-lab-orders', variables.patientId] });
+      qc.invalidateQueries({ queryKey: ['patient-timeline'] });
+    },
   });
 }

@@ -262,7 +262,8 @@
       "clinicalNotes":       "Chief Complaint & Clinical Notes",
       "vitals":              "Vitals & Measurements",
       "diagnosisAndTreatment": "Diagnosis & Treatment Plan",
-      "prescriptions":       "Prescriptions"
+      "prescriptions":       "Prescriptions",
+      "labOrders":           "Lab Orders"
     },
     "fields": {
       "chiefComplaintLabel":       "Chief Complaint",

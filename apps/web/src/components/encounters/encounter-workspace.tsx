@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { AlertTriangle, Activity, FileText, Stethoscope, Pill, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, Activity, FileText, Stethoscope, Pill, CheckCircle2, FlaskConical } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useEncounter, useUpdateEncounter } from '@/hooks/use-encounters';
 import { useAllergies } from '@/hooks/use-allergies';
 import { VitalsForm } from './vitals-form';
 import { PrescriptionPanel } from './prescription-panel';
+import { LabOrderPanel } from './lab-order-panel';
 import { EndEncounterButton } from './end-encounter-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -340,6 +341,16 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
       <div className="rounded-xl border border-border bg-card p-5">
         <SectionHeading icon={Pill}>{t('sections.prescriptions')}</SectionHeading>
         <PrescriptionPanel encounterId={encounterId} readOnly={readOnly} />
+      </div>
+
+      {/* ── Lab Orders ──────────────────────────────────────────────────── */}
+      <div className="rounded-xl border border-border bg-card p-5">
+        <SectionHeading icon={FlaskConical}>{t('sections.labOrders')}</SectionHeading>
+        <LabOrderPanel
+          patientId={encounter.patient.id}
+          encounterId={encounterId}
+          readOnly={readOnly}
+        />
       </div>
 
       {/* ── Actions ─────────────────────────────────────────────────────── */}

@@ -262,7 +262,8 @@
       "clinicalNotes":          "الشكوى الرئيسية والملاحظات السريرية",
       "vitals":                 "العلامات الحيوية والقياسات",
       "diagnosisAndTreatment":  "التشخيص وخطة العلاج",
-      "prescriptions":          "الوصفات الطبية"
+      "prescriptions":          "الوصفات الطبية",
+      "labOrders":              "طلبات المختبر"
     },
     "fields": {
       "chiefComplaintLabel":       "الشكوى الرئيسية",

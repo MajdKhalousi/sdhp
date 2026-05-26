@@ -27,7 +27,7 @@ function waitMins(iso: string) {
 
 export function DoctorQueuePanel() {
   const { data, isLoading, isError, error, refetch, isFetching } = useQueue({
-    status: ['WAITING', 'CALLED'],
+    status: ['WAITING', 'CALLED', 'IN_PROGRESS'],
     date: todayDate(),
     limit: 50,
   });

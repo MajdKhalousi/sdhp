@@ -60,8 +60,13 @@ export default function DashboardPage() {
   });
 
   const { data: queueStats } = useQuery({
-    queryKey: ['dashboard', 'queue-waiting'],
-    queryFn: () => api.get<PagedMeta>('/v1/queue', { status: 'WAITING', limit: 1 }),
+    queryKey: ['dashboard', 'queue-waiting', today],
+    queryFn: () =>
+      api.get<PagedMeta>('/v1/queue', {
+        date: today,
+        status: ['WAITING', 'CALLED', 'IN_PROGRESS'],
+        limit: 1,
+      }),
     staleTime: 30_000,
     refetchInterval: 30_000,
   });

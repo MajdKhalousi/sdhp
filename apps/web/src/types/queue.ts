@@ -52,14 +52,13 @@ export interface QueueQuery {
   doctorId?: string;
   date?: string;
   branchId?: string;
+  organizationId?: string;
   page?: number;
   limit?: number;
 }
 
 export interface CreateQueueEntryDto {
   appointmentId: string;
-  ticketNumber?: number;
-  status?: QueueStatus;
 }
 
 export interface UpdateQueueEntryDto {

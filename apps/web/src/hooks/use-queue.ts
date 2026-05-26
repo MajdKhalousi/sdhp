@@ -9,15 +9,16 @@ import type {
 } from '@/types/queue';
 
 export function useQueue(query: QueueQuery = {}) {
-  const { status, doctorId, date, branchId, page, limit } = query;
+  const { status, doctorId, date, branchId, organizationId, page, limit } = query;
   return useQuery({
-    queryKey: ['queue', status, doctorId, date, branchId, page, limit],
+    queryKey: ['queue', status, doctorId, date, branchId, organizationId, page, limit],
     queryFn: () =>
       api.get<QueueResponse>('/v1/queue', {
         ...(status?.length ? { status } : {}),
         ...(doctorId ? { doctorId } : {}),
         ...(date ? { date } : {}),
         ...(branchId ? { branchId } : {}),
+        ...(organizationId ? { organizationId } : {}),
         ...(page ? { page } : {}),
         ...(limit ? { limit } : {}),
       }),

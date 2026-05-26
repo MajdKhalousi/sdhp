@@ -59,6 +59,7 @@ export interface AppointmentQuery {
   patientId?: string;
   date?: string;
   branchId?: string;
+  organizationId?: string;
   page?: number;
   limit?: number;
 }

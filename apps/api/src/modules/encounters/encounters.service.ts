@@ -136,6 +136,12 @@ export class EncountersService {
     let appointmentId: string | undefined = dto.appointmentId;
     if (appointmentId) {
       await this.validateAppointment(appointmentId, organizationId);
+
+      const existing = await this.prisma.encounter.findFirst({
+        where: { appointmentId, deletedAt: null },
+        select: SELECT,
+      });
+      if (existing) return existing;
     }
 
     try {

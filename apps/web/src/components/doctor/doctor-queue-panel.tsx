@@ -133,6 +133,7 @@ export function DoctorQueuePanel() {
                   patientId={patient.id}
                   doctorId={doctor.id}
                   appointmentId={appointment.id}
+                  appointmentStatus={appointment.status}
                 />
               </div>
             </div>

@@ -1,16 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useStartEncounter } from '@/hooks/use-encounters';
 
 interface StartEncounterButtonProps {
   patientId: string;
   doctorId: string;
   appointmentId: string;
+  appointmentStatus?: string;
 }
 
-export function StartEncounterButton({ patientId, doctorId, appointmentId }: StartEncounterButtonProps) {
+export function StartEncounterButton({ patientId, doctorId, appointmentId, appointmentStatus }: StartEncounterButtonProps) {
   const router = useRouter();
   const [error, setError] = useState('');
   const { mutate, isPending } = useStartEncounter();
@@ -40,10 +41,10 @@ export function StartEncounterButton({ patientId, doctorId, appointmentId }: Sta
         {isPending ? (
           <>
             <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground" />
-            Starting…
+            {appointmentStatus === 'IN_PROGRESS' ? 'Opening…' : 'Starting…'}
           </>
         ) : (
-          'Start Visit'
+          appointmentStatus === 'IN_PROGRESS' ? 'Open Visit' : 'Start Visit'
         )}
       </button>
       {error && (

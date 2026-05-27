@@ -13,6 +13,7 @@ import { TimelineTab } from '@/components/patients/timeline/timeline-tab';
 import { ClinicalTypeTab } from '@/components/patients/clinical-type-tab';
 import { FilesTab } from '@/components/patients/files-tab';
 import { LabOrdersTab } from '@/components/patients/lab-orders-tab';
+import { RadiologyOrdersTab } from '@/components/patients/radiology-orders-tab';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { Patient, CreatePatientInput, UpdatePatientInput } from '@/hooks/use-patient';
@@ -317,11 +318,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
         </TabPanel>
 
         <TabPanel value="radiology" activeValue={activeTab}>
-          <ClinicalTypeTab
-            patientId={id}
-            type="RADIOLOGY_ORDER"
-            emptyMessage={t('detail.clinicalTab.emptyRadiology')}
-          />
+          <RadiologyOrdersTab patientId={id} />
         </TabPanel>
 
         <TabPanel value="files" activeValue={activeTab}>

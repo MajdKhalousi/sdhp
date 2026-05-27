@@ -73,6 +73,7 @@ enum MedicalTimelineEventType {
   RADIOLOGY_ORDERED
   RADIOLOGY_REPORT_ADDED
   MEDICAL_FILE_UPLOADED
+  CLINICAL_REPORT_CREATED
 }
 
 enum LabOrderStatus {
@@ -91,6 +92,11 @@ enum RadiologyOrderStatus {
   RESULTED
   REVIEWED
   CANCELLED
+}
+
+enum ClinicalReportStatus {
+  DRAFT
+  FINALIZED
 }
 
 // ─────────────────────────────────────────────
@@ -125,6 +131,7 @@ model Organization {
   medicalFiles          MedicalFile[]
   invoices              Invoice[]
   medicalTimelineEvents MedicalTimelineEvent[]
+  clinicalReports       ClinicalReport[]
 
   @@map("organizations")
 }
@@ -185,6 +192,7 @@ model User {
   createdInvoices       Invoice[]              @relation("InvoicesCreated")
   receivedPayments      Payment[]              @relation("PaymentsReceived")
   timelineEventsCreated MedicalTimelineEvent[] @relation("TimelineEventsCreated")
+  createdClinicalReports ClinicalReport[]
 
   @@index([organizationId])
   @@map("users")
@@ -280,6 +288,7 @@ model Patient {
   radiologyOrders       RadiologyOrder[]
   medicalFiles          MedicalFile[]
   invoices              Invoice[]
+  clinicalReports       ClinicalReport[]
 
   timelineEvents  MedicalTimelineEvent[]
 
@@ -423,6 +432,7 @@ model Encounter {
   radiologyOrders RadiologyOrder[]
   medicalFiles    MedicalFile[]
   invoices        Invoice[]
+  clinicalReports ClinicalReport[]
 
   @@index([organizationId])
   @@index([doctorId])
@@ -620,6 +630,38 @@ model MedicalFile {
   @@index([uploadedById])
   @@index([category])
   @@map("medical_files")
+}
+
+// ─────────────────────────────────────────────
+// CLINICAL REPORTS
+// ─────────────────────────────────────────────
+
+model ClinicalReport {
+  id             String               @id @default(cuid())
+  organizationId String
+  patientId      String
+  encounterId    String
+  createdById    String
+  title          String
+  content        String
+  status         ClinicalReportStatus @default(DRAFT)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  patient      Patient      @relation(fields: [patientId], references: [id])
+  encounter    Encounter    @relation(fields: [encounterId], references: [id])
+  createdBy    User         @relation(fields: [createdById], references: [id])
+
+  @@index([organizationId])
+  @@index([patientId])
+  @@index([encounterId])
+  @@index([createdById])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("clinical_reports")
 }
 
 // ─────────────────────────────────────────────

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { AlertTriangle, Activity, FileText, Stethoscope, Pill, CheckCircle2, FlaskConical, Scan } from 'lucide-react';
+import { AlertTriangle, Activity, FileText, Stethoscope, Pill, CheckCircle2, FlaskConical, Scan, ClipboardList } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useEncounter, useUpdateEncounter } from '@/hooks/use-encounters';
 import { useAllergies } from '@/hooks/use-allergies';
@@ -9,6 +9,7 @@ import { VitalsForm } from './vitals-form';
 import { PrescriptionPanel } from './prescription-panel';
 import { LabOrderPanel } from './lab-order-panel';
 import { RadiologyOrderPanel } from './radiology-order-panel';
+import { ClinicalReportPanel } from './clinical-report-panel';
 import { EndEncounterButton } from './end-encounter-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -360,6 +361,23 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
         <RadiologyOrderPanel
           patientId={encounter.patient.id}
           encounterId={encounterId}
+          readOnly={readOnly}
+        />
+      </div>
+
+      {/* ── Clinical Report ─────────────────────────────────────────────── */}
+      <div className="rounded-xl border border-border bg-card p-5">
+        <SectionHeading icon={ClipboardList}>{t('sections.clinicalReport')}</SectionHeading>
+        <ClinicalReportPanel
+          encounterId={encounterId}
+          patientId={encounter.patient.id}
+          encounterData={{
+            chiefComplaint: form.chiefComplaint,
+            notes: form.notes,
+            diagnosis: form.diagnosis,
+            treatmentPlan: form.treatmentPlan,
+            followUpDate: form.followUpDate,
+          }}
           readOnly={readOnly}
         />
       </div>

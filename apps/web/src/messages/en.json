@@ -262,7 +262,8 @@
       "diagnosisAndTreatment": "Diagnosis & Treatment Plan",
       "prescriptions": "Prescriptions",
       "labOrders": "Lab Orders",
-      "radiology": "Radiology Orders"
+      "radiology": "Radiology Orders",
+      "clinicalReport": "Clinical Report"
     },
     "fields": {
       "chiefComplaintLabel": "Chief Complaint",
@@ -463,6 +464,44 @@
         "weight": "70",
         "height": "170"
       }
+    },
+    "clinicalReport": {
+      "sectionTitle": "Clinical Report",
+      "empty": "No clinical report for this visit.",
+      "createButton": "Create Report",
+      "editButton": "Edit",
+      "finalizeButton": "Finalize",
+      "deleteButton": "Delete Draft",
+      "saveDraft": "Save Draft",
+      "saving": "Saving…",
+      "statusDraft": "Draft",
+      "statusFinalized": "Finalized",
+      "defaultTitle": "Clinical Report",
+      "titleLabel": "Title",
+      "titlePlaceholder": "e.g. Discharge Summary",
+      "contentLabel": "Content",
+      "contentPlaceholder": "Enter report content…",
+      "createdBy": "By",
+      "lastUpdated": "Updated",
+      "confirmFinalize": "Finalize this report? It will become read-only and cannot be edited.",
+      "confirmDelete": "Delete this draft report? This action cannot be undone.",
+      "prefill": {
+        "chiefComplaint": "Chief Complaint",
+        "examination": "Examination & Findings",
+        "diagnosis": "Diagnosis",
+        "treatmentPlan": "Treatment Plan",
+        "followUp": "Follow-up Date"
+      },
+      "validation": {
+        "titleRequired": "Title is required.",
+        "contentRequired": "Content is required."
+      },
+      "error": {
+        "loadFailed": "Failed to load clinical reports.",
+        "saveFailed": "Failed to save report.",
+        "finalizeFailed": "Failed to finalize report.",
+        "deleteFailed": "Failed to delete report."
+      }
     }
   },
   "patient": {
@@ -503,7 +542,8 @@
         "prescriptions": "Prescriptions",
         "labs": "Lab Orders",
         "radiology": "Radiology",
-        "files": "Medical Files"
+        "files": "Medical Files",
+        "reports": "Reports"
       },
       "overview": {
         "demographics": "Demographics",
@@ -550,6 +590,18 @@
       "clinicalInfo": "Clinical information",
       "notes": "Notes",
       "cancelReason": "Cancel reason"
+    },
+    "reports": {
+      "empty": "No clinical reports on record for this patient.",
+      "errorLoad": "Failed to load clinical reports.",
+      "statusDraft": "Draft",
+      "statusFinalized": "Finalized",
+      "createdBy": "Created by",
+      "createdAt": "Created",
+      "updatedAt": "Last updated",
+      "encounter": "Encounter",
+      "viewContent": "View report",
+      "hideContent": "Hide report"
     }
   },
   "doctorWorkspace": {
@@ -602,9 +654,15 @@
       "labOrder": "Lab Order",
       "radiology": "Radiology",
       "file": "File",
+      "clinicalReport": "Clinical Report",
       "inProgress": "In Progress",
       "diagnosisOnRecord": "Diagnosis on record",
       "uploadedBy": "Uploaded by {uploader}"
+    },
+    "clinicalReport": {
+      "draft": "Draft",
+      "finalized": "Finalized",
+      "createdBy": "Created by {author}"
     },
     "labOrderStatus": {
       "ORDERED": "Ordered",

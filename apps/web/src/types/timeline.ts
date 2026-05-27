@@ -3,7 +3,8 @@ export type TimelineEventType =
   | 'PRESCRIPTION'
   | 'LAB_ORDER'
   | 'RADIOLOGY_ORDER'
-  | 'MEDICAL_FILE';
+  | 'MEDICAL_FILE'
+  | 'CLINICAL_REPORT_CREATED';
 
 export type LabOrderStatus =
   | 'ORDERED'
@@ -104,12 +105,22 @@ export interface MedicalFileEventData {
   uploadedBy: StaffRef;
 }
 
+export interface ClinicalReportEventData {
+  reportId: string;
+  title: string;
+  status: 'DRAFT' | 'FINALIZED';
+  encounterId: string | null;
+  createdAt: string;
+  createdBy: { id: string; firstName: string; lastName: string } | null;
+}
+
 export type TimelineEvent =
-  | { type: 'ENCOUNTER';       id: string; timestamp: string; source: TimelineEventSource; data: EncounterEventData }
-  | { type: 'PRESCRIPTION';    id: string; timestamp: string; source: TimelineEventSource; data: PrescriptionEventData }
-  | { type: 'LAB_ORDER';       id: string; timestamp: string; source: TimelineEventSource; data: LabOrderEventData }
-  | { type: 'RADIOLOGY_ORDER'; id: string; timestamp: string; source: TimelineEventSource; data: RadiologyOrderEventData }
-  | { type: 'MEDICAL_FILE';    id: string; timestamp: string; source: TimelineEventSource; data: MedicalFileEventData };
+  | { type: 'ENCOUNTER';               id: string; timestamp: string; source: TimelineEventSource; data: EncounterEventData }
+  | { type: 'PRESCRIPTION';            id: string; timestamp: string; source: TimelineEventSource; data: PrescriptionEventData }
+  | { type: 'LAB_ORDER';               id: string; timestamp: string; source: TimelineEventSource; data: LabOrderEventData }
+  | { type: 'RADIOLOGY_ORDER';         id: string; timestamp: string; source: TimelineEventSource; data: RadiologyOrderEventData }
+  | { type: 'MEDICAL_FILE';            id: string; timestamp: string; source: TimelineEventSource; data: MedicalFileEventData }
+  | { type: 'CLINICAL_REPORT_CREATED'; id: string; timestamp: string; source: TimelineEventSource; data: ClinicalReportEventData };
 
 export interface PatientTimelineSummary {
   id: string;

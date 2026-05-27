@@ -3,6 +3,7 @@ import { UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import {
+  ClinicalReportEventData,
   EncounterEventData,
   LabOrderEventData,
   MedicalFileEventData,
@@ -88,14 +89,24 @@ const MEDICAL_FILE_TIMELINE_SELECT = {
   uploadedBy: { select: { id: true, firstName: true, lastName: true, role: true } },
 } as const;
 
+const CLINICAL_REPORT_TIMELINE_SELECT = {
+  id: true,
+  title: true,
+  status: true,
+  encounterId: true,
+  createdAt: true,
+  createdBy: { select: { id: true, firstName: true, lastName: true, role: true } },
+} as const;
+
 // ── Source metadata ────────────────────────────────────────────────────────────
 
 const SOURCES: Record<TimelineEventType, TimelineEventSource> = {
-  [TimelineEventType.ENCOUNTER]:        { module: 'encounters',    entity: 'Encounter' },
-  [TimelineEventType.PRESCRIPTION]:     { module: 'prescriptions', entity: 'Prescription' },
-  [TimelineEventType.LAB_ORDER]:        { module: 'labs',          entity: 'LabOrder' },
-  [TimelineEventType.RADIOLOGY_ORDER]:  { module: 'radiology',     entity: 'RadiologyOrder' },
-  [TimelineEventType.MEDICAL_FILE]:     { module: 'medical-files', entity: 'MedicalFile' },
+  [TimelineEventType.ENCOUNTER]:               { module: 'encounters',       entity: 'Encounter' },
+  [TimelineEventType.PRESCRIPTION]:            { module: 'prescriptions',    entity: 'Prescription' },
+  [TimelineEventType.LAB_ORDER]:               { module: 'labs',             entity: 'LabOrder' },
+  [TimelineEventType.RADIOLOGY_ORDER]:         { module: 'radiology',        entity: 'RadiologyOrder' },
+  [TimelineEventType.MEDICAL_FILE]:            { module: 'medical-files',    entity: 'MedicalFile' },
+  [TimelineEventType.CLINICAL_REPORT_CREATED]: { module: 'clinical-reports', entity: 'ClinicalReport' },
 };
 
 const ALL_EVENT_TYPES: TimelineEventType[] = Object.values(TimelineEventType);
@@ -135,6 +146,8 @@ export class MedicalTimelineService {
       fetchers.push(this.fetchRadiologyOrders(patientId, organizationId, dateFilter));
     if (types.includes(TimelineEventType.MEDICAL_FILE))
       fetchers.push(this.fetchMedicalFiles(patientId, organizationId, dateFilter));
+    if (types.includes(TimelineEventType.CLINICAL_REPORT_CREATED))
+      fetchers.push(this.fetchClinicalReports(patientId, organizationId, dateFilter));
 
     const allEvents = (await Promise.all(fetchers)).flat();
     allEvents.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
@@ -336,6 +349,42 @@ export class MedicalTimelineService {
           role: f.uploadedBy.role,
         },
       } satisfies MedicalFileEventData,
+    }));
+  }
+
+  private async fetchClinicalReports(
+    patientId: string,
+    organizationId: string,
+    dateFilter: DateRangeFilter | undefined,
+  ): Promise<TimelineEvent[]> {
+    const rows = await this.prisma.clinicalReport.findMany({
+      where: {
+        patientId,
+        organizationId,
+        deletedAt: null,
+        ...(dateFilter ? { createdAt: dateFilter } : {}),
+      },
+      select: CLINICAL_REPORT_TIMELINE_SELECT,
+    });
+
+    return rows.map((r): TimelineEvent => ({
+      type: TimelineEventType.CLINICAL_REPORT_CREATED,
+      id: r.id,
+      timestamp: r.createdAt,
+      source: SOURCES[TimelineEventType.CLINICAL_REPORT_CREATED],
+      data: {
+        reportId: r.id,
+        title: r.title,
+        status: r.status,
+        encounterId: r.encounterId,
+        createdAt: r.createdAt,
+        createdBy: {
+          id: r.createdBy.id,
+          firstName: r.createdBy.firstName,
+          lastName: r.createdBy.lastName,
+          role: r.createdBy.role,
+        },
+      } satisfies ClinicalReportEventData,
     }));
   }
 

@@ -262,7 +262,8 @@
       "diagnosisAndTreatment": "التشخيص وخطة العلاج",
       "prescriptions": "الوصفات الطبية",
       "labOrders": "طلبات المختبر",
-      "radiology": "الطلبات الشعاعية"
+      "radiology": "الطلبات الشعاعية",
+      "clinicalReport": "التقرير السريري"
     },
     "fields": {
       "chiefComplaintLabel": "الشكوى الرئيسية",
@@ -463,6 +464,44 @@
         "weight": "70",
         "height": "170"
       }
+    },
+    "clinicalReport": {
+      "sectionTitle": "التقرير السريري",
+      "empty": "لا يوجد تقرير سريري لهذه الزيارة.",
+      "createButton": "إنشاء تقرير",
+      "editButton": "تعديل",
+      "finalizeButton": "إنهاء التقرير",
+      "deleteButton": "حذف المسودة",
+      "saveDraft": "حفظ المسودة",
+      "saving": "جاري الحفظ…",
+      "statusDraft": "مسودة",
+      "statusFinalized": "نهائي",
+      "defaultTitle": "التقرير السريري",
+      "titleLabel": "العنوان",
+      "titlePlaceholder": "مثال: ملخص الخروج",
+      "contentLabel": "المحتوى",
+      "contentPlaceholder": "أدخل محتوى التقرير…",
+      "createdBy": "بقلم",
+      "lastUpdated": "آخر تحديث",
+      "confirmFinalize": "إنهاء هذا التقرير؟ سيصبح للقراءة فقط ولن يمكن تعديله.",
+      "confirmDelete": "حذف مسودة التقرير؟ لا يمكن التراجع عن هذا الإجراء.",
+      "prefill": {
+        "chiefComplaint": "الشكوى الرئيسية",
+        "examination": "الفحص والمشاهدات",
+        "diagnosis": "التشخيص",
+        "treatmentPlan": "خطة العلاج",
+        "followUp": "تاريخ المراجعة"
+      },
+      "validation": {
+        "titleRequired": "العنوان مطلوب.",
+        "contentRequired": "المحتوى مطلوب."
+      },
+      "error": {
+        "loadFailed": "فشل تحميل التقارير السريرية.",
+        "saveFailed": "فشل حفظ التقرير.",
+        "finalizeFailed": "فشل إنهاء التقرير.",
+        "deleteFailed": "فشل حذف التقرير."
+      }
     }
   },
   "patient": {
@@ -503,7 +542,8 @@
         "prescriptions": "الوصفات الطبية",
         "labs": "طلبات المختبر",
         "radiology": "الأشعة",
-        "files": "الملفات الطبية"
+        "files": "الملفات الطبية",
+        "reports": "التقارير"
       },
       "overview": {
         "demographics": "البيانات الأساسية",
@@ -550,6 +590,18 @@
       "clinicalInfo": "المعلومات السريرية",
       "notes": "ملاحظات",
       "cancelReason": "سبب الإلغاء"
+    },
+    "reports": {
+      "empty": "لا تقارير سريرية مسجّلة لهذا المريض.",
+      "errorLoad": "فشل تحميل التقارير السريرية.",
+      "statusDraft": "مسوّدة",
+      "statusFinalized": "مُعتمد",
+      "createdBy": "بواسطة",
+      "createdAt": "تاريخ الإنشاء",
+      "updatedAt": "آخر تعديل",
+      "encounter": "الزيارة",
+      "viewContent": "عرض التقرير",
+      "hideContent": "إخفاء التقرير"
     }
   },
   "doctorWorkspace": {
@@ -602,9 +654,15 @@
       "labOrder": "طلب مختبر",
       "radiology": "أشعة",
       "file": "ملف",
+      "clinicalReport": "تقرير سريري",
       "inProgress": "قيد التنفيذ",
       "diagnosisOnRecord": "التشخيص مسجّل",
       "uploadedBy": "رُفع بواسطة {uploader}"
+    },
+    "clinicalReport": {
+      "draft": "مسوّدة",
+      "finalized": "مُعتمد",
+      "createdBy": "بواسطة {author}"
     },
     "labOrderStatus": {
       "ORDERED": "مُطلوب",

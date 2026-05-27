@@ -23,6 +23,7 @@ import { AllergiesModule } from './modules/allergies/allergies.module';
 import { LabsModule } from './modules/labs/labs.module';
 import { RadiologyModule } from './modules/radiology/radiology.module';
 import { MedicalFilesModule } from './modules/medical-files/medical-files.module';
+import { ClinicalReportsModule } from './modules/clinical-reports/clinical-reports.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
@@ -53,6 +54,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     LabsModule,
     RadiologyModule,
     MedicalFilesModule,
+    ClinicalReportsModule,
     BillingModule,
     AuditLogsModule,
   ],

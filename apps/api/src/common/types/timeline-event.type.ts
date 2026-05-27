@@ -1,11 +1,12 @@
-import { LabOrderStatus, MedicalFileCategory, RadiologyOrderStatus, UserRole } from '@prisma/client';
+import { ClinicalReportStatus, LabOrderStatus, MedicalFileCategory, RadiologyOrderStatus, UserRole } from '@prisma/client';
 
 export enum TimelineEventType {
-  ENCOUNTER = 'ENCOUNTER',
-  PRESCRIPTION = 'PRESCRIPTION',
-  LAB_ORDER = 'LAB_ORDER',
-  RADIOLOGY_ORDER = 'RADIOLOGY_ORDER',
-  MEDICAL_FILE = 'MEDICAL_FILE',
+  ENCOUNTER               = 'ENCOUNTER',
+  PRESCRIPTION            = 'PRESCRIPTION',
+  LAB_ORDER               = 'LAB_ORDER',
+  RADIOLOGY_ORDER         = 'RADIOLOGY_ORDER',
+  MEDICAL_FILE            = 'MEDICAL_FILE',
+  CLINICAL_REPORT_CREATED = 'CLINICAL_REPORT_CREATED',
 }
 
 export interface TimelineEventSource {
@@ -65,12 +66,22 @@ export interface MedicalFileEventData {
   uploadedBy: { id: string; firstName: string; lastName: string; role: UserRole };
 }
 
+export interface ClinicalReportEventData {
+  reportId: string;
+  title: string;
+  status: ClinicalReportStatus;
+  encounterId: string;
+  createdAt: Date;
+  createdBy: { id: string; firstName: string; lastName: string; role: UserRole };
+}
+
 export type TimelineEvent =
-  | { type: TimelineEventType.ENCOUNTER;       id: string; timestamp: Date; source: TimelineEventSource; data: EncounterEventData }
-  | { type: TimelineEventType.PRESCRIPTION;    id: string; timestamp: Date; source: TimelineEventSource; data: PrescriptionEventData }
-  | { type: TimelineEventType.LAB_ORDER;       id: string; timestamp: Date; source: TimelineEventSource; data: LabOrderEventData }
-  | { type: TimelineEventType.RADIOLOGY_ORDER; id: string; timestamp: Date; source: TimelineEventSource; data: RadiologyOrderEventData }
-  | { type: TimelineEventType.MEDICAL_FILE;    id: string; timestamp: Date; source: TimelineEventSource; data: MedicalFileEventData };
+  | { type: TimelineEventType.ENCOUNTER;               id: string; timestamp: Date; source: TimelineEventSource; data: EncounterEventData }
+  | { type: TimelineEventType.PRESCRIPTION;            id: string; timestamp: Date; source: TimelineEventSource; data: PrescriptionEventData }
+  | { type: TimelineEventType.LAB_ORDER;               id: string; timestamp: Date; source: TimelineEventSource; data: LabOrderEventData }
+  | { type: TimelineEventType.RADIOLOGY_ORDER;         id: string; timestamp: Date; source: TimelineEventSource; data: RadiologyOrderEventData }
+  | { type: TimelineEventType.MEDICAL_FILE;            id: string; timestamp: Date; source: TimelineEventSource; data: MedicalFileEventData }
+  | { type: TimelineEventType.CLINICAL_REPORT_CREATED; id: string; timestamp: Date; source: TimelineEventSource; data: ClinicalReportEventData };
 
 export interface PatientTimelineSummary {
   id: string;

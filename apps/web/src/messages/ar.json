@@ -263,7 +263,8 @@
       "vitals":                 "العلامات الحيوية والقياسات",
       "diagnosisAndTreatment":  "التشخيص وخطة العلاج",
       "prescriptions":          "الوصفات الطبية",
-      "labOrders":              "طلبات المختبر"
+      "labOrders":              "طلبات المختبر",
+      "radiology":              "الطلبات الشعاعية"
     },
     "fields": {
       "chiefComplaintLabel":       "الشكوى الرئيسية",

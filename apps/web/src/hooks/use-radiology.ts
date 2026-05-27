@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import type { RadiologyOrderStatus } from '@/types/timeline';
 
@@ -55,11 +55,33 @@ export interface RadiologyOrder {
   report: RadiologyReport | null;
 }
 
+export interface CreateRadiologyOrderPayload {
+  patientId: string;
+  encounterId?: string;
+  modality: string;
+  bodyPart?: string;
+  clinicalInfo?: string;
+  priority?: string;
+  notes?: string;
+}
+
 export function usePatientRadiologyOrders(patientId: string) {
   return useQuery({
     queryKey: ['patient-radiology-orders', patientId],
     queryFn: () => api.get<RadiologyOrder[]>(`/v1/patients/${patientId}/radiology-orders`),
     enabled: !!patientId,
     staleTime: 30_000,
+  });
+}
+
+export function useCreateRadiologyOrder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: CreateRadiologyOrderPayload) =>
+      api.post<RadiologyOrder>('/v1/radiology-orders', payload),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ['patient-radiology-orders', variables.patientId] });
+      qc.invalidateQueries({ queryKey: ['patient-timeline'] });
+    },
   });
 }

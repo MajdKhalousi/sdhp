@@ -263,7 +263,8 @@
       "vitals":              "Vitals & Measurements",
       "diagnosisAndTreatment": "Diagnosis & Treatment Plan",
       "prescriptions":       "Prescriptions",
-      "labOrders":           "Lab Orders"
+      "labOrders":           "Lab Orders",
+      "radiology":           "Radiology Orders"
     },
     "fields": {
       "chiefComplaintLabel":       "Chief Complaint",

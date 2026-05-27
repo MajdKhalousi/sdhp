@@ -50,10 +50,11 @@
     "brandSubtitle": "المنصة الصحية",
     "footer":       "منصة علاجي الصحية",
     "items": {
-      "dashboard":    "الرئيسية",
-      "patients":     "المرضى",
-      "appointments": "المواعيد",
-      "queue":        "الطابور"
+      "dashboard":        "الرئيسية",
+      "patients":         "المرضى",
+      "appointments":     "المواعيد",
+      "queue":            "الطابور",
+      "doctorWorkspace":  "غرفة الطبيب"
     }
   },
 

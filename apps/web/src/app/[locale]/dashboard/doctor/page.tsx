@@ -1,0 +1,147 @@
+'use client';
+
+import Link from 'next/link';
+import { RefreshCw, Stethoscope } from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
+import { useEncounters } from '@/hooks/use-encounters';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function formatTime(iso: string | null, locale: string): string {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
+}
+
+function formatDate(iso: string | null, locale: string): string {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+export default function DoctorWorkspacePage() {
+  const locale = useLocale();
+  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const tEncounter = useTranslations('encounter');
+  const tCommon = useTranslations('common');
+
+  const { data, isLoading, isError, error, refetch, isFetching } = useEncounters({ limit: 50 });
+
+  const activeEncounters = (data?.data ?? []).filter((e) => !e.endedAt);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-xl font-semibold">Doctor Workspace</h1>
+          <p className="text-sm text-muted-foreground">Active encounters</p>
+        </div>
+        <div className="space-y-3">
+          <Skeleton className="h-24 w-full rounded-xl" />
+          <Skeleton className="h-24 w-full rounded-xl" />
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-xl font-semibold">Doctor Workspace</h1>
+        </div>
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-12 text-center">
+          <p className="text-sm font-medium text-destructive">{tEncounter('error.loadFailed')}</p>
+          <p className="text-xs text-muted-foreground">
+            {error instanceof Error ? error.message : tCommon('states.error')}
+          </p>
+          <button
+            onClick={() => refetch()}
+            className="mt-1 h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
+          >
+            {tCommon('actions.tryAgain')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold">Doctor Workspace</h1>
+          <p className="text-sm text-muted-foreground">
+            {activeEncounters.length === 0
+              ? 'No active encounters'
+              : `${activeEncounters.length} active encounter${activeEncounters.length !== 1 ? 's' : ''}`}
+          </p>
+        </div>
+        <button
+          onClick={() => refetch()}
+          disabled={isFetching}
+          className="inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent disabled:opacity-50"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
+      </div>
+
+      {activeEncounters.length === 0 ? (
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
+          <Stethoscope className="h-8 w-8 text-muted-foreground/40" />
+          <p className="text-sm font-medium text-muted-foreground">No active encounters</p>
+          <p className="text-xs text-muted-foreground">
+            Encounters will appear here once a patient visit is started from the queue.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {activeEncounters.map((encounter) => {
+            const patient = encounter.patient;
+            const startedAt = encounter.startedAt ?? encounter.createdAt;
+            return (
+              <div
+                key={encounter.id}
+                className="rounded-xl border border-border bg-card p-4 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-semibold text-foreground">
+                        {patient.firstName} {patient.lastName}
+                      </p>
+                      <span className="font-mono text-xs text-muted-foreground" dir="ltr">
+                        MRN {patient.mrn}
+                      </span>
+                      <Badge variant="warning">
+                        {tEncounter('status.inProgress')}
+                      </Badge>
+                    </div>
+
+                    <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                      <p>
+                        Started {formatDate(startedAt, displayLocale)} · {formatTime(startedAt, displayLocale)}
+                      </p>
+                      {patient.gender && <p>{patient.gender}</p>}
+                      {encounter.chiefComplaint && (
+                        <p className="mt-1 text-sm text-foreground/80 italic">
+                          &ldquo;{encounter.chiefComplaint}&rdquo;
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <Link
+                    href={`/dashboard/doctor/encounter/${encounter.id}`}
+                    className="shrink-0 inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    Open
+                  </Link>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

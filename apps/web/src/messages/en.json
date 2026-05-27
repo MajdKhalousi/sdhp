@@ -53,7 +53,8 @@
       "dashboard": "Dashboard",
       "patients": "Patients",
       "appointments": "Appointments",
-      "queue": "Queue"
+      "queue": "Queue",
+      "doctorWorkspace": "Doctor Workspace"
     }
   },
 

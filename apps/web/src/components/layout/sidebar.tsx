@@ -9,6 +9,7 @@ import {
   Users,
   Calendar,
   ListOrdered,
+  Stethoscope,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
   { href: '/dashboard/patients',     icon: Users           },
   { href: '/dashboard/appointments', icon: Calendar        },
   { href: '/dashboard/queue',        icon: ListOrdered     },
+  { href: '/dashboard/doctor',       icon: Stethoscope     },
 ] as const;
 
 export function Sidebar() {
@@ -28,6 +30,7 @@ export function Sidebar() {
     '/dashboard/patients':     t('items.patients'),
     '/dashboard/appointments': t('items.appointments'),
     '/dashboard/queue':        t('items.queue'),
+    '/dashboard/doctor':       t('items.doctorWorkspace'),
   } as const;
 
   return (

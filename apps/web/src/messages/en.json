@@ -450,6 +450,25 @@
     }
   },
 
+  "doctorWorkspace": {
+    "title": "Doctor Workspace",
+    "activeCount": "{count, plural, one {# active encounter} other {# active encounters}}",
+    "noActive": "No active encounters",
+    "refresh": "Refresh",
+    "empty": {
+      "heading": "No active encounters",
+      "description": "Encounters will appear here once a patient visit is started from the queue."
+    },
+    "card": {
+      "started": "Started",
+      "open": "Open Visit",
+      "mrn": "MRN"
+    },
+    "error": {
+      "loadFailed": "Failed to load encounters"
+    }
+  },
+
   "timeline": {
     "filter": {
       "all": "All",

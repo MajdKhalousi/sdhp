@@ -20,6 +20,7 @@ function formatDate(iso: string | null, locale: string): string {
 export default function DoctorWorkspacePage() {
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const t = useTranslations('doctorWorkspace');
   const tEncounter = useTranslations('encounter');
   const tCommon = useTranslations('common');
 
@@ -31,8 +32,8 @@ export default function DoctorWorkspacePage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-xl font-semibold">Doctor Workspace</h1>
-          <p className="text-sm text-muted-foreground">Active encounters</p>
+          <h1 className="text-xl font-semibold">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">{tCommon('states.loading')}</p>
         </div>
         <div className="space-y-3">
           <Skeleton className="h-24 w-full rounded-xl" />
@@ -46,10 +47,10 @@ export default function DoctorWorkspacePage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-xl font-semibold">Doctor Workspace</h1>
+          <h1 className="text-xl font-semibold">{t('title')}</h1>
         </div>
         <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-12 text-center">
-          <p className="text-sm font-medium text-destructive">{tEncounter('error.loadFailed')}</p>
+          <p className="text-sm font-medium text-destructive">{t('error.loadFailed')}</p>
           <p className="text-xs text-muted-foreground">
             {error instanceof Error ? error.message : tCommon('states.error')}
           </p>
@@ -68,11 +69,11 @@ export default function DoctorWorkspacePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold">Doctor Workspace</h1>
+          <h1 className="text-xl font-semibold">{t('title')}</h1>
           <p className="text-sm text-muted-foreground">
             {activeEncounters.length === 0
-              ? 'No active encounters'
-              : `${activeEncounters.length} active encounter${activeEncounters.length !== 1 ? 's' : ''}`}
+              ? t('noActive')
+              : t('activeCount', { count: activeEncounters.length })}
           </p>
         </div>
         <button
@@ -81,17 +82,15 @@ export default function DoctorWorkspacePage() {
           className="inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent disabled:opacity-50"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin' : ''}`} />
-          Refresh
+          {t('refresh')}
         </button>
       </div>
 
       {activeEncounters.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
           <Stethoscope className="h-8 w-8 text-muted-foreground/40" />
-          <p className="text-sm font-medium text-muted-foreground">No active encounters</p>
-          <p className="text-xs text-muted-foreground">
-            Encounters will appear here once a patient visit is started from the queue.
-          </p>
+          <p className="text-sm font-medium text-muted-foreground">{t('empty.heading')}</p>
+          <p className="text-xs text-muted-foreground">{t('empty.description')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -110,7 +109,7 @@ export default function DoctorWorkspacePage() {
                         {patient.firstName} {patient.lastName}
                       </p>
                       <span className="font-mono text-xs text-muted-foreground" dir="ltr">
-                        MRN {patient.mrn}
+                        {t('card.mrn')} {patient.mrn}
                       </span>
                       <Badge variant="warning">
                         {tEncounter('status.inProgress')}
@@ -119,7 +118,7 @@ export default function DoctorWorkspacePage() {
 
                     <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
                       <p>
-                        Started {formatDate(startedAt, displayLocale)} · {formatTime(startedAt, displayLocale)}
+                        {t('card.started')} {formatDate(startedAt, displayLocale)} · {formatTime(startedAt, displayLocale)}
                       </p>
                       {patient.gender && <p>{patient.gender}</p>}
                       {encounter.chiefComplaint && (
@@ -134,7 +133,7 @@ export default function DoctorWorkspacePage() {
                     href={`/dashboard/doctor/encounter/${encounter.id}`}
                     className="shrink-0 inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                   >
-                    Open
+                    {t('card.open')}
                   </Link>
                 </div>
               </div>

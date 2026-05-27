@@ -450,6 +450,25 @@
     }
   },
 
+  "doctorWorkspace": {
+    "title": "غرفة الطبيب",
+    "activeCount": "{count, plural, zero {لا زيارات نشطة} one {زيارة واحدة نشطة} two {زيارتان نشطتان} few {# زيارات نشطة} many {# زيارة نشطة} other {# زيارة نشطة}}",
+    "noActive": "لا زيارات نشطة",
+    "refresh": "تحديث",
+    "empty": {
+      "heading": "لا زيارات نشطة",
+      "description": "ستظهر الزيارات هنا عند بدء زيارة مريض من الطابور."
+    },
+    "card": {
+      "started": "بدأت",
+      "open": "فتح الزيارة",
+      "mrn": "MRN"
+    },
+    "error": {
+      "loadFailed": "فشل تحميل الزيارات"
+    }
+  },
+
   "timeline": {
     "filter": {
       "all": "الكل",

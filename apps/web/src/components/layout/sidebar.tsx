@@ -10,6 +10,7 @@ import {
   Calendar,
   ListOrdered,
   Stethoscope,
+  ClipboardList,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -19,6 +20,7 @@ const NAV_ITEMS = [
   { href: '/dashboard/appointments', icon: Calendar        },
   { href: '/dashboard/queue',        icon: ListOrdered     },
   { href: '/dashboard/doctor',       icon: Stethoscope     },
+  { href: '/dashboard/doctor/queue', icon: ClipboardList   },
 ] as const;
 
 export function Sidebar() {
@@ -31,6 +33,7 @@ export function Sidebar() {
     '/dashboard/appointments': t('items.appointments'),
     '/dashboard/queue':        t('items.queue'),
     '/dashboard/doctor':       t('items.doctorWorkspace'),
+    '/dashboard/doctor/queue': t('items.doctorQueue'),
   } as const;
 
   return (
@@ -58,6 +61,9 @@ export function Sidebar() {
             const isActive =
               item.href === '/dashboard'
                 ? pathname === '/dashboard'
+                : item.href === '/dashboard/doctor'
+                ? pathname === '/dashboard/doctor' ||
+                  (pathname.startsWith('/dashboard/doctor/') && !pathname.startsWith('/dashboard/doctor/queue'))
                 : pathname === item.href || pathname.startsWith(item.href + '/');
 
             return (

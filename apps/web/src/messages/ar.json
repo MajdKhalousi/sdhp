@@ -54,7 +54,8 @@
       "patients":         "المرضى",
       "appointments":     "المواعيد",
       "queue":            "الطابور",
-      "doctorWorkspace":  "غرفة الطبيب"
+      "doctorWorkspace":  "غرفة الطبيب",
+      "doctorQueue":      "طابور الطبيب"
     }
   },
 

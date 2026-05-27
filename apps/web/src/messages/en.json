@@ -54,7 +54,8 @@
       "patients": "Patients",
       "appointments": "Appointments",
       "queue": "Queue",
-      "doctorWorkspace": "Doctor Workspace"
+      "doctorWorkspace": "Doctor Workspace",
+      "doctorQueue":     "Doctor Queue"
     }
   },
 

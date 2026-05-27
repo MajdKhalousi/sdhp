@@ -532,6 +532,12 @@
         "loadFailed": "فشل تحميل السجلات",
         "occurred":   "حدث خطأ."
       }
+    },
+    "labOrders": {
+      "orderedBy":    "الطبيب",
+      "collectedAt":  "تاريخ أخذ العينة",
+      "notes":        "ملاحظات",
+      "cancelReason": "سبب الإلغاء"
     }
   },
 

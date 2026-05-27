@@ -532,6 +532,12 @@
         "loadFailed": "Failed to load records",
         "occurred":   "An error occurred."
       }
+    },
+    "labOrders": {
+      "orderedBy":    "Ordered by",
+      "collectedAt":  "Sample collected",
+      "notes":        "Notes",
+      "cancelReason": "Cancel reason"
     }
   },
 

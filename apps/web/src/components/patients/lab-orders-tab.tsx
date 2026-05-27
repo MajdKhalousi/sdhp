@@ -1,7 +1,7 @@
 'use client';
 
 import { FolderOpen } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import type { BadgeProps } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,8 +17,10 @@ const STATUS_VARIANT: Record<LabOrderStatus, BadgeProps['variant']> = {
   CANCELLED:        'danger',
 };
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('ar-SY', {
+const PRIORITY_OPTIONS = ['ROUTINE', 'URGENT', 'STAT'] as const;
+
+function formatDate(iso: string, locale: string): string {
+  return new Date(iso).toLocaleDateString(locale, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -26,6 +28,9 @@ function formatDate(iso: string): string {
 }
 
 function ResultSection({ result }: { result: LabResult }) {
+  const tLab = useTranslations('encounter');
+  const locale = useLocale();
+  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
   const reviewer = result.reviewedBy
     ? `${result.reviewedBy.user.firstName} ${result.reviewedBy.user.lastName}`
     : null;
@@ -33,7 +38,7 @@ function ResultSection({ result }: { result: LabResult }) {
   return (
     <div className="mt-3 rounded-md border border-green-200 bg-green-50 px-3 py-2 dark:border-green-900/30 dark:bg-green-950/20">
       <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-green-700 dark:text-green-400">
-        النتيجة
+        {tLab('labOrders.result.heading')}
       </p>
       <div className="space-y-0.5 text-sm">
         {result.resultValue && (
@@ -42,23 +47,29 @@ function ResultSection({ result }: { result: LabResult }) {
             {result.unit && <span className="ms-1 text-muted-foreground">{result.unit}</span>}
             {result.referenceRange && (
               <span className="ms-2 text-xs text-muted-foreground">
-                المرجع: {result.referenceRange}
+                {tLab('labOrders.result.reference')}: {result.referenceRange}
               </span>
             )}
           </p>
         )}
         {result.interpretation && (
-          <p className="text-xs text-muted-foreground">التفسير: {result.interpretation}</p>
+          <p className="text-xs text-muted-foreground">
+            {tLab('labOrders.result.interpretation')}: {result.interpretation}
+          </p>
         )}
         {result.resultNotes && (
-          <p className="text-xs text-muted-foreground">ملاحظات: {result.resultNotes}</p>
+          <p className="text-xs text-muted-foreground">
+            {tLab('labOrders.result.notes')}: {result.resultNotes}
+          </p>
         )}
         {result.resultAt && (
-          <p className="text-xs text-muted-foreground">تاريخ النتيجة: {formatDate(result.resultAt)}</p>
+          <p className="text-xs text-muted-foreground">
+            {tLab('labOrders.result.resultAt')}: {formatDate(result.resultAt, displayLocale)}
+          </p>
         )}
         {reviewer && result.reviewedAt && (
           <p className="text-xs text-muted-foreground">
-            راجعها: {reviewer} · {formatDate(result.reviewedAt)}
+            {tLab('labOrders.result.reviewedBy')}: {reviewer} · {formatDate(result.reviewedAt, displayLocale)}
           </p>
         )}
       </div>
@@ -68,6 +79,10 @@ function ResultSection({ result }: { result: LabResult }) {
 
 function LabOrderItem({ order }: { order: LabOrder }) {
   const t = useTranslations('timeline');
+  const tLab = useTranslations('encounter');
+  const tPatient = useTranslations('patient');
+  const locale = useLocale();
+  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
   const doctor = `${order.orderedBy.user.firstName} ${order.orderedBy.user.lastName}`;
 
   return (
@@ -76,7 +91,7 @@ function LabOrderItem({ order }: { order: LabOrder }) {
         <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
           {t('cards.labOrder')}
         </span>
-        <span className="text-xs text-muted-foreground" dir="ltr">{formatDate(order.createdAt)}</span>
+        <span className="text-xs text-muted-foreground" dir="ltr">{formatDate(order.createdAt, displayLocale)}</span>
       </div>
 
       <p className="font-medium text-sm text-foreground">
@@ -93,16 +108,24 @@ function LabOrderItem({ order }: { order: LabOrder }) {
           {t(`labOrderStatus.${order.status}` as Parameters<typeof t>[0])}
         </Badge>
         {order.priority && (
-          <span className="text-xs text-muted-foreground">· {order.priority}</span>
+          <span className="text-xs text-muted-foreground">
+            · {(PRIORITY_OPTIONS as ReadonlyArray<string>).includes(order.priority)
+              ? tLab(`labOrders.priority.${order.priority}` as Parameters<typeof tLab>[0])
+              : order.priority}
+          </span>
         )}
       </div>
 
       <div className="mt-1.5 space-y-0.5 text-xs text-muted-foreground">
-        <p>الطبيب: {doctor}</p>
-        {order.collectedAt && <p>تاريخ أخذ العينة: {formatDate(order.collectedAt)}</p>}
-        {order.notes && <p>ملاحظات: {order.notes}</p>}
+        <p>{tPatient('labOrders.orderedBy')}: {doctor}</p>
+        {order.collectedAt && (
+          <p>{tPatient('labOrders.collectedAt')}: {formatDate(order.collectedAt, displayLocale)}</p>
+        )}
+        {order.notes && (
+          <p>{tPatient('labOrders.notes')}: {order.notes}</p>
+        )}
         {order.cancelReason && (
-          <p className="text-destructive">سبب الإلغاء: {order.cancelReason}</p>
+          <p className="text-destructive">{tPatient('labOrders.cancelReason')}: {order.cancelReason}</p>
         )}
       </div>
 

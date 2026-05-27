@@ -11,6 +11,8 @@ import {
   ListOrdered,
   Stethoscope,
   ClipboardList,
+  FlaskConical,
+  ScanLine,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -20,7 +22,9 @@ const NAV_ITEMS = [
   { href: '/dashboard/appointments', icon: Calendar        },
   { href: '/dashboard/queue',        icon: ListOrdered     },
   { href: '/dashboard/doctor',       icon: Stethoscope     },
-  { href: '/dashboard/doctor/queue', icon: ClipboardList   },
+  { href: '/dashboard/doctor/queue',     icon: ClipboardList  },
+  { href: '/dashboard/technician/labs',      icon: FlaskConical },
+  { href: '/dashboard/technician/radiology', icon: ScanLine     },
 ] as const;
 
 export function Sidebar() {
@@ -33,7 +37,9 @@ export function Sidebar() {
     '/dashboard/appointments': t('items.appointments'),
     '/dashboard/queue':        t('items.queue'),
     '/dashboard/doctor':       t('items.doctorWorkspace'),
-    '/dashboard/doctor/queue': t('items.doctorQueue'),
+    '/dashboard/doctor/queue':     t('items.doctorQueue'),
+    '/dashboard/technician/labs':      t('items.technicianLabs'),
+    '/dashboard/technician/radiology': t('items.technicianRadiology'),
   } as const;
 
   return (

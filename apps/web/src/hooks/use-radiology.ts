@@ -18,6 +18,15 @@ interface DoctorRef {
   user: DoctorUserRef;
 }
 
+export interface PatientRef {
+  id: string;
+  mrn: string;
+  firstName: string;
+  lastName: string;
+  organizationId: string;
+  isActive: boolean;
+}
+
 export interface RadiologyReport {
   id: string;
   radiologyOrderId: string;
@@ -51,6 +60,7 @@ export interface RadiologyOrder {
   cancelledAt: string | null;
   createdAt: string;
   updatedAt: string;
+  patient: PatientRef;
   orderedBy: DoctorRef;
   report: RadiologyReport | null;
 }
@@ -65,12 +75,50 @@ export interface CreateRadiologyOrderPayload {
   notes?: string;
 }
 
+export interface UpdateRadiologyOrderStatusPayload {
+  status: RadiologyOrderStatus;
+  cancelReason?: string;
+}
+
+export interface UpsertRadiologyReportPayload {
+  findings?: string;
+  impression?: string;
+  reportedAt?: string;
+}
+
+export interface RadiologyWorklistQuery {
+  status?: RadiologyOrderStatus;
+  from?: string;
+  to?: string;
+  branchId?: string;
+  organizationId?: string;
+  patientId?: string;
+}
+
 export function usePatientRadiologyOrders(patientId: string) {
   return useQuery({
     queryKey: ['patient-radiology-orders', patientId],
     queryFn: () => api.get<RadiologyOrder[]>(`/v1/patients/${patientId}/radiology-orders`),
     enabled: !!patientId,
     staleTime: 30_000,
+  });
+}
+
+export function useRadiologyOrdersWorklist(query: RadiologyWorklistQuery = {}) {
+  const { status, from, to, branchId, organizationId, patientId } = query;
+  return useQuery({
+    queryKey: ['radiology-worklist', status, from, to, branchId, organizationId, patientId],
+    queryFn: () =>
+      api.get<RadiologyOrder[]>('/v1/radiology-orders', {
+        ...(status ? { status } : {}),
+        ...(from ? { from } : {}),
+        ...(to ? { to } : {}),
+        ...(branchId ? { branchId } : {}),
+        ...(organizationId ? { organizationId } : {}),
+        ...(patientId ? { patientId } : {}),
+      }),
+    staleTime: 15_000,
+    refetchInterval: 30_000,
   });
 }
 
@@ -82,6 +130,48 @@ export function useCreateRadiologyOrder() {
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ['patient-radiology-orders', variables.patientId] });
       qc.invalidateQueries({ queryKey: ['patient-timeline'] });
+      qc.invalidateQueries({ queryKey: ['radiology-worklist'] });
+    },
+  });
+}
+
+export function useUpdateRadiologyOrderStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      radiologyOrderId,
+      payload,
+    }: {
+      radiologyOrderId: string;
+      patientId?: string;
+      payload: UpdateRadiologyOrderStatusPayload;
+    }) => api.patch<RadiologyOrder>(`/v1/radiology-orders/${radiologyOrderId}/status`, payload),
+    onSuccess: (_, variables) => {
+      if (variables.patientId) {
+        qc.invalidateQueries({ queryKey: ['patient-radiology-orders', variables.patientId] });
+      }
+      qc.invalidateQueries({ queryKey: ['radiology-worklist'] });
+    },
+  });
+}
+
+export function useUpsertRadiologyReport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      radiologyOrderId,
+      payload,
+    }: {
+      radiologyOrderId: string;
+      patientId?: string;
+      payload: UpsertRadiologyReportPayload;
+    }) => api.patch<RadiologyOrder>(`/v1/radiology-orders/${radiologyOrderId}/report`, payload),
+    onSuccess: (_, variables) => {
+      if (variables.patientId) {
+        qc.invalidateQueries({ queryKey: ['patient-radiology-orders', variables.patientId] });
+        qc.invalidateQueries({ queryKey: ['patient-timeline'] });
+      }
+      qc.invalidateQueries({ queryKey: ['radiology-worklist'] });
     },
   });
 }
@@ -94,6 +184,7 @@ export function useReviewRadiologyReport() {
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ['patient-radiology-orders', variables.patientId] });
       qc.invalidateQueries({ queryKey: ['patient-timeline'] });
+      qc.invalidateQueries({ queryKey: ['radiology-worklist'] });
     },
   });
 }

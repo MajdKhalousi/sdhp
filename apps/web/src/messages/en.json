@@ -55,7 +55,9 @@
       "appointments": "Appointments",
       "queue": "Queue",
       "doctorWorkspace": "Doctor Workspace",
-      "doctorQueue":     "Doctor Queue"
+      "doctorQueue":       "Doctor Queue",
+      "technicianLabs":      "Technician Labs",
+      "technicianRadiology": "Technician Radiology"
     }
   },
 
@@ -671,6 +673,104 @@
       "starting":    "Starting…",
       "opening":     "Opening…",
       "startFailed": "Failed to start encounter"
+    }
+  },
+
+  "technicianLabs": {
+    "pageTitle":   "Lab Worklist",
+    "pageSubtitle": "Process pending lab orders",
+    "panelTitle":  "Pending Lab Orders",
+    "autoRefresh": "Auto-refreshes every 30s",
+    "refreshLabel": "Refresh worklist",
+    "counter": "{count, plural, one {# pending order} other {# pending orders}}",
+    "empty": {
+      "title":    "No pending lab orders",
+      "subtitle": "All lab orders are up to date."
+    },
+    "error": {
+      "loadFailed": "Failed to load lab orders",
+      "occurred":   "An unexpected error occurred."
+    },
+    "card": {
+      "orderedAt": "Ordered {date}"
+    },
+    "status": {
+      "ORDERED":          "Ordered",
+      "SAMPLE_COLLECTED": "Sample Collected",
+      "IN_PROGRESS":      "In Progress"
+    },
+    "actions": {
+      "collectSample":      "Collect Sample",
+      "collecting":         "Collecting…",
+      "startProcessing":    "Start Processing",
+      "processing":         "Processing…",
+      "submitResult":       "Submit Result",
+      "submitting":         "Submitting…",
+      "collectFailed":      "Failed to collect sample",
+      "processingFailed":   "Failed to start processing",
+      "submitFailed":       "Failed to submit result"
+    },
+    "result": {
+      "formTitle":           "Enter Result",
+      "resultValueLabel":    "Result Value *",
+      "unitLabel":           "Unit",
+      "referenceRangeLabel": "Reference Range",
+      "interpretationLabel": "Interpretation",
+      "resultNotesLabel":    "Notes",
+      "placeholders": {
+        "resultValue":    "e.g. 5.8",
+        "unit":           "e.g. g/dL",
+        "referenceRange": "e.g. 4.0–5.5",
+        "interpretation": "e.g. HIGH"
+      }
+    },
+    "validation": {
+      "resultValueRequired": "Result value is required."
+    }
+  },
+
+  "technicianRadiology": {
+    "pageTitle":   "Radiology Worklist",
+    "pageSubtitle": "Process pending radiology orders",
+    "panelTitle":  "Pending Radiology Orders",
+    "autoRefresh": "Auto-refreshes every 30s",
+    "refreshLabel": "Refresh worklist",
+    "counter": "{count, plural, one {# pending order} other {# pending orders}}",
+    "empty": {
+      "title":    "No pending radiology orders",
+      "subtitle": "All radiology orders are up to date."
+    },
+    "error": {
+      "loadFailed": "Failed to load radiology orders",
+      "occurred":   "An unexpected error occurred."
+    },
+    "card": {
+      "orderedAt": "Ordered {date}"
+    },
+    "status": {
+      "ORDERED":     "Ordered",
+      "SCHEDULED":   "Scheduled",
+      "IN_PROGRESS": "In Progress"
+    },
+    "actions": {
+      "schedule":       "Schedule",
+      "scheduling":     "Scheduling…",
+      "startScan":      "Start Scan",
+      "starting":       "Starting…",
+      "submitReport":   "Submit Report",
+      "submitting":     "Submitting…",
+      "scheduleFailed": "Failed to schedule",
+      "startFailed":    "Failed to start scan",
+      "submitFailed":   "Failed to submit report"
+    },
+    "report": {
+      "formTitle":       "Enter Report",
+      "findingsLabel":   "Findings *",
+      "impressionLabel": "Impression *"
+    },
+    "validation": {
+      "findingsRequired":   "Findings are required.",
+      "impressionRequired": "Impression is required."
     }
   }
 }

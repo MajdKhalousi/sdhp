@@ -55,7 +55,9 @@
       "appointments":     "المواعيد",
       "queue":            "الطابور",
       "doctorWorkspace":  "غرفة الطبيب",
-      "doctorQueue":      "طابور الطبيب"
+      "doctorQueue":      "طابور الطبيب",
+      "technicianLabs":      "مختبر الفني",
+      "technicianRadiology": "أشعة الفني"
     }
   },
 
@@ -671,6 +673,104 @@
       "starting":    "جارٍ بدء المعاينة...",
       "opening":     "جارٍ فتح المعاينة...",
       "startFailed": "فشل بدء المعاينة"
+    }
+  },
+
+  "technicianLabs": {
+    "pageTitle":   "قائمة طلبات المختبر",
+    "pageSubtitle": "معالجة طلبات المختبر المعلّقة",
+    "panelTitle":  "الطلبات المعلّقة",
+    "autoRefresh": "يتحدث تلقائياً كل 30 ثانية",
+    "refreshLabel": "تحديث القائمة",
+    "counter": "{count, plural, zero {لا طلبات معلّقة} one {طلب واحد معلّق} two {طلبان معلّقان} few {# طلبات معلّقة} many {# طلباً معلّقاً} other {# طلب معلّق}}",
+    "empty": {
+      "title":    "لا طلبات مختبر معلّقة",
+      "subtitle": "جميع طلبات المختبر محدّثة."
+    },
+    "error": {
+      "loadFailed": "فشل تحميل طلبات المختبر",
+      "occurred":   "حدث خطأ غير متوقع."
+    },
+    "card": {
+      "orderedAt": "طُلب {date}"
+    },
+    "status": {
+      "ORDERED":          "مُطلوب",
+      "SAMPLE_COLLECTED": "تم أخذ العينة",
+      "IN_PROGRESS":      "قيد التنفيذ"
+    },
+    "actions": {
+      "collectSample":    "أخذ العينة",
+      "collecting":       "جاري الأخذ…",
+      "startProcessing":  "بدء التحليل",
+      "processing":       "جاري البدء…",
+      "submitResult":     "إرسال النتيجة",
+      "submitting":       "جاري الإرسال…",
+      "collectFailed":    "فشل أخذ العينة",
+      "processingFailed": "فشل بدء التحليل",
+      "submitFailed":     "فشل إرسال النتيجة"
+    },
+    "result": {
+      "formTitle":           "إدخال النتيجة",
+      "resultValueLabel":    "قيمة النتيجة *",
+      "unitLabel":           "الوحدة",
+      "referenceRangeLabel": "النطاق المرجعي",
+      "interpretationLabel": "التفسير",
+      "resultNotesLabel":    "ملاحظات",
+      "placeholders": {
+        "resultValue":    "مثال: 5.8",
+        "unit":           "مثال: g/dL",
+        "referenceRange": "مثال: 4.0–5.5",
+        "interpretation": "مثال: HIGH"
+      }
+    },
+    "validation": {
+      "resultValueRequired": "قيمة النتيجة مطلوبة."
+    }
+  },
+
+  "technicianRadiology": {
+    "pageTitle":   "قائمة طلبات الأشعة",
+    "pageSubtitle": "معالجة طلبات الأشعة المعلّقة",
+    "panelTitle":  "طلبات الأشعة المعلّقة",
+    "autoRefresh": "يتحدث تلقائياً كل 30 ثانية",
+    "refreshLabel": "تحديث القائمة",
+    "counter": "{count, plural, zero {لا طلبات معلّقة} one {طلب واحد معلّق} two {طلبان معلّقان} few {# طلبات معلّقة} many {# طلباً معلّقاً} other {# طلب معلّق}}",
+    "empty": {
+      "title":    "لا طلبات أشعة معلّقة",
+      "subtitle": "جميع طلبات الأشعة محدّثة."
+    },
+    "error": {
+      "loadFailed": "فشل تحميل طلبات الأشعة",
+      "occurred":   "حدث خطأ غير متوقع."
+    },
+    "card": {
+      "orderedAt": "طُلب {date}"
+    },
+    "status": {
+      "ORDERED":     "مُطلوب",
+      "SCHEDULED":   "مجدول",
+      "IN_PROGRESS": "قيد التنفيذ"
+    },
+    "actions": {
+      "schedule":       "جدولة",
+      "scheduling":     "جاري الجدولة…",
+      "startScan":      "بدء الفحص",
+      "starting":       "جاري البدء…",
+      "submitReport":   "إرسال التقرير",
+      "submitting":     "جاري الإرسال…",
+      "scheduleFailed": "فشل الجدولة",
+      "startFailed":    "فشل بدء الفحص",
+      "submitFailed":   "فشل إرسال التقرير"
+    },
+    "report": {
+      "formTitle":       "إدخال التقرير",
+      "findingsLabel":   "النتائج *",
+      "impressionLabel": "الانطباع *"
+    },
+    "validation": {
+      "findingsRequired":   "النتائج مطلوبة.",
+      "impressionRequired": "الانطباع مطلوب."
     }
   }
 }

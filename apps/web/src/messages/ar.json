@@ -418,14 +418,26 @@
         "STAT":    "فوري"
       },
       "actions": {
-        "add":    "إضافة طلب",
-        "adding": "جاري الإضافة…"
+        "add":       "إضافة طلب",
+        "adding":    "جاري الإضافة…",
+        "review":    "مراجعة التقرير",
+        "reviewing": "جاري المراجعة…"
       },
       "validation": {
         "modalityRequired": "نوع الفحص الشعاعي مطلوب."
       },
+      "report": {
+        "heading":    "التقرير",
+        "findings":   "النتائج",
+        "impression": "الانطباع",
+        "reportedAt": "تاريخ التقرير",
+        "reportedBy": "أعده",
+        "reviewedBy": "راجعه",
+        "reviewedAt": "تاريخ المراجعة"
+      },
       "error": {
-        "addFailed": "فشل إضافة الطلب الشعاعي"
+        "addFailed":    "فشل إضافة الطلب الشعاعي",
+        "reviewFailed": "فشل مراجعة التقرير"
       }
     },
 

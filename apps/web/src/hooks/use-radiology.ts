@@ -85,3 +85,15 @@ export function useCreateRadiologyOrder() {
     },
   });
 }
+
+export function useReviewRadiologyReport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ radiologyOrderId }: { radiologyOrderId: string; patientId: string }) =>
+      api.patch<RadiologyOrder>(`/v1/radiology-orders/${radiologyOrderId}/review`, {}),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ['patient-radiology-orders', variables.patientId] });
+      qc.invalidateQueries({ queryKey: ['patient-timeline'] });
+    },
+  });
+}

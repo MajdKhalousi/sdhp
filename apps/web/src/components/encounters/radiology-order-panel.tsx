@@ -2,14 +2,17 @@
 
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import type { BadgeProps } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   usePatientRadiologyOrders,
   useCreateRadiologyOrder,
+  useReviewRadiologyReport,
   type CreateRadiologyOrderPayload,
+  type RadiologyOrder,
+  type RadiologyReport,
 } from '@/hooks/use-radiology';
 import type { RadiologyOrderStatus } from '@/types/timeline';
 
@@ -27,6 +30,139 @@ const PRIORITY_OPTIONS = ['ROUTINE', 'URGENT', 'STAT'] as const;
 
 const FIELD_CLASS =
   'h-8 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring';
+
+function formatDate(iso: string, locale: string): string {
+  return new Date(iso).toLocaleDateString(locale, {
+    year: 'numeric', month: 'short', day: 'numeric',
+  });
+}
+
+function ReportSection({ report }: { report: RadiologyReport }) {
+  const tRad = useTranslations('encounter');
+  const locale = useLocale();
+  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const reportedBy = report.reportedBy
+    ? `${report.reportedBy.user.firstName} ${report.reportedBy.user.lastName}`
+    : null;
+  const reviewedBy = report.reviewedBy
+    ? `${report.reviewedBy.user.firstName} ${report.reviewedBy.user.lastName}`
+    : null;
+
+  return (
+    <div className="mt-3 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 dark:border-blue-900/30 dark:bg-blue-950/20">
+      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">
+        {tRad('radiologyOrders.report.heading')}
+      </p>
+      <div className="space-y-0.5 text-sm">
+        {report.findings && (
+          <p>
+            <span className="text-xs font-medium text-muted-foreground">
+              {tRad('radiologyOrders.report.findings')}:{' '}
+            </span>
+            <span className="text-foreground">{report.findings}</span>
+          </p>
+        )}
+        {report.impression && (
+          <p>
+            <span className="text-xs font-medium text-muted-foreground">
+              {tRad('radiologyOrders.report.impression')}:{' '}
+            </span>
+            <span className="text-foreground">{report.impression}</span>
+          </p>
+        )}
+        {reportedBy && report.reportedAt && (
+          <p className="text-xs text-muted-foreground">
+            {tRad('radiologyOrders.report.reportedBy')}: {reportedBy} · {formatDate(report.reportedAt, displayLocale)}
+          </p>
+        )}
+        {!reportedBy && report.reportedAt && (
+          <p className="text-xs text-muted-foreground">
+            {tRad('radiologyOrders.report.reportedAt')}: {formatDate(report.reportedAt, displayLocale)}
+          </p>
+        )}
+        {reviewedBy && report.reviewedAt && (
+          <p className="text-xs text-muted-foreground">
+            {tRad('radiologyOrders.report.reviewedBy')}: {reviewedBy} · {formatDate(report.reviewedAt, displayLocale)}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+interface OrderCardProps {
+  order: RadiologyOrder;
+  readOnly?: boolean;
+}
+
+function OrderCard({ order, readOnly }: OrderCardProps) {
+  const t = useTranslations('timeline');
+  const tRad = useTranslations('encounter');
+  const [reviewError, setReviewError] = useState('');
+  const { mutate: review, isPending: reviewing } = useReviewRadiologyReport();
+
+  function handleReview() {
+    setReviewError('');
+    review(
+      { radiologyOrderId: order.id, patientId: order.patientId },
+      { onError: (e) => setReviewError(e instanceof Error ? e.message : tRad('radiologyOrders.error.reviewFailed')) },
+    );
+  }
+
+  const canReview = !readOnly && order.status === 'RESULTED' && order.report !== null;
+
+  return (
+    <div className="rounded-lg border border-border bg-background px-4 py-3">
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-sm font-semibold text-foreground">
+            {(MODALITY_OPTIONS as ReadonlyArray<string>).includes(order.modality)
+              ? tRad(`radiologyOrders.modality.${order.modality}` as Parameters<typeof tRad>[0])
+              : order.modality}
+          </p>
+          {order.bodyPart && (
+            <span className="text-xs text-muted-foreground">— {order.bodyPart}</span>
+          )}
+          <Badge variant={STATUS_VARIANT[order.status]}>
+            {t(`radiologyStatus.${order.status}` as Parameters<typeof t>[0])}
+          </Badge>
+        </div>
+        {order.priority && (
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {(PRIORITY_OPTIONS as ReadonlyArray<string>).includes(order.priority)
+              ? tRad(`radiologyOrders.priority.${order.priority}` as Parameters<typeof tRad>[0])
+              : order.priority}
+          </p>
+        )}
+        {order.clinicalInfo && (
+          <p className="mt-0.5 text-xs italic text-muted-foreground">{order.clinicalInfo}</p>
+        )}
+        {order.notes && (
+          <p className="mt-0.5 text-xs italic text-muted-foreground">{order.notes}</p>
+        )}
+
+        {order.report && <ReportSection report={order.report} />}
+
+        {canReview && (
+          <div className="mt-3">
+            <button
+              onClick={handleReview}
+              disabled={reviewing}
+              className="inline-flex h-7 items-center gap-1.5 rounded-md border border-blue-400 px-3 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-950/30"
+            >
+              {reviewing
+                ? tRad('radiologyOrders.actions.reviewing')
+                : tRad('radiologyOrders.actions.review')}
+            </button>
+          </div>
+        )}
+        {reviewError && (
+          <p className="mt-1.5 text-xs text-destructive">{reviewError}</p>
+        )}
+      </div>
+    </div>
+  );
+}
 
 interface Form {
   modality: string;
@@ -47,7 +183,6 @@ interface Props {
 }
 
 export function RadiologyOrderPanel({ patientId, encounterId, readOnly }: Props) {
-  const t = useTranslations('timeline');
   const tRad = useTranslations('encounter');
   const tCommon = useTranslations('common');
   const [showForm, setShowForm] = useState(false);
@@ -110,39 +245,7 @@ export function RadiologyOrderPanel({ patientId, encounterId, readOnly }: Props)
       )}
 
       {orders.map((order) => (
-        <div
-          key={order.id}
-          className="flex items-start gap-3 rounded-lg border border-border bg-background px-4 py-3"
-        >
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="text-sm font-semibold text-foreground">
-                {(MODALITY_OPTIONS as ReadonlyArray<string>).includes(order.modality)
-                  ? tRad(`radiologyOrders.modality.${order.modality}` as Parameters<typeof tRad>[0])
-                  : order.modality}
-              </p>
-              {order.bodyPart && (
-                <span className="text-xs text-muted-foreground">— {order.bodyPart}</span>
-              )}
-              <Badge variant={STATUS_VARIANT[order.status]}>
-                {t(`radiologyStatus.${order.status}` as Parameters<typeof t>[0])}
-              </Badge>
-            </div>
-            {order.priority && (
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {(PRIORITY_OPTIONS as ReadonlyArray<string>).includes(order.priority)
-                  ? tRad(`radiologyOrders.priority.${order.priority}` as Parameters<typeof tRad>[0])
-                  : order.priority}
-              </p>
-            )}
-            {order.clinicalInfo && (
-              <p className="mt-0.5 text-xs italic text-muted-foreground">{order.clinicalInfo}</p>
-            )}
-            {order.notes && (
-              <p className="mt-0.5 text-xs italic text-muted-foreground">{order.notes}</p>
-            )}
-          </div>
-        </div>
+        <OrderCard key={order.id} order={order} readOnly={readOnly} />
       ))}
 
       {!readOnly && (

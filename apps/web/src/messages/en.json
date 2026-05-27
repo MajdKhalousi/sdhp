@@ -418,14 +418,26 @@
         "STAT":    "STAT"
       },
       "actions": {
-        "add":    "Add Order",
-        "adding": "Adding…"
+        "add":       "Add Order",
+        "adding":    "Adding…",
+        "review":    "Review Report",
+        "reviewing": "Reviewing…"
       },
       "validation": {
         "modalityRequired": "Modality is required."
       },
+      "report": {
+        "heading":    "Report",
+        "findings":   "Findings",
+        "impression": "Impression",
+        "reportedAt": "Reported",
+        "reportedBy": "Reported by",
+        "reviewedBy": "Reviewed by",
+        "reviewedAt": "Reviewed"
+      },
       "error": {
-        "addFailed": "Failed to add radiology order"
+        "addFailed":    "Failed to add radiology order",
+        "reviewFailed": "Failed to review report"
       }
     },
 

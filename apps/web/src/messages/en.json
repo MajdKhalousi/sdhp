@@ -643,5 +643,33 @@
       "ID_DOCUMENT":       "ID Document",
       "OTHER":             "Other"
     }
+  },
+  "doctorQueue": {
+    "pageTitle":   "Today's Queue",
+    "pageSubtitle": "Patients waiting for your consultation",
+    "panelTitle":  "My Queue — Today",
+    "autoRefresh": "Auto-refreshes every 30s",
+    "refreshLabel": "Refresh queue",
+    "counter": "{count, plural, one {# patient waiting} other {# patients waiting}}",
+    "empty": {
+      "title":    "No patients waiting",
+      "subtitle": "All scheduled patients have been seen."
+    },
+    "error": {
+      "loadFailed": "Failed to load queue",
+      "occurred":   "An unexpected error occurred."
+    },
+    "card": {
+      "scheduled": "Scheduled {time}",
+      "waited":    "Waited {duration}",
+      "justNow":   "just now"
+    },
+    "actions": {
+      "startVisit":  "Start Visit",
+      "openVisit":   "Open Visit",
+      "starting":    "Starting…",
+      "opening":     "Opening…",
+      "startFailed": "Failed to start encounter"
+    }
   }
 }

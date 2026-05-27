@@ -1,6 +1,7 @@
 'use client';
 
 import { RefreshCw, Stethoscope } from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
 import { useQueue } from '@/hooks/use-queue';
 import { QueueStatusBadge } from '@/components/queue/queue-status-badge';
 import { StartEncounterButton } from './start-encounter-button';
@@ -10,13 +11,13 @@ function todayDate() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
 }
 
-function formatScheduled(iso: string) {
-  return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+function formatScheduled(iso: string, locale: string): string {
+  return new Date(iso).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
 }
 
-function relativeWait(iso: string) {
+function relativeWait(iso: string, justNow: string): string {
   const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
-  if (mins < 1) return 'just now';
+  if (mins < 1) return justNow;
   if (mins < 60) return `${mins}m`;
   return `${Math.floor(mins / 60)}h ${mins % 60}m`;
 }
@@ -26,6 +27,11 @@ function waitMins(iso: string) {
 }
 
 export function DoctorQueuePanel() {
+  const t = useTranslations('doctorQueue');
+  const tCommon = useTranslations('common');
+  const locale = useLocale();
+  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+
   const { data, isLoading, isError, error, refetch, isFetching } = useQueue({
     status: ['WAITING', 'CALLED', 'IN_PROGRESS'],
     date: todayDate(),
@@ -35,14 +41,14 @@ export function DoctorQueuePanel() {
   const header = (
     <div className="flex items-center justify-between">
       <div>
-        <h2 className="text-sm font-semibold">My Queue — Today</h2>
-        <p className="text-xs text-muted-foreground">Auto-refreshes every 30s</p>
+        <h2 className="text-sm font-semibold">{t('panelTitle')}</h2>
+        <p className="text-xs text-muted-foreground">{t('autoRefresh')}</p>
       </div>
       <button
         onClick={() => refetch()}
         disabled={isFetching}
         className="inline-flex h-8 w-8 items-center justify-center rounded-md border transition-colors hover:bg-accent disabled:opacity-40"
-        aria-label="Refresh queue"
+        aria-label={t('refreshLabel')}
       >
         <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin' : ''}`} />
       </button>
@@ -67,15 +73,15 @@ export function DoctorQueuePanel() {
       <div className="space-y-4">
         {header}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-12 text-center">
-          <p className="text-sm font-medium text-destructive">Failed to load queue</p>
+          <p className="text-sm font-medium text-destructive">{t('error.loadFailed')}</p>
           <p className="max-w-xs text-xs text-muted-foreground">
-            {error instanceof Error ? error.message : 'An unexpected error occurred.'}
+            {error instanceof Error ? error.message : t('error.occurred')}
           </p>
           <button
             onClick={() => refetch()}
             className="mt-1 h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
           >
-            Try again
+            {tCommon('actions.tryAgain')}
           </button>
         </div>
       </div>
@@ -88,8 +94,8 @@ export function DoctorQueuePanel() {
         {header}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
           <Stethoscope className="h-8 w-8 text-muted-foreground/50" />
-          <p className="text-sm font-medium">No patients waiting</p>
-          <p className="text-xs text-muted-foreground">All scheduled patients have been seen.</p>
+          <p className="text-sm font-medium">{t('empty.title')}</p>
+          <p className="text-xs text-muted-foreground">{t('empty.subtitle')}</p>
         </div>
       </div>
     );
@@ -119,9 +125,9 @@ export function DoctorQueuePanel() {
                     </span>
                   </p>
                   <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-                    <span>Scheduled {formatScheduled(appointment.scheduledAt)}</span>
+                    <span>{t('card.scheduled', { time: formatScheduled(appointment.scheduledAt, displayLocale) })}</span>
                     <span className={isLong ? 'font-medium text-amber-600 dark:text-amber-400' : ''}>
-                      Waited {relativeWait(entry.createdAt)}
+                      {t('card.waited', { duration: relativeWait(entry.createdAt, t('card.justNow')) })}
                     </span>
                   </div>
                   <div className="mt-1.5">
@@ -141,7 +147,7 @@ export function DoctorQueuePanel() {
         })}
       </div>
       <p className="text-xs text-muted-foreground">
-        {data.total} patient{data.total !== 1 ? 's' : ''} waiting
+        {t('counter', { count: data.total })}
       </p>
     </div>
   );

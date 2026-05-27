@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { useStartEncounter } from '@/hooks/use-encounters';
 
@@ -12,6 +13,7 @@ interface StartEncounterButtonProps {
 }
 
 export function StartEncounterButton({ patientId, doctorId, appointmentId, appointmentStatus }: StartEncounterButtonProps) {
+  const t = useTranslations('doctorQueue');
   const router = useRouter();
   const [error, setError] = useState('');
   const { mutate, isPending } = useStartEncounter();
@@ -25,7 +27,7 @@ export function StartEncounterButton({ patientId, doctorId, appointmentId, appoi
           router.push(`/dashboard/doctor/encounter/${encounter.id}`);
         },
         onError: (e) => {
-          setError(e instanceof Error ? e.message : 'Failed to start encounter');
+          setError(e instanceof Error ? e.message : t('actions.startFailed'));
         },
       },
     );
@@ -41,10 +43,10 @@ export function StartEncounterButton({ patientId, doctorId, appointmentId, appoi
         {isPending ? (
           <>
             <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground" />
-            {appointmentStatus === 'IN_PROGRESS' ? 'Opening…' : 'Starting…'}
+            {appointmentStatus === 'IN_PROGRESS' ? t('actions.opening') : t('actions.starting')}
           </>
         ) : (
-          appointmentStatus === 'IN_PROGRESS' ? 'Open Visit' : 'Start Visit'
+          appointmentStatus === 'IN_PROGRESS' ? t('actions.openVisit') : t('actions.startVisit')
         )}
       </button>
       {error && (

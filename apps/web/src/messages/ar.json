@@ -643,5 +643,33 @@
       "ID_DOCUMENT":       "وثيقة هوية",
       "OTHER":             "أخرى"
     }
+  },
+  "doctorQueue": {
+    "pageTitle":   "قائمة الانتظار اليوم",
+    "pageSubtitle": "المرضى بانتظار المعاينة",
+    "panelTitle":  "قائمتي — اليوم",
+    "autoRefresh": "يتحدث تلقائياً كل 30 ثانية",
+    "refreshLabel": "تحديث القائمة",
+    "counter": "{count, plural, one {# مريض بانتظار المعاينة} other {# مرضى بانتظار المعاينة}}",
+    "empty": {
+      "title":    "لا يوجد مرضى بالانتظار",
+      "subtitle": "تمت معاينة جميع المرضى المجدولين."
+    },
+    "error": {
+      "loadFailed": "فشل تحميل قائمة الانتظار",
+      "occurred":   "حدث خطأ غير متوقع."
+    },
+    "card": {
+      "scheduled": "مجدول {time}",
+      "waited":    "انتظر {duration}",
+      "justNow":   "منذ قليل"
+    },
+    "actions": {
+      "startVisit":  "بدء المعاينة",
+      "openVisit":   "فتح المعاينة",
+      "starting":    "جارٍ بدء المعاينة...",
+      "opening":     "جارٍ فتح المعاينة...",
+      "startFailed": "فشل بدء المعاينة"
+    }
   }
 }

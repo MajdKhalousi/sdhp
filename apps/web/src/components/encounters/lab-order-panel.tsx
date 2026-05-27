@@ -23,11 +23,6 @@ const STATUS_VARIANT: Record<LabOrderStatus, BadgeProps['variant']> = {
 };
 
 const PRIORITY_OPTIONS = ['ROUTINE', 'URGENT', 'STAT'] as const;
-const PRIORITY_LABEL: Record<string, string> = {
-  ROUTINE: 'روتيني',
-  URGENT:  'عاجل',
-  STAT:    'فوري',
-};
 
 const FIELD_CLASS =
   'h-8 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring';
@@ -49,6 +44,8 @@ interface Props {
 
 export function LabOrderPanel({ patientId, encounterId, readOnly }: Props) {
   const t = useTranslations('timeline');
+  const tLab = useTranslations('encounter');
+  const tCommon = useTranslations('common');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<Form>(EMPTY_FORM);
   const [formError, setFormError] = useState('');
@@ -65,7 +62,7 @@ export function LabOrderPanel({ patientId, encounterId, readOnly }: Props) {
 
   function handleAdd() {
     if (!form.testName.trim()) {
-      setFormError('اسم الفحص مطلوب');
+      setFormError(tLab('labOrders.validation.testNameRequired'));
       return;
     }
     const payload: CreateLabOrderPayload = {
@@ -82,7 +79,7 @@ export function LabOrderPanel({ patientId, encounterId, readOnly }: Props) {
         setShowForm(false);
         setFormError('');
       },
-      onError: (e) => setFormError(e instanceof Error ? e.message : 'فشل إضافة طلب المختبر'),
+      onError: (e) => setFormError(e instanceof Error ? e.message : tLab('labOrders.error.addFailed')),
     });
   }
 
@@ -104,7 +101,7 @@ export function LabOrderPanel({ patientId, encounterId, readOnly }: Props) {
   return (
     <div className="space-y-2">
       {orders.length === 0 && !showForm && (
-        <p className="text-sm text-muted-foreground">لا طلبات مختبر لهذه الزيارة.</p>
+        <p className="text-sm text-muted-foreground">{tLab('labOrders.empty')}</p>
       )}
 
       {orders.map((order) => (
@@ -126,7 +123,9 @@ export function LabOrderPanel({ patientId, encounterId, readOnly }: Props) {
             </div>
             {order.priority && (
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {PRIORITY_LABEL[order.priority] ?? order.priority}
+                {(PRIORITY_OPTIONS as ReadonlyArray<string>).includes(order.priority)
+                  ? tLab(`labOrders.priority.${order.priority}` as Parameters<typeof tLab>[0])
+                  : order.priority}
               </p>
             )}
             {order.notes && (
@@ -141,49 +140,59 @@ export function LabOrderPanel({ patientId, encounterId, readOnly }: Props) {
           <div className="rounded-lg border border-dashed border-border p-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1 sm:col-span-2">
-                <label className="text-xs font-medium text-muted-foreground">اسم الفحص *</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  {tLab('labOrders.fields.testNameLabel')}
+                </label>
                 <input
                   type="text"
                   dir="auto"
                   value={form.testName}
                   onChange={(e) => setField('testName', e.target.value)}
-                  placeholder="مثال: صورة دم كاملة"
+                  placeholder={tLab('labOrders.placeholders.testName')}
                   className={FIELD_CLASS}
                   autoFocus
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">رمز الفحص</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  {tLab('labOrders.fields.testCodeLabel')}
+                </label>
                 <input
                   type="text"
                   dir="ltr"
                   value={form.testCode}
                   onChange={(e) => setField('testCode', e.target.value)}
-                  placeholder="CBC"
+                  placeholder={tLab('labOrders.placeholders.testCode')}
                   className={FIELD_CLASS}
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">الأولوية</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  {tLab('labOrders.fields.priorityLabel')}
+                </label>
                 <select
                   value={form.priority}
                   onChange={(e) => setField('priority', e.target.value)}
                   className="h-8 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring"
                 >
-                  <option value="">— اختر —</option>
+                  <option value="">{tLab('labOrders.placeholders.selectPriority')}</option>
                   {PRIORITY_OPTIONS.map((p) => (
-                    <option key={p} value={p}>{PRIORITY_LABEL[p]}</option>
+                    <option key={p} value={p}>
+                      {tLab(`labOrders.priority.${p}` as Parameters<typeof tLab>[0])}
+                    </option>
                   ))}
                 </select>
               </div>
               <div className="space-y-1 sm:col-span-2">
-                <label className="text-xs font-medium text-muted-foreground">ملاحظات</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  {tLab('labOrders.fields.notesLabel')}
+                </label>
                 <input
                   type="text"
                   dir="auto"
                   value={form.notes}
                   onChange={(e) => setField('notes', e.target.value)}
-                  placeholder="ملاحظات إضافية"
+                  placeholder={tLab('labOrders.placeholders.notes')}
                   className={FIELD_CLASS}
                 />
               </div>
@@ -199,14 +208,14 @@ export function LabOrderPanel({ patientId, encounterId, readOnly }: Props) {
                 disabled={creating}
                 className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {creating ? 'جاري الإضافة…' : 'إضافة طلب'}
+                {creating ? tLab('labOrders.actions.adding') : tLab('labOrders.actions.add')}
               </button>
               <button
                 onClick={handleCancel}
                 disabled={creating}
                 className="inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-60"
               >
-                إلغاء
+                {tCommon('actions.cancel')}
               </button>
             </div>
           </div>
@@ -216,7 +225,7 @@ export function LabOrderPanel({ patientId, encounterId, readOnly }: Props) {
             className="mt-1 inline-flex h-8 items-center gap-1.5 rounded-md border border-dashed px-3 text-xs font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary"
           >
             <Plus className="h-3.5 w-3.5" />
-            إضافة طلب مختبر
+            {tLab('labOrders.addOrder')}
           </button>
         )
       )}

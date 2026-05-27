@@ -23,20 +23,7 @@ const STATUS_VARIANT: Record<RadiologyOrderStatus, BadgeProps['variant']> = {
 };
 
 const MODALITY_OPTIONS = ['X-RAY', 'CT', 'MRI', 'ULTRASOUND', 'ECHO'] as const;
-const MODALITY_LABEL: Record<string, string> = {
-  'X-RAY':      'أشعة سينية',
-  CT:           'أشعة مقطعية',
-  MRI:          'رنين مغناطيسي',
-  ULTRASOUND:   'موجات فوق صوتية',
-  ECHO:         'إيكو',
-};
-
 const PRIORITY_OPTIONS = ['ROUTINE', 'URGENT', 'STAT'] as const;
-const PRIORITY_LABEL: Record<string, string> = {
-  ROUTINE: 'روتيني',
-  URGENT:  'عاجل',
-  STAT:    'فوري',
-};
 
 const FIELD_CLASS =
   'h-8 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring';
@@ -61,6 +48,8 @@ interface Props {
 
 export function RadiologyOrderPanel({ patientId, encounterId, readOnly }: Props) {
   const t = useTranslations('timeline');
+  const tRad = useTranslations('encounter');
+  const tCommon = useTranslations('common');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<Form>(EMPTY_FORM);
   const [formError, setFormError] = useState('');
@@ -77,7 +66,7 @@ export function RadiologyOrderPanel({ patientId, encounterId, readOnly }: Props)
 
   function handleAdd() {
     if (!form.modality) {
-      setFormError('نوع الفحص الشعاعي مطلوب');
+      setFormError(tRad('radiologyOrders.validation.modalityRequired'));
       return;
     }
     const payload: CreateRadiologyOrderPayload = {
@@ -95,7 +84,7 @@ export function RadiologyOrderPanel({ patientId, encounterId, readOnly }: Props)
         setShowForm(false);
         setFormError('');
       },
-      onError: (e) => setFormError(e instanceof Error ? e.message : 'فشل إضافة الطلب الشعاعي'),
+      onError: (e) => setFormError(e instanceof Error ? e.message : tRad('radiologyOrders.error.addFailed')),
     });
   }
 
@@ -117,7 +106,7 @@ export function RadiologyOrderPanel({ patientId, encounterId, readOnly }: Props)
   return (
     <div className="space-y-2">
       {orders.length === 0 && !showForm && (
-        <p className="text-sm text-muted-foreground">لا طلبات شعاعية لهذه الزيارة.</p>
+        <p className="text-sm text-muted-foreground">{tRad('radiologyOrders.empty')}</p>
       )}
 
       {orders.map((order) => (
@@ -128,7 +117,9 @@ export function RadiologyOrderPanel({ patientId, encounterId, readOnly }: Props)
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-sm font-semibold text-foreground">
-                {MODALITY_LABEL[order.modality] ?? order.modality}
+                {(MODALITY_OPTIONS as ReadonlyArray<string>).includes(order.modality)
+                  ? tRad(`radiologyOrders.modality.${order.modality}` as Parameters<typeof tRad>[0])
+                  : order.modality}
               </p>
               {order.bodyPart && (
                 <span className="text-xs text-muted-foreground">— {order.bodyPart}</span>
@@ -139,7 +130,9 @@ export function RadiologyOrderPanel({ patientId, encounterId, readOnly }: Props)
             </div>
             {order.priority && (
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {PRIORITY_LABEL[order.priority] ?? order.priority}
+                {(PRIORITY_OPTIONS as ReadonlyArray<string>).includes(order.priority)
+                  ? tRad(`radiologyOrders.priority.${order.priority}` as Parameters<typeof tRad>[0])
+                  : order.priority}
               </p>
             )}
             {order.clinicalInfo && (
@@ -157,62 +150,76 @@ export function RadiologyOrderPanel({ patientId, encounterId, readOnly }: Props)
           <div className="rounded-lg border border-dashed border-border p-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">نوع الفحص *</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  {tRad('radiologyOrders.fields.modalityLabel')}
+                </label>
                 <select
                   value={form.modality}
                   onChange={(e) => setField('modality', e.target.value)}
                   className="h-8 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring"
                   autoFocus
                 >
-                  <option value="">— اختر —</option>
+                  <option value="">{tRad('radiologyOrders.placeholders.selectModality')}</option>
                   {MODALITY_OPTIONS.map((m) => (
-                    <option key={m} value={m}>{MODALITY_LABEL[m]}</option>
+                    <option key={m} value={m}>
+                      {tRad(`radiologyOrders.modality.${m}` as Parameters<typeof tRad>[0])}
+                    </option>
                   ))}
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">منطقة الجسم</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  {tRad('radiologyOrders.fields.bodyPartLabel')}
+                </label>
                 <input
                   type="text"
                   dir="auto"
                   value={form.bodyPart}
                   onChange={(e) => setField('bodyPart', e.target.value)}
-                  placeholder="مثال: الصدر"
+                  placeholder={tRad('radiologyOrders.placeholders.bodyPart')}
                   className={FIELD_CLASS}
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">الأولوية</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  {tRad('radiologyOrders.fields.priorityLabel')}
+                </label>
                 <select
                   value={form.priority}
                   onChange={(e) => setField('priority', e.target.value)}
                   className="h-8 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring"
                 >
-                  <option value="">— اختر —</option>
+                  <option value="">{tRad('radiologyOrders.placeholders.selectPriority')}</option>
                   {PRIORITY_OPTIONS.map((p) => (
-                    <option key={p} value={p}>{PRIORITY_LABEL[p]}</option>
+                    <option key={p} value={p}>
+                      {tRad(`radiologyOrders.priority.${p}` as Parameters<typeof tRad>[0])}
+                    </option>
                   ))}
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">المعلومات السريرية</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  {tRad('radiologyOrders.fields.clinicalInfoLabel')}
+                </label>
                 <input
                   type="text"
                   dir="auto"
                   value={form.clinicalInfo}
                   onChange={(e) => setField('clinicalInfo', e.target.value)}
-                  placeholder="مثال: اشتباه التهاب رئة"
+                  placeholder={tRad('radiologyOrders.placeholders.clinicalInfo')}
                   className={FIELD_CLASS}
                 />
               </div>
               <div className="space-y-1 sm:col-span-2">
-                <label className="text-xs font-medium text-muted-foreground">ملاحظات</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  {tRad('radiologyOrders.fields.notesLabel')}
+                </label>
                 <input
                   type="text"
                   dir="auto"
                   value={form.notes}
                   onChange={(e) => setField('notes', e.target.value)}
-                  placeholder="ملاحظات إضافية"
+                  placeholder={tRad('radiologyOrders.placeholders.notes')}
                   className={FIELD_CLASS}
                 />
               </div>
@@ -228,14 +235,14 @@ export function RadiologyOrderPanel({ patientId, encounterId, readOnly }: Props)
                 disabled={creating}
                 className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {creating ? 'جاري الإضافة…' : 'إضافة طلب'}
+                {creating ? tRad('radiologyOrders.actions.adding') : tRad('radiologyOrders.actions.add')}
               </button>
               <button
                 onClick={handleCancel}
                 disabled={creating}
                 className="inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-60"
               >
-                إلغاء
+                {tCommon('actions.cancel')}
               </button>
             </div>
           </div>
@@ -245,7 +252,7 @@ export function RadiologyOrderPanel({ patientId, encounterId, readOnly }: Props)
             className="mt-1 inline-flex h-8 items-center gap-1.5 rounded-md border border-dashed px-3 text-xs font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary"
           >
             <Plus className="h-3.5 w-3.5" />
-            إضافة طلب شعاعي
+            {tRad('radiologyOrders.addOrder')}
           </button>
         )
       )}

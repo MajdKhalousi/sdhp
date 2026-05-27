@@ -344,6 +344,80 @@
         "addFailed": "Failed to add medication"
       }
     },
+
+    "labOrders": {
+      "empty":    "No lab orders for this visit.",
+      "addOrder": "Add Lab Order",
+      "fields": {
+        "testNameLabel":  "Test Name *",
+        "testCodeLabel":  "Test Code",
+        "priorityLabel":  "Priority",
+        "notesLabel":     "Notes"
+      },
+      "placeholders": {
+        "testName":       "e.g. Complete Blood Count",
+        "testCode":       "CBC",
+        "notes":          "Additional notes",
+        "selectPriority": "— Select —"
+      },
+      "priority": {
+        "ROUTINE": "Routine",
+        "URGENT":  "Urgent",
+        "STAT":    "STAT"
+      },
+      "actions": {
+        "add":    "Add Order",
+        "adding": "Adding…"
+      },
+      "validation": {
+        "testNameRequired": "Test name is required."
+      },
+      "error": {
+        "addFailed": "Failed to add lab order"
+      }
+    },
+
+    "radiologyOrders": {
+      "empty":    "No radiology orders for this visit.",
+      "addOrder": "Add Radiology Order",
+      "fields": {
+        "modalityLabel":     "Modality *",
+        "bodyPartLabel":     "Body Part",
+        "priorityLabel":     "Priority",
+        "clinicalInfoLabel": "Clinical Information",
+        "notesLabel":        "Notes"
+      },
+      "placeholders": {
+        "bodyPart":       "e.g. Chest",
+        "clinicalInfo":   "e.g. Suspected pneumonia",
+        "notes":          "Additional notes",
+        "selectModality": "— Select —",
+        "selectPriority": "— Select —"
+      },
+      "modality": {
+        "X-RAY":      "X-Ray",
+        "CT":         "CT Scan",
+        "MRI":        "MRI",
+        "ULTRASOUND": "Ultrasound",
+        "ECHO":       "Echo"
+      },
+      "priority": {
+        "ROUTINE": "Routine",
+        "URGENT":  "Urgent",
+        "STAT":    "STAT"
+      },
+      "actions": {
+        "add":    "Add Order",
+        "adding": "Adding…"
+      },
+      "validation": {
+        "modalityRequired": "Modality is required."
+      },
+      "error": {
+        "addFailed": "Failed to add radiology order"
+      }
+    },
+
     "vitals": {
       "fields": {
         "temperature":       "Temperature",

@@ -344,6 +344,80 @@
         "addFailed": "فشل إضافة الدواء"
       }
     },
+
+    "labOrders": {
+      "empty":    "لا طلبات مختبر لهذه الزيارة.",
+      "addOrder": "إضافة طلب مختبر",
+      "fields": {
+        "testNameLabel":  "اسم الفحص *",
+        "testCodeLabel":  "رمز الفحص",
+        "priorityLabel":  "الأولوية",
+        "notesLabel":     "ملاحظات"
+      },
+      "placeholders": {
+        "testName":       "مثال: صورة دم كاملة",
+        "testCode":       "CBC",
+        "notes":          "ملاحظات إضافية",
+        "selectPriority": "— اختر —"
+      },
+      "priority": {
+        "ROUTINE": "روتيني",
+        "URGENT":  "عاجل",
+        "STAT":    "فوري"
+      },
+      "actions": {
+        "add":    "إضافة طلب",
+        "adding": "جاري الإضافة…"
+      },
+      "validation": {
+        "testNameRequired": "اسم الفحص مطلوب."
+      },
+      "error": {
+        "addFailed": "فشل إضافة طلب المختبر"
+      }
+    },
+
+    "radiologyOrders": {
+      "empty":    "لا طلبات شعاعية لهذه الزيارة.",
+      "addOrder": "إضافة طلب شعاعي",
+      "fields": {
+        "modalityLabel":     "نوع الفحص *",
+        "bodyPartLabel":     "منطقة الجسم",
+        "priorityLabel":     "الأولوية",
+        "clinicalInfoLabel": "المعلومات السريرية",
+        "notesLabel":        "ملاحظات"
+      },
+      "placeholders": {
+        "bodyPart":       "مثال: الصدر",
+        "clinicalInfo":   "مثال: اشتباه التهاب رئة",
+        "notes":          "ملاحظات إضافية",
+        "selectModality": "— اختر —",
+        "selectPriority": "— اختر —"
+      },
+      "modality": {
+        "X-RAY":      "أشعة سينية",
+        "CT":         "أشعة مقطعية",
+        "MRI":        "رنين مغناطيسي",
+        "ULTRASOUND": "موجات فوق صوتية",
+        "ECHO":       "إيكو"
+      },
+      "priority": {
+        "ROUTINE": "روتيني",
+        "URGENT":  "عاجل",
+        "STAT":    "فوري"
+      },
+      "actions": {
+        "add":    "إضافة طلب",
+        "adding": "جاري الإضافة…"
+      },
+      "validation": {
+        "modalityRequired": "نوع الفحص الشعاعي مطلوب."
+      },
+      "error": {
+        "addFailed": "فشل إضافة الطلب الشعاعي"
+      }
+    },
+
     "vitals": {
       "fields": {
         "temperature":      "الحرارة",

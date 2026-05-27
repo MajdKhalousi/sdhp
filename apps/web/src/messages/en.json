@@ -366,14 +366,25 @@
         "STAT":    "STAT"
       },
       "actions": {
-        "add":    "Add Order",
-        "adding": "Adding…"
+        "add":       "Add Order",
+        "adding":    "Adding…",
+        "review":    "Review Result",
+        "reviewing": "Reviewing…"
       },
       "validation": {
         "testNameRequired": "Test name is required."
       },
+      "result": {
+        "heading":        "Result",
+        "reference":      "Reference",
+        "interpretation": "Interpretation",
+        "notes":          "Notes",
+        "resultAt":       "Result date",
+        "reviewedBy":     "Reviewed by"
+      },
       "error": {
-        "addFailed": "Failed to add lab order"
+        "addFailed":    "Failed to add lab order",
+        "reviewFailed": "Failed to review result"
       }
     },
 

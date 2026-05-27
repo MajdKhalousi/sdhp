@@ -84,3 +84,15 @@ export function useCreateLabOrder() {
     },
   });
 }
+
+export function useReviewLabResult() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ labOrderId }: { labOrderId: string; patientId: string }) =>
+      api.patch<LabOrder>(`/v1/lab-orders/${labOrderId}/review`, {}),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ['patient-lab-orders', variables.patientId] });
+      qc.invalidateQueries({ queryKey: ['patient-timeline'] });
+    },
+  });
+}

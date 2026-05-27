@@ -2,14 +2,17 @@
 
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import type { BadgeProps } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   usePatientLabOrders,
   useCreateLabOrder,
+  useReviewLabResult,
   type CreateLabOrderPayload,
+  type LabOrder,
+  type LabResult,
 } from '@/hooks/use-labs';
 import type { LabOrderStatus } from '@/types/timeline';
 
@@ -27,6 +30,131 @@ const PRIORITY_OPTIONS = ['ROUTINE', 'URGENT', 'STAT'] as const;
 const FIELD_CLASS =
   'h-8 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring';
 
+function formatDate(iso: string, locale: string): string {
+  return new Date(iso).toLocaleDateString(locale, {
+    year: 'numeric', month: 'short', day: 'numeric',
+  });
+}
+
+function ResultSection({ result }: { result: LabResult }) {
+  const tLab = useTranslations('encounter');
+  const locale = useLocale();
+  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const reviewer = result.reviewedBy
+    ? `${result.reviewedBy.user.firstName} ${result.reviewedBy.user.lastName}`
+    : null;
+
+  return (
+    <div className="mt-3 rounded-md border border-green-200 bg-green-50 px-3 py-2 dark:border-green-900/30 dark:bg-green-950/20">
+      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-green-700 dark:text-green-400">
+        {tLab('labOrders.result.heading')}
+      </p>
+      <div className="space-y-0.5 text-sm">
+        {result.resultValue && (
+          <p>
+            <span className="font-medium text-foreground">{result.resultValue}</span>
+            {result.unit && <span className="ms-1 text-muted-foreground">{result.unit}</span>}
+            {result.referenceRange && (
+              <span className="ms-2 text-xs text-muted-foreground">
+                {tLab('labOrders.result.reference')}: {result.referenceRange}
+              </span>
+            )}
+          </p>
+        )}
+        {result.interpretation && (
+          <p className="text-xs text-muted-foreground">
+            {tLab('labOrders.result.interpretation')}: {result.interpretation}
+          </p>
+        )}
+        {result.resultNotes && (
+          <p className="text-xs text-muted-foreground">
+            {tLab('labOrders.result.notes')}: {result.resultNotes}
+          </p>
+        )}
+        {result.resultAt && (
+          <p className="text-xs text-muted-foreground">
+            {tLab('labOrders.result.resultAt')}: {formatDate(result.resultAt, displayLocale)}
+          </p>
+        )}
+        {reviewer && result.reviewedAt && (
+          <p className="text-xs text-muted-foreground">
+            {tLab('labOrders.result.reviewedBy')}: {reviewer} · {formatDate(result.reviewedAt, displayLocale)}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+interface OrderCardProps {
+  order: LabOrder;
+  readOnly?: boolean;
+}
+
+function OrderCard({ order, readOnly }: OrderCardProps) {
+  const t = useTranslations('timeline');
+  const tLab = useTranslations('encounter');
+  const [reviewError, setReviewError] = useState('');
+  const { mutate: review, isPending: reviewing } = useReviewLabResult();
+
+  function handleReview() {
+    setReviewError('');
+    review(
+      { labOrderId: order.id, patientId: order.patientId },
+      { onError: (e) => setReviewError(e instanceof Error ? e.message : tLab('labOrders.error.reviewFailed')) },
+    );
+  }
+
+  const canReview = !readOnly && order.status === 'RESULTED' && order.result !== null;
+
+  return (
+    <div className="rounded-lg border border-border bg-background px-4 py-3">
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-sm font-semibold text-foreground">{order.testName}</p>
+          {order.testCode && (
+            <span className="font-mono text-xs text-muted-foreground" dir="ltr">
+              ({order.testCode})
+            </span>
+          )}
+          <Badge variant={STATUS_VARIANT[order.status]}>
+            {t(`labOrderStatus.${order.status}` as Parameters<typeof t>[0])}
+          </Badge>
+        </div>
+        {order.priority && (
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {(PRIORITY_OPTIONS as ReadonlyArray<string>).includes(order.priority)
+              ? tLab(`labOrders.priority.${order.priority}` as Parameters<typeof tLab>[0])
+              : order.priority}
+          </p>
+        )}
+        {order.notes && (
+          <p className="mt-0.5 text-xs italic text-muted-foreground">{order.notes}</p>
+        )}
+
+        {order.result && <ResultSection result={order.result} />}
+
+        {canReview && (
+          <div className="mt-3">
+            <button
+              onClick={handleReview}
+              disabled={reviewing}
+              className="inline-flex h-7 items-center gap-1.5 rounded-md border border-green-400 px-3 text-xs font-medium text-green-700 transition-colors hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-950/30"
+            >
+              {reviewing
+                ? tLab('labOrders.actions.reviewing')
+                : tLab('labOrders.actions.review')}
+            </button>
+          </div>
+        )}
+        {reviewError && (
+          <p className="mt-1.5 text-xs text-destructive">{reviewError}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 interface Form {
   testName: string;
   testCode: string;
@@ -43,7 +171,6 @@ interface Props {
 }
 
 export function LabOrderPanel({ patientId, encounterId, readOnly }: Props) {
-  const t = useTranslations('timeline');
   const tLab = useTranslations('encounter');
   const tCommon = useTranslations('common');
   const [showForm, setShowForm] = useState(false);
@@ -105,34 +232,7 @@ export function LabOrderPanel({ patientId, encounterId, readOnly }: Props) {
       )}
 
       {orders.map((order) => (
-        <div
-          key={order.id}
-          className="flex items-start gap-3 rounded-lg border border-border bg-background px-4 py-3"
-        >
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="text-sm font-semibold text-foreground">{order.testName}</p>
-              {order.testCode && (
-                <span className="font-mono text-xs text-muted-foreground" dir="ltr">
-                  ({order.testCode})
-                </span>
-              )}
-              <Badge variant={STATUS_VARIANT[order.status]}>
-                {t(`labOrderStatus.${order.status}` as Parameters<typeof t>[0])}
-              </Badge>
-            </div>
-            {order.priority && (
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {(PRIORITY_OPTIONS as ReadonlyArray<string>).includes(order.priority)
-                  ? tLab(`labOrders.priority.${order.priority}` as Parameters<typeof tLab>[0])
-                  : order.priority}
-              </p>
-            )}
-            {order.notes && (
-              <p className="mt-0.5 text-xs italic text-muted-foreground">{order.notes}</p>
-            )}
-          </div>
-        </div>
+        <OrderCard key={order.id} order={order} readOnly={readOnly} />
       ))}
 
       {!readOnly && (

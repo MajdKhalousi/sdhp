@@ -366,14 +366,25 @@
         "STAT":    "فوري"
       },
       "actions": {
-        "add":    "إضافة طلب",
-        "adding": "جاري الإضافة…"
+        "add":       "إضافة طلب",
+        "adding":    "جاري الإضافة…",
+        "review":    "مراجعة النتيجة",
+        "reviewing": "جاري المراجعة…"
       },
       "validation": {
         "testNameRequired": "اسم الفحص مطلوب."
       },
+      "result": {
+        "heading":        "النتيجة",
+        "reference":      "المرجع",
+        "interpretation": "التفسير",
+        "notes":          "ملاحظات",
+        "resultAt":       "تاريخ النتيجة",
+        "reviewedBy":     "راجعها"
+      },
       "error": {
-        "addFailed": "فشل إضافة طلب المختبر"
+        "addFailed":    "فشل إضافة طلب المختبر",
+        "reviewFailed": "فشل مراجعة النتيجة"
       }
     },
 

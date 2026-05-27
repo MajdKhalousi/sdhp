@@ -550,6 +550,13 @@
       "collectedAt":  "تاريخ أخذ العينة",
       "notes":        "ملاحظات",
       "cancelReason": "سبب الإلغاء"
+    },
+    "radiologyOrders": {
+      "orderedBy":    "الطبيب",
+      "scheduledAt":  "موعد الفحص",
+      "clinicalInfo": "المعلومات السريرية",
+      "notes":        "ملاحظات",
+      "cancelReason": "سبب الإلغاء"
     }
   },
 

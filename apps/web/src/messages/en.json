@@ -550,6 +550,13 @@
       "collectedAt":  "Sample collected",
       "notes":        "Notes",
       "cancelReason": "Cancel reason"
+    },
+    "radiologyOrders": {
+      "orderedBy":    "Ordered by",
+      "scheduledAt":  "Scheduled",
+      "clinicalInfo": "Clinical information",
+      "notes":        "Notes",
+      "cancelReason": "Cancel reason"
     }
   },
 

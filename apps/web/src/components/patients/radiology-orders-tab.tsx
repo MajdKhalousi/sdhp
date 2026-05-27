@@ -1,7 +1,7 @@
 'use client';
 
 import { Scan } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import type { BadgeProps } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,8 +21,11 @@ const STATUS_VARIANT: Record<RadiologyOrderStatus, BadgeProps['variant']> = {
   CANCELLED:   'danger',
 };
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('ar-SY', {
+const MODALITY_OPTIONS = ['X-RAY', 'CT', 'MRI', 'ULTRASOUND', 'ECHO'] as const;
+const PRIORITY_OPTIONS = ['ROUTINE', 'URGENT', 'STAT'] as const;
+
+function formatDate(iso: string, locale: string): string {
+  return new Date(iso).toLocaleDateString(locale, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -30,6 +33,9 @@ function formatDate(iso: string): string {
 }
 
 function ReportSection({ report }: { report: RadiologyReport }) {
+  const tRad = useTranslations('encounter');
+  const locale = useLocale();
+  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
   const reportedBy = report.reportedBy
     ? `${report.reportedBy.user.firstName} ${report.reportedBy.user.lastName}`
     : null;
@@ -40,29 +46,38 @@ function ReportSection({ report }: { report: RadiologyReport }) {
   return (
     <div className="mt-3 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 dark:border-blue-900/30 dark:bg-blue-950/20">
       <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">
-        التقرير
+        {tRad('radiologyOrders.report.heading')}
       </p>
       <div className="space-y-0.5">
         {report.findings && (
           <p className="text-sm text-foreground">
-            <span className="text-xs font-medium text-muted-foreground">النتائج: </span>
+            <span className="text-xs font-medium text-muted-foreground">
+              {tRad('radiologyOrders.report.findings')}:{' '}
+            </span>
             {report.findings}
           </p>
         )}
         {report.impression && (
           <p className="text-sm text-foreground">
-            <span className="text-xs font-medium text-muted-foreground">الانطباع: </span>
+            <span className="text-xs font-medium text-muted-foreground">
+              {tRad('radiologyOrders.report.impression')}:{' '}
+            </span>
             {report.impression}
           </p>
         )}
         {reportedBy && report.reportedAt && (
           <p className="text-xs text-muted-foreground">
-            أعده: {reportedBy} · {formatDate(report.reportedAt)}
+            {tRad('radiologyOrders.report.reportedBy')}: {reportedBy} · {formatDate(report.reportedAt, displayLocale)}
+          </p>
+        )}
+        {!reportedBy && report.reportedAt && (
+          <p className="text-xs text-muted-foreground">
+            {tRad('radiologyOrders.report.reportedAt')}: {formatDate(report.reportedAt, displayLocale)}
           </p>
         )}
         {reviewedBy && report.reviewedAt && (
           <p className="text-xs text-muted-foreground">
-            راجعه: {reviewedBy} · {formatDate(report.reviewedAt)}
+            {tRad('radiologyOrders.report.reviewedBy')}: {reviewedBy} · {formatDate(report.reviewedAt, displayLocale)}
           </p>
         )}
       </div>
@@ -72,6 +87,10 @@ function ReportSection({ report }: { report: RadiologyReport }) {
 
 function RadiologyOrderItem({ order }: { order: RadiologyOrder }) {
   const t = useTranslations('timeline');
+  const tRad = useTranslations('encounter');
+  const tPatient = useTranslations('patient');
+  const locale = useLocale();
+  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
   const doctor = `${order.orderedBy.user.firstName} ${order.orderedBy.user.lastName}`;
 
   return (
@@ -80,11 +99,13 @@ function RadiologyOrderItem({ order }: { order: RadiologyOrder }) {
         <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
           {t('cards.radiology')}
         </span>
-        <span className="text-xs text-muted-foreground" dir="ltr">{formatDate(order.createdAt)}</span>
+        <span className="text-xs text-muted-foreground" dir="ltr">{formatDate(order.createdAt, displayLocale)}</span>
       </div>
 
       <p className="font-medium text-sm text-foreground">
-        {order.modality}
+        {(MODALITY_OPTIONS as ReadonlyArray<string>).includes(order.modality)
+          ? tRad(`radiologyOrders.modality.${order.modality}` as Parameters<typeof tRad>[0])
+          : order.modality}
         {order.bodyPart && (
           <span className="ms-1.5 text-sm font-normal text-muted-foreground">— {order.bodyPart}</span>
         )}
@@ -95,17 +116,27 @@ function RadiologyOrderItem({ order }: { order: RadiologyOrder }) {
           {t(`radiologyStatus.${order.status}` as Parameters<typeof t>[0])}
         </Badge>
         {order.priority && (
-          <span className="text-xs text-muted-foreground">· {order.priority}</span>
+          <span className="text-xs text-muted-foreground">
+            · {(PRIORITY_OPTIONS as ReadonlyArray<string>).includes(order.priority)
+              ? tRad(`radiologyOrders.priority.${order.priority}` as Parameters<typeof tRad>[0])
+              : order.priority}
+          </span>
         )}
       </div>
 
       <div className="mt-1.5 space-y-0.5 text-xs text-muted-foreground">
-        <p>الطبيب: {doctor}</p>
-        {order.scheduledAt && <p>موعد الفحص: {formatDate(order.scheduledAt)}</p>}
-        {order.clinicalInfo && <p>المعلومات السريرية: {order.clinicalInfo}</p>}
-        {order.notes && <p>ملاحظات: {order.notes}</p>}
+        <p>{tPatient('radiologyOrders.orderedBy')}: {doctor}</p>
+        {order.scheduledAt && (
+          <p>{tPatient('radiologyOrders.scheduledAt')}: {formatDate(order.scheduledAt, displayLocale)}</p>
+        )}
+        {order.clinicalInfo && (
+          <p>{tPatient('radiologyOrders.clinicalInfo')}: {order.clinicalInfo}</p>
+        )}
+        {order.notes && (
+          <p>{tPatient('radiologyOrders.notes')}: {order.notes}</p>
+        )}
         {order.cancelReason && (
-          <p className="text-destructive">سبب الإلغاء: {order.cancelReason}</p>
+          <p className="text-destructive">{tPatient('radiologyOrders.cancelReason')}: {order.cancelReason}</p>
         )}
       </div>
 

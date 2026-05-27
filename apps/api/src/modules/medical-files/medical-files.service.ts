@@ -75,6 +75,10 @@ export class MedicalFilesService {
       throw new ForbiddenException('Patient does not belong to this organization');
     }
 
+    if (!dto.storageKey.startsWith(`${orgId}/${dto.patientId}/`)) {
+      throw new BadRequestException('Invalid file storage key for patient');
+    }
+
     if (dto.encounterId) {
       await this.assertEncounterBelongsToOrgAndPatient(dto.encounterId, orgId, dto.patientId);
     }

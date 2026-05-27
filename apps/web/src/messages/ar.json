@@ -1,197 +1,192 @@
 {
   "common": {
     "actions": {
-      "save":     "حفظ التغييرات",
-      "saving":   "جاري الحفظ…",
-      "cancel":   "إلغاء",
+      "save": "حفظ التغييرات",
+      "saving": "جاري الحفظ…",
+      "cancel": "إلغاء",
       "tryAgain": "إعادة المحاولة",
-      "back":     "رجوع",
-      "viewAll":  "عرض الكل",
-      "manage":   "إدارة"
+      "back": "رجوع",
+      "viewAll": "عرض الكل",
+      "manage": "إدارة"
     },
     "pagination": {
       "previous": "السابق",
-      "next":     "التالي",
-      "pageOf":   "صفحة {page} من {total}",
-      "summary":  "صفحة {page} من {total} — {count} إجمالاً"
+      "next": "التالي",
+      "pageOf": "صفحة {page} من {total}",
+      "summary": "صفحة {page} من {total} — {count} إجمالاً"
     },
     "states": {
       "loading": "جاري التحميل…",
-      "error":   "حدث خطأ غير متوقع."
+      "error": "حدث خطأ غير متوقع."
     },
     "filter": {
       "clearFilters": "مسح الفلاتر",
-      "allStatuses":  "جميع الحالات",
-      "allDoctors":   "جميع الأطباء",
-      "all":          "الكل"
+      "allStatuses": "جميع الحالات",
+      "allDoctors": "جميع الأطباء",
+      "all": "الكل"
     }
   },
-
   "auth": {
     "login": {
-      "title":           "Elaji Health",
-      "subtitle":        "منصة علاجي الصحية",
-      "phoneLabel":      "رقم الهاتف",
+      "title": "Elaji Health",
+      "subtitle": "منصة علاجي الصحية",
+      "phoneLabel": "رقم الهاتف",
       "phonePlaceholder": "+963 XXX XXX XXX",
-      "passwordLabel":   "كلمة المرور",
-      "signIn":          "تسجيل الدخول",
-      "signingIn":       "جاري الدخول…",
-      "authorizedOnly":  "للمخوّلين فقط",
-      "loginFailed":     "فشل تسجيل الدخول"
+      "passwordLabel": "كلمة المرور",
+      "signIn": "تسجيل الدخول",
+      "signingIn": "جاري الدخول…",
+      "authorizedOnly": "للمخوّلين فقط",
+      "loginFailed": "فشل تسجيل الدخول"
     },
     "demo": {
-      "heading":      "حسابات تجريبية",
+      "heading": "حسابات تجريبية",
       "passwordNote": "كلمة المرور لجميع الحسابات:"
     }
   },
-
   "nav": {
-    "brand":        "Elaji Health",
+    "brand": "Elaji Health",
     "brandSubtitle": "المنصة الصحية",
-    "footer":       "منصة علاجي الصحية",
+    "footer": "منصة علاجي الصحية",
     "items": {
-      "dashboard":        "الرئيسية",
-      "patients":         "المرضى",
-      "appointments":     "المواعيد",
-      "queue":            "الطابور",
-      "doctorWorkspace":  "غرفة الطبيب",
-      "doctorQueue":      "طابور الطبيب",
-      "technicianLabs":      "مختبر الفني",
+      "dashboard": "الرئيسية",
+      "patients": "المرضى",
+      "appointments": "المواعيد",
+      "queue": "الطابور",
+      "doctorWorkspace": "غرفة الطبيب",
+      "doctorQueue": "طابور الطبيب",
+      "technicianLabs": "مختبر الفني",
       "technicianRadiology": "أشعة الفني"
     }
   },
-
   "dashboard": {
     "title": "الرئيسية",
-    "live":  "مباشر",
+    "live": "مباشر",
     "stats": {
       "todayAppointments": {
         "label": "مواعيد اليوم",
-        "sub":   "مجدول اليوم"
+        "sub": "مجدول اليوم"
       },
       "waitingNow": {
         "label": "في الانتظار",
-        "sub":   "مريض في الطابور"
+        "sub": "مريض في الطابور"
       },
       "totalPatients": {
         "label": "إجمالي المرضى",
-        "sub":   "مسجّل"
+        "sub": "مسجّل"
       },
       "completedToday": {
         "label": "مكتمل اليوم",
-        "sub":   "زيارة منتهية"
+        "sub": "زيارة منتهية"
       }
     },
     "sections": {
       "todayAppointments": "مواعيد اليوم",
-      "liveQueue":         "الطابور المباشر"
+      "liveQueue": "الطابور المباشر"
     },
     "actions": {
-      "viewAll":             "عرض الكل",
-      "manage":              "إدارة",
+      "viewAll": "عرض الكل",
+      "manage": "إدارة",
       "scheduleAppointment": "جدولة موعد"
     },
     "empty": {
       "noAppointmentsToday": "لا مواعيد مجدولة اليوم",
-      "queueClear":          "الطابور فارغ"
+      "queueClear": "الطابور فارغ"
     }
   },
-
   "appointment": {
     "status": {
-      "SCHEDULED":   "مجدول",
-      "CONFIRMED":   "مؤكد",
-      "CHECKED_IN":  "تسجيل الوصول",
-      "IN_QUEUE":    "في الطابور",
+      "SCHEDULED": "مجدول",
+      "CONFIRMED": "مؤكد",
+      "CHECKED_IN": "تسجيل الوصول",
+      "IN_QUEUE": "في الطابور",
       "IN_PROGRESS": "قيد التنفيذ",
-      "COMPLETED":   "مكتمل",
-      "CANCELLED":   "ملغى",
-      "NO_SHOW":     "لم يحضر"
+      "COMPLETED": "مكتمل",
+      "CANCELLED": "ملغى",
+      "NO_SHOW": "لم يحضر"
     },
     "list": {
       "title": "المواعيد",
       "columns": {
-        "patient":   "المريض",
-        "doctor":    "الطبيب",
+        "patient": "المريض",
+        "doctor": "الطبيب",
         "scheduled": "الموعد",
-        "duration":  "المدة",
-        "status":    "الحالة"
+        "duration": "المدة",
+        "status": "الحالة"
       },
       "filter": {
         "byStatus": "تصفية بالحالة",
-        "byDate":   "تصفية بالتاريخ",
+        "byDate": "تصفية بالتاريخ",
         "byDoctor": "تصفية بالطبيب"
       },
       "durationMinutes": "{count} د",
       "empty": {
-        "heading":     "لا توجد مواعيد",
+        "heading": "لا توجد مواعيد",
         "withFilters": "جرّب تعديل الفلاتر.",
-        "noData":      "أضف أول موعد للبدء."
+        "noData": "أضف أول موعد للبدء."
       }
     },
     "form": {
       "title": "موعد جديد",
       "fields": {
-        "patientLabel":      "المريض",
-        "doctorLabel":       "الطبيب",
-        "dateTimeLabel":     "التاريخ والوقت",
-        "durationLabel":     "المدة (بالدقائق)",
-        "notesLabel":        "ملاحظات",
-        "notesOptional":     "(اختياري)",
-        "notesPlaceholder":  "مثال: محوّل من الدكتور خليل — ألم في الصدر، متابعة مطلوبة"
+        "patientLabel": "المريض",
+        "doctorLabel": "الطبيب",
+        "dateTimeLabel": "التاريخ والوقت",
+        "durationLabel": "المدة (بالدقائق)",
+        "notesLabel": "ملاحظات",
+        "notesOptional": "(اختياري)",
+        "notesPlaceholder": "مثال: محوّل من الدكتور خليل — ألم في الصدر، متابعة مطلوبة"
       },
       "select": {
-        "selectPatient":   "اختر مريضاً",
-        "selectDoctor":    "اختر طبيباً",
+        "selectPatient": "اختر مريضاً",
+        "selectDoctor": "اختر طبيباً",
         "loadingPatients": "تحميل المرضى…",
-        "loadingDoctors":  "تحميل الأطباء…"
+        "loadingDoctors": "تحميل الأطباء…"
       },
       "actions": {
-        "submit":     "جدولة الموعد",
+        "submit": "جدولة الموعد",
         "submitting": "جاري الجدولة…"
       },
       "validation": {
-        "patientRequired":  "يرجى اختيار مريض.",
-        "doctorRequired":   "يرجى اختيار طبيب.",
+        "patientRequired": "يرجى اختيار مريض.",
+        "doctorRequired": "يرجى اختيار طبيب.",
         "dateTimeRequired": "يرجى تحديد تاريخ ووقت الموعد.",
-        "durationMinimum":  "يجب أن تكون المدة 5 دقائق على الأقل."
+        "durationMinimum": "يجب أن تكون المدة 5 دقائق على الأقل."
       }
     },
     "noShow": {
-      "trigger":  "لم يحضر",
-      "confirm":  "تأكيد",
-      "cancel":   "إلغاء",
+      "trigger": "لم يحضر",
+      "confirm": "تأكيد",
+      "cancel": "إلغاء",
       "skipping": "…"
     }
   },
-
   "queue": {
     "status": {
-      "WAITING":     "انتظار",
-      "CALLED":      "استُدعي",
+      "WAITING": "انتظار",
+      "CALLED": "استُدعي",
       "IN_PROGRESS": "قيد التنفيذ",
-      "DONE":        "منتهٍ",
-      "SKIPPED":     "تجاوز"
+      "DONE": "منتهٍ",
+      "SKIPPED": "تجاوز"
     },
     "board": {
       "title": "الطابور",
       "filter": {
-        "active":    "المرضى النشطون",
-        "all":       "جميع الحالات",
+        "active": "المرضى النشطون",
+        "all": "جميع الحالات",
         "todayOnly": "اليوم فقط",
-        "byStatus":  "تصفية بالحالة",
-        "byDoctor":  "تصفية بالطبيب"
+        "byStatus": "تصفية بالحالة",
+        "byDoctor": "تصفية بالطبيب"
       },
       "refreshLabel": "تحديث الآن",
-      "refreshing":   "جاري التحديث…",
-      "updatedAt":    "تحديث {time}",
-      "stale":        "فشل التحديث المباشر — عرض بيانات مؤقتة.",
-      "retry":        "إعادة المحاولة",
-      "activeCount":  "{count, plural, zero {لا مرضى نشطون} one {مريض واحد نشط} two {مريضان نشطان} few {# مرضى نشطون} many {# مريضاً نشطاً} other {# مريض نشط}}",
+      "refreshing": "جاري التحديث…",
+      "updatedAt": "تحديث {time}",
+      "stale": "فشل التحديث المباشر — عرض بيانات مؤقتة.",
+      "retry": "إعادة المحاولة",
+      "activeCount": "{count, plural, zero {لا مرضى نشطون} one {مريض واحد نشط} two {مريضان نشطان} few {# مرضى نشطون} many {# مريضاً نشطاً} other {# مريض نشط}}",
       "filteredCount": "{count, plural, zero {لا نتائج} one {نتيجة واحدة} two {نتيجتان} few {# نتائج} many {# نتيجة} other {# نتيجة}}",
       "empty": {
-        "heading":     "الطابور فارغ",
-        "noCheckins":  "لم يسجّل أي مريض اليوم.",
+        "heading": "الطابور فارغ",
+        "noCheckins": "لم يسجّل أي مريض اليوم.",
         "withFilters": "جرّب تعديل الفلاتر."
       },
       "error": {
@@ -199,145 +194,144 @@
       }
     },
     "ticket": {
-      "called":  "استُدعي",
+      "called": "استُدعي",
       "inQueue": "في الطابور"
     },
     "walkIn": {
       "title": "تسجيل دون موعد",
       "steps": {
         "createAppointment": "إنشاء موعد",
-        "checkIn":           "تسجيل الوصول"
+        "checkIn": "تسجيل الوصول"
       },
       "booked": "تم حجز الموعد. أصدر تذكرة طابور لإضافة هذا المريض لقائمة الانتظار.",
       "fields": {
-        "patientLabel":  "المريض",
-        "doctorLabel":   "الطبيب",
+        "patientLabel": "المريض",
+        "doctorLabel": "الطبيب",
         "dateTimeLabel": "التاريخ والوقت",
         "durationLabel": "المدة (بالدقائق)"
       },
       "select": {
-        "selectPatient":   "اختر مريضاً",
-        "selectDoctor":    "اختر طبيباً",
+        "selectPatient": "اختر مريضاً",
+        "selectDoctor": "اختر طبيباً",
         "loadingPatients": "تحميل المرضى…",
-        "loadingDoctors":  "تحميل الأطباء…"
+        "loadingDoctors": "تحميل الأطباء…"
       },
       "conflict": "هذا المريض لديه تذكرة طابور اليوم بالفعل.",
       "actions": {
-        "next":        "التالي: تسجيل الوصول",
-        "booking":     "جاري الحجز…",
-        "checkIn":     "تسجيل الوصول وإصدار تذكرة",
-        "checkingIn":  "جاري التسجيل…",
+        "next": "التالي: تسجيل الوصول",
+        "booking": "جاري الحجز…",
+        "checkIn": "تسجيل الوصول وإصدار تذكرة",
+        "checkingIn": "جاري التسجيل…",
         "backToQueue": "العودة إلى الطابور",
-        "viewQueue":   "عرض الطابور ←",
-        "cancel":      "إلغاء"
+        "viewQueue": "عرض الطابور ←",
+        "cancel": "إلغاء"
       },
       "validation": {
-        "patientRequired":  "يرجى اختيار مريض.",
-        "doctorRequired":   "يرجى اختيار طبيب.",
+        "patientRequired": "يرجى اختيار مريض.",
+        "doctorRequired": "يرجى اختيار طبيب.",
         "dateTimeRequired": "يرجى تحديد تاريخ ووقت الموعد.",
-        "durationMinimum":  "يجب أن تكون المدة 5 دقائق على الأقل."
+        "durationMinimum": "يجب أن تكون المدة 5 دقائق على الأقل."
       }
     },
     "checkIn": {
-      "trigger":    "تسجيل الوصول",
+      "trigger": "تسجيل الوصول",
       "checkingIn": "جاري التسجيل…",
-      "error":      "فشل تسجيل الوصول",
-      "duplicate":  "هذا المريض موجود بالفعل في الطابور.",
-      "viewQueue":  "عرض الطابور ←"
+      "error": "فشل تسجيل الوصول",
+      "duplicate": "هذا المريض موجود بالفعل في الطابور.",
+      "viewQueue": "عرض الطابور ←"
     },
     "advance": {
       "callIn": "استدعِ",
-      "begin":  "ابدأ"
+      "begin": "ابدأ"
     },
     "skip": {
       "trigger": "تجاوز",
       "confirm": "تجاوز",
-      "cancel":  "لا",
-      "failed":  "فشل التجاوز"
+      "cancel": "لا",
+      "failed": "فشل التجاوز"
     }
   },
-
   "encounter": {
     "status": {
       "inProgress": "قيد التنفيذ",
-      "completed":  "مكتملة"
+      "completed": "مكتملة"
     },
     "sections": {
-      "clinicalNotes":          "الشكوى الرئيسية والملاحظات السريرية",
-      "vitals":                 "العلامات الحيوية والقياسات",
-      "diagnosisAndTreatment":  "التشخيص وخطة العلاج",
-      "prescriptions":          "الوصفات الطبية",
-      "labOrders":              "طلبات المختبر",
-      "radiology":              "الطلبات الشعاعية"
+      "clinicalNotes": "الشكوى الرئيسية والملاحظات السريرية",
+      "vitals": "العلامات الحيوية والقياسات",
+      "diagnosisAndTreatment": "التشخيص وخطة العلاج",
+      "prescriptions": "الوصفات الطبية",
+      "labOrders": "طلبات المختبر",
+      "radiology": "الطلبات الشعاعية"
     },
     "fields": {
-      "chiefComplaintLabel":       "الشكوى الرئيسية",
+      "chiefComplaintLabel": "الشكوى الرئيسية",
       "chiefComplaintPlaceholder": "مثال: صداع مستمر منذ 3 أيام، يزداد ليلاً",
-      "examinationLabel":          "الفحص والمشاهدات",
-      "examinationPlaceholder":    "مثال: ضغط الدم 138/88، النبض 76. التهاب خفيف في الحلق. لا حرارة. الرئتان سليمتان.",
-      "diagnosisLabel":            "التشخيص",
-      "diagnosisPlaceholder":      "مثال: التهاب البلعوم الحاد مع نوبة ارتفاع ضغط الدم",
-      "icdCodeLabel":              "رمز ICD",
-      "icdCodePlaceholder":        "مثال: I20.9",
-      "treatmentPlanLabel":        "خطة العلاج",
-      "treatmentPlanPlaceholder":  "مثال: إيبوبروفين 400mg ثلاث مرات يومياً لمدة 7 أيام.",
-      "followUpDateLabel":         "تاريخ المراجعة"
+      "examinationLabel": "الفحص والمشاهدات",
+      "examinationPlaceholder": "مثال: ضغط الدم 138/88، النبض 76. التهاب خفيف في الحلق. لا حرارة. الرئتان سليمتان.",
+      "diagnosisLabel": "التشخيص",
+      "diagnosisPlaceholder": "مثال: التهاب البلعوم الحاد مع نوبة ارتفاع ضغط الدم",
+      "icdCodeLabel": "رمز ICD",
+      "icdCodePlaceholder": "مثال: I20.9",
+      "treatmentPlanLabel": "خطة العلاج",
+      "treatmentPlanPlaceholder": "مثال: إيبوبروفين 400mg ثلاث مرات يومياً لمدة 7 أيام.",
+      "followUpDateLabel": "تاريخ المراجعة"
     },
     "page": {
-      "title":    "الزيارة الحالية",
+      "title": "الزيارة الحالية",
       "subtitle": "دوّن المشاهدات السريرية وأغلق الزيارة عند الانتهاء"
     },
     "actions": {
-      "saveChanges":           "حفظ التغييرات",
-      "saving":                "جاري الحفظ…",
-      "savedAt":               "حُفظ في {time}",
-      "closeVisit":            "إنهاء الزيارة",
-      "closing":               "جاري الإنهاء…",
+      "saveChanges": "حفظ التغييرات",
+      "saving": "جاري الحفظ…",
+      "savedAt": "حُفظ في {time}",
+      "closeVisit": "إنهاء الزيارة",
+      "closing": "جاري الإنهاء…",
       "unsavedChangesConfirm": "لديك تغييرات غير محفوظة. هل تريد المغادرة دون حفظ؟",
-      "unsavedChanges":        "توجد تعديلات غير محفوظة",
-      "saveBeforeClosing":     "احفظ التعديلات قبل إنهاء الزيارة."
+      "unsavedChanges": "توجد تعديلات غير محفوظة",
+      "saveBeforeClosing": "احفظ التعديلات قبل إنهاء الزيارة."
     },
     "close": {
-      "confirm":      "إنهاء هذه الزيارة؟ سيتم قفل السجل وتحديث الموعد كمكتمل.",
+      "confirm": "إنهاء هذه الزيارة؟ سيتم قفل السجل وتحديث الموعد كمكتمل.",
       "alreadyEnded": "الزيارة منتهية بالفعل",
-      "failed":       "فشل إنهاء الزيارة"
+      "failed": "فشل إنهاء الزيارة"
     },
     "complete": {
-      "heading":            "الزيارة مكتملة",
-      "diagnosisLabel":     "التشخيص",
-      "followUpLabel":      "المراجعة",
-      "endedLabel":         "انتهت",
-      "notScheduled":       "غير مجدولة",
-      "diagnosisOnRecord":  "التشخيص مسجّل",
-      "readOnly":           "هذه الزيارة مكتملة. السجل للقراءة فقط."
+      "heading": "الزيارة مكتملة",
+      "diagnosisLabel": "التشخيص",
+      "followUpLabel": "المراجعة",
+      "endedLabel": "انتهت",
+      "notScheduled": "غير مجدولة",
+      "diagnosisOnRecord": "التشخيص مسجّل",
+      "readOnly": "هذه الزيارة مكتملة. السجل للقراءة فقط."
     },
     "allergies": {
       "heading": "الحساسيات المعروفة"
     },
     "timestamps": {
       "started": "بدأت",
-      "ended":   "انتهت"
+      "ended": "انتهت"
     },
     "error": {
       "loadFailed": "فشل تحميل الزيارة",
-      "notFound":   "الزيارة غير موجودة."
+      "notFound": "الزيارة غير موجودة."
     },
     "prescription": {
-      "empty":         "لم توصَف أي أدوية لهذه الزيارة.",
+      "empty": "لم توصَف أي أدوية لهذه الزيارة.",
       "addMedication": "إضافة دواء",
-      "adding":        "جاري الإضافة…",
+      "adding": "جاري الإضافة…",
       "fields": {
-        "medicationLabel":   "الدواء",
-        "dosageLabel":       "الجرعة",
-        "frequencyLabel":    "التكرار",
-        "durationLabel":     "المدة",
+        "medicationLabel": "الدواء",
+        "dosageLabel": "الجرعة",
+        "frequencyLabel": "التكرار",
+        "durationLabel": "المدة",
         "instructionsLabel": "التعليمات"
       },
       "placeholders": {
-        "medication":   "مثال: أموكسيسيلين 500mg",
-        "dosage":       "مثال: 500mg",
-        "frequency":    "مثال: مرتين يومياً",
-        "duration":     "مثال: 7 أيام",
+        "medication": "مثال: أموكسيسيلين 500mg",
+        "dosage": "مثال: 500mg",
+        "frequency": "مثال: مرتين يومياً",
+        "duration": "مثال: 7 أيام",
         "instructions": "مثال: تناول مع الطعام"
       },
       "validation": {
@@ -347,91 +341,89 @@
         "addFailed": "فشل إضافة الدواء"
       }
     },
-
     "labOrders": {
-      "empty":    "لا طلبات مختبر لهذه الزيارة.",
+      "empty": "لا طلبات مختبر لهذه الزيارة.",
       "addOrder": "إضافة طلب مختبر",
       "fields": {
-        "testNameLabel":  "اسم الفحص *",
-        "testCodeLabel":  "رمز الفحص",
-        "priorityLabel":  "الأولوية",
-        "notesLabel":     "ملاحظات"
+        "testNameLabel": "اسم الفحص *",
+        "testCodeLabel": "رمز الفحص",
+        "priorityLabel": "الأولوية",
+        "notesLabel": "ملاحظات"
       },
       "placeholders": {
-        "testName":       "مثال: صورة دم كاملة",
-        "testCode":       "CBC",
-        "notes":          "ملاحظات إضافية",
+        "testName": "مثال: صورة دم كاملة",
+        "testCode": "CBC",
+        "notes": "ملاحظات إضافية",
         "selectPriority": "— اختر —"
       },
       "priority": {
         "ROUTINE": "روتيني",
-        "URGENT":  "عاجل",
-        "STAT":    "فوري"
+        "URGENT": "عاجل",
+        "STAT": "فوري"
       },
       "actions": {
-        "add":       "إضافة طلب",
-        "adding":    "جاري الإضافة…",
-        "review":    "مراجعة النتيجة",
+        "add": "إضافة طلب",
+        "adding": "جاري الإضافة…",
+        "review": "مراجعة النتيجة",
         "reviewing": "جاري المراجعة…"
       },
       "validation": {
         "testNameRequired": "اسم الفحص مطلوب."
       },
       "result": {
-        "heading":        "النتيجة",
-        "reference":      "المرجع",
+        "heading": "النتيجة",
+        "reference": "المرجع",
         "interpretation": "التفسير",
-        "notes":          "ملاحظات",
-        "resultAt":       "تاريخ النتيجة",
-        "reviewedBy":     "راجعها"
+        "notes": "ملاحظات",
+        "resultAt": "تاريخ النتيجة",
+        "reviewedBy": "راجعها"
       },
       "error": {
-        "addFailed":    "فشل إضافة طلب المختبر",
+        "addFailed": "فشل إضافة طلب المختبر",
         "reviewFailed": "فشل مراجعة النتيجة"
       }
     },
-
     "radiologyOrders": {
-      "empty":    "لا طلبات شعاعية لهذه الزيارة.",
+      "empty": "لا طلبات شعاعية لهذه الزيارة.",
       "addOrder": "إضافة طلب شعاعي",
       "fields": {
-        "modalityLabel":     "نوع الفحص *",
-        "bodyPartLabel":     "منطقة الجسم",
-        "priorityLabel":     "الأولوية",
+        "modalityLabel": "نوع الفحص *",
+        "bodyPartLabel": "منطقة الجسم",
+        "priorityLabel": "الأولوية",
         "clinicalInfoLabel": "المعلومات السريرية",
-        "notesLabel":        "ملاحظات"
+        "notesLabel": "ملاحظات"
       },
       "placeholders": {
-        "bodyPart":       "مثال: الصدر",
-        "clinicalInfo":   "مثال: اشتباه التهاب رئة",
-        "notes":          "ملاحظات إضافية",
+        "bodyPart": "مثال: الصدر",
+        "clinicalInfo": "مثال: اشتباه التهاب رئة",
+        "notes": "ملاحظات إضافية",
         "selectModality": "— اختر —",
         "selectPriority": "— اختر —"
       },
       "modality": {
-        "X-RAY":      "أشعة سينية",
-        "CT":         "أشعة مقطعية",
-        "MRI":        "رنين مغناطيسي",
+        "X-RAY": "أشعة سينية",
+        "CT": "أشعة مقطعية",
+        "MRI": "رنين مغناطيسي",
         "ULTRASOUND": "موجات فوق صوتية",
-        "ECHO":       "إيكو"
+        "ECHO": "إيكو"
       },
       "priority": {
         "ROUTINE": "روتيني",
-        "URGENT":  "عاجل",
-        "STAT":    "فوري"
+        "URGENT": "عاجل",
+        "STAT": "فوري"
       },
       "actions": {
-        "add":       "إضافة طلب",
-        "adding":    "جاري الإضافة…",
-        "review":    "مراجعة التقرير",
+        "add": "إضافة طلب",
+        "adding": "جاري الإضافة…",
+        "review": "مراجعة التقرير",
         "reviewing": "جاري المراجعة…"
       },
       "validation": {
         "modalityRequired": "نوع الفحص الشعاعي مطلوب."
       },
       "report": {
-        "heading":    "التقرير",
-        "findings":   "النتائج",
+        "heading": "التقرير",
+        "findings": "النتائج",
         "impression": "الانطباع",
         "reportedAt": "تاريخ التقرير",
         "reportedBy": "أعده",
@@ -439,68 +431,66 @@
         "reviewedAt": "تاريخ المراجعة"
       },
       "error": {
-        "addFailed":    "فشل إضافة الطلب الشعاعي",
+        "addFailed": "فشل إضافة الطلب الشعاعي",
         "reviewFailed": "فشل مراجعة التقرير"
       }
     },
-
     "vitals": {
       "fields": {
-        "temperature":      "الحرارة",
-        "bloodPressure":    "ضغط الدم",
-        "heartRate":        "النبض",
+        "temperature": "الحرارة",
+        "bloodPressure": "ضغط الدم",
+        "heartRate": "النبض",
         "oxygenSaturation": "تشبع O₂",
-        "respiratoryRate":  "معدل التنفس",
-        "weight":           "الوزن",
-        "height":           "الطول"
+        "respiratoryRate": "معدل التنفس",
+        "weight": "الوزن",
+        "height": "الطول"
       },
       "units": {
-        "temperature":      "°C",
-        "bloodPressure":    "mmHg",
-        "heartRate":        "bpm",
+        "temperature": "°C",
+        "bloodPressure": "mmHg",
+        "heartRate": "bpm",
         "oxygenSaturation": "%",
-        "respiratoryRate":  "/min",
-        "weight":           "kg",
-        "height":           "cm"
+        "respiratoryRate": "/min",
+        "weight": "kg",
+        "height": "cm"
       },
       "placeholders": {
-        "temperature":      "37.0",
-        "bloodPressure":    "120/80",
-        "heartRate":        "72",
+        "temperature": "37.0",
+        "bloodPressure": "120/80",
+        "heartRate": "72",
         "oxygenSaturation": "98",
-        "respiratoryRate":  "16",
-        "weight":           "70",
-        "height":           "170"
+        "respiratoryRate": "16",
+        "weight": "70",
+        "height": "170"
       }
     }
   },
-
   "patient": {
     "status": {
-      "active":   "نشط",
+      "active": "نشط",
       "inactive": "غير نشط"
     },
     "header": {
       "dob": "تاريخ الميلاد:"
     },
     "list": {
-      "title":             "المرضى",
+      "title": "المرضى",
       "searchPlaceholder": "بحث بالاسم أو MRN…",
-      "registeredCount":   "{count, plural, zero {لا مرضى مسجّلون} one {مريض واحد مسجّل} two {مريضان مسجّلان} few {# مرضى مسجّلون} many {# مريضاً مسجّلاً} other {# مريض مسجّل}}",
-      "showingOf":         "عرض {shown} من {total}",
+      "registeredCount": "{count, plural, zero {لا مرضى مسجّلون} one {مريض واحد مسجّل} two {مريضان مسجّلان} few {# مرضى مسجّلون} many {# مريضاً مسجّلاً} other {# مريض مسجّل}}",
+      "showingOf": "عرض {shown} من {total}",
       "columns": {
         "patient": "المريض",
-        "mrn":     "MRN",
-        "phone":   "الهاتف",
-        "gender":  "الجنس",
-        "dob":     "تاريخ الميلاد",
+        "mrn": "MRN",
+        "phone": "الهاتف",
+        "gender": "الجنس",
+        "dob": "تاريخ الميلاد",
         "actions": ""
       },
       "view": "عرض",
       "empty": {
-        "heading":    "لا توجد نتائج",
+        "heading": "لا توجد نتائج",
         "withSearch": "جرّب مصطلح بحث مختلف.",
-        "noData":     "أضف أول مريض للبدء."
+        "noData": "أضف أول مريض للبدء."
       },
       "error": {
         "loadFailed": "فشل تحميل المرضى"
@@ -508,61 +498,60 @@
     },
     "detail": {
       "tabs": {
-        "overview":      "نظرة عامة",
-        "timeline":      "السجل الطبي",
+        "overview": "نظرة عامة",
+        "timeline": "السجل الطبي",
         "prescriptions": "الوصفات الطبية",
-        "labs":          "طلبات المختبر",
-        "radiology":     "الأشعة",
-        "files":         "الملفات الطبية"
+        "labs": "طلبات المختبر",
+        "radiology": "الأشعة",
+        "files": "الملفات الطبية"
       },
       "overview": {
-        "demographics":     "البيانات الأساسية",
-        "contact":          "معلومات التواصل",
+        "demographics": "البيانات الأساسية",
+        "contact": "معلومات التواصل",
         "emergencyContact": "جهة الاتصال الطارئة",
-        "clinicalNotes":    "ملاحظات سريرية",
+        "clinicalNotes": "ملاحظات سريرية",
         "fields": {
           "dateOfBirth": "تاريخ الميلاد",
-          "gender":      "الجنس",
-          "bloodType":   "فصيلة الدم",
-          "status":      "الحالة",
-          "registered":  "تاريخ التسجيل",
-          "phone":       "الهاتف",
-          "email":       "البريد الإلكتروني",
-          "nationalId":  "رقم الهوية",
-          "address":     "العنوان",
-          "name":        "الاسم"
+          "gender": "الجنس",
+          "bloodType": "فصيلة الدم",
+          "status": "الحالة",
+          "registered": "تاريخ التسجيل",
+          "phone": "الهاتف",
+          "email": "البريد الإلكتروني",
+          "nationalId": "رقم الهوية",
+          "address": "العنوان",
+          "name": "الاسم"
         }
       },
       "allergies": {
         "heading": "الحساسيات المعروفة",
-        "none":    "لا حساسيات مسجّلة."
+        "none": "لا حساسيات مسجّلة."
       },
       "clinicalTab": {
         "emptyPrescriptions": "لا وصفات طبية مسجّلة لهذا المريض.",
-        "emptyLabOrders":     "لا طلبات مختبر مسجّلة لهذا المريض.",
-        "emptyRadiology":     "لا طلبات أشعة مسجّلة لهذا المريض.",
-        "emptyFiles":         "لا ملفات طبية مرفوعة لهذا المريض."
+        "emptyLabOrders": "لا طلبات مختبر مسجّلة لهذا المريض.",
+        "emptyRadiology": "لا طلبات أشعة مسجّلة لهذا المريض.",
+        "emptyFiles": "لا ملفات طبية مرفوعة لهذا المريض."
       },
       "error": {
         "loadFailed": "فشل تحميل السجلات",
-        "occurred":   "حدث خطأ."
+        "occurred": "حدث خطأ."
       }
     },
     "labOrders": {
-      "orderedBy":    "الطبيب",
-      "collectedAt":  "تاريخ أخذ العينة",
-      "notes":        "ملاحظات",
+      "orderedBy": "الطبيب",
+      "collectedAt": "تاريخ أخذ العينة",
+      "notes": "ملاحظات",
       "cancelReason": "سبب الإلغاء"
     },
     "radiologyOrders": {
-      "orderedBy":    "الطبيب",
-      "scheduledAt":  "موعد الفحص",
+      "orderedBy": "الطبيب",
+      "scheduledAt": "موعد الفحص",
       "clinicalInfo": "المعلومات السريرية",
-      "notes":        "ملاحظات",
+      "notes": "ملاحظات",
       "cancelReason": "سبب الإلغاء"
     }
   },
-
   "doctorWorkspace": {
     "title": "غرفة الطبيب",
     "activeCount": "{count, plural, zero {لا زيارات نشطة} one {زيارة واحدة نشطة} two {زيارتان نشطتان} few {# زيارات نشطة} many {# زيارة نشطة} other {# زيارة نشطة}}",
@@ -581,145 +570,143 @@
       "loadFailed": "فشل تحميل الزيارات"
     }
   },
-
   "timeline": {
     "filter": {
       "all": "الكل",
       "types": {
-        "ENCOUNTER":       "الزيارات",
-        "PRESCRIPTION":    "الوصفات",
-        "LAB_ORDER":       "طلبات المختبر",
+        "ENCOUNTER": "الزيارات",
+        "PRESCRIPTION": "الوصفات",
+        "LAB_ORDER": "طلبات المختبر",
         "RADIOLOGY_ORDER": "الأشعة",
-        "MEDICAL_FILE":    "الملفات"
+        "MEDICAL_FILE": "الملفات"
       },
       "fromAriaLabel": "من تاريخ",
-      "toAriaLabel":   "إلى تاريخ"
+      "toAriaLabel": "إلى تاريخ"
     },
     "dateGroups": {
-      "today":     "اليوم —",
+      "today": "اليوم —",
       "yesterday": "أمس —"
     },
     "empty": {
-      "noRecords":    "لا سجل طبي",
+      "noRecords": "لا سجل طبي",
       "noRecordsSub": "ستظهر الأحداث هنا عند تسجيل الزيارات والوصفات والطلبات.",
-      "noMatches":    "لا نتائج تطابق الفلاتر المحددة",
+      "noMatches": "لا نتائج تطابق الفلاتر المحددة",
       "noMatchesSub": "جرّب تعديل الفلاتر لعرض المزيد."
     },
     "error": {
       "loadFailed": "فشل تحميل السجل الطبي."
     },
     "cards": {
-      "encounter":         "زيارة",
-      "prescription":      "وصفة طبية",
-      "labOrder":          "طلب مختبر",
-      "radiology":         "أشعة",
-      "file":              "ملف",
-      "inProgress":        "قيد التنفيذ",
+      "encounter": "زيارة",
+      "prescription": "وصفة طبية",
+      "labOrder": "طلب مختبر",
+      "radiology": "أشعة",
+      "file": "ملف",
+      "inProgress": "قيد التنفيذ",
       "diagnosisOnRecord": "التشخيص مسجّل",
-      "uploadedBy":        "رُفع بواسطة {uploader}"
+      "uploadedBy": "رُفع بواسطة {uploader}"
     },
     "labOrderStatus": {
-      "ORDERED":          "مُطلوب",
+      "ORDERED": "مُطلوب",
       "SAMPLE_COLLECTED": "تم أخذ العينة",
-      "IN_PROGRESS":      "قيد التنفيذ",
-      "RESULTED":         "النتائج جاهزة",
-      "REVIEWED":         "مراجعة",
-      "CANCELLED":        "ملغى"
+      "IN_PROGRESS": "قيد التنفيذ",
+      "RESULTED": "النتائج جاهزة",
+      "REVIEWED": "مراجعة",
+      "CANCELLED": "ملغى"
     },
     "radiologyStatus": {
-      "ORDERED":     "مُطلوب",
-      "SCHEDULED":   "مجدول",
+      "ORDERED": "مُطلوب",
+      "SCHEDULED": "مجدول",
       "IN_PROGRESS": "قيد التنفيذ",
-      "RESULTED":    "النتائج جاهزة",
-      "REVIEWED":    "مراجعة",
-      "CANCELLED":   "ملغى"
+      "RESULTED": "النتائج جاهزة",
+      "REVIEWED": "مراجعة",
+      "CANCELLED": "ملغى"
     },
     "fileCategories": {
-      "LAB_RESULT":        "نتيجة مختبر",
-      "RADIOLOGY_IMAGE":   "صورة أشعة",
-      "PRESCRIPTION":      "وصفة طبية",
-      "REFERRAL":          "إحالة",
+      "LAB_RESULT": "نتيجة مختبر",
+      "RADIOLOGY_IMAGE": "صورة أشعة",
+      "PRESCRIPTION": "وصفة طبية",
+      "REFERRAL": "إحالة",
       "DISCHARGE_SUMMARY": "ملخص الخروج",
-      "CONSENT_FORM":      "نموذج الموافقة",
-      "INSURANCE":         "تأمين",
-      "CLINICAL_NOTE":     "ملاحظة سريرية",
-      "ID_DOCUMENT":       "وثيقة هوية",
-      "OTHER":             "أخرى"
+      "CONSENT_FORM": "نموذج الموافقة",
+      "INSURANCE": "تأمين",
+      "CLINICAL_NOTE": "ملاحظة سريرية",
+      "ID_DOCUMENT": "وثيقة هوية",
+      "OTHER": "أخرى"
     }
   },
   "doctorQueue": {
-    "pageTitle":   "قائمة الانتظار اليوم",
+    "pageTitle": "قائمة الانتظار اليوم",
     "pageSubtitle": "المرضى بانتظار المعاينة",
-    "panelTitle":  "قائمتي — اليوم",
+    "panelTitle": "قائمتي — اليوم",
     "autoRefresh": "يتحدث تلقائياً كل 30 ثانية",
     "refreshLabel": "تحديث القائمة",
     "counter": "{count, plural, one {# مريض بانتظار المعاينة} other {# مرضى بانتظار المعاينة}}",
     "empty": {
-      "title":    "لا يوجد مرضى بالانتظار",
+      "title": "لا يوجد مرضى بالانتظار",
       "subtitle": "تمت معاينة جميع المرضى المجدولين."
     },
     "error": {
       "loadFailed": "فشل تحميل قائمة الانتظار",
-      "occurred":   "حدث خطأ غير متوقع."
+      "occurred": "حدث خطأ غير متوقع."
     },
     "card": {
       "scheduled": "مجدول {time}",
-      "waited":    "انتظر {duration}",
-      "justNow":   "منذ قليل"
+      "waited": "انتظر {duration}",
+      "justNow": "منذ قليل"
     },
     "actions": {
-      "startVisit":  "بدء المعاينة",
-      "openVisit":   "فتح المعاينة",
-      "starting":    "جارٍ بدء المعاينة...",
-      "opening":     "جارٍ فتح المعاينة...",
+      "startVisit": "بدء المعاينة",
+      "openVisit": "فتح المعاينة",
+      "starting": "جارٍ بدء المعاينة...",
+      "opening": "جارٍ فتح المعاينة...",
       "startFailed": "فشل بدء المعاينة"
     }
   },
-
   "technicianLabs": {
-    "pageTitle":   "قائمة طلبات المختبر",
+    "pageTitle": "قائمة طلبات المختبر",
     "pageSubtitle": "معالجة طلبات المختبر المعلّقة",
-    "panelTitle":  "الطلبات المعلّقة",
+    "panelTitle": "الطلبات المعلّقة",
     "autoRefresh": "يتحدث تلقائياً كل 30 ثانية",
     "refreshLabel": "تحديث القائمة",
     "counter": "{count, plural, zero {لا طلبات معلّقة} one {طلب واحد معلّق} two {طلبان معلّقان} few {# طلبات معلّقة} many {# طلباً معلّقاً} other {# طلب معلّق}}",
     "empty": {
-      "title":    "لا طلبات مختبر معلّقة",
+      "title": "لا طلبات مختبر معلّقة",
       "subtitle": "جميع طلبات المختبر محدّثة."
     },
     "error": {
       "loadFailed": "فشل تحميل طلبات المختبر",
-      "occurred":   "حدث خطأ غير متوقع."
+      "occurred": "حدث خطأ غير متوقع."
     },
     "card": {
       "orderedAt": "طُلب {date}"
     },
     "status": {
-      "ORDERED":          "مُطلوب",
+      "ORDERED": "مُطلوب",
       "SAMPLE_COLLECTED": "تم أخذ العينة",
-      "IN_PROGRESS":      "قيد التنفيذ"
+      "IN_PROGRESS": "قيد التنفيذ"
     },
     "actions": {
-      "collectSample":    "أخذ العينة",
-      "collecting":       "جاري الأخذ…",
-      "startProcessing":  "بدء التحليل",
-      "processing":       "جاري البدء…",
-      "submitResult":     "إرسال النتيجة",
-      "submitting":       "جاري الإرسال…",
-      "collectFailed":    "فشل أخذ العينة",
+      "collectSample": "أخذ العينة",
+      "collecting": "جاري الأخذ…",
+      "startProcessing": "بدء التحليل",
+      "processing": "جاري البدء…",
+      "submitResult": "إرسال النتيجة",
+      "submitting": "جاري الإرسال…",
+      "collectFailed": "فشل أخذ العينة",
       "processingFailed": "فشل بدء التحليل",
-      "submitFailed":     "فشل إرسال النتيجة"
+      "submitFailed": "فشل إرسال النتيجة"
     },
     "result": {
-      "formTitle":           "إدخال النتيجة",
-      "resultValueLabel":    "قيمة النتيجة *",
-      "unitLabel":           "الوحدة",
+      "formTitle": "إدخال النتيجة",
+      "resultValueLabel": "قيمة النتيجة *",
+      "unitLabel": "الوحدة",
       "referenceRangeLabel": "النطاق المرجعي",
       "interpretationLabel": "التفسير",
-      "resultNotesLabel":    "ملاحظات",
+      "resultNotesLabel": "ملاحظات",
       "placeholders": {
-        "resultValue":    "مثال: 5.8",
-        "unit":           "مثال: g/dL",
+        "resultValue": "مثال: 5.8",
+        "unit": "مثال: g/dL",
         "referenceRange": "مثال: 4.0–5.5",
         "interpretation": "مثال: HIGH"
       }
@@ -728,49 +715,76 @@
       "resultValueRequired": "قيمة النتيجة مطلوبة."
     }
   },
-
   "technicianRadiology": {
-    "pageTitle":   "قائمة طلبات الأشعة",
+    "pageTitle": "قائمة طلبات الأشعة",
     "pageSubtitle": "معالجة طلبات الأشعة المعلّقة",
-    "panelTitle":  "طلبات الأشعة المعلّقة",
+    "panelTitle": "طلبات الأشعة المعلّقة",
     "autoRefresh": "يتحدث تلقائياً كل 30 ثانية",
     "refreshLabel": "تحديث القائمة",
     "counter": "{count, plural, zero {لا طلبات معلّقة} one {طلب واحد معلّق} two {طلبان معلّقان} few {# طلبات معلّقة} many {# طلباً معلّقاً} other {# طلب معلّق}}",
     "empty": {
-      "title":    "لا طلبات أشعة معلّقة",
+      "title": "لا طلبات أشعة معلّقة",
       "subtitle": "جميع طلبات الأشعة محدّثة."
     },
     "error": {
       "loadFailed": "فشل تحميل طلبات الأشعة",
-      "occurred":   "حدث خطأ غير متوقع."
+      "occurred": "حدث خطأ غير متوقع."
     },
     "card": {
       "orderedAt": "طُلب {date}"
     },
     "status": {
-      "ORDERED":     "مُطلوب",
-      "SCHEDULED":   "مجدول",
+      "ORDERED": "مُطلوب",
+      "SCHEDULED": "مجدول",
       "IN_PROGRESS": "قيد التنفيذ"
     },
     "actions": {
-      "schedule":       "جدولة",
-      "scheduling":     "جاري الجدولة…",
-      "startScan":      "بدء الفحص",
-      "starting":       "جاري البدء…",
-      "submitReport":   "إرسال التقرير",
-      "submitting":     "جاري الإرسال…",
+      "schedule": "جدولة",
+      "scheduling": "جاري الجدولة…",
+      "startScan": "بدء الفحص",
+      "starting": "جاري البدء…",
+      "submitReport": "إرسال التقرير",
+      "submitting": "جاري الإرسال…",
       "scheduleFailed": "فشل الجدولة",
-      "startFailed":    "فشل بدء الفحص",
-      "submitFailed":   "فشل إرسال التقرير"
+      "startFailed": "فشل بدء الفحص",
+      "submitFailed": "فشل إرسال التقرير"
     },
     "report": {
-      "formTitle":       "إدخال التقرير",
-      "findingsLabel":   "النتائج *",
+      "formTitle": "إدخال التقرير",
+      "findingsLabel": "النتائج *",
       "impressionLabel": "الانطباع *"
     },
     "validation": {
-      "findingsRequired":   "النتائج مطلوبة.",
+      "findingsRequired": "النتائج مطلوبة.",
       "impressionRequired": "الانطباع مطلوب."
+    }
+  },
+  "filesTab": {
+    "title": "الملفات الطبية",
+    "description": "الملفات والتقارير المرفقة بهذا المريض",
+    "fileCount": "{count, plural, one {ملف واحد} few {# ملفات} many {# ملفاً} other {# ملف}}",
+    "uploadButton": "رفع ملف جديد",
+    "closeUpload": "إغلاق",
+    "downloadButton": "تحميل",
+    "deleteButton": "حذف",
+    "confirmDelete": "هل أنت متأكد من حذف هذا الملف؟ لا يمكن التراجع عن هذا الإجراء.",
+    "deleteFailed": "فشل حذف الملف",
+    "downloadFailed": "فشل الحصول على رابط التحميل",
+    "emptyState": "لا ملفات طبية مرفوعة لهذا المريض.",
+    "uploadForm": {
+      "title": "رفع ملف جديد",
+      "filePicker": "اختر ملفاً",
+      "noFileChosen": "لم يُختر ملف",
+      "categoryLabel": "التصنيف",
+      "descriptionLabel": "الوصف (اختياري)",
+      "descriptionPlaceholder": "مثال: نتائج تحليل الدم من 2026",
+      "uploadButton": "رفع",
+      "uploadingButton": "جاري الرفع…",
+      "cancelButton": "إلغاء",
+      "uploadStorageFailed": "فشل رفع الملف إلى التخزين ({status})",
+      "uploadRegistrationFailed": "تم رفع الملف ولكن فشل تسجيله، يرجى المحاولة أو التواصل مع الإدارة",
+      "uploadFailed": "حدث خطأ أثناء رفع الملف"
     }
   }
 }
+

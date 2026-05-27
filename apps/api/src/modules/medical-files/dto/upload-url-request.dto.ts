@@ -1,6 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { MedicalFileCategory } from '@prisma/client';
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import { IsEnum, IsIn, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
+import { ALLOWED_MIME_TYPES } from './create-medical-file.dto';
+
+const MAX_FILE_SIZE_BYTES = 26_214_400; // 25 MB
 
 export class UploadUrlRequestDto {
   @ApiProperty({ example: 'patient-cuid-123' })
@@ -18,14 +21,14 @@ export class UploadUrlRequestDto {
   @IsNotEmpty()
   fileName: string;
 
-  @ApiProperty({ example: 'application/pdf' })
-  @IsString()
-  @IsNotEmpty()
+  @ApiProperty({ example: 'application/pdf', enum: ALLOWED_MIME_TYPES })
+  @IsIn(ALLOWED_MIME_TYPES, { message: 'Unsupported medical file type' })
   mimeType: string;
 
   @ApiProperty({ example: 204800 })
   @IsInt()
   @Min(1)
+  @Max(MAX_FILE_SIZE_BYTES, { message: 'Medical file size exceeds 25MB limit' })
   sizeBytes: number;
 
   @ApiProperty({ enum: MedicalFileCategory, example: MedicalFileCategory.LAB_RESULT })

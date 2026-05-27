@@ -26,7 +26,6 @@
       "all": "All"
     }
   },
-
   "auth": {
     "login": {
       "title": "Elaji Health",
@@ -44,7 +43,6 @@
       "passwordNote": "Password for all accounts:"
     }
   },
-
   "nav": {
     "brand": "Elaji Health",
     "brandSubtitle": "Health Platform",
@@ -55,12 +53,11 @@
       "appointments": "Appointments",
       "queue": "Queue",
       "doctorWorkspace": "Doctor Workspace",
-      "doctorQueue":       "Doctor Queue",
-      "technicianLabs":      "Technician Labs",
+      "doctorQueue": "Doctor Queue",
+      "technicianLabs": "Technician Labs",
       "technicianRadiology": "Technician Radiology"
     }
   },
-
   "dashboard": {
     "title": "Dashboard",
     "live": "Live",
@@ -96,102 +93,100 @@
       "queueClear": "Queue is clear"
     }
   },
-
   "appointment": {
     "status": {
-      "SCHEDULED":   "Scheduled",
-      "CONFIRMED":   "Confirmed",
-      "CHECKED_IN":  "Checked In",
-      "IN_QUEUE":    "In Queue",
+      "SCHEDULED": "Scheduled",
+      "CONFIRMED": "Confirmed",
+      "CHECKED_IN": "Checked In",
+      "IN_QUEUE": "In Queue",
       "IN_PROGRESS": "In Progress",
-      "COMPLETED":   "Completed",
-      "CANCELLED":   "Cancelled",
-      "NO_SHOW":     "No Show"
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled",
+      "NO_SHOW": "No Show"
     },
     "list": {
       "title": "Appointments",
       "columns": {
-        "patient":   "Patient",
-        "doctor":    "Doctor",
+        "patient": "Patient",
+        "doctor": "Doctor",
         "scheduled": "Scheduled",
-        "duration":  "Duration",
-        "status":    "Status"
+        "duration": "Duration",
+        "status": "Status"
       },
       "filter": {
         "byStatus": "Filter by status",
-        "byDate":   "Filter by date",
+        "byDate": "Filter by date",
         "byDoctor": "Filter by doctor"
       },
       "durationMinutes": "{count} min",
       "empty": {
-        "heading":    "No appointments found",
+        "heading": "No appointments found",
         "withFilters": "Try adjusting your filters.",
-        "noData":     "Create the first appointment to get started."
+        "noData": "Create the first appointment to get started."
       }
     },
     "form": {
       "title": "New Appointment",
       "fields": {
-        "patientLabel":   "Patient",
-        "doctorLabel":    "Doctor",
-        "dateTimeLabel":  "Date & Time",
-        "durationLabel":  "Duration (minutes)",
-        "notesLabel":     "Notes",
-        "notesOptional":  "(optional)",
+        "patientLabel": "Patient",
+        "doctorLabel": "Doctor",
+        "dateTimeLabel": "Date & Time",
+        "durationLabel": "Duration (minutes)",
+        "notesLabel": "Notes",
+        "notesOptional": "(optional)",
         "notesPlaceholder": "e.g., Referred by Dr. Khalil — chest pain, follow-up required"
       },
       "select": {
-        "selectPatient":  "Select a patient",
-        "selectDoctor":   "Select a doctor",
+        "selectPatient": "Select a patient",
+        "selectDoctor": "Select a doctor",
         "loadingPatients": "Loading patients…",
-        "loadingDoctors":  "Loading doctors…"
+        "loadingDoctors": "Loading doctors…"
       },
       "actions": {
-        "submit":     "Schedule Appointment",
+        "submit": "Schedule Appointment",
         "submitting": "Scheduling…"
       },
       "validation": {
-        "patientRequired":   "Please select a patient.",
-        "doctorRequired":    "Please select a doctor.",
-        "dateTimeRequired":  "Please set the appointment date and time.",
-        "durationMinimum":   "Duration must be at least 5 minutes."
+        "patientRequired": "Please select a patient.",
+        "doctorRequired": "Please select a doctor.",
+        "dateTimeRequired": "Please set the appointment date and time.",
+        "durationMinimum": "Duration must be at least 5 minutes."
       }
     },
     "noShow": {
-      "trigger":  "No-show",
-      "confirm":  "Confirm",
-      "cancel":   "Cancel",
+      "trigger": "No-show",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
       "skipping": "…"
     }
   },
-
   "queue": {
     "status": {
-      "WAITING":     "Waiting",
-      "CALLED":      "Called",
+      "WAITING": "Waiting",
+      "CALLED": "Called",
       "IN_PROGRESS": "In Progress",
-      "DONE":        "Done",
-      "SKIPPED":     "Skipped"
+      "DONE": "Done",
+      "SKIPPED": "Skipped"
     },
     "board": {
       "title": "Queue",
       "filter": {
-        "active":    "Active patients",
-        "all":       "All statuses",
+        "active": "Active patients",
+        "all": "All statuses",
         "todayOnly": "Today only",
-        "byStatus":  "Filter by status",
-        "byDoctor":  "Filter by doctor"
+        "byStatus": "Filter by status",
+        "byDoctor": "Filter by doctor"
       },
       "refreshLabel": "Refresh now",
-      "refreshing":   "Refreshing…",
-      "updatedAt":    "Updated {time}",
-      "stale":        "Live refresh failed — showing cached data.",
-      "retry":        "Retry",
-      "activeCount":  "{count, plural, one {# patient active} other {# patients active}}",
+      "refreshing": "Refreshing…",
+      "updatedAt": "Updated {time}",
+      "stale": "Live refresh failed — showing cached data.",
+      "retry": "Retry",
+      "activeCount": "{count, plural, one {# patient active} other {# patients active}}",
       "filteredCount": "{count, plural, one {# result} other {# results}}",
       "empty": {
-        "heading":     "Queue is empty",
-        "noCheckins":  "No patients checked in yet today.",
+        "heading": "Queue is empty",
+        "noCheckins": "No patients checked in yet today.",
         "withFilters": "Try adjusting your filters."
       },
       "error": {
@@ -199,146 +194,145 @@
       }
     },
     "ticket": {
-      "called":  "Called",
+      "called": "Called",
       "inQueue": "In queue"
     },
     "walkIn": {
       "title": "Walk-in Registration",
       "steps": {
         "createAppointment": "Create Appointment",
-        "checkIn":           "Check In"
+        "checkIn": "Check In"
       },
       "booked": "Appointment booked. Issue a queue ticket to add this patient to the waiting list.",
       "fields": {
-        "patientLabel":   "Patient",
-        "doctorLabel":    "Doctor",
-        "dateTimeLabel":  "Date & Time",
-        "durationLabel":  "Duration (minutes)"
+        "patientLabel": "Patient",
+        "doctorLabel": "Doctor",
+        "dateTimeLabel": "Date & Time",
+        "durationLabel": "Duration (minutes)"
       },
       "select": {
-        "selectPatient":   "Select a patient",
-        "selectDoctor":    "Select a doctor",
+        "selectPatient": "Select a patient",
+        "selectDoctor": "Select a doctor",
         "loadingPatients": "Loading patients…",
-        "loadingDoctors":  "Loading doctors…"
+        "loadingDoctors": "Loading doctors…"
       },
       "conflict": "This patient already has a queue ticket for today.",
       "actions": {
-        "next":        "Next: Check In →",
-        "booking":     "Booking…",
-        "checkIn":     "Check In & Issue Ticket",
-        "checkingIn":  "Checking in…",
+        "next": "Next: Check In →",
+        "booking": "Booking…",
+        "checkIn": "Check In & Issue Ticket",
+        "checkingIn": "Checking in…",
         "backToQueue": "Back to Queue",
-        "viewQueue":   "View queue →",
-        "cancel":      "Cancel"
+        "viewQueue": "View queue →",
+        "cancel": "Cancel"
       },
       "validation": {
-        "patientRequired":  "Please select a patient.",
-        "doctorRequired":   "Please select a doctor.",
+        "patientRequired": "Please select a patient.",
+        "doctorRequired": "Please select a doctor.",
         "dateTimeRequired": "Please set the appointment date and time.",
-        "durationMinimum":  "Duration must be at least 5 minutes."
+        "durationMinimum": "Duration must be at least 5 minutes."
       }
     },
     "checkIn": {
-      "trigger":    "Check In",
+      "trigger": "Check In",
       "checkingIn": "Checking in…",
-      "error":      "Check-in failed",
-      "duplicate":  "This patient is already in the queue.",
-      "viewQueue":  "View queue →"
+      "error": "Check-in failed",
+      "duplicate": "This patient is already in the queue.",
+      "viewQueue": "View queue →"
     },
     "advance": {
       "callIn": "Call In",
-      "begin":  "Begin"
+      "begin": "Begin"
     },
     "skip": {
       "trigger": "Skip",
       "confirm": "Skip",
-      "cancel":  "No",
-      "failed":  "Failed to skip"
+      "cancel": "No",
+      "failed": "Failed to skip"
     }
   },
-
   "encounter": {
     "status": {
       "inProgress": "In Progress",
-      "completed":  "Completed"
+      "completed": "Completed"
     },
     "sections": {
-      "clinicalNotes":       "Chief Complaint & Clinical Notes",
-      "vitals":              "Vitals & Measurements",
+      "clinicalNotes": "Chief Complaint & Clinical Notes",
+      "vitals": "Vitals & Measurements",
       "diagnosisAndTreatment": "Diagnosis & Treatment Plan",
-      "prescriptions":       "Prescriptions",
-      "labOrders":           "Lab Orders",
-      "radiology":           "Radiology Orders"
+      "prescriptions": "Prescriptions",
+      "labOrders": "Lab Orders",
+      "radiology": "Radiology Orders"
     },
     "fields": {
-      "chiefComplaintLabel":       "Chief Complaint",
+      "chiefComplaintLabel": "Chief Complaint",
       "chiefComplaintPlaceholder": "e.g. Persistent headache for 3 days, worsening at night",
-      "examinationLabel":          "Examination & Findings",
-      "examinationPlaceholder":    "e.g. BP 138/88, HR 76 bpm. Throat mildly inflamed. No fever. Lungs clear.",
-      "diagnosisLabel":            "Diagnosis",
-      "diagnosisPlaceholder":      "e.g. Acute pharyngitis with hypertensive episode",
-      "icdCodeLabel":              "ICD Code",
-      "icdCodePlaceholder":        "e.g. I20.9",
-      "treatmentPlanLabel":        "Treatment Plan",
-      "treatmentPlanPlaceholder":  "e.g. Ibuprofen 400mg TID × 7 days. ENT referral if no improvement in 1 week.",
-      "followUpDateLabel":         "Follow-up Date"
+      "examinationLabel": "Examination & Findings",
+      "examinationPlaceholder": "e.g. BP 138/88, HR 76 bpm. Throat mildly inflamed. No fever. Lungs clear.",
+      "diagnosisLabel": "Diagnosis",
+      "diagnosisPlaceholder": "e.g. Acute pharyngitis with hypertensive episode",
+      "icdCodeLabel": "ICD Code",
+      "icdCodePlaceholder": "e.g. I20.9",
+      "treatmentPlanLabel": "Treatment Plan",
+      "treatmentPlanPlaceholder": "e.g. Ibuprofen 400mg TID × 7 days. ENT referral if no improvement in 1 week.",
+      "followUpDateLabel": "Follow-up Date"
     },
     "page": {
-      "title":    "Active Visit",
+      "title": "Active Visit",
       "subtitle": "Document clinical findings and close the visit when complete"
     },
     "actions": {
-      "saveChanges":            "Save Changes",
-      "saving":                 "Saving…",
-      "savedAt":                "Saved at {time}",
-      "closeVisit":             "Close Visit",
-      "closing":                "Closing…",
-      "unsavedChangesConfirm":  "You have unsaved changes. Leave without saving?",
-      "unsavedChanges":         "Unsaved changes",
-      "saveBeforeClosing":      "Save changes before ending the visit."
+      "saveChanges": "Save Changes",
+      "saving": "Saving…",
+      "savedAt": "Saved at {time}",
+      "closeVisit": "Close Visit",
+      "closing": "Closing…",
+      "unsavedChangesConfirm": "You have unsaved changes. Leave without saving?",
+      "unsavedChanges": "Unsaved changes",
+      "saveBeforeClosing": "Save changes before ending the visit."
     },
     "close": {
-      "confirm":    "Close this visit? The encounter will be locked and the appointment marked complete.",
+      "confirm": "Close this visit? The encounter will be locked and the appointment marked complete.",
       "alreadyEnded": "Encounter already ended",
-      "failed":     "Failed to end encounter"
+      "failed": "Failed to end encounter"
     },
     "complete": {
-      "heading":         "Encounter Complete",
-      "diagnosisLabel":  "Diagnosis",
-      "followUpLabel":   "Follow-up",
-      "endedLabel":      "Ended",
-      "notScheduled":    "Not scheduled",
+      "heading": "Encounter Complete",
+      "diagnosisLabel": "Diagnosis",
+      "followUpLabel": "Follow-up",
+      "endedLabel": "Ended",
+      "notScheduled": "Not scheduled",
       "diagnosisOnRecord": "Diagnosis on record",
-      "readOnly":        "This encounter is complete. The record is read-only."
+      "readOnly": "This encounter is complete. The record is read-only."
     },
     "allergies": {
       "heading": "Known Allergies"
     },
     "timestamps": {
       "started": "Started",
-      "ended":   "Ended"
+      "ended": "Ended"
     },
     "error": {
       "loadFailed": "Failed to load encounter",
-      "notFound":   "Encounter not found."
+      "notFound": "Encounter not found."
     },
     "prescription": {
-      "empty":              "No medications prescribed for this encounter.",
-      "addMedication":      "Add Medication",
-      "adding":             "Adding…",
+      "empty": "No medications prescribed for this encounter.",
+      "addMedication": "Add Medication",
+      "adding": "Adding…",
       "fields": {
-        "medicationLabel":    "Medication",
-        "dosageLabel":        "Dosage",
-        "frequencyLabel":     "Frequency",
-        "durationLabel":      "Duration",
-        "instructionsLabel":  "Instructions"
+        "medicationLabel": "Medication",
+        "dosageLabel": "Dosage",
+        "frequencyLabel": "Frequency",
+        "durationLabel": "Duration",
+        "instructionsLabel": "Instructions"
       },
       "placeholders": {
-        "medication":    "e.g. Amoxicillin 500mg",
-        "dosage":        "e.g. 500mg",
-        "frequency":     "e.g. Twice daily",
-        "duration":      "e.g. 7 days",
-        "instructions":  "e.g. Take with food"
+        "medication": "e.g. Amoxicillin 500mg",
+        "dosage": "e.g. 500mg",
+        "frequency": "e.g. Twice daily",
+        "duration": "e.g. 7 days",
+        "instructions": "e.g. Take with food"
       },
       "validation": {
         "medicationRequired": "Medication name is required."
@@ -347,91 +341,89 @@
         "addFailed": "Failed to add medication"
       }
     },
-
     "labOrders": {
-      "empty":    "No lab orders for this visit.",
+      "empty": "No lab orders for this visit.",
       "addOrder": "Add Lab Order",
       "fields": {
-        "testNameLabel":  "Test Name *",
-        "testCodeLabel":  "Test Code",
-        "priorityLabel":  "Priority",
-        "notesLabel":     "Notes"
+        "testNameLabel": "Test Name *",
+        "testCodeLabel": "Test Code",
+        "priorityLabel": "Priority",
+        "notesLabel": "Notes"
       },
       "placeholders": {
-        "testName":       "e.g. Complete Blood Count",
-        "testCode":       "CBC",
-        "notes":          "Additional notes",
+        "testName": "e.g. Complete Blood Count",
+        "testCode": "CBC",
+        "notes": "Additional notes",
         "selectPriority": "— Select —"
       },
       "priority": {
         "ROUTINE": "Routine",
-        "URGENT":  "Urgent",
-        "STAT":    "STAT"
+        "URGENT": "Urgent",
+        "STAT": "STAT"
       },
       "actions": {
-        "add":       "Add Order",
-        "adding":    "Adding…",
-        "review":    "Review Result",
+        "add": "Add Order",
+        "adding": "Adding…",
+        "review": "Review Result",
         "reviewing": "Reviewing…"
       },
       "validation": {
         "testNameRequired": "Test name is required."
       },
       "result": {
-        "heading":        "Result",
-        "reference":      "Reference",
+        "heading": "Result",
+        "reference": "Reference",
         "interpretation": "Interpretation",
-        "notes":          "Notes",
-        "resultAt":       "Result date",
-        "reviewedBy":     "Reviewed by"
+        "notes": "Notes",
+        "resultAt": "Result date",
+        "reviewedBy": "Reviewed by"
       },
       "error": {
-        "addFailed":    "Failed to add lab order",
+        "addFailed": "Failed to add lab order",
         "reviewFailed": "Failed to review result"
       }
     },
-
     "radiologyOrders": {
-      "empty":    "No radiology orders for this visit.",
+      "empty": "No radiology orders for this visit.",
       "addOrder": "Add Radiology Order",
       "fields": {
-        "modalityLabel":     "Modality *",
-        "bodyPartLabel":     "Body Part",
-        "priorityLabel":     "Priority",
+        "modalityLabel": "Modality *",
+        "bodyPartLabel": "Body Part",
+        "priorityLabel": "Priority",
         "clinicalInfoLabel": "Clinical Information",
-        "notesLabel":        "Notes"
+        "notesLabel": "Notes"
       },
       "placeholders": {
-        "bodyPart":       "e.g. Chest",
-        "clinicalInfo":   "e.g. Suspected pneumonia",
-        "notes":          "Additional notes",
+        "bodyPart": "e.g. Chest",
+        "clinicalInfo": "e.g. Suspected pneumonia",
+        "notes": "Additional notes",
         "selectModality": "— Select —",
         "selectPriority": "— Select —"
       },
       "modality": {
-        "X-RAY":      "X-Ray",
-        "CT":         "CT Scan",
-        "MRI":        "MRI",
+        "X-RAY": "X-Ray",
+        "CT": "CT Scan",
+        "MRI": "MRI",
         "ULTRASOUND": "Ultrasound",
-        "ECHO":       "Echo"
+        "ECHO": "Echo"
       },
       "priority": {
         "ROUTINE": "Routine",
-        "URGENT":  "Urgent",
-        "STAT":    "STAT"
+        "URGENT": "Urgent",
+        "STAT": "STAT"
       },
       "actions": {
-        "add":       "Add Order",
-        "adding":    "Adding…",
-        "review":    "Review Report",
+        "add": "Add Order",
+        "adding": "Adding…",
+        "review": "Review Report",
         "reviewing": "Reviewing…"
       },
       "validation": {
         "modalityRequired": "Modality is required."
       },
       "report": {
-        "heading":    "Report",
-        "findings":   "Findings",
+        "heading": "Report",
+        "findings": "Findings",
         "impression": "Impression",
         "reportedAt": "Reported",
         "reportedBy": "Reported by",
@@ -439,68 +431,66 @@
         "reviewedAt": "Reviewed"
       },
       "error": {
-        "addFailed":    "Failed to add radiology order",
+        "addFailed": "Failed to add radiology order",
         "reviewFailed": "Failed to review report"
       }
     },
-
     "vitals": {
       "fields": {
-        "temperature":       "Temperature",
-        "bloodPressure":     "Blood Pressure",
-        "heartRate":         "Heart Rate",
-        "oxygenSaturation":  "O₂ Saturation",
-        "respiratoryRate":   "Respiratory Rate",
-        "weight":            "Weight",
-        "height":            "Height"
+        "temperature": "Temperature",
+        "bloodPressure": "Blood Pressure",
+        "heartRate": "Heart Rate",
+        "oxygenSaturation": "O₂ Saturation",
+        "respiratoryRate": "Respiratory Rate",
+        "weight": "Weight",
+        "height": "Height"
       },
       "units": {
-        "temperature":       "°C",
-        "bloodPressure":     "mmHg",
-        "heartRate":         "bpm",
-        "oxygenSaturation":  "%",
-        "respiratoryRate":   "/min",
-        "weight":            "kg",
-        "height":            "cm"
+        "temperature": "°C",
+        "bloodPressure": "mmHg",
+        "heartRate": "bpm",
+        "oxygenSaturation": "%",
+        "respiratoryRate": "/min",
+        "weight": "kg",
+        "height": "cm"
       },
       "placeholders": {
-        "temperature":       "37.0",
-        "bloodPressure":     "120/80",
-        "heartRate":         "72",
-        "oxygenSaturation":  "98",
-        "respiratoryRate":   "16",
-        "weight":            "70",
-        "height":            "170"
+        "temperature": "37.0",
+        "bloodPressure": "120/80",
+        "heartRate": "72",
+        "oxygenSaturation": "98",
+        "respiratoryRate": "16",
+        "weight": "70",
+        "height": "170"
       }
     }
   },
-
   "patient": {
     "status": {
-      "active":   "Active",
+      "active": "Active",
       "inactive": "Inactive"
     },
     "header": {
       "dob": "DOB:"
     },
     "list": {
-      "title":             "Patients",
+      "title": "Patients",
       "searchPlaceholder": "Search by name, MRN…",
       "registeredCount": "{count, plural, one {# patient registered} other {# patients registered}}",
-      "showingOf":        "Showing {shown} of {total} patients",
+      "showingOf": "Showing {shown} of {total} patients",
       "columns": {
         "patient": "Patient",
-        "mrn":     "MRN",
-        "phone":   "Phone",
-        "gender":  "Gender",
-        "dob":     "Date of Birth",
+        "mrn": "MRN",
+        "phone": "Phone",
+        "gender": "Gender",
+        "dob": "Date of Birth",
         "actions": ""
       },
       "view": "View",
       "empty": {
-        "heading":    "No patients found",
+        "heading": "No patients found",
         "withSearch": "Try a different search term.",
-        "noData":     "Add the first patient to get started."
+        "noData": "Add the first patient to get started."
       },
       "error": {
         "loadFailed": "Failed to load patients"
@@ -508,61 +498,60 @@
     },
     "detail": {
       "tabs": {
-        "overview":      "Overview",
-        "timeline":      "Medical History",
+        "overview": "Overview",
+        "timeline": "Medical History",
         "prescriptions": "Prescriptions",
-        "labs":          "Lab Orders",
-        "radiology":     "Radiology",
-        "files":         "Medical Files"
+        "labs": "Lab Orders",
+        "radiology": "Radiology",
+        "files": "Medical Files"
       },
       "overview": {
-        "demographics":      "Demographics",
-        "contact":           "Contact",
-        "emergencyContact":  "Emergency Contact",
-        "clinicalNotes":     "Clinical Notes",
+        "demographics": "Demographics",
+        "contact": "Contact",
+        "emergencyContact": "Emergency Contact",
+        "clinicalNotes": "Clinical Notes",
         "fields": {
           "dateOfBirth": "Date of Birth",
-          "gender":      "Gender",
-          "bloodType":   "Blood Type",
-          "status":      "Status",
-          "registered":  "Registered",
-          "phone":       "Phone",
-          "email":       "Email",
-          "nationalId":  "National ID",
-          "address":     "Address",
-          "name":        "Name"
+          "gender": "Gender",
+          "bloodType": "Blood Type",
+          "status": "Status",
+          "registered": "Registered",
+          "phone": "Phone",
+          "email": "Email",
+          "nationalId": "National ID",
+          "address": "Address",
+          "name": "Name"
         }
       },
       "allergies": {
         "heading": "Known Allergies",
-        "none":    "No known allergies on record."
+        "none": "No known allergies on record."
       },
       "clinicalTab": {
         "emptyPrescriptions": "No prescriptions recorded for this patient.",
-        "emptyLabOrders":     "No lab orders recorded for this patient.",
-        "emptyRadiology":     "No radiology orders recorded for this patient.",
-        "emptyFiles":         "No medical files uploaded for this patient."
+        "emptyLabOrders": "No lab orders recorded for this patient.",
+        "emptyRadiology": "No radiology orders recorded for this patient.",
+        "emptyFiles": "No medical files uploaded for this patient."
       },
       "error": {
         "loadFailed": "Failed to load records",
-        "occurred":   "An error occurred."
+        "occurred": "An error occurred."
       }
     },
     "labOrders": {
-      "orderedBy":    "Ordered by",
-      "collectedAt":  "Sample collected",
-      "notes":        "Notes",
+      "orderedBy": "Ordered by",
+      "collectedAt": "Sample collected",
+      "notes": "Notes",
       "cancelReason": "Cancel reason"
     },
     "radiologyOrders": {
-      "orderedBy":    "Ordered by",
-      "scheduledAt":  "Scheduled",
+      "orderedBy": "Ordered by",
+      "scheduledAt": "Scheduled",
       "clinicalInfo": "Clinical information",
-      "notes":        "Notes",
+      "notes": "Notes",
       "cancelReason": "Cancel reason"
     }
   },
-
   "doctorWorkspace": {
     "title": "Doctor Workspace",
     "activeCount": "{count, plural, one {# active encounter} other {# active encounters}}",
@@ -581,145 +570,143 @@
       "loadFailed": "Failed to load encounters"
     }
   },
-
   "timeline": {
     "filter": {
       "all": "All",
       "types": {
-        "ENCOUNTER":        "Encounters",
-        "PRESCRIPTION":     "Prescriptions",
-        "LAB_ORDER":        "Lab Orders",
-        "RADIOLOGY_ORDER":  "Radiology",
-        "MEDICAL_FILE":     "Files"
+        "ENCOUNTER": "Encounters",
+        "PRESCRIPTION": "Prescriptions",
+        "LAB_ORDER": "Lab Orders",
+        "RADIOLOGY_ORDER": "Radiology",
+        "MEDICAL_FILE": "Files"
       },
       "fromAriaLabel": "From date",
-      "toAriaLabel":   "To date"
+      "toAriaLabel": "To date"
     },
     "dateGroups": {
-      "today":     "Today —",
+      "today": "Today —",
       "yesterday": "Yesterday —"
     },
     "empty": {
-      "noRecords":     "No medical history on record",
-      "noRecordsSub":  "Events will appear here as encounters, prescriptions, and orders are recorded.",
-      "noMatches":     "No records match the selected filters",
-      "noMatchesSub":  "Try adjusting the filters to see more events."
+      "noRecords": "No medical history on record",
+      "noRecordsSub": "Events will appear here as encounters, prescriptions, and orders are recorded.",
+      "noMatches": "No records match the selected filters",
+      "noMatchesSub": "Try adjusting the filters to see more events."
     },
     "error": {
       "loadFailed": "Failed to load timeline."
     },
     "cards": {
-      "encounter":    "Encounter",
+      "encounter": "Encounter",
       "prescription": "Prescription",
-      "labOrder":     "Lab Order",
-      "radiology":    "Radiology",
-      "file":         "File",
-      "inProgress":   "In Progress",
+      "labOrder": "Lab Order",
+      "radiology": "Radiology",
+      "file": "File",
+      "inProgress": "In Progress",
       "diagnosisOnRecord": "Diagnosis on record",
-      "uploadedBy":   "Uploaded by {uploader}"
+      "uploadedBy": "Uploaded by {uploader}"
     },
     "labOrderStatus": {
-      "ORDERED":          "Ordered",
+      "ORDERED": "Ordered",
       "SAMPLE_COLLECTED": "Sample Collected",
-      "IN_PROGRESS":      "In Progress",
-      "RESULTED":         "Resulted",
-      "REVIEWED":         "Reviewed",
-      "CANCELLED":        "Cancelled"
+      "IN_PROGRESS": "In Progress",
+      "RESULTED": "Resulted",
+      "REVIEWED": "Reviewed",
+      "CANCELLED": "Cancelled"
     },
     "radiologyStatus": {
-      "ORDERED":     "Ordered",
-      "SCHEDULED":   "Scheduled",
+      "ORDERED": "Ordered",
+      "SCHEDULED": "Scheduled",
       "IN_PROGRESS": "In Progress",
-      "RESULTED":    "Resulted",
-      "REVIEWED":    "Reviewed",
-      "CANCELLED":   "Cancelled"
+      "RESULTED": "Resulted",
+      "REVIEWED": "Reviewed",
+      "CANCELLED": "Cancelled"
     },
     "fileCategories": {
-      "LAB_RESULT":        "Lab Result",
-      "RADIOLOGY_IMAGE":   "Radiology Image",
-      "PRESCRIPTION":      "Prescription",
-      "REFERRAL":          "Referral",
+      "LAB_RESULT": "Lab Result",
+      "RADIOLOGY_IMAGE": "Radiology Image",
+      "PRESCRIPTION": "Prescription",
+      "REFERRAL": "Referral",
       "DISCHARGE_SUMMARY": "Discharge Summary",
-      "CONSENT_FORM":      "Consent Form",
-      "INSURANCE":         "Insurance",
-      "CLINICAL_NOTE":     "Clinical Note",
-      "ID_DOCUMENT":       "ID Document",
-      "OTHER":             "Other"
+      "CONSENT_FORM": "Consent Form",
+      "INSURANCE": "Insurance",
+      "CLINICAL_NOTE": "Clinical Note",
+      "ID_DOCUMENT": "ID Document",
+      "OTHER": "Other"
     }
   },
   "doctorQueue": {
-    "pageTitle":   "Today's Queue",
+    "pageTitle": "Today's Queue",
     "pageSubtitle": "Patients waiting for your consultation",
-    "panelTitle":  "My Queue — Today",
+    "panelTitle": "My Queue — Today",
     "autoRefresh": "Auto-refreshes every 30s",
     "refreshLabel": "Refresh queue",
     "counter": "{count, plural, one {# patient waiting} other {# patients waiting}}",
     "empty": {
-      "title":    "No patients waiting",
+      "title": "No patients waiting",
       "subtitle": "All scheduled patients have been seen."
     },
     "error": {
       "loadFailed": "Failed to load queue",
-      "occurred":   "An unexpected error occurred."
+      "occurred": "An unexpected error occurred."
     },
     "card": {
       "scheduled": "Scheduled {time}",
-      "waited":    "Waited {duration}",
-      "justNow":   "just now"
+      "waited": "Waited {duration}",
+      "justNow": "just now"
     },
     "actions": {
-      "startVisit":  "Start Visit",
-      "openVisit":   "Open Visit",
-      "starting":    "Starting…",
-      "opening":     "Opening…",
+      "startVisit": "Start Visit",
+      "openVisit": "Open Visit",
+      "starting": "Starting…",
+      "opening": "Opening…",
       "startFailed": "Failed to start encounter"
     }
   },
-
   "technicianLabs": {
-    "pageTitle":   "Lab Worklist",
+    "pageTitle": "Lab Worklist",
     "pageSubtitle": "Process pending lab orders",
-    "panelTitle":  "Pending Lab Orders",
+    "panelTitle": "Pending Lab Orders",
     "autoRefresh": "Auto-refreshes every 30s",
     "refreshLabel": "Refresh worklist",
     "counter": "{count, plural, one {# pending order} other {# pending orders}}",
     "empty": {
-      "title":    "No pending lab orders",
+      "title": "No pending lab orders",
       "subtitle": "All lab orders are up to date."
     },
     "error": {
       "loadFailed": "Failed to load lab orders",
-      "occurred":   "An unexpected error occurred."
+      "occurred": "An unexpected error occurred."
     },
     "card": {
       "orderedAt": "Ordered {date}"
     },
     "status": {
-      "ORDERED":          "Ordered",
+      "ORDERED": "Ordered",
       "SAMPLE_COLLECTED": "Sample Collected",
-      "IN_PROGRESS":      "In Progress"
+      "IN_PROGRESS": "In Progress"
     },
     "actions": {
-      "collectSample":      "Collect Sample",
-      "collecting":         "Collecting…",
-      "startProcessing":    "Start Processing",
-      "processing":         "Processing…",
-      "submitResult":       "Submit Result",
-      "submitting":         "Submitting…",
-      "collectFailed":      "Failed to collect sample",
-      "processingFailed":   "Failed to start processing",
-      "submitFailed":       "Failed to submit result"
+      "collectSample": "Collect Sample",
+      "collecting": "Collecting…",
+      "startProcessing": "Start Processing",
+      "processing": "Processing…",
+      "submitResult": "Submit Result",
+      "submitting": "Submitting…",
+      "collectFailed": "Failed to collect sample",
+      "processingFailed": "Failed to start processing",
+      "submitFailed": "Failed to submit result"
     },
     "result": {
-      "formTitle":           "Enter Result",
-      "resultValueLabel":    "Result Value *",
-      "unitLabel":           "Unit",
+      "formTitle": "Enter Result",
+      "resultValueLabel": "Result Value *",
+      "unitLabel": "Unit",
       "referenceRangeLabel": "Reference Range",
       "interpretationLabel": "Interpretation",
-      "resultNotesLabel":    "Notes",
+      "resultNotesLabel": "Notes",
       "placeholders": {
-        "resultValue":    "e.g. 5.8",
-        "unit":           "e.g. g/dL",
+        "resultValue": "e.g. 5.8",
+        "unit": "e.g. g/dL",
         "referenceRange": "e.g. 4.0–5.5",
         "interpretation": "e.g. HIGH"
       }
@@ -728,49 +715,76 @@
       "resultValueRequired": "Result value is required."
     }
   },
-
   "technicianRadiology": {
-    "pageTitle":   "Radiology Worklist",
+    "pageTitle": "Radiology Worklist",
     "pageSubtitle": "Process pending radiology orders",
-    "panelTitle":  "Pending Radiology Orders",
+    "panelTitle": "Pending Radiology Orders",
     "autoRefresh": "Auto-refreshes every 30s",
     "refreshLabel": "Refresh worklist",
     "counter": "{count, plural, one {# pending order} other {# pending orders}}",
     "empty": {
-      "title":    "No pending radiology orders",
+      "title": "No pending radiology orders",
       "subtitle": "All radiology orders are up to date."
     },
     "error": {
       "loadFailed": "Failed to load radiology orders",
-      "occurred":   "An unexpected error occurred."
+      "occurred": "An unexpected error occurred."
     },
     "card": {
       "orderedAt": "Ordered {date}"
     },
     "status": {
-      "ORDERED":     "Ordered",
-      "SCHEDULED":   "Scheduled",
+      "ORDERED": "Ordered",
+      "SCHEDULED": "Scheduled",
       "IN_PROGRESS": "In Progress"
     },
     "actions": {
-      "schedule":       "Schedule",
-      "scheduling":     "Scheduling…",
-      "startScan":      "Start Scan",
-      "starting":       "Starting…",
-      "submitReport":   "Submit Report",
-      "submitting":     "Submitting…",
+      "schedule": "Schedule",
+      "scheduling": "Scheduling…",
+      "startScan": "Start Scan",
+      "starting": "Starting…",
+      "submitReport": "Submit Report",
+      "submitting": "Submitting…",
       "scheduleFailed": "Failed to schedule",
-      "startFailed":    "Failed to start scan",
-      "submitFailed":   "Failed to submit report"
+      "startFailed": "Failed to start scan",
+      "submitFailed": "Failed to submit report"
     },
     "report": {
-      "formTitle":       "Enter Report",
-      "findingsLabel":   "Findings *",
+      "formTitle": "Enter Report",
+      "findingsLabel": "Findings *",
       "impressionLabel": "Impression *"
     },
     "validation": {
-      "findingsRequired":   "Findings are required.",
+      "findingsRequired": "Findings are required.",
       "impressionRequired": "Impression is required."
+    }
+  },
+  "filesTab": {
+    "title": "Medical Files",
+    "description": "Attached files and reports for this patient",
+    "fileCount": "{count, plural, one {# file} other {# files}}",
+    "uploadButton": "Upload New File",
+    "closeUpload": "Close",
+    "downloadButton": "Download",
+    "deleteButton": "Delete",
+    "confirmDelete": "Are you sure you want to delete this file? This action cannot be undone.",
+    "deleteFailed": "Failed to delete the file",
+    "downloadFailed": "Failed to get download link",
+    "emptyState": "No medical files uploaded for this patient.",
+    "uploadForm": {
+      "title": "Upload New File",
+      "filePicker": "Choose File",
+      "noFileChosen": "No file chosen",
+      "categoryLabel": "Category",
+      "descriptionLabel": "Description (optional)",
+      "descriptionPlaceholder": "e.g. Blood test results from 2026",
+      "uploadButton": "Upload",
+      "uploadingButton": "Uploading…",
+      "cancelButton": "Cancel",
+      "uploadStorageFailed": "Failed to upload file to storage ({status})",
+      "uploadRegistrationFailed": "File uploaded but registration failed, please retry or contact admin",
+      "uploadFailed": "An error occurred while uploading the file"
     }
   }
 }
+

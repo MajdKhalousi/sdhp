@@ -91,3 +91,15 @@ export function useRegisterMedicalFile() {
 export function getMedicalFileDownloadUrl(fileId: string): Promise<DownloadUrlResponse> {
   return api.get<DownloadUrlResponse>(`/v1/medical-files/${fileId}/download-url`);
 }
+
+export function useDeleteMedicalFile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ fileId }: { fileId: string; patientId: string }) =>
+      api.delete<void>(`/v1/medical-files/${fileId}`),
+    onSuccess: (_, { patientId }) => {
+      qc.invalidateQueries({ queryKey: ['patient-files', patientId] });
+      qc.invalidateQueries({ queryKey: ['patient-timeline'] });
+    },
+  });
+}

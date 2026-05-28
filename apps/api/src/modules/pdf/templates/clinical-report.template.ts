@@ -44,14 +44,13 @@ function formatDate(date: Date): string {
   });
 }
 
-function formatDateTime(date: Date): string {
-  return date.toLocaleString('ar-SY', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+// ASCII-only ISO-style datetime for the technical footer — no locale dependency.
+function formatTechnicalDate(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+    ` ${pad(date.getHours())}:${pad(date.getMinutes())}`
+  );
 }
 
 export function buildClinicalReportHtml(data: ClinicalReportPdfData): string {
@@ -87,7 +86,7 @@ export function buildClinicalReportHtml(data: ClinicalReportPdfData): string {
   }
   .org-name { font-size: 15pt; font-weight: 700; color: #1e40af; }
   .doc-label { font-size: 10pt; color: #6b7280; margin-top: 3px; }
-  .header-date { text-align: left; font-size: 9pt; color: #6b7280; }
+  .header-date { font-size: 9pt; color: #6b7280; text-align: start; }
 
   .meta-grid {
     display: grid;
@@ -108,9 +107,10 @@ export function buildClinicalReportHtml(data: ClinicalReportPdfData): string {
   .report-title {
     font-size: 14pt;
     font-weight: 700;
-    border-right: 4px solid #1e40af;
-    padding-right: 10px;
+    border-inline-start: 4px solid #1e40af;
+    padding-inline-start: 10px;
     margin-bottom: 6px;
+    unicode-bidi: isolate;
   }
   .status-pill {
     display: inline-block;
@@ -133,6 +133,8 @@ export function buildClinicalReportHtml(data: ClinicalReportPdfData): string {
     white-space: pre-wrap;
     font-size: 11pt;
     line-height: 1.85;
+    unicode-bidi: isolate;
+    text-align: start;
   }
 
   .footer {
@@ -159,7 +161,7 @@ export function buildClinicalReportHtml(data: ClinicalReportPdfData): string {
 <div class="meta-grid">
   <div class="meta-item">
     <span class="meta-label">المريض:</span>
-    <span class="meta-value">${patientName}</span>
+    <span class="meta-value" dir="auto">${patientName}</span>
   </div>
   <div class="meta-item">
     <span class="meta-label">رقم الملف:</span>
@@ -167,7 +169,7 @@ export function buildClinicalReportHtml(data: ClinicalReportPdfData): string {
   </div>
   <div class="meta-item">
     <span class="meta-label">الطبيب:</span>
-    <span class="meta-value">${authorName}</span>
+    <span class="meta-value" dir="auto">${authorName}</span>
   </div>
   <div class="meta-item">
     <span class="meta-label">تاريخ الزيارة:</span>
@@ -176,16 +178,16 @@ export function buildClinicalReportHtml(data: ClinicalReportPdfData): string {
 </div>
 
 <div class="report-header">
-  <div class="report-title">${escapeHtml(data.report.title)}</div>
-  <span class="status-pill">مُعتمد — Finalized</span>
+  <div class="report-title" dir="auto">${escapeHtml(data.report.title)}</div>
+  <span class="status-pill">مُعتمد</span>
 </div>
 
 <div class="content-box">
-  <p class="content-text">${escapeHtml(data.report.content)}</p>
+  <p class="content-text" dir="auto">${escapeHtml(data.report.content)}</p>
 </div>
 
 <div class="footer">
-  <span>Generated: ${formatDateTime(data.generatedAt)}</span>
+  <span>Generated: ${formatTechnicalDate(data.generatedAt)}</span>
   <span>Report ID: ${escapeHtml(data.report.id)}</span>
 </div>
 

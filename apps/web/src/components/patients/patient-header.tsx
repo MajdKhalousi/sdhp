@@ -58,21 +58,18 @@ export function PatientHeader({ patient, isLoading }: PatientHeaderProps) {
 
   if (!patient) return null;
 
-  const fullName = `${patient.firstName} ${patient.lastName}`;
+  const displayName = locale === 'ar' && patient.firstNameAr
+    ? `${patient.firstNameAr}${patient.lastNameAr ? ` ${patient.lastNameAr}` : ''}`
+    : `${patient.firstName} ${patient.lastName}`;
 
   return (
     <div className="rounded-xl border bg-card p-6 shadow-sm">
       <div className="flex items-start gap-4">
-        <Initials name={fullName} />
+        <Initials name={displayName} />
 
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl font-bold tracking-tight">{fullName}</h1>
-            {patient.firstNameAr && (
-              <span className="text-base text-muted-foreground" dir="rtl">
-                {patient.firstNameAr} {patient.lastNameAr}
-              </span>
-            )}
+            <h1 className="text-xl font-bold tracking-tight">{displayName}</h1>
             <Badge variant={patient.isActive ? 'success' : 'outline'}>
               {patient.isActive ? t('status.active') : t('status.inactive')}
             </Badge>

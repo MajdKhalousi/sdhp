@@ -187,15 +187,9 @@ export default function PatientsPage() {
                             href={`/dashboard/patients/${patient.id}`}
                             className="font-medium text-foreground transition-colors hover:text-primary"
                           >
-                            {patient.firstName} {patient.lastName}
-                            {patient.firstNameAr && (
-                              <span
-                                className="ms-2 text-xs font-normal text-muted-foreground"
-                                dir="rtl"
-                              >
-                                {patient.firstNameAr} {patient.lastNameAr}
-                              </span>
-                            )}
+                            {locale === 'ar' && patient.firstNameAr
+                              ? `${patient.firstNameAr}${patient.lastNameAr ? ` ${patient.lastNameAr}` : ''}`
+                              : `${patient.firstName} ${patient.lastName}`}
                           </Link>
                         </td>
                         <td className="px-4 py-3 font-mono text-xs text-muted-foreground" dir="ltr">

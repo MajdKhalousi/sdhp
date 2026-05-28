@@ -123,34 +123,41 @@ export class BillingService {
       await this.assertEncounterBelongsToOrgAndPatient(dto.encounterId, orgId, dto.patientId);
     }
 
-    const year = new Date().getFullYear();
-    const count = await this.prisma.invoice.count({ where: { organizationId: orgId } });
-    const invoiceNumber = `INV-${year}-${String(count + 1).padStart(5, '0')}`;
-
-    try {
-      return await this.prisma.invoice.create({
-        data: {
-          organizationId: orgId,
-          branchId: dto.branchId,
-          patientId: dto.patientId,
-          appointmentId: dto.appointmentId,
-          encounterId: dto.encounterId,
-          createdById: caller.sub,
-          invoiceNumber,
-          subtotal: 0,
-          discountAmount: 0,
-          totalAmount: 0,
-          notes: dto.notes,
-          dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
-        },
-        select: INVOICE_SELECT,
+    const MAX_RETRIES = 5;
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      const year = new Date().getFullYear();
+      const prefix = `INV-${year}-`;
+      const count = await this.prisma.invoice.count({
+        where: { organizationId: orgId, invoiceNumber: { startsWith: prefix } },
       });
-    } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
-        throw new ConflictException('Invoice number conflict, please retry');
+      const invoiceNumber = `${prefix}${String(count + 1).padStart(5, '0')}`;
+
+      try {
+        return await this.prisma.invoice.create({
+          data: {
+            organizationId: orgId,
+            branchId: dto.branchId,
+            patientId: dto.patientId,
+            appointmentId: dto.appointmentId,
+            encounterId: dto.encounterId,
+            createdById: caller.sub,
+            invoiceNumber,
+            subtotal: 0,
+            discountAmount: 0,
+            totalAmount: 0,
+            notes: dto.notes,
+            dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+          },
+          select: INVOICE_SELECT,
+        });
+      } catch (err) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+          continue;
+        }
+        throw err;
       }
-      throw err;
     }
+    throw new ConflictException('Failed to generate a unique invoice number after multiple attempts');
   }
 
   async findAll(query: BillingQueryDto, caller: JwtPayload) {

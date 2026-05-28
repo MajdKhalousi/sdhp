@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useCreateAppointment, usePatientsList, useDoctorsList } from '@/hooks/use-appointments';
 import { useCheckIn } from '@/hooks/use-queue';
@@ -149,7 +148,8 @@ export function WalkInWizard() {
           <div className="rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800 dark:border-orange-900/40 dark:bg-orange-950/20 dark:text-orange-400">
             {t('conflict')}{' '}
             <Link
-              href={`/${locale}/dashboard/queue`}
+              href="/dashboard/queue"
+              locale={locale}
               className="font-medium underline hover:no-underline"
             >
               {t('actions.viewQueue')}

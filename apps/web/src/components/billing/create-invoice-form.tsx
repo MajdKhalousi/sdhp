@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useCreateInvoice } from '@/hooks/use-invoices';
 import { usePatientsList } from '@/hooks/use-appointments';

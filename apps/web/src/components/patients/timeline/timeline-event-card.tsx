@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTranslations } from 'next-intl';
 import type { TimelineEvent } from '@/types/timeline';
 import { EncounterCard } from './encounter-card';
 import { PrescriptionCard } from './prescription-card';
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export const TimelineEventCard = memo(function TimelineEventCard({ event }: Props) {
+  const t = useTranslations('timeline');
   switch (event.type) {
     case 'ENCOUNTER':
       return <EncounterCard event={event} />;
@@ -36,7 +38,7 @@ export const TimelineEventCard = memo(function TimelineEventCard({ event }: Prop
             </span>
             <span className="text-xs text-muted-foreground">{formatTime(unknown.timestamp)}</span>
           </div>
-          <p className="text-sm text-muted-foreground">Medical event</p>
+          <p className="text-sm text-muted-foreground">{t('cards.medicalEvent')}</p>
         </div>
       );
     }

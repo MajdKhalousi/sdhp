@@ -20,7 +20,7 @@ const STATUS_VARIANT: Record<RadiologyOrderStatus, BadgeProps['variant']> = {
 export function RadiologyOrderCard({ event }: Props) {
   const t = useTranslations('timeline');
   const { data } = event;
-  const doctor = `Dr. ${data.orderedBy.firstName} ${data.orderedBy.lastName}`;
+  const doctor = `${t('cards.doctorPrefix')} ${data.orderedBy.firstName} ${data.orderedBy.lastName}`;
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-s-4 border-s-purple-400">
@@ -32,7 +32,7 @@ export function RadiologyOrderCard({ event }: Props) {
       </div>
 
       <p className="font-medium text-sm text-foreground">
-        {data.modality}
+        {t(`radiologyModality.${data.modality}` as Parameters<typeof t>[0])}
         {data.bodyPart && (
           <span className="ms-1.5 text-xs text-muted-foreground">— {data.bodyPart}</span>
         )}
@@ -43,7 +43,7 @@ export function RadiologyOrderCard({ event }: Props) {
           {t(`radiologyStatus.${data.status}` as Parameters<typeof t>[0])}
         </Badge>
         {data.priority && (
-          <span className="text-xs text-muted-foreground">· {data.priority}</span>
+          <span className="text-xs text-muted-foreground">· {t(`priority.${data.priority}` as Parameters<typeof t>[0])}</span>
         )}
       </div>
 

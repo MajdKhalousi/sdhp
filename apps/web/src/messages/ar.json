@@ -754,7 +754,21 @@
       "clinicalReport": "تقرير سريري",
       "inProgress": "قيد التنفيذ",
       "diagnosisOnRecord": "التشخيص مسجّل",
-      "uploadedBy": "رُفع بواسطة {uploader}"
+      "uploadedBy": "رُفع بواسطة {uploader}",
+      "completed": "مكتملة",
+      "visit": "زيارة",
+      "ongoing": "جارية",
+      "ended": "انتهت",
+      "notes": "ملاحظات",
+      "plan": "خطة العلاج",
+      "followUp": "متابعة",
+      "medicalEvent": "حدث طبي",
+      "doctorPrefix": "د.",
+      "duration": {
+        "minute": "دقيقة",
+        "hourShort": "س",
+        "minuteShort": "د"
+      }
     },
     "clinicalReport": {
       "draft": "مسوّدة",
@@ -787,6 +801,18 @@
       "INSURANCE": "تأمين",
       "CLINICAL_NOTE": "ملاحظة سريرية",
       "ID_DOCUMENT": "وثيقة هوية",
+      "OTHER": "أخرى"
+    },
+    "priority": {
+      "ROUTINE": "روتيني",
+      "URGENT": "عاجل",
+      "STAT": "فوري"
+    },
+    "radiologyModality": {
+      "X_RAY": "أشعة سينية",
+      "CT": "أشعة مقطعية",
+      "MRI": "رنين مغناطيسي",
+      "ULTRASOUND": "موجات فوق صوتية",
       "OTHER": "أخرى"
     }
   },

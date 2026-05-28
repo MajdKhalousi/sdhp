@@ -1,28 +1,35 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import type { TimelineEvent } from '@/types/timeline';
 import { formatTime } from './format-time';
 
 type Props = { event: Extract<TimelineEvent, { type: 'ENCOUNTER' }> };
 
-function encounterDuration(start: string, end: string | null): string {
+function encounterDuration(
+  start: string,
+  end: string | null,
+  units: { min: string; h: string; m: string },
+): string {
   const ms = (end ? new Date(end) : new Date()).getTime() - new Date(start).getTime();
   const mins = Math.round(ms / 60_000);
-  if (mins < 60) return `${mins} min`;
+  if (mins < 60) return `${mins} ${units.min}`;
   const h = Math.floor(mins / 60);
-  return `${h}h ${mins % 60}m`;
+  return `${h}${units.h} ${mins % 60}${units.m}`;
 }
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' });
+function formatDate(iso: string, displayLocale: string): string {
+  return new Date(iso).toLocaleDateString(displayLocale, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 export function EncounterCard({ event }: Props) {
   const t = useTranslations('timeline.cards');
+  const locale = useLocale();
+  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
   const { data } = event;
-  const doctor = `Dr. ${data.doctor.firstName} ${data.doctor.lastName}`;
+  const doctor = `${t('doctorPrefix')} ${data.doctor.firstName} ${data.doctor.lastName}`;
+  const durationUnits = { min: t('duration.minute'), h: t('duration.hourShort'), m: t('duration.minuteShort') };
   const isActive = !data.endedAt;
 
   return (
@@ -39,7 +46,7 @@ export function EncounterCard({ event }: Props) {
             </span>
           ) : (
             <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-              Completed
+              {t('completed')}
             </span>
           )}
         </div>
@@ -48,7 +55,7 @@ export function EncounterCard({ event }: Props) {
 
       {/* Chief complaint */}
       <p className="font-medium text-sm text-foreground">
-        {data.chiefComplaint || 'Visit'}
+        {data.chiefComplaint || t('visit')}
       </p>
 
       {/* Doctor + duration */}
@@ -59,8 +66,8 @@ export function EncounterCard({ event }: Props) {
         )}
         <span className="opacity-70">
           · {isActive
-            ? `ongoing · ${encounterDuration(data.startedAt, null)}`
-            : `${encounterDuration(data.startedAt, data.endedAt)} · ended ${formatTime(data.endedAt!)}`}
+            ? `${t('ongoing')} · ${encounterDuration(data.startedAt, null, durationUnits)}`
+            : `${encounterDuration(data.startedAt, data.endedAt, durationUnits)} · ${t('ended')} ${formatTime(data.endedAt!)}`}
         </span>
       </div>
 
@@ -81,20 +88,20 @@ export function EncounterCard({ event }: Props) {
         <div className="mt-3 space-y-1.5 border-t border-border pt-2.5">
           {data.notes && (
             <div>
-              <span className="text-xs font-medium text-muted-foreground">Notes </span>
+              <span className="text-xs font-medium text-muted-foreground">{t('notes')} </span>
               <span className="text-xs text-foreground line-clamp-2">{data.notes}</span>
             </div>
           )}
           {data.treatmentPlan && (
             <div>
-              <span className="text-xs font-medium text-muted-foreground">Plan </span>
+              <span className="text-xs font-medium text-muted-foreground">{t('plan')} </span>
               <span className="text-xs text-foreground line-clamp-2">{data.treatmentPlan}</span>
             </div>
           )}
           {data.followUpDate && (
             <p className="text-xs text-muted-foreground">
-              Follow-up{' '}
-              <span className="text-foreground">{formatDate(data.followUpDate)}</span>
+              {t('followUp')}{' '}
+              <span className="text-foreground">{formatDate(data.followUpDate, displayLocale)}</span>
             </p>
           )}
         </div>

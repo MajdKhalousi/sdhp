@@ -754,7 +754,21 @@
       "clinicalReport": "Clinical Report",
       "inProgress": "In Progress",
       "diagnosisOnRecord": "Diagnosis on record",
-      "uploadedBy": "Uploaded by {uploader}"
+      "uploadedBy": "Uploaded by {uploader}",
+      "completed": "Completed",
+      "visit": "Visit",
+      "ongoing": "ongoing",
+      "ended": "ended",
+      "notes": "Notes",
+      "plan": "Plan",
+      "followUp": "Follow-up",
+      "medicalEvent": "Medical event",
+      "doctorPrefix": "Dr.",
+      "duration": {
+        "minute": "min",
+        "hourShort": "h",
+        "minuteShort": "m"
+      }
     },
     "clinicalReport": {
       "draft": "Draft",
@@ -787,6 +801,18 @@
       "INSURANCE": "Insurance",
       "CLINICAL_NOTE": "Clinical Note",
       "ID_DOCUMENT": "ID Document",
+      "OTHER": "Other"
+    },
+    "priority": {
+      "ROUTINE": "Routine",
+      "URGENT": "Urgent",
+      "STAT": "STAT"
+    },
+    "radiologyModality": {
+      "X_RAY": "X-Ray",
+      "CT": "CT Scan",
+      "MRI": "MRI",
+      "ULTRASOUND": "Ultrasound",
       "OTHER": "Other"
     }
   },

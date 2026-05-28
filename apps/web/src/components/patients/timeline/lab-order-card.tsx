@@ -20,7 +20,7 @@ const STATUS_VARIANT: Record<LabOrderStatus, BadgeProps['variant']> = {
 export function LabOrderCard({ event }: Props) {
   const t = useTranslations('timeline');
   const { data } = event;
-  const doctor = `Dr. ${data.orderedBy.firstName} ${data.orderedBy.lastName}`;
+  const doctor = `${t('cards.doctorPrefix')} ${data.orderedBy.firstName} ${data.orderedBy.lastName}`;
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-s-4 border-s-amber-400">
@@ -43,7 +43,7 @@ export function LabOrderCard({ event }: Props) {
           {t(`labOrderStatus.${data.status}` as Parameters<typeof t>[0])}
         </Badge>
         {data.priority && (
-          <span className="text-xs text-muted-foreground">· {data.priority}</span>
+          <span className="text-xs text-muted-foreground">· {t(`priority.${data.priority}` as Parameters<typeof t>[0])}</span>
         )}
       </div>
 

@@ -942,6 +942,7 @@
       }
     },
     "actions": {
+      "newInvoice": "New Invoice",
       "issue": "Issue Invoice",
       "issuing": "Issuing…",
       "issueConfirm": "Issue this invoice? It will no longer be editable.",
@@ -952,6 +953,27 @@
       "cancelReasonPlaceholder": "Optional reason for cancellation",
       "cancelConfirm": "Cancel this invoice? This action cannot be undone.",
       "cancelSubmit": "Confirm Cancellation"
+    },
+    "form": {
+      "title": "New Invoice",
+      "subtitle": "Create a draft invoice for a patient",
+      "fields": {
+        "patient": "Patient",
+        "patientPlaceholder": "Select a patient",
+        "dueDate": "Due Date",
+        "notes": "Notes",
+        "notesPlaceholder": "Optional notes about this invoice"
+      },
+      "actions": {
+        "create": "Create Invoice",
+        "creating": "Creating…"
+      },
+      "validation": {
+        "patientRequired": "Please select a patient."
+      },
+      "errors": {
+        "createFailed": "Failed to create invoice."
+      }
     },
     "payment": {
       "title": "Record Payment",

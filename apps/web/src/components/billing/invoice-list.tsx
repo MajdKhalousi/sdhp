@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Receipt } from 'lucide-react';
+import { Plus, Receipt } from 'lucide-react';
+import { useAuthStore } from '@/store/auth';
 import { useTranslations, useLocale } from 'next-intl';
 import { useInvoices } from '@/hooks/use-invoices';
 import { InvoiceStatusBadge } from './invoice-status-badge';
@@ -11,6 +12,7 @@ import { cn } from '@/lib/utils';
 import type { InvoiceStatus } from '@/types/invoice';
 
 const STATUS_TABS = ['', 'DRAFT', 'ISSUED', 'PARTIALLY_PAID', 'PAID', 'CANCELLED'] as const;
+const INVOICE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
 type StatusTab = (typeof STATUS_TABS)[number];
 
 function formatAmount(value: string, locale: string): string {
@@ -36,6 +38,9 @@ export function InvoiceList() {
   const tCommon = useTranslations('common');
   const locale = useLocale();
 
+  const { user } = useAuthStore();
+  const canCreate = user ? INVOICE_ROLES.has(user.role) : false;
+
   const [statusFilter, setStatusFilter] = useState<StatusTab>('');
 
   const { data, isLoading, isError, error, refetch } = useInvoices({
@@ -53,23 +58,34 @@ export function InvoiceList() {
   ];
 
   const statusTabs = (
-    <div className="flex flex-wrap gap-1.5">
-      {STATUS_TABS.map((tab) => (
-        <button
-          key={tab}
-          onClick={() => setStatusFilter(tab)}
-          className={cn(
-            'h-7 rounded-full px-3 text-xs font-medium transition-colors',
-            statusFilter === tab
-              ? 'bg-primary text-primary-foreground'
-              : 'border border-border text-muted-foreground hover:bg-accent',
-          )}
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap gap-1.5">
+        {STATUS_TABS.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setStatusFilter(tab)}
+            className={cn(
+              'h-7 rounded-full px-3 text-xs font-medium transition-colors',
+              statusFilter === tab
+                ? 'bg-primary text-primary-foreground'
+                : 'border border-border text-muted-foreground hover:bg-accent',
+            )}
+          >
+            {tab === ''
+              ? t('list.filter.all')
+              : t(`status.${tab}` as Parameters<typeof t>[0])}
+          </button>
+        ))}
+      </div>
+      {canCreate && (
+        <Link
+          href="/dashboard/invoices/new"
+          className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
-          {tab === ''
-            ? t('list.filter.all')
-            : t(`status.${tab}` as Parameters<typeof t>[0])}
-        </button>
-      ))}
+          <Plus className="h-3.5 w-3.5" />
+          {t('actions.newInvoice')}
+        </Link>
+      )}
     </div>
   );
 

@@ -942,6 +942,7 @@
       }
     },
     "actions": {
+      "newInvoice": "فاتورة جديدة",
       "issue": "إصدار الفاتورة",
       "issuing": "جارٍ الإصدار…",
       "issueConfirm": "هل تريد إصدار هذه الفاتورة؟ لن يمكن تعديلها بعد الإصدار.",
@@ -952,6 +953,27 @@
       "cancelReasonPlaceholder": "سبب اختياري للإلغاء",
       "cancelConfirm": "هل تريد إلغاء هذه الفاتورة؟ لا يمكن التراجع عن هذا الإجراء.",
       "cancelSubmit": "تأكيد الإلغاء"
+    },
+    "form": {
+      "title": "فاتورة جديدة",
+      "subtitle": "إنشاء مسودة فاتورة لمريض",
+      "fields": {
+        "patient": "المريض",
+        "patientPlaceholder": "اختر مريضاً",
+        "dueDate": "تاريخ الاستحقاق",
+        "notes": "الملاحظات",
+        "notesPlaceholder": "ملاحظات اختيارية حول هذه الفاتورة"
+      },
+      "actions": {
+        "create": "إنشاء الفاتورة",
+        "creating": "جارٍ الإنشاء…"
+      },
+      "validation": {
+        "patientRequired": "يرجى اختيار مريض."
+      },
+      "errors": {
+        "createFailed": "فشل إنشاء الفاتورة."
+      }
     },
     "payment": {
       "title": "تسجيل دفعة",

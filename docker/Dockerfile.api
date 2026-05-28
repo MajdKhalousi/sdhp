@@ -37,7 +37,9 @@ RUN apk add --no-cache \
     freetype \
     harfbuzz \
     ca-certificates \
-    font-noto
+    font-noto \
+    font-noto-arabic \
+    font-noto-naskh-arabic
 
 ENV CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
 

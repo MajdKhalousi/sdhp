@@ -29,9 +29,9 @@ function isTokenExpired(token: string): boolean {
 }
 
 function localeFromPath(): string {
-  if (typeof window === 'undefined') return 'en';
+  if (typeof window === 'undefined') return 'ar';
   const firstSegment = window.location.pathname.split('/')[1] ?? '';
-  return firstSegment === 'ar' ? 'ar' : 'en';
+  return ['ar', 'en', 'ku', 'tr'].includes(firstSegment) ? firstSegment : 'ar';
 }
 
 function redirectToLogin(): void {

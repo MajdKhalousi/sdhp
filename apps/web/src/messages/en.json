@@ -532,9 +532,17 @@
         "phone": "Phone",
         "gender": "Gender",
         "dob": "Date of Birth",
-        "actions": ""
+        "status": "Status",
+        "actions": "Actions"
       },
       "view": "View",
+      "addPatient": "Add Patient",
+      "archive": "Archive",
+      "confirmArchive": "Archive this patient?",
+      "errors": {
+        "createFailed": "Failed to add patient",
+        "archiveFailed": "Failed to archive patient"
+      },
       "empty": {
         "heading": "No patients found",
         "withSearch": "Try a different search term.",
@@ -560,6 +568,7 @@
         "contact": "Contact",
         "emergencyContact": "Emergency Contact",
         "clinicalNotes": "Clinical Notes",
+        "chronicDiseases": "Chronic Diseases",
         "fields": {
           "dateOfBirth": "Date of Birth",
           "gender": "Gender",
@@ -570,7 +579,8 @@
           "email": "Email",
           "nationalId": "National ID",
           "address": "Address",
-          "name": "Name"
+          "name": "Name",
+          "city": "City"
         }
       },
       "allergies": {
@@ -586,6 +596,15 @@
       "error": {
         "loadFailed": "Failed to load records",
         "occurred": "An error occurred."
+      },
+      "actions": {
+        "edit": "Edit Data",
+        "archive": "Archive Patient"
+      },
+      "confirmArchive": "Archive this patient?",
+      "errors": {
+        "updateFailed": "Failed to update patient data",
+        "archiveFailed": "Failed to archive patient"
       }
     },
     "labOrders": {
@@ -615,6 +634,71 @@
       "downloadPdf": "Download PDF",
       "downloading": "Downloading…",
       "downloadFailed": "Failed to download PDF."
+    },
+    "gender": {
+      "male": "Male",
+      "female": "Female",
+      "other": "Other"
+    },
+    "form": {
+      "sections": {
+        "basicInfo": "Basic Information",
+        "contact": "Contact Details",
+        "additional": "Additional Information",
+        "medical": "Medical Information",
+        "emergency": "Emergency Contact"
+      },
+      "fields": {
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "gender": "Gender",
+        "dateOfBirth": "Date of Birth",
+        "phone": "Phone Number",
+        "email": "Email",
+        "nationalId": "National ID",
+        "bloodType": "Blood Type",
+        "address": "Address",
+        "city": "City",
+        "allergies": "Allergies",
+        "chronicDiseases": "Chronic Diseases",
+        "emergencyName": "Contact Name",
+        "emergencyPhone": "Contact Phone"
+      },
+      "placeholders": {
+        "firstName": "First name",
+        "lastName": "Last name",
+        "nationalId": "National ID number",
+        "address": "Street address",
+        "city": "City",
+        "allergies": "List any known allergies",
+        "chronicDiseases": "List any chronic conditions",
+        "emergencyName": "Full name",
+        "phone": "+963..."
+      },
+      "gender": {
+        "selectPrompt": "Select gender",
+        "male": "Male",
+        "female": "Female",
+        "other": "Other"
+      },
+      "bloodType": {
+        "unspecified": "Unspecified"
+      },
+      "validation": {
+        "firstNameRequired": "First name is required",
+        "lastNameRequired": "Last name is required",
+        "genderRequired": "Gender is required",
+        "dobRequired": "Date of birth is required",
+        "phoneRequired": "Phone number is required",
+        "invalidEmail": "Invalid email format"
+      },
+      "actions": {
+        "create": "Add Patient",
+        "save": "Save Changes",
+        "creating": "Adding…",
+        "saving": "Saving…",
+        "cancel": "Cancel"
+      }
     }
   },
   "doctorWorkspace": {

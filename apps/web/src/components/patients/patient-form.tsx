@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type {
   Patient,
   PatientGender,
@@ -45,7 +46,6 @@ interface FormErrors {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const BLOOD_TYPE_OPTIONS: { value: string; label: string }[] = [
-  { value: '', label: 'غير محدد' },
   { value: 'A_POS', label: 'A+' },
   { value: 'A_NEG', label: 'A-' },
   { value: 'B_POS', label: 'B+' },
@@ -122,6 +122,7 @@ export function PatientForm({
   onCancel,
   isSubmitting = false,
 }: PatientFormProps) {
+  const t = useTranslations('patient.form');
   const [values, setValues] = useState<FormState>(() => initState(mode, initialPatient));
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -134,13 +135,13 @@ export function PatientForm({
 
   function validate(): FormErrors {
     const errs: FormErrors = {};
-    if (!values.firstName.trim()) errs.firstName = 'الاسم الأول مطلوب';
-    if (!values.lastName.trim()) errs.lastName = 'اسم العائلة مطلوب';
-    if (!values.gender) errs.gender = 'الجنس مطلوب';
-    if (!values.dateOfBirth) errs.dateOfBirth = 'تاريخ الميلاد مطلوب';
-    if (!values.phone.trim()) errs.phone = 'رقم الهاتف مطلوب';
+    if (!values.firstName.trim()) errs.firstName = t('validation.firstNameRequired');
+    if (!values.lastName.trim()) errs.lastName = t('validation.lastNameRequired');
+    if (!values.gender) errs.gender = t('validation.genderRequired');
+    if (!values.dateOfBirth) errs.dateOfBirth = t('validation.dobRequired');
+    if (!values.phone.trim()) errs.phone = t('validation.phoneRequired');
     if (values.email.trim() && !EMAIL_RE.test(values.email.trim())) {
-      errs.email = 'صيغة البريد الإلكتروني غير صحيحة';
+      errs.email = t('validation.invalidEmail');
     }
     return errs;
   }
@@ -178,53 +179,53 @@ export function PatientForm({
 
         {/* ── Basic information ─────────────────────────── */}
         <div className="rounded-xl border bg-card p-6 shadow-sm">
-          <h2 className="mb-4 text-sm font-semibold text-muted-foreground">المعلومات الأساسية</h2>
+          <h2 className="mb-4 text-sm font-semibold text-muted-foreground">{t('sections.basicInfo')}</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
             <div>
-              <FieldLabel required>الاسم الأول</FieldLabel>
+              <FieldLabel required>{t('fields.firstName')}</FieldLabel>
               <input
                 type="text"
                 value={values.firstName}
                 onChange={(e) => set('firstName', e.target.value)}
                 className={inputClass(!!errors.firstName)}
-                placeholder="الاسم الأول"
+                placeholder={t('placeholders.firstName')}
                 disabled={isSubmitting}
               />
               <FieldError message={errors.firstName} />
             </div>
 
             <div>
-              <FieldLabel required>اسم العائلة</FieldLabel>
+              <FieldLabel required>{t('fields.lastName')}</FieldLabel>
               <input
                 type="text"
                 value={values.lastName}
                 onChange={(e) => set('lastName', e.target.value)}
                 className={inputClass(!!errors.lastName)}
-                placeholder="اسم العائلة"
+                placeholder={t('placeholders.lastName')}
                 disabled={isSubmitting}
               />
               <FieldError message={errors.lastName} />
             </div>
 
             <div>
-              <FieldLabel required>الجنس</FieldLabel>
+              <FieldLabel required>{t('fields.gender')}</FieldLabel>
               <select
                 value={values.gender}
                 onChange={(e) => set('gender', e.target.value)}
                 className={inputClass(!!errors.gender)}
                 disabled={isSubmitting}
               >
-                <option value="">اختر الجنس</option>
-                <option value="MALE">ذكر</option>
-                <option value="FEMALE">أنثى</option>
-                <option value="OTHER">آخر</option>
+                <option value="">{t('gender.selectPrompt')}</option>
+                <option value="MALE">{t('gender.male')}</option>
+                <option value="FEMALE">{t('gender.female')}</option>
+                <option value="OTHER">{t('gender.other')}</option>
               </select>
               <FieldError message={errors.gender} />
             </div>
 
             <div>
-              <FieldLabel required>تاريخ الميلاد</FieldLabel>
+              <FieldLabel required>{t('fields.dateOfBirth')}</FieldLabel>
               <input
                 type="date"
                 value={values.dateOfBirth}
@@ -241,17 +242,17 @@ export function PatientForm({
 
         {/* ── Contact ───────────────────────────────────── */}
         <div className="rounded-xl border bg-card p-6 shadow-sm">
-          <h2 className="mb-4 text-sm font-semibold text-muted-foreground">بيانات التواصل</h2>
+          <h2 className="mb-4 text-sm font-semibold text-muted-foreground">{t('sections.contact')}</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
             <div>
-              <FieldLabel required>رقم الهاتف</FieldLabel>
+              <FieldLabel required>{t('fields.phone')}</FieldLabel>
               <input
                 type="tel"
                 value={values.phone}
                 onChange={(e) => set('phone', e.target.value)}
                 className={inputClass(!!errors.phone)}
-                placeholder="+963..."
+                placeholder={t('placeholders.phone')}
                 disabled={isSubmitting}
                 dir="ltr"
               />
@@ -259,7 +260,7 @@ export function PatientForm({
             </div>
 
             <div>
-              <FieldLabel>البريد الإلكتروني</FieldLabel>
+              <FieldLabel>{t('fields.email')}</FieldLabel>
               <input
                 type="email"
                 value={values.email}
@@ -277,30 +278,31 @@ export function PatientForm({
 
         {/* ── Additional information ────────────────────── */}
         <div className="rounded-xl border bg-card p-6 shadow-sm">
-          <h2 className="mb-4 text-sm font-semibold text-muted-foreground">معلومات إضافية</h2>
+          <h2 className="mb-4 text-sm font-semibold text-muted-foreground">{t('sections.additional')}</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
             <div>
-              <FieldLabel>الرقم الوطني</FieldLabel>
+              <FieldLabel>{t('fields.nationalId')}</FieldLabel>
               <input
                 type="text"
                 value={values.nationalId}
                 onChange={(e) => set('nationalId', e.target.value)}
                 className={inputClass()}
-                placeholder="الرقم الوطني"
+                placeholder={t('placeholders.nationalId')}
                 disabled={isSubmitting}
                 dir="ltr"
               />
             </div>
 
             <div>
-              <FieldLabel>فصيلة الدم</FieldLabel>
+              <FieldLabel>{t('fields.bloodType')}</FieldLabel>
               <select
                 value={values.bloodType}
                 onChange={(e) => set('bloodType', e.target.value)}
                 className={inputClass()}
                 disabled={isSubmitting}
               >
+                <option value="">{t('bloodType.unspecified')}</option>
                 {BLOOD_TYPE_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
@@ -310,25 +312,25 @@ export function PatientForm({
             </div>
 
             <div>
-              <FieldLabel>العنوان</FieldLabel>
+              <FieldLabel>{t('fields.address')}</FieldLabel>
               <input
                 type="text"
                 value={values.address}
                 onChange={(e) => set('address', e.target.value)}
                 className={inputClass()}
-                placeholder="العنوان"
+                placeholder={t('placeholders.address')}
                 disabled={isSubmitting}
               />
             </div>
 
             <div>
-              <FieldLabel>المدينة</FieldLabel>
+              <FieldLabel>{t('fields.city')}</FieldLabel>
               <input
                 type="text"
                 value={values.city}
                 onChange={(e) => set('city', e.target.value)}
                 className={inputClass()}
-                placeholder="المدينة"
+                placeholder={t('placeholders.city')}
                 disabled={isSubmitting}
               />
             </div>
@@ -338,29 +340,29 @@ export function PatientForm({
 
         {/* ── Medical information ───────────────────────── */}
         <div className="rounded-xl border bg-card p-6 shadow-sm">
-          <h2 className="mb-4 text-sm font-semibold text-muted-foreground">المعلومات الطبية</h2>
+          <h2 className="mb-4 text-sm font-semibold text-muted-foreground">{t('sections.medical')}</h2>
           <div className="grid grid-cols-1 gap-4">
 
             <div>
-              <FieldLabel>الحساسيات</FieldLabel>
+              <FieldLabel>{t('fields.allergies')}</FieldLabel>
               <textarea
                 value={values.allergies}
                 onChange={(e) => set('allergies', e.target.value)}
                 className={`${inputClass()} resize-none`}
                 rows={2}
-                placeholder="اذكر الحساسيات إن وجدت"
+                placeholder={t('placeholders.allergies')}
                 disabled={isSubmitting}
               />
             </div>
 
             <div>
-              <FieldLabel>الأمراض المزمنة</FieldLabel>
+              <FieldLabel>{t('fields.chronicDiseases')}</FieldLabel>
               <textarea
                 value={values.chronicDiseases}
                 onChange={(e) => set('chronicDiseases', e.target.value)}
                 className={`${inputClass()} resize-none`}
                 rows={2}
-                placeholder="اذكر الأمراض المزمنة إن وجدت"
+                placeholder={t('placeholders.chronicDiseases')}
                 disabled={isSubmitting}
               />
             </div>
@@ -370,29 +372,29 @@ export function PatientForm({
 
         {/* ── Emergency contact ─────────────────────────── */}
         <div className="rounded-xl border bg-card p-6 shadow-sm">
-          <h2 className="mb-4 text-sm font-semibold text-muted-foreground">جهة الاتصال الطارئة</h2>
+          <h2 className="mb-4 text-sm font-semibold text-muted-foreground">{t('sections.emergency')}</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
             <div>
-              <FieldLabel>اسم جهة الاتصال</FieldLabel>
+              <FieldLabel>{t('fields.emergencyName')}</FieldLabel>
               <input
                 type="text"
                 value={values.emergencyContactName}
                 onChange={(e) => set('emergencyContactName', e.target.value)}
                 className={inputClass()}
-                placeholder="الاسم الكامل"
+                placeholder={t('placeholders.emergencyName')}
                 disabled={isSubmitting}
               />
             </div>
 
             <div>
-              <FieldLabel>رقم هاتف جهة الاتصال</FieldLabel>
+              <FieldLabel>{t('fields.emergencyPhone')}</FieldLabel>
               <input
                 type="tel"
                 value={values.emergencyContactPhone}
                 onChange={(e) => set('emergencyContactPhone', e.target.value)}
                 className={inputClass()}
-                placeholder="+963..."
+                placeholder={t('placeholders.phone')}
                 disabled={isSubmitting}
                 dir="ltr"
               />
@@ -410,7 +412,7 @@ export function PatientForm({
               disabled={isSubmitting}
               className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
             >
-              إلغاء
+              {t('actions.cancel')}
             </button>
           )}
           <button
@@ -419,10 +421,8 @@ export function PatientForm({
             className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
           >
             {isSubmitting
-              ? 'جارٍ الحفظ...'
-              : mode === 'create'
-              ? 'إضافة المريض'
-              : 'حفظ التعديلات'}
+              ? (mode === 'create' ? t('actions.creating') : t('actions.saving'))
+              : (mode === 'create' ? t('actions.create') : t('actions.save'))}
           </button>
         </div>
 

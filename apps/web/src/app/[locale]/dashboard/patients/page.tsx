@@ -18,11 +18,6 @@ function formatDate(iso: string | null, locale = 'en-US'): string {
   });
 }
 
-function formatGender(raw: string | null): string {
-  if (!raw) return '—';
-  return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
-}
-
 const PATIENT_MANAGE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
 
 export default function PatientsPage() {
@@ -38,6 +33,7 @@ export default function PatientsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [archiveConfirmId, setArchiveConfirmId] = useState<string | null>(null);
 
   // 350 ms debounce — avoids firing on every keystroke
   useEffect(() => {
@@ -57,18 +53,18 @@ export default function PatientsPage() {
       await createPatient.mutateAsync(formData as CreatePatientInput);
       setIsCreateOpen(false);
     } catch (err) {
-      setCreateError(err instanceof Error ? err.message : 'حدث خطأ أثناء إضافة المريض');
+      setCreateError(err instanceof Error ? err.message : t('list.errors.createFailed'));
     }
   }
 
   async function handleDelete(patientId: string) {
-    const confirmed = window.confirm('هل أنت متأكد من أرشفة هذا المريض؟');
-    if (!confirmed) return;
     setDeleteError(null);
     try {
       await deletePatient.mutateAsync(patientId);
+      setArchiveConfirmId(null);
     } catch (err) {
-      setDeleteError(err instanceof Error ? err.message : 'حدث خطأ أثناء أرشفة المريض');
+      setDeleteError(err instanceof Error ? err.message : t('list.errors.archiveFailed'));
+      setArchiveConfirmId(null);
     }
   }
 
@@ -89,7 +85,7 @@ export default function PatientsPage() {
               onClick={() => { setIsCreateOpen(true); setCreateError(null); }}
               className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              إضافة مريض
+              {t('list.addPatient')}
             </button>
           )}
 
@@ -176,8 +172,8 @@ export default function PatientsPage() {
                       <th className="px-4 py-3">{t('list.columns.dob')}</th>
                       <th className="px-4 py-3">{t('list.columns.gender')}</th>
                       <th className="px-4 py-3">{t('list.columns.phone')}</th>
-                      <th className="px-4 py-3">الحالة</th>
-                      <th className="px-4 py-3">الإجراءات</th>
+                      <th className="px-4 py-3">{t('list.columns.status')}</th>
+                      <th className="px-4 py-3">{t('list.columns.actions')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -209,7 +205,9 @@ export default function PatientsPage() {
                           {formatDate(patient.dateOfBirth, displayLocale)}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">
-                          {formatGender(patient.gender)}
+                          {patient.gender
+                            ? t(`gender.${patient.gender.toLowerCase()}` as Parameters<typeof t>[0])
+                            : '—'}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground" dir="ltr">
                           {patient.phone ?? '—'}
@@ -225,16 +223,36 @@ export default function PatientsPage() {
                               href={`/dashboard/patients/${patient.id}`}
                               className="rounded-md border px-2.5 py-1 text-xs font-medium transition-colors hover:bg-accent"
                             >
-                              عرض
+                              {t('list.view')}
                             </Link>
                             {canManage && (
-                              <button
-                                onClick={() => handleDelete(patient.id)}
-                                disabled={deletePatient.isPending}
-                                className="rounded-md border border-destructive/30 px-2.5 py-1 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:pointer-events-none disabled:opacity-50"
-                              >
-                                أرشفة
-                              </button>
+                              archiveConfirmId === patient.id ? (
+                                <span className="flex items-center gap-1.5">
+                                  <span className="text-xs text-destructive">{t('list.confirmArchive')}</span>
+                                  <button
+                                    onClick={() => handleDelete(patient.id)}
+                                    disabled={deletePatient.isPending}
+                                    className="rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive/20 disabled:opacity-50"
+                                  >
+                                    {t('list.archive')}
+                                  </button>
+                                  <button
+                                    onClick={() => setArchiveConfirmId(null)}
+                                    disabled={deletePatient.isPending}
+                                    className="rounded-md border px-2 py-1 text-xs font-medium hover:bg-accent disabled:opacity-50"
+                                  >
+                                    {tCommon('actions.cancel')}
+                                  </button>
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => setArchiveConfirmId(patient.id)}
+                                  disabled={deletePatient.isPending}
+                                  className="rounded-md border border-destructive/30 px-2.5 py-1 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:pointer-events-none disabled:opacity-50"
+                                >
+                                  {t('list.archive')}
+                                </button>
+                              )
                             )}
                           </div>
                         </td>

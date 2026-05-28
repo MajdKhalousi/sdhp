@@ -29,11 +29,6 @@ function formatDate(iso: string | null, locale = 'en-US'): string {
   });
 }
 
-function formatGender(raw: string | null): string {
-  if (!raw) return '—';
-  return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
-}
-
 function formatBloodType(raw: string | null): string {
   if (!raw) return '—';
   return raw.replace('_POS', '+').replace('_NEG', '−');
@@ -129,7 +124,10 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
           {t('detail.overview.demographics')}
         </p>
         <InfoRow label={t('detail.overview.fields.dateOfBirth')} value={formatDate(patient.dateOfBirth, displayLocale)} />
-        <InfoRow label={t('detail.overview.fields.gender')} value={formatGender(patient.gender)} />
+        <InfoRow
+          label={t('detail.overview.fields.gender')}
+          value={patient.gender ? t(`gender.${patient.gender.toLowerCase()}` as Parameters<typeof t>[0]) : '—'}
+        />
         <InfoRow label={t('detail.overview.fields.bloodType')} value={formatBloodType(patient.bloodType)} />
         <InfoRow
           label={t('detail.overview.fields.status')}
@@ -150,7 +148,7 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
         <InfoRow label={t('detail.overview.fields.email')} value={patient.email} />
         <InfoRow label={t('detail.overview.fields.nationalId')} value={patient.nationalId} />
         <InfoRow label={t('detail.overview.fields.address')} value={patient.address} />
-        {patient.city && <InfoRow label="المدينة" value={patient.city} />}
+        {patient.city && <InfoRow label={t('detail.overview.fields.city')} value={patient.city} />}
       </div>
 
       {((patient.emergencyContactName ?? patient.emergencyName) || (patient.emergencyContactPhone ?? patient.emergencyPhone)) && (
@@ -166,7 +164,7 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
       {patient.chronicDiseases && (
         <div className="rounded-xl border bg-card px-5 py-3 shadow-sm sm:col-span-2">
           <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            الأمراض المزمنة
+            {t('detail.overview.chronicDiseases')}
           </p>
           <p className="text-sm text-foreground">{patient.chronicDiseases}</p>
         </div>
@@ -196,10 +194,12 @@ export default function PatientPage({ params }: { params: { id: string } }) {
   const { id } = params;
   const router = useRouter();
   const t = useTranslations('patient');
+  const tCommon = useTranslations('common');
   const { user } = useAuthStore();
   const canManage = user ? PATIENT_MANAGE_ROLES.has(user.role) : false;
   const [activeTab, setActiveTab] = useState('overview');
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -216,19 +216,18 @@ export default function PatientPage({ params }: { params: { id: string } }) {
       await updatePatient.mutateAsync({ id, data: formData as UpdatePatientInput });
       setIsEditOpen(false);
     } catch (err) {
-      setUpdateError(err instanceof Error ? err.message : 'حدث خطأ أثناء تعديل بيانات المريض');
+      setUpdateError(err instanceof Error ? err.message : t('detail.errors.updateFailed'));
     }
   }
 
   async function handleDelete() {
-    const confirmed = window.confirm('هل أنت متأكد من أرشفة هذا المريض؟');
-    if (!confirmed) return;
     setDeleteError(null);
     try {
       await deletePatient.mutateAsync(id);
       router.push('/dashboard/patients');
     } catch (err) {
-      setDeleteError(err instanceof Error ? err.message : 'حدث خطأ أثناء أرشفة المريض');
+      setDeleteError(err instanceof Error ? err.message : t('detail.errors.archiveFailed'));
+      setShowArchiveConfirm(false);
     }
   }
 
@@ -248,20 +247,43 @@ export default function PatientPage({ params }: { params: { id: string } }) {
       <PatientHeader patient={patient} isLoading={isLoading} />
 
       {patient && canManage && (
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => { setIsEditOpen(true); setUpdateError(null); }}
-            className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-          >
-            تعديل البيانات
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={deletePatient.isPending}
-            className="rounded-lg border border-destructive/30 px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:pointer-events-none disabled:opacity-50"
-          >
-            أرشفة المريض
-          </button>
+        <div className="space-y-3">
+          {!showArchiveConfirm ? (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => { setIsEditOpen(true); setUpdateError(null); }}
+                className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                {t('detail.actions.edit')}
+              </button>
+              <button
+                onClick={() => setShowArchiveConfirm(true)}
+                className="rounded-lg border border-destructive/30 px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+              >
+                {t('detail.actions.archive')}
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-3 rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-2.5">
+              <p className="text-sm text-destructive">{t('detail.confirmArchive')}</p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleDelete}
+                  disabled={deletePatient.isPending}
+                  className="h-8 rounded-md border border-destructive/40 bg-destructive/10 px-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/20 disabled:pointer-events-none disabled:opacity-50"
+                >
+                  {t('detail.actions.archive')}
+                </button>
+                <button
+                  onClick={() => setShowArchiveConfirm(false)}
+                  disabled={deletePatient.isPending}
+                  className="h-8 rounded-md border px-3 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
+                >
+                  {tCommon('actions.cancel')}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

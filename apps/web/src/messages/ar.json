@@ -532,9 +532,17 @@
         "phone": "الهاتف",
         "gender": "الجنس",
         "dob": "تاريخ الميلاد",
-        "actions": ""
+        "status": "الحالة",
+        "actions": "الإجراءات"
       },
       "view": "عرض",
+      "addPatient": "إضافة مريض",
+      "archive": "أرشفة",
+      "confirmArchive": "هل أنت متأكد من أرشفة هذا المريض؟",
+      "errors": {
+        "createFailed": "حدث خطأ أثناء إضافة المريض",
+        "archiveFailed": "حدث خطأ أثناء أرشفة المريض"
+      },
       "empty": {
         "heading": "لا توجد نتائج",
         "withSearch": "جرّب مصطلح بحث مختلف.",
@@ -560,6 +568,7 @@
         "contact": "معلومات التواصل",
         "emergencyContact": "جهة الاتصال الطارئة",
         "clinicalNotes": "ملاحظات سريرية",
+        "chronicDiseases": "الأمراض المزمنة",
         "fields": {
           "dateOfBirth": "تاريخ الميلاد",
           "gender": "الجنس",
@@ -570,7 +579,8 @@
           "email": "البريد الإلكتروني",
           "nationalId": "رقم الهوية",
           "address": "العنوان",
-          "name": "الاسم"
+          "name": "الاسم",
+          "city": "المدينة"
         }
       },
       "allergies": {
@@ -586,6 +596,15 @@
       "error": {
         "loadFailed": "فشل تحميل السجلات",
         "occurred": "حدث خطأ."
+      },
+      "actions": {
+        "edit": "تعديل البيانات",
+        "archive": "أرشفة المريض"
+      },
+      "confirmArchive": "هل أنت متأكد من أرشفة هذا المريض؟",
+      "errors": {
+        "updateFailed": "حدث خطأ أثناء تعديل بيانات المريض",
+        "archiveFailed": "حدث خطأ أثناء أرشفة المريض"
       }
     },
     "labOrders": {
@@ -615,6 +634,71 @@
       "downloadPdf": "تحميل PDF",
       "downloading": "جاري التحميل…",
       "downloadFailed": "فشل تحميل ملف PDF."
+    },
+    "gender": {
+      "male": "ذكر",
+      "female": "أنثى",
+      "other": "آخر"
+    },
+    "form": {
+      "sections": {
+        "basicInfo": "المعلومات الأساسية",
+        "contact": "بيانات التواصل",
+        "additional": "معلومات إضافية",
+        "medical": "المعلومات الطبية",
+        "emergency": "جهة الاتصال الطارئة"
+      },
+      "fields": {
+        "firstName": "الاسم الأول",
+        "lastName": "اسم العائلة",
+        "gender": "الجنس",
+        "dateOfBirth": "تاريخ الميلاد",
+        "phone": "رقم الهاتف",
+        "email": "البريد الإلكتروني",
+        "nationalId": "الرقم الوطني",
+        "bloodType": "فصيلة الدم",
+        "address": "العنوان",
+        "city": "المدينة",
+        "allergies": "الحساسيات",
+        "chronicDiseases": "الأمراض المزمنة",
+        "emergencyName": "اسم جهة الاتصال",
+        "emergencyPhone": "رقم هاتف جهة الاتصال"
+      },
+      "placeholders": {
+        "firstName": "الاسم الأول",
+        "lastName": "اسم العائلة",
+        "nationalId": "الرقم الوطني",
+        "address": "العنوان",
+        "city": "المدينة",
+        "allergies": "اذكر الحساسيات إن وجدت",
+        "chronicDiseases": "اذكر الأمراض المزمنة إن وجدت",
+        "emergencyName": "الاسم الكامل",
+        "phone": "+963..."
+      },
+      "gender": {
+        "selectPrompt": "اختر الجنس",
+        "male": "ذكر",
+        "female": "أنثى",
+        "other": "آخر"
+      },
+      "bloodType": {
+        "unspecified": "غير محدد"
+      },
+      "validation": {
+        "firstNameRequired": "الاسم الأول مطلوب",
+        "lastNameRequired": "اسم العائلة مطلوب",
+        "genderRequired": "الجنس مطلوب",
+        "dobRequired": "تاريخ الميلاد مطلوب",
+        "phoneRequired": "رقم الهاتف مطلوب",
+        "invalidEmail": "صيغة البريد الإلكتروني غير صحيحة"
+      },
+      "actions": {
+        "create": "إضافة المريض",
+        "save": "حفظ التعديلات",
+        "creating": "جارٍ الإضافة…",
+        "saving": "جارٍ الحفظ…",
+        "cancel": "إلغاء"
+      }
     }
   },
   "doctorWorkspace": {

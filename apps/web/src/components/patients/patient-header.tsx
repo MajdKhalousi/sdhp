@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { Patient } from '@/hooks/use-patient';
@@ -10,9 +10,9 @@ interface PatientHeaderProps {
   isLoading: boolean;
 }
 
-function formatDate(iso: string | null): string {
+function formatDate(iso: string | null, displayLocale: string): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en', {
+  return new Date(iso).toLocaleDateString(displayLocale, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -22,11 +22,6 @@ function formatDate(iso: string | null): string {
 function formatBloodType(raw: string | null): string {
   if (!raw) return '—';
   return raw.replace('_POS', '+').replace('_NEG', '−');
-}
-
-function formatGender(raw: string | null): string {
-  if (!raw) return '—';
-  return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
 }
 
 function Initials({ name }: { name: string }) {
@@ -43,6 +38,8 @@ function Initials({ name }: { name: string }) {
 
 export function PatientHeader({ patient, isLoading }: PatientHeaderProps) {
   const t = useTranslations('patient');
+  const locale = useLocale();
+  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
 
   if (isLoading) {
     return (
@@ -84,9 +81,11 @@ export function PatientHeader({ patient, isLoading }: PatientHeaderProps) {
           <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
             <span className="font-mono text-xs" dir="ltr">{patient.mrn}</span>
             {patient.dateOfBirth && (
-              <span>{t('header.dob')} {formatDate(patient.dateOfBirth)}</span>
+              <span>{t('header.dob')} {formatDate(patient.dateOfBirth, displayLocale)}</span>
             )}
-            {patient.gender && <span>{formatGender(patient.gender)}</span>}
+            {patient.gender && (
+              <span>{t(`gender.${patient.gender.toLowerCase()}` as Parameters<typeof t>[0])}</span>
+            )}
             {patient.bloodType && (
               <span className="font-medium text-foreground">
                 {formatBloodType(patient.bloodType)}

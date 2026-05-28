@@ -28,12 +28,12 @@ function formatTime(iso: string, locale = 'en-US') {
   });
 }
 
-function relativeWait(iso: string) {
+function relativeWait(iso: string, justNow: string, minShort: string, hrShort: string): string {
   const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m`;
+  if (mins < 1) return justNow;
+  if (mins < 60) return `${mins}${minShort}`;
   const h = Math.floor(mins / 60);
-  return `${h}h ${mins % 60}m`;
+  return `${h}${hrShort} ${mins % 60}${minShort}`;
 }
 
 function formatRole(role: string) {
@@ -45,6 +45,8 @@ function formatRole(role: string) {
 
 export default function DashboardPage() {
   const t = useTranslations('dashboard');
+  const tQueue = useTranslations('doctorQueue.card');
+  const tDuration = useTranslations('timeline.cards.duration');
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
   const user = useAuthStore((s) => s.user);
@@ -268,7 +270,7 @@ export default function DashboardPage() {
                       {entry.appointment.patient.firstName} {entry.appointment.patient.lastName}
                     </p>
                     <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <span>{relativeWait(entry.createdAt)}</span>
+                      <span>{relativeWait(entry.createdAt, tQueue('justNow'), tDuration('minuteShort'), tDuration('hourShort'))}</span>
                       <span>·</span>
                       <span>Dr. {entry.appointment.doctor.user.lastName}</span>
                     </p>

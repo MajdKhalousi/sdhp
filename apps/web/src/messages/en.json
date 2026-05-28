@@ -107,6 +107,8 @@
     },
     "list": {
       "title": "Appointments",
+      "subtitle": "Manage and track patient appointments",
+      "newAppointment": "New Appointment",
       "columns": {
         "patient": "Patient",
         "doctor": "Doctor",
@@ -171,6 +173,8 @@
     },
     "board": {
       "title": "Queue",
+      "subtitle": "Live reception queue — auto-refreshes every 30s",
+      "checkInPatient": "Check In Patient",
       "filter": {
         "active": "Active patients",
         "all": "All statuses",
@@ -200,6 +204,8 @@
     },
     "walkIn": {
       "title": "Walk-in Registration",
+      "pageTitle": "Walk-In Check-In",
+      "pageSubtitle": "Book a walk-in visit and add the patient to the queue",
       "steps": {
         "createAppointment": "Create Appointment",
         "checkIn": "Check In"

@@ -15,6 +15,7 @@ import { FilesTab } from '@/components/patients/files-tab';
 import { LabOrdersTab } from '@/components/patients/lab-orders-tab';
 import { RadiologyOrdersTab } from '@/components/patients/radiology-orders-tab';
 import { ClinicalReportsTab } from '@/components/patients/clinical-reports-tab';
+import { InvoicesTab } from '@/components/patients/invoices-tab';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { Patient, CreatePatientInput, UpdatePatientInput } from '@/hooks/use-patient';
@@ -234,6 +235,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
     { value: 'radiology',     label: t('detail.tabs.radiology')     },
     { value: 'files',         label: t('detail.tabs.files')         },
     { value: 'reports',       label: t('detail.tabs.reports')       },
+    { value: 'invoices',      label: t('detail.tabs.invoices')      },
   ];
 
   return (
@@ -329,6 +331,10 @@ export default function PatientPage({ params }: { params: { id: string } }) {
 
         <TabPanel value="reports" activeValue={activeTab}>
           <ClinicalReportsTab patientId={id} />
+        </TabPanel>
+
+        <TabPanel value="invoices" activeValue={activeTab}>
+          <InvoicesTab patientId={id} />
         </TabPanel>
 
       </div>

@@ -1,0 +1,210 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { Receipt } from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
+import { useInvoices } from '@/hooks/use-invoices';
+import { InvoiceStatusBadge } from './invoice-status-badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import type { InvoiceStatus } from '@/types/invoice';
+
+const STATUS_TABS = ['', 'DRAFT', 'ISSUED', 'PARTIALLY_PAID', 'PAID', 'CANCELLED'] as const;
+type StatusTab = (typeof STATUS_TABS)[number];
+
+function formatAmount(value: string, locale: string): string {
+  const num = parseFloat(value);
+  if (isNaN(num)) return '— SYP';
+  return (
+    new Intl.NumberFormat(locale === 'ar' ? 'ar-SY' : 'en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(num) + ' SYP'
+  );
+}
+
+function formatDate(iso: string | null): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+export function InvoiceList() {
+  const t = useTranslations('invoice');
+  const tCommon = useTranslations('common');
+  const locale = useLocale();
+
+  const [statusFilter, setStatusFilter] = useState<StatusTab>('');
+
+  const { data, isLoading, isError, error, refetch } = useInvoices({
+    ...(statusFilter ? { status: statusFilter as InvoiceStatus } : {}),
+  });
+
+  const columns = [
+    t('list.columns.invoiceNumber'),
+    t('list.columns.patient'),
+    t('list.columns.status'),
+    t('list.columns.amount'),
+    t('list.columns.paid'),
+    t('list.columns.dueDate'),
+    t('list.columns.date'),
+  ];
+
+  const statusTabs = (
+    <div className="flex flex-wrap gap-1.5">
+      {STATUS_TABS.map((tab) => (
+        <button
+          key={tab}
+          onClick={() => setStatusFilter(tab)}
+          className={cn(
+            'h-7 rounded-full px-3 text-xs font-medium transition-colors',
+            statusFilter === tab
+              ? 'bg-primary text-primary-foreground'
+              : 'border border-border text-muted-foreground hover:bg-accent',
+          )}
+        >
+          {tab === ''
+            ? t('list.filter.all')
+            : t(`status.${tab}` as Parameters<typeof t>[0])}
+        </button>
+      ))}
+    </div>
+  );
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        {statusTabs}
+        <div className="overflow-hidden rounded-xl border border-border">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px]">
+              <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
+                <tr>
+                  {columns.map((h) => (
+                    <th key={h} className="px-4 py-3 text-start font-medium">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="border-t border-border">
+                    {Array.from({ length: columns.length }).map((__, j) => (
+                      <td key={j} className="px-4 py-3">
+                        <Skeleton className="h-4 w-full" />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="space-y-4">
+        {statusTabs}
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-16 text-center">
+          <p className="text-sm font-medium text-destructive">
+            {t('list.error.loadFailed')}
+          </p>
+          <p className="max-w-xs text-xs text-muted-foreground">
+            {error instanceof Error ? error.message : tCommon('states.error')}
+          </p>
+          <button
+            onClick={() => refetch()}
+            className="mt-1 h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
+          >
+            {tCommon('actions.tryAgain')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="space-y-4">
+        {statusTabs}
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
+          <Receipt className="h-8 w-8 text-muted-foreground/50" />
+          <p className="text-sm font-medium">{t('list.empty.heading')}</p>
+          <p className="text-xs text-muted-foreground">
+            {statusFilter ? t('list.empty.withFilters') : t('list.empty.noData')}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {statusTabs}
+
+      <div className="overflow-hidden rounded-xl border border-border">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[720px]">
+            <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
+              <tr>
+                <th className="px-4 py-3 text-start font-medium">{t('list.columns.invoiceNumber')}</th>
+                <th className="px-4 py-3 text-start font-medium">{t('list.columns.patient')}</th>
+                <th className="px-4 py-3 text-start font-medium">{t('list.columns.status')}</th>
+                <th className="px-4 py-3 text-start font-medium">{t('list.columns.amount')}</th>
+                <th className="px-4 py-3 text-start font-medium">{t('list.columns.paid')}</th>
+                <th className="px-4 py-3 text-start font-medium">{t('list.columns.dueDate')}</th>
+                <th className="px-4 py-3 text-start font-medium">{t('list.columns.date')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((invoice) => (
+                <tr
+                  key={invoice.id}
+                  className="border-t border-border transition-colors hover:bg-muted/20 cursor-pointer"
+                >
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/dashboard/invoices/${invoice.id}`}
+                      className="block text-sm font-medium tabular-nums hover:underline"
+                      dir="ltr"
+                    >
+                      {invoice.invoiceNumber}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3">
+                    <p className="text-sm">
+                      {invoice.patient.firstName} {invoice.patient.lastName}
+                    </p>
+                    <p className="text-xs text-muted-foreground" dir="ltr">
+                      {invoice.patient.mrn}
+                    </p>
+                  </td>
+                  <td className="px-4 py-3">
+                    <InvoiceStatusBadge status={invoice.status} />
+                  </td>
+                  <td className="px-4 py-3 text-sm tabular-nums" dir="ltr">
+                    {formatAmount(invoice.totalAmount, locale)}
+                  </td>
+                  <td className="px-4 py-3 text-sm tabular-nums" dir="ltr">
+                    {formatAmount(invoice.paidAmount, locale)}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap" dir="ltr">
+                    {formatDate(invoice.dueDate)}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap" dir="ltr">
+                    {formatDate(invoice.issuedAt ?? invoice.createdAt)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  );
+}

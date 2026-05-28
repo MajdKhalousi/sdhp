@@ -55,7 +55,8 @@
       "doctorWorkspace": "Doctor Workspace",
       "doctorQueue": "Doctor Queue",
       "technicianLabs": "Technician Labs",
-      "technicianRadiology": "Technician Radiology"
+      "technicianRadiology": "Technician Radiology",
+      "invoices": "Invoices"
     }
   },
   "dashboard": {
@@ -551,7 +552,8 @@
         "labs": "Lab Orders",
         "radiology": "Radiology",
         "files": "Medical Files",
-        "reports": "Reports"
+        "reports": "Reports",
+        "invoices": "Invoices"
       },
       "overview": {
         "demographics": "Demographics",
@@ -826,6 +828,152 @@
     "validation": {
       "findingsRequired": "Findings are required.",
       "impressionRequired": "Impression is required."
+    }
+  },
+  "invoice": {
+    "status": {
+      "DRAFT": "Draft",
+      "ISSUED": "Issued",
+      "PARTIALLY_PAID": "Partially Paid",
+      "PAID": "Paid",
+      "CANCELLED": "Cancelled"
+    },
+    "list": {
+      "title": "Invoices",
+      "subtitle": "Manage and track patient invoices",
+      "filter": {
+        "all": "All"
+      },
+      "columns": {
+        "invoiceNumber": "Invoice #",
+        "patient": "Patient",
+        "status": "Status",
+        "amount": "Total",
+        "paid": "Paid",
+        "remaining": "Remaining",
+        "dueDate": "Due Date",
+        "date": "Date"
+      },
+      "empty": {
+        "heading": "No invoices found",
+        "withFilters": "Try adjusting your filters.",
+        "noData": "Create the first invoice to get started.",
+        "patientNoData": "This patient has no invoices yet."
+      },
+      "error": {
+        "loadFailed": "Failed to load invoices"
+      }
+    },
+    "detail": {
+      "title": "Invoice Details",
+      "back": "Back to Invoices",
+      "loading": "Loading invoice…",
+      "notFound": "Invoice not found.",
+      "error": {
+        "loadFailed": "Failed to load invoice"
+      },
+      "fields": {
+        "invoiceNumber": "Invoice #",
+        "patient": "Patient",
+        "mrn": "MRN",
+        "status": "Status",
+        "subtotal": "Subtotal",
+        "discount": "Discount",
+        "total": "Total",
+        "paid": "Paid",
+        "remaining": "Remaining",
+        "dueDate": "Due Date",
+        "issuedAt": "Issued At",
+        "cancelledAt": "Cancelled At",
+        "cancelReason": "Cancel Reason",
+        "notes": "Notes",
+        "createdBy": "Created By",
+        "date": "Date"
+      }
+    },
+    "items": {
+      "title": "Items",
+      "columns": {
+        "description": "Description",
+        "quantity": "Qty",
+        "unitPrice": "Unit Price",
+        "discount": "Discount",
+        "total": "Total",
+        "notes": "Notes",
+        "actions": "Actions"
+      },
+      "empty": "No items on this invoice.",
+      "remove": "Remove",
+      "removing": "Removing…",
+      "addForm": {
+        "title": "Add Item",
+        "description": "Description",
+        "descriptionPlaceholder": "e.g. Consultation fee",
+        "quantity": "Quantity",
+        "unitPrice": "Unit Price",
+        "discount": "Discount",
+        "notes": "Notes",
+        "notesPlaceholder": "Optional",
+        "submit": "Add Item",
+        "submitting": "Adding…",
+        "validation": {
+          "descriptionRequired": "Description is required.",
+          "unitPriceRequired": "Unit price must be greater than 0.",
+          "quantityMin": "Quantity must be at least 1."
+        }
+      }
+    },
+    "payments": {
+      "title": "Payments",
+      "columns": {
+        "amount": "Amount",
+        "method": "Method",
+        "date": "Date",
+        "reference": "Reference",
+        "receivedBy": "Received By"
+      },
+      "empty": "No payments recorded.",
+      "method": {
+        "CASH": "Cash",
+        "CARD": "Card",
+        "BANK_TRANSFER": "Bank Transfer",
+        "INSURANCE": "Insurance",
+        "OTHER": "Other"
+      }
+    },
+    "actions": {
+      "issue": "Issue Invoice",
+      "issuing": "Issuing…",
+      "issueConfirm": "Issue this invoice? It will no longer be editable.",
+      "issueDisabled": "Add at least one item before issuing.",
+      "cancel": "Cancel Invoice",
+      "cancelling": "Cancelling…",
+      "cancelReason": "Cancel Reason",
+      "cancelReasonPlaceholder": "Optional reason for cancellation",
+      "cancelConfirm": "Cancel this invoice? This action cannot be undone.",
+      "cancelSubmit": "Confirm Cancellation"
+    },
+    "payment": {
+      "title": "Record Payment",
+      "fields": {
+        "amount": "Amount",
+        "method": "Payment Method",
+        "selectMethod": "Select a method",
+        "referenceNumber": "Reference Number",
+        "referenceNumberPlaceholder": "e.g. TXN-12345",
+        "paidAt": "Payment Date",
+        "notes": "Notes",
+        "notesPlaceholder": "Optional"
+      },
+      "submit": "Record Payment",
+      "submitting": "Recording…",
+      "remainingHint": "Balance: {amount}",
+      "validation": {
+        "amountRequired": "Amount is required.",
+        "amountMin": "Amount must be greater than 0.",
+        "amountExceedsRemaining": "Amount exceeds remaining balance.",
+        "methodRequired": "Payment method is required."
+      }
     }
   },
   "filesTab": {

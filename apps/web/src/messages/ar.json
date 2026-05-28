@@ -55,7 +55,8 @@
       "doctorWorkspace": "غرفة الطبيب",
       "doctorQueue": "طابور الطبيب",
       "technicianLabs": "مختبر الفني",
-      "technicianRadiology": "أشعة الفني"
+      "technicianRadiology": "أشعة الفني",
+      "invoices": "الفواتير"
     }
   },
   "dashboard": {
@@ -551,7 +552,8 @@
         "labs": "طلبات المختبر",
         "radiology": "الأشعة",
         "files": "الملفات الطبية",
-        "reports": "التقارير"
+        "reports": "التقارير",
+        "invoices": "الفواتير"
       },
       "overview": {
         "demographics": "البيانات الأساسية",
@@ -826,6 +828,152 @@
     "validation": {
       "findingsRequired": "النتائج مطلوبة.",
       "impressionRequired": "الانطباع مطلوب."
+    }
+  },
+  "invoice": {
+    "status": {
+      "DRAFT": "مسودة",
+      "ISSUED": "مُصدرة",
+      "PARTIALLY_PAID": "مدفوعة جزئياً",
+      "PAID": "مدفوعة",
+      "CANCELLED": "ملغاة"
+    },
+    "list": {
+      "title": "الفواتير",
+      "subtitle": "إدارة ومتابعة فواتير المرضى",
+      "filter": {
+        "all": "الكل"
+      },
+      "columns": {
+        "invoiceNumber": "رقم الفاتورة",
+        "patient": "المريض",
+        "status": "الحالة",
+        "amount": "الإجمالي",
+        "paid": "المدفوع",
+        "remaining": "المتبقي",
+        "dueDate": "تاريخ الاستحقاق",
+        "date": "التاريخ"
+      },
+      "empty": {
+        "heading": "لا توجد فواتير",
+        "withFilters": "جرّب تعديل الفلاتر.",
+        "noData": "أنشئ أول فاتورة للبدء.",
+        "patientNoData": "لا توجد فواتير لهذا المريض."
+      },
+      "error": {
+        "loadFailed": "فشل تحميل الفواتير"
+      }
+    },
+    "detail": {
+      "title": "تفاصيل الفاتورة",
+      "back": "عودة إلى الفواتير",
+      "loading": "جارٍ تحميل الفاتورة…",
+      "notFound": "الفاتورة غير موجودة.",
+      "error": {
+        "loadFailed": "فشل تحميل الفاتورة"
+      },
+      "fields": {
+        "invoiceNumber": "رقم الفاتورة",
+        "patient": "المريض",
+        "mrn": "الرقم الطبي",
+        "status": "الحالة",
+        "subtotal": "المجموع الفرعي",
+        "discount": "الخصم",
+        "total": "الإجمالي",
+        "paid": "المدفوع",
+        "remaining": "المتبقي",
+        "dueDate": "تاريخ الاستحقاق",
+        "issuedAt": "تاريخ الإصدار",
+        "cancelledAt": "تاريخ الإلغاء",
+        "cancelReason": "سبب الإلغاء",
+        "notes": "الملاحظات",
+        "createdBy": "أنشئت بواسطة",
+        "date": "التاريخ"
+      }
+    },
+    "items": {
+      "title": "البنود",
+      "columns": {
+        "description": "الوصف",
+        "quantity": "الكمية",
+        "unitPrice": "سعر الوحدة",
+        "discount": "الخصم",
+        "total": "الإجمالي",
+        "notes": "الملاحظات",
+        "actions": "إجراءات"
+      },
+      "empty": "لا توجد بنود في هذه الفاتورة.",
+      "remove": "حذف",
+      "removing": "جارٍ الحذف…",
+      "addForm": {
+        "title": "إضافة بند",
+        "description": "الوصف",
+        "descriptionPlaceholder": "مثال: رسوم الاستشارة",
+        "quantity": "الكمية",
+        "unitPrice": "سعر الوحدة",
+        "discount": "الخصم",
+        "notes": "الملاحظات",
+        "notesPlaceholder": "اختياري",
+        "submit": "إضافة بند",
+        "submitting": "جارٍ الإضافة…",
+        "validation": {
+          "descriptionRequired": "الوصف مطلوب.",
+          "unitPriceRequired": "يجب أن يكون سعر الوحدة أكبر من 0.",
+          "quantityMin": "يجب أن تكون الكمية 1 على الأقل."
+        }
+      }
+    },
+    "payments": {
+      "title": "المدفوعات",
+      "columns": {
+        "amount": "المبلغ",
+        "method": "طريقة الدفع",
+        "date": "التاريخ",
+        "reference": "المرجع",
+        "receivedBy": "استلم بواسطة"
+      },
+      "empty": "لا توجد مدفوعات مسجلة.",
+      "method": {
+        "CASH": "نقداً",
+        "CARD": "بطاقة",
+        "BANK_TRANSFER": "تحويل بنكي",
+        "INSURANCE": "تأمين",
+        "OTHER": "أخرى"
+      }
+    },
+    "actions": {
+      "issue": "إصدار الفاتورة",
+      "issuing": "جارٍ الإصدار…",
+      "issueConfirm": "هل تريد إصدار هذه الفاتورة؟ لن يمكن تعديلها بعد الإصدار.",
+      "issueDisabled": "أضف بنداً واحداً على الأقل قبل الإصدار.",
+      "cancel": "إلغاء الفاتورة",
+      "cancelling": "جارٍ الإلغاء…",
+      "cancelReason": "سبب الإلغاء",
+      "cancelReasonPlaceholder": "سبب اختياري للإلغاء",
+      "cancelConfirm": "هل تريد إلغاء هذه الفاتورة؟ لا يمكن التراجع عن هذا الإجراء.",
+      "cancelSubmit": "تأكيد الإلغاء"
+    },
+    "payment": {
+      "title": "تسجيل دفعة",
+      "fields": {
+        "amount": "المبلغ",
+        "method": "طريقة الدفع",
+        "selectMethod": "اختر طريقة",
+        "referenceNumber": "رقم المرجع",
+        "referenceNumberPlaceholder": "مثال: TXN-12345",
+        "paidAt": "تاريخ الدفع",
+        "notes": "الملاحظات",
+        "notesPlaceholder": "اختياري"
+      },
+      "submit": "تسجيل الدفعة",
+      "submitting": "جارٍ التسجيل…",
+      "remainingHint": "الرصيد: {amount}",
+      "validation": {
+        "amountRequired": "المبلغ مطلوب.",
+        "amountMin": "يجب أن يكون المبلغ أكبر من 0.",
+        "amountExceedsRemaining": "المبلغ يتجاوز الرصيد المتبقي.",
+        "methodRequired": "طريقة الدفع مطلوبة."
+      }
     }
   },
   "filesTab": {

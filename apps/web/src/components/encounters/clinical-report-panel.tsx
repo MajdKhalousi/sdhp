@@ -8,8 +8,11 @@ import {
   useCreateClinicalReport,
   useUpdateClinicalReport,
   useDeleteClinicalReport,
+  useDownloadReportPdf,
+  useSaveReportAsFile,
   type ClinicalReport,
 } from '@/hooks/use-clinical-reports';
+import { useAuthStore } from '@/store/auth';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // ── Types ─────────────────────────────────────────────────────────────────
@@ -58,12 +61,40 @@ export function ClinicalReportPanel({
   const [formError, setFormError] = useState('');
   const [mutationError, setMutationError] = useState('');
 
+  const user = useAuthStore((s) => s.user);
+  const canSaveAsFile =
+    user?.role === 'SUPER_ADMIN' || user?.role === 'ORG_ADMIN' || user?.role === 'DOCTOR';
+
   const { data: reports = [], isLoading, isError, error } = useClinicalReports({ encounterId });
   const { mutate: create, isPending: creating } = useCreateClinicalReport();
   const { mutate: update, isPending: updating } = useUpdateClinicalReport();
   const { mutate: deleteMutate, isPending: deleting } = useDeleteClinicalReport();
+  const { download: downloadPdf, downloadingId } = useDownloadReportPdf();
+  const { mutate: saveAsFile, isPending: savingFile } = useSaveReportAsFile();
+
+  const [saveFileMsg, setSaveFileMsg] = useState<{ id: string; msg: string; ok: boolean } | null>(null);
 
   const saving = creating || updating;
+
+  async function handleDownloadPdf(id: string) {
+    try {
+      await downloadPdf(id);
+    } catch {
+      setMutationError(t('error.downloadFailed'));
+    }
+  }
+
+  function handleSaveAsFile(id: string) {
+    setSaveFileMsg(null);
+    saveAsFile(id, {
+      onSuccess: () => setSaveFileMsg({ id, msg: t('saveAsFileSuccess'), ok: true }),
+      onError: (e) => {
+        const msg =
+          e.name === 'ConflictError' ? t('saveAsFileDuplicate') : t('error.saveAsFileFailed');
+        setSaveFileMsg({ id, msg, ok: false });
+      },
+    });
+  }
 
   function buildPrefillContent(): string {
     if (!encounterData) return '';
@@ -281,6 +312,38 @@ export function ClinicalReportPanel({
                   <p className="whitespace-pre-wrap text-sm text-foreground" dir="auto">
                     {report.content}
                   </p>
+
+                  {/* PDF actions */}
+                  <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                    <button
+                      onClick={() => handleDownloadPdf(report.id)}
+                      disabled={downloadingId === report.id}
+                      className="inline-flex h-7 items-center rounded-md border border-input bg-background px-2.5 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-60"
+                    >
+                      {downloadingId === report.id ? t('downloading') : t('downloadPdf')}
+                    </button>
+
+                    {!readOnly && canSaveAsFile && (
+                      <button
+                        onClick={() => handleSaveAsFile(report.id)}
+                        disabled={savingFile}
+                        className="inline-flex h-7 items-center rounded-md border border-input bg-background px-2.5 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-60"
+                      >
+                        {savingFile ? t('savingFile') : t('saveAsFile')}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Per-report save feedback */}
+                  {saveFileMsg?.id === report.id && (
+                    <p
+                      className={`mt-1.5 text-xs ${
+                        saveFileMsg.ok ? 'text-green-600 dark:text-green-400' : 'text-destructive'
+                      }`}
+                    >
+                      {saveFileMsg.msg}
+                    </p>
+                  )}
                 </div>
               )}
             </div>

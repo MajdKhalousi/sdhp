@@ -1,11 +1,14 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ClinicalReportStatus, MedicalTimelineEventType, UserRole } from '@prisma/client';
+import { ClinicalReportStatus, MedicalFileCategory, MedicalTimelineEventType, UserRole } from '@prisma/client';
 import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
+import { PdfService } from '../pdf/pdf.service';
+import { StorageService } from '../storage/storage.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { CreateClinicalReportDto } from './dto/create-clinical-report.dto';
@@ -55,11 +58,29 @@ const REPORT_SELECT = {
 
 // ── Service ────────────────────────────────────────────────────────────────
 
+const SAVED_FILE_SELECT = {
+  id: true,
+  organizationId: true,
+  patientId: true,
+  encounterId: true,
+  uploadedById: true,
+  category: true,
+  fileName: true,
+  mimeType: true,
+  sizeBytes: true,
+  storageKey: true,
+  description: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
 @Injectable()
 export class ClinicalReportsService {
   constructor(
     private prisma: PrismaService,
     private timelineWriter: MedicalTimelineWriterService,
+    private pdfService: PdfService,
+    private storageService: StorageService,
   ) {}
 
   async create(dto: CreateClinicalReportDto, caller: JwtPayload) {
@@ -187,6 +208,146 @@ export class ClinicalReportsService {
       data: { deletedAt: new Date() },
       select: REPORT_SELECT,
     });
+  }
+
+  async saveAsMedicalFile(id: string, caller: JwtPayload) {
+    const report = await this.fetchReport(id);
+    this.assertOrgAccess(report, caller);
+
+    if (report.status !== ClinicalReportStatus.FINALIZED) {
+      throw new ForbiddenException('Only finalized reports can be saved as a medical file');
+    }
+
+    const duplicateKey = `clinical-report:${id}`;
+    const existing = await this.prisma.medicalFile.findFirst({
+      where: {
+        organizationId: report.organizationId,
+        patientId: report.patientId,
+        category: MedicalFileCategory.CLINICAL_REPORT,
+        description: duplicateKey,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+    if (existing) {
+      throw new ConflictException('A PDF for this clinical report has already been saved as a medical file');
+    }
+
+    const org = await this.prisma.organization.findFirst({
+      where: { id: report.organizationId },
+      select: { name: true, nameAr: true },
+    });
+    if (!org) throw new NotFoundException('Organization not found');
+
+    const buffer = await this.pdfService.generateClinicalReportPdf({
+      report: {
+        id: report.id,
+        title: report.title,
+        content: report.content,
+        createdAt: report.createdAt,
+        updatedAt: report.updatedAt,
+      },
+      patient: {
+        firstName: report.patient.firstName,
+        lastName: report.patient.lastName,
+        mrn: report.patient.mrn,
+      },
+      author: {
+        firstName: report.createdBy.firstName,
+        lastName: report.createdBy.lastName,
+        role: report.createdBy.role,
+      },
+      encounter: { startedAt: report.encounter.startedAt },
+      organization: { name: org.name, nameAr: org.nameAr },
+      generatedAt: new Date(),
+    });
+
+    const fileName = `clinical-report-${id}.pdf`;
+    const storageKey = this.storageService.generateObjectKey(
+      report.organizationId,
+      report.patientId,
+      fileName,
+    );
+    await this.storageService.putObject(storageKey, buffer, 'application/pdf');
+
+    const medicalFile = await this.prisma.medicalFile.create({
+      data: {
+        organizationId: report.organizationId,
+        patientId: report.patientId,
+        encounterId: report.encounterId,
+        uploadedById: caller.sub,
+        category: MedicalFileCategory.CLINICAL_REPORT,
+        fileName,
+        mimeType: 'application/pdf',
+        sizeBytes: buffer.length,
+        storageKey,
+        description: duplicateKey,
+      },
+      select: SAVED_FILE_SELECT,
+    });
+
+    void this.timelineWriter.log({
+      organizationId: report.organizationId,
+      patientId: report.patientId,
+      eventType: MedicalTimelineEventType.MEDICAL_FILE_UPLOADED,
+      createdById: caller.sub,
+      metadata: {
+        medicalFileId: medicalFile.id,
+        fileName: medicalFile.fileName,
+        category: medicalFile.category,
+        mimeType: medicalFile.mimeType,
+        encounterId: medicalFile.encounterId ?? null,
+      },
+    });
+
+    const downloadUrl = await this.storageService.presignedGetUrl(storageKey);
+
+    return { medicalFile, downloadUrl, expiresIn: 300 };
+  }
+
+  async exportPdf(id: string, caller: JwtPayload): Promise<{ buffer: Buffer; fileName: string }> {
+    const report = await this.fetchReport(id);
+    this.assertOrgAccess(report, caller);
+
+    if (report.status !== ClinicalReportStatus.FINALIZED) {
+      throw new ForbiddenException('Only finalized reports can be exported as PDF');
+    }
+
+    const org = await this.prisma.organization.findFirst({
+      where: { id: report.organizationId },
+      select: { name: true, nameAr: true },
+    });
+    if (!org) throw new NotFoundException('Organization not found');
+
+    const buffer = await this.pdfService.generateClinicalReportPdf({
+      report: {
+        id: report.id,
+        title: report.title,
+        content: report.content,
+        createdAt: report.createdAt,
+        updatedAt: report.updatedAt,
+      },
+      patient: {
+        firstName: report.patient.firstName,
+        lastName: report.patient.lastName,
+        mrn: report.patient.mrn,
+      },
+      author: {
+        firstName: report.createdBy.firstName,
+        lastName: report.createdBy.lastName,
+        role: report.createdBy.role,
+      },
+      encounter: {
+        startedAt: report.encounter.startedAt,
+      },
+      organization: {
+        name: org.name,
+        nameAr: org.nameAr,
+      },
+      generatedAt: new Date(),
+    });
+
+    return { buffer, fileName: `clinical-report-${id}.pdf` };
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────

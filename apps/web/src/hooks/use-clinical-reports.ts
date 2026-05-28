@@ -1,6 +1,10 @@
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/store/auth';
 import type { ClinicalReport, ClinicalReportStatus } from '@/types/clinical-report';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
 
 export type { ClinicalReport, ClinicalReportStatus } from '@/types/clinical-report';
 
@@ -103,5 +107,50 @@ export function useDeleteClinicalReport() {
       qc.invalidateQueries({ queryKey: ['patient-clinical-reports', patientId] });
       qc.invalidateQueries({ queryKey: ['patient-timeline'] });
     },
+  });
+}
+
+// ── PDF export hooks ───────────────────────────────────────────────────────
+
+export interface SaveAsFileResult {
+  medicalFile: {
+    id: string;
+    fileName: string;
+    category: string;
+    mimeType: string;
+    sizeBytes: number;
+    createdAt: string;
+  };
+  downloadUrl: string;
+  expiresIn: number;
+}
+
+export function useDownloadReportPdf() {
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  async function download(id: string): Promise<void> {
+    setDownloadingId(id);
+    try {
+      const { token } = useAuthStore.getState();
+      const res = await fetch(`${API_BASE}/v1/clinical-reports/${id}/pdf`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      window.open(objectUrl, '_blank');
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    } finally {
+      setDownloadingId(null);
+    }
+  }
+
+  return { download, downloadingId };
+}
+
+export function useSaveReportAsFile() {
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.post<SaveAsFileResult>(`/v1/clinical-reports/${id}/save-as-file`, {}),
   });
 }

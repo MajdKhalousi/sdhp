@@ -3,19 +3,23 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   Patch,
   Post,
   Query,
+  StreamableFile,
   Version,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiProduces,
   ApiTags,
 } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
@@ -73,6 +77,41 @@ export class ClinicalReportsController {
   @ApiForbiddenResponse({ description: 'Cross-org access denied' })
   findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.service.findOne(id, user);
+  }
+
+  @Get(':id/pdf')
+  @Version('1')
+  @Roles(
+    UserRole.SUPER_ADMIN,
+    UserRole.ORG_ADMIN,
+    UserRole.DOCTOR,
+    UserRole.NURSE,
+    UserRole.SECRETARY,
+  )
+  @Header('Content-Type', 'application/pdf')
+  @ApiOperation({ summary: 'Download a finalized clinical report as PDF. DRAFT reports return 403.' })
+  @ApiOkResponse({ description: 'PDF file stream' })
+  @ApiNotFoundResponse({ description: 'Report not found' })
+  @ApiForbiddenResponse({ description: 'Report is not finalized or cross-org access denied' })
+  @ApiProduces('application/pdf')
+  async downloadPdf(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    const { buffer, fileName } = await this.service.exportPdf(id, user);
+    return new StreamableFile(buffer, {
+      type: 'application/pdf',
+      disposition: `inline; filename="${fileName}"`,
+    });
+  }
+
+  @Post(':id/save-as-file')
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
+  @ApiOperation({ summary: 'Save a finalized clinical report as a permanent MedicalFile (CLINICAL_REPORT). Returns the file record and a presigned download URL. DRAFT reports return 403. Duplicate calls return 409.' })
+  @ApiCreatedResponse({ description: 'PDF saved as MedicalFile; returns medicalFile + downloadUrl' })
+  @ApiNotFoundResponse({ description: 'Report not found' })
+  @ApiForbiddenResponse({ description: 'Report is not finalized or cross-org access denied' })
+  @ApiConflictResponse({ description: 'PDF already saved for this report' })
+  saveAsFile(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.service.saveAsMedicalFile(id, user);
   }
 
   @Patch(':id')

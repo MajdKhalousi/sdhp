@@ -3,7 +3,10 @@
 import { useState } from 'react';
 import { ClipboardList } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
-import { usePatientClinicalReports } from '@/hooks/use-clinical-reports';
+import {
+  usePatientClinicalReports,
+  useDownloadReportPdf,
+} from '@/hooks/use-clinical-reports';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { ClinicalReport } from '@/hooks/use-clinical-reports';
 
@@ -32,6 +35,18 @@ function ReportCard({
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
   const isDraft = report.status === 'DRAFT';
+
+  const { download: downloadPdf, downloadingId } = useDownloadReportPdf();
+  const [downloadError, setDownloadError] = useState('');
+
+  async function handleDownload() {
+    setDownloadError('');
+    try {
+      await downloadPdf(report.id);
+    } catch {
+      setDownloadError(t('reports.downloadFailed'));
+    }
+  }
 
   const author = report.createdBy
     ? `${report.createdBy.firstName} ${report.createdBy.lastName}`
@@ -76,13 +91,30 @@ function ReportCard({
             )}
           </div>
 
-          <button
-            onClick={onToggle}
-            className="inline-flex shrink-0 h-7 items-center rounded-md border border-input bg-background px-2.5 text-xs font-medium transition-colors hover:bg-accent"
-          >
-            {expanded ? t('reports.hideContent') : t('reports.viewContent')}
-          </button>
+          <div className="flex shrink-0 items-center gap-1.5">
+            {!isDraft && (
+              <button
+                onClick={handleDownload}
+                disabled={downloadingId === report.id}
+                className="inline-flex h-7 items-center rounded-md border border-input bg-background px-2.5 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-60"
+              >
+                {downloadingId === report.id
+                  ? t('reports.downloading')
+                  : t('reports.downloadPdf')}
+              </button>
+            )}
+            <button
+              onClick={onToggle}
+              className="inline-flex h-7 items-center rounded-md border border-input bg-background px-2.5 text-xs font-medium transition-colors hover:bg-accent"
+            >
+              {expanded ? t('reports.hideContent') : t('reports.viewContent')}
+            </button>
+          </div>
         </div>
+
+        {downloadError && (
+          <p className="mt-1 text-xs text-destructive">{downloadError}</p>
+        )}
 
         {!expanded && (
           <p className="mt-2 line-clamp-3 text-xs text-muted-foreground" dir="auto">

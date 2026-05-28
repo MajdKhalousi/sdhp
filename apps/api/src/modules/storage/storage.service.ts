@@ -55,6 +55,17 @@ export class StorageService {
     return this.rewriteUrl(url);
   }
 
+  async putObject(objectKey: string, body: Buffer, contentType: string): Promise<void> {
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: objectKey,
+        Body: body,
+        ContentType: contentType,
+      }),
+    );
+  }
+
   // Replaces the internal MinIO origin with the browser-reachable public endpoint.
   // Only the scheme+host+port prefix is swapped — the signed path and query string
   // are preserved verbatim so the SigV4 signature stays valid.

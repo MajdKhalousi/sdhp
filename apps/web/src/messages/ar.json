@@ -496,11 +496,19 @@
         "titleRequired": "العنوان مطلوب.",
         "contentRequired": "المحتوى مطلوب."
       },
+      "downloadPdf": "تحميل PDF",
+      "downloading": "جاري التحميل…",
+      "saveAsFile": "حفظ كملف طبي",
+      "savingFile": "جاري الحفظ…",
+      "saveAsFileSuccess": "تم حفظ التقرير في ملفات المريض الطبية.",
+      "saveAsFileDuplicate": "تم حفظ هذا التقرير مسبقاً كملف طبي.",
       "error": {
         "loadFailed": "فشل تحميل التقارير السريرية.",
         "saveFailed": "فشل حفظ التقرير.",
         "finalizeFailed": "فشل إنهاء التقرير.",
-        "deleteFailed": "فشل حذف التقرير."
+        "deleteFailed": "فشل حذف التقرير.",
+        "downloadFailed": "فشل تحميل ملف PDF.",
+        "saveAsFileFailed": "فشل حفظ التقرير كملف طبي."
       }
     }
   },
@@ -601,7 +609,10 @@
       "updatedAt": "آخر تعديل",
       "encounter": "الزيارة",
       "viewContent": "عرض التقرير",
-      "hideContent": "إخفاء التقرير"
+      "hideContent": "إخفاء التقرير",
+      "downloadPdf": "تحميل PDF",
+      "downloading": "جاري التحميل…",
+      "downloadFailed": "فشل تحميل ملف PDF."
     }
   },
   "doctorWorkspace": {

@@ -496,11 +496,19 @@
         "titleRequired": "Title is required.",
         "contentRequired": "Content is required."
       },
+      "downloadPdf": "Download PDF",
+      "downloading": "Downloading…",
+      "saveAsFile": "Save as Medical File",
+      "savingFile": "Saving…",
+      "saveAsFileSuccess": "Report saved to patient's medical files.",
+      "saveAsFileDuplicate": "This report was already saved as a medical file.",
       "error": {
         "loadFailed": "Failed to load clinical reports.",
         "saveFailed": "Failed to save report.",
         "finalizeFailed": "Failed to finalize report.",
-        "deleteFailed": "Failed to delete report."
+        "deleteFailed": "Failed to delete report.",
+        "downloadFailed": "Failed to download PDF.",
+        "saveAsFileFailed": "Failed to save report as medical file."
       }
     }
   },
@@ -601,7 +609,10 @@
       "updatedAt": "Last updated",
       "encounter": "Encounter",
       "viewContent": "View report",
-      "hideContent": "Hide report"
+      "hideContent": "Hide report",
+      "downloadPdf": "Download PDF",
+      "downloading": "Downloading…",
+      "downloadFailed": "Failed to download PDF."
     }
   },
   "doctorWorkspace": {

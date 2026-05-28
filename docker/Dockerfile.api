@@ -29,7 +29,17 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 ENV NODE_ENV=production
 
-RUN apk add --no-cache openssl libc6-compat
+RUN apk add --no-cache \
+    openssl \
+    libc6-compat \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    font-noto
+
+ENV CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 RUN corepack enable && corepack prepare pnpm@11.1.2 --activate
 

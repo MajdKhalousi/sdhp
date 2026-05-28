@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { useTranslations, useLocale } from 'next-intl';
+import { Link } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { useCheckIn } from '@/hooks/use-queue';
 
 interface CheckInButtonProps {
@@ -12,7 +12,6 @@ interface CheckInButtonProps {
 
 export function CheckInButton({ appointmentId, onSuccess }: CheckInButtonProps) {
   const t = useTranslations('queue.checkIn');
-  const locale = useLocale();
   const [error, setError] = useState('');
   const [isDuplicate, setIsDuplicate] = useState(false);
   const { mutate, isPending } = useCheckIn();
@@ -48,7 +47,7 @@ export function CheckInButton({ appointmentId, onSuccess }: CheckInButtonProps) 
         <p className="max-w-[16rem] text-end text-xs text-destructive">
           {t('duplicate')}{' '}
           <Link
-            href={`/${locale}/dashboard/queue`}
+            href="/dashboard/queue"
             className="underline hover:no-underline"
           >
             {t('viewQueue')}

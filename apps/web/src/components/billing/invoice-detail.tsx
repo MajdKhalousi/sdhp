@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useInvoice, useIssueInvoice } from '@/hooks/use-invoices';

@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { UserPlus } from 'lucide-react';
 import { QueueBoard } from '@/components/queue/queue-board';
 

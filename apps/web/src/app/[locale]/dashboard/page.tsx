@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { Calendar, Users, ListOrdered, CheckCircle2, Clock } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { api } from '@/lib/api';

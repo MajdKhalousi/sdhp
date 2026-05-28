@@ -126,10 +126,14 @@
         "heading": "No appointments found",
         "withFilters": "Try adjusting your filters.",
         "noData": "Create the first appointment to get started."
+      },
+      "error": {
+        "loadFailed": "Failed to load appointments"
       }
     },
     "form": {
       "title": "New Appointment",
+      "subtitle": "Schedule a patient appointment",
       "fields": {
         "patientLabel": "Patient",
         "doctorLabel": "Doctor",

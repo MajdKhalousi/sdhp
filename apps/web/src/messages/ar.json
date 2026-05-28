@@ -126,10 +126,14 @@
         "heading": "لا توجد مواعيد",
         "withFilters": "جرّب تعديل الفلاتر.",
         "noData": "أضف أول موعد للبدء."
+      },
+      "error": {
+        "loadFailed": "فشل تحميل المواعيد"
       }
     },
     "form": {
       "title": "موعد جديد",
+      "subtitle": "جدولة موعد مريض",
       "fields": {
         "patientLabel": "المريض",
         "doctorLabel": "الطبيب",

@@ -151,7 +151,7 @@ export function AppointmentList() {
       <div className="space-y-4">
         {filters}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-16 text-center">
-          <p className="text-sm font-medium text-destructive">Failed to load appointments</p>
+          <p className="text-sm font-medium text-destructive">{t('list.error.loadFailed')}</p>
           <p className="max-w-xs text-xs text-muted-foreground">
             {error instanceof Error ? error.message : tCommon('states.error')}
           </p>

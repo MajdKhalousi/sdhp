@@ -127,9 +127,11 @@ export interface SaveAsFileResult {
 
 export function useDownloadReportPdf() {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   async function download(id: string): Promise<void> {
     setDownloadingId(id);
+    setDownloadError(null);
     try {
       const { token } = useAuthStore.getState();
       const res = await fetch(`${API_BASE}/v1/clinical-reports/${id}/pdf`, {
@@ -140,12 +142,14 @@ export function useDownloadReportPdf() {
       const objectUrl = URL.createObjectURL(blob);
       window.open(objectUrl, '_blank');
       setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    } catch {
+      setDownloadError('downloadFailed');
     } finally {
       setDownloadingId(null);
     }
   }
 
-  return { download, downloadingId };
+  return { download, downloadingId, downloadError };
 }
 
 export function useSaveReportAsFile() {

@@ -36,10 +36,10 @@ export class QueueController {
 
   @Get()
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY, UserRole.DOCTOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY, UserRole.DOCTOR, UserRole.NURSE)
   @ApiOperation({
     summary:
-      'List queue entries — SUPER_ADMIN: all | ORG_ADMIN/SECRETARY: own org | DOCTOR: own entries in org',
+      'List queue entries — SUPER_ADMIN: all | ORG_ADMIN/SECRETARY/NURSE: own org | DOCTOR: own entries in org',
   })
   findAll(@Query() query: QueueQueryDto, @CurrentUser() user: JwtPayload) {
     return this.service.findAll(query, user);
@@ -47,8 +47,8 @@ export class QueueController {
 
   @Get(':id')
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY, UserRole.DOCTOR)
-  @ApiOperation({ summary: 'Get queue entry by ID — ORG_ADMIN/SECRETARY/DOCTOR restricted to own org' })
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY, UserRole.DOCTOR, UserRole.NURSE)
+  @ApiOperation({ summary: 'Get queue entry by ID — ORG_ADMIN/SECRETARY/DOCTOR/NURSE restricted to own org' })
   @ApiNotFoundResponse({ description: 'Queue entry not found' })
   findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.service.findOne(id, user);

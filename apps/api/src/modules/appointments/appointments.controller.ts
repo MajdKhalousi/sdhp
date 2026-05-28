@@ -35,10 +35,10 @@ export class AppointmentsController {
 
   @Get()
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY, UserRole.DOCTOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY, UserRole.DOCTOR, UserRole.NURSE)
   @ApiOperation({
     summary:
-      'List appointments — SUPER_ADMIN: all | ORG_ADMIN/SECRETARY: own org | DOCTOR: own appointments in org',
+      'List appointments — SUPER_ADMIN: all | ORG_ADMIN/SECRETARY/NURSE: own org | DOCTOR: own appointments in org',
   })
   findAll(@Query() query: AppointmentQueryDto, @CurrentUser() user: JwtPayload) {
     return this.service.findAll(query, user);
@@ -46,8 +46,8 @@ export class AppointmentsController {
 
   @Get(':id')
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY, UserRole.DOCTOR)
-  @ApiOperation({ summary: 'Get appointment by ID — ORG_ADMIN/SECRETARY/DOCTOR restricted to own org' })
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY, UserRole.DOCTOR, UserRole.NURSE)
+  @ApiOperation({ summary: 'Get appointment by ID — ORG_ADMIN/SECRETARY/DOCTOR/NURSE restricted to own org' })
   @ApiNotFoundResponse({ description: 'Appointment not found' })
   findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.service.findOne(id, user);

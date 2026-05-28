@@ -36,15 +36,13 @@ function escapeHtml(str: string | null | undefined): string {
     .replace(/'/g, '&#39;');
 }
 
-function formatDate(date: Date): string {
-  return date.toLocaleDateString('ar-SY', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+// YYYY-MM-DD — ASCII only, no locale dependency, works in all ICU builds.
+function formatShortDate(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-// ASCII-only ISO-style datetime for the technical footer — no locale dependency.
+// YYYY-MM-DD HH:MM — ASCII only, used in footer.
 function formatTechnicalDate(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   return (
@@ -86,7 +84,7 @@ export function buildClinicalReportHtml(data: ClinicalReportPdfData): string {
   }
   .org-name { font-size: 15pt; font-weight: 700; color: #1e40af; }
   .doc-label { font-size: 10pt; color: #6b7280; margin-top: 3px; }
-  .header-date { font-size: 9pt; color: #6b7280; text-align: start; }
+  .header-date { font-size: 9pt; color: #6b7280; direction: ltr; text-align: start; }
 
   .meta-grid {
     display: grid;
@@ -110,7 +108,6 @@ export function buildClinicalReportHtml(data: ClinicalReportPdfData): string {
     border-inline-start: 4px solid #1e40af;
     padding-inline-start: 10px;
     margin-bottom: 6px;
-    unicode-bidi: isolate;
   }
   .status-pill {
     display: inline-block;
@@ -133,7 +130,6 @@ export function buildClinicalReportHtml(data: ClinicalReportPdfData): string {
     white-space: pre-wrap;
     font-size: 11pt;
     line-height: 1.85;
-    unicode-bidi: isolate;
     text-align: start;
   }
 
@@ -152,10 +148,10 @@ export function buildClinicalReportHtml(data: ClinicalReportPdfData): string {
 
 <div class="header">
   <div>
-    <div class="org-name">${orgDisplay}</div>
-    <div class="doc-label">تقرير سريري — Clinical Report</div>
+    <div class="org-name" dir="auto">${orgDisplay}</div>
+    <div class="doc-label">تقرير سريري</div>
   </div>
-  <div class="header-date">${formatDate(data.report.createdAt)}</div>
+  <div class="header-date">${formatShortDate(data.report.createdAt)}</div>
 </div>
 
 <div class="meta-grid">
@@ -173,13 +169,13 @@ export function buildClinicalReportHtml(data: ClinicalReportPdfData): string {
   </div>
   <div class="meta-item">
     <span class="meta-label">تاريخ الزيارة:</span>
-    <span class="meta-value">${formatDate(data.encounter.startedAt)}</span>
+    <span class="meta-value" dir="ltr">${formatShortDate(data.encounter.startedAt)}</span>
   </div>
 </div>
 
 <div class="report-header">
   <div class="report-title" dir="auto">${escapeHtml(data.report.title)}</div>
-  <span class="status-pill">مُعتمد</span>
+  <span class="status-pill">معتمد</span>
 </div>
 
 <div class="content-box">

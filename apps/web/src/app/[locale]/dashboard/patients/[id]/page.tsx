@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { AlertTriangle } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { usePatient, useUpdatePatient, useDeletePatient } from '@/hooks/use-patient';
+import { useAuthStore } from '@/store/auth';
 import { useAllergies } from '@/hooks/use-allergies';
 import { PatientHeader } from '@/components/patients/patient-header';
 import { PatientForm } from '@/components/patients/patient-form';
@@ -189,10 +190,14 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
   );
 }
 
+const PATIENT_MANAGE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
+
 export default function PatientPage({ params }: { params: { id: string } }) {
   const { id } = params;
   const router = useRouter();
   const t = useTranslations('patient');
+  const { user } = useAuthStore();
+  const canManage = user ? PATIENT_MANAGE_ROLES.has(user.role) : false;
   const [activeTab, setActiveTab] = useState('overview');
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
@@ -242,7 +247,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
     <div className="space-y-4">
       <PatientHeader patient={patient} isLoading={isLoading} />
 
-      {patient && (
+      {patient && canManage && (
         <div className="flex items-center gap-3">
           <button
             onClick={() => { setIsEditOpen(true); setUpdateError(null); }}

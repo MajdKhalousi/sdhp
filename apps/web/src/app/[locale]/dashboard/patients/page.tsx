@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import type { CreatePatientInput, UpdatePatientInput } from '@/hooks/use-patient';
 import { usePatients, useCreatePatient, useDeletePatient } from '@/hooks/use-patient';
 import { PatientForm } from '@/components/patients/patient-form';
+import { useAuthStore } from '@/store/auth';
 
 function formatDate(iso: string | null, locale = 'en-US'): string {
   if (!iso) return '—';
@@ -22,11 +23,15 @@ function formatGender(raw: string | null): string {
   return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
 }
 
+const PATIENT_MANAGE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
+
 export default function PatientsPage() {
   const t = useTranslations('patient');
   const tCommon = useTranslations('common');
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const { user } = useAuthStore();
+  const canManage = user ? PATIENT_MANAGE_ROLES.has(user.role) : false;
 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -79,12 +84,14 @@ export default function PatientsPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => { setIsCreateOpen(true); setCreateError(null); }}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            إضافة مريض
-          </button>
+          {canManage && (
+            <button
+              onClick={() => { setIsCreateOpen(true); setCreateError(null); }}
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              إضافة مريض
+            </button>
+          )}
 
           <div className="relative w-64">
             <Search className="absolute start-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -220,13 +227,15 @@ export default function PatientsPage() {
                             >
                               عرض
                             </Link>
-                            <button
-                              onClick={() => handleDelete(patient.id)}
-                              disabled={deletePatient.isPending}
-                              className="rounded-md border border-destructive/30 px-2.5 py-1 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:pointer-events-none disabled:opacity-50"
-                            >
-                              أرشفة
-                            </button>
+                            {canManage && (
+                              <button
+                                onClick={() => handleDelete(patient.id)}
+                                disabled={deletePatient.isPending}
+                                className="rounded-md border border-destructive/30 px-2.5 py-1 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:pointer-events-none disabled:opacity-50"
+                              >
+                                أرشفة
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>

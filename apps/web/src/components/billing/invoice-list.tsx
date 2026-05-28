@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 import type { InvoiceStatus } from '@/types/invoice';
 
 const STATUS_TABS = ['', 'DRAFT', 'ISSUED', 'PARTIALLY_PAID', 'PAID', 'CANCELLED'] as const;
-const INVOICE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
+const INVOICE_CREATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
 type StatusTab = (typeof STATUS_TABS)[number];
 
 function formatAmount(value: string, locale: string): string {
@@ -39,7 +39,7 @@ export function InvoiceList() {
   const locale = useLocale();
 
   const { user } = useAuthStore();
-  const canCreate = user ? INVOICE_ROLES.has(user.role) : false;
+  const canCreate = user ? INVOICE_CREATE_ROLES.has(user.role) : false;
 
   const [statusFilter, setStatusFilter] = useState<StatusTab>('');
 

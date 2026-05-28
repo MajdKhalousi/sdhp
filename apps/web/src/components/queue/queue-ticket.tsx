@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { QueueStatusBadge } from './queue-status-badge';
 import type { QueueEntry, QueueStatus } from '@/types/queue';

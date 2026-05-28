@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { RefreshCw, Stethoscope } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useEncounters } from '@/hooks/use-encounters';

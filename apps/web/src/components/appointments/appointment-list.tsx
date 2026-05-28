@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, CalendarX2 } from 'lucide-react';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAppointments, useDoctorsList } from '@/hooks/use-appointments';
 import { AppointmentStatusBadge } from './appointment-status-badge';

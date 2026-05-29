@@ -1113,10 +1113,42 @@ async function main() {
     },
   }).catch(() => null);
 
+  // Completed earlier today — Nour Ibrahim (General Medicine) 07:30
+  await prisma.appointment.upsert({
+    where: { id: 'seed-appt-td-001' },
+    update: { scheduledAt: todayAt(7, 30), status: AppointmentStatus.COMPLETED },
+    create: {
+      id: 'seed-appt-td-001',
+      organizationId: 'seed-org-001',
+      branchId: 'seed-branch-001',
+      patientId: nourIbrahim.id,
+      doctorId: doctorOmar.id,
+      scheduledAt: todayAt(7, 30),
+      durationMin: 20,
+      status: AppointmentStatus.COMPLETED,
+    },
+  });
+
+  // Completed earlier today — Tariq Saleh (Cardiology) 08:00
+  await prisma.appointment.upsert({
+    where: { id: 'seed-appt-td-002' },
+    update: { scheduledAt: todayAt(8, 0), status: AppointmentStatus.COMPLETED },
+    create: {
+      id: 'seed-appt-td-002',
+      organizationId: 'seed-org-001',
+      branchId: 'seed-branch-001',
+      patientId: tariqSaleh.id,
+      doctorId: doctorSamer.id,
+      scheduledAt: todayAt(8, 0),
+      durationMin: 20,
+      status: AppointmentStatus.COMPLETED,
+    },
+  });
+
   // Existing today's appointments
   await prisma.appointment.upsert({
     where: { id: 'seed-appt-008' },
-    update: {},
+    update: { scheduledAt: todayAt(10, 0) },
     create: {
       id: 'seed-appt-008',
       organizationId: 'seed-org-001',
@@ -1131,7 +1163,7 @@ async function main() {
 
   await prisma.appointment.upsert({
     where: { id: 'seed-appt-009' },
-    update: {},
+    update: { scheduledAt: todayAt(10, 30) },
     create: {
       id: 'seed-appt-009',
       organizationId: 'seed-org-001',
@@ -1146,7 +1178,7 @@ async function main() {
 
   await prisma.appointment.upsert({
     where: { id: 'seed-appt-010' },
-    update: {},
+    update: { scheduledAt: todayAt(11, 0) },
     create: {
       id: 'seed-appt-010',
       organizationId: 'seed-org-001',
@@ -1161,7 +1193,7 @@ async function main() {
 
   await prisma.appointment.upsert({
     where: { id: 'seed-appt-011' },
-    update: { status: AppointmentStatus.NO_SHOW },
+    update: { scheduledAt: todayAt(12, 0), status: AppointmentStatus.NO_SHOW },
     create: {
       id: 'seed-appt-011',
       organizationId: 'seed-org-001',
@@ -1310,7 +1342,7 @@ async function main() {
   try {
     await prisma.queueEntry.upsert({
       where: { appointmentId: 'seed-appt-009' },
-      update: {},
+      update: { businessDate: todayDate },
       create: {
         id: 'seed-queue-009',
         appointmentId: 'seed-appt-009',
@@ -1318,6 +1350,42 @@ async function main() {
         businessDate: todayDate,
         ticketNumber: 9001,
         status: QueueStatus.WAITING,
+      },
+    });
+  } catch { /* skip */ }
+
+  // Ticket 5 — Nour Ibrahim — DONE (completed earlier today)
+  try {
+    await prisma.queueEntry.upsert({
+      where: { appointmentId: 'seed-appt-td-001' },
+      update: { businessDate: todayDate },
+      create: {
+        id: 'seed-queue-td-001',
+        appointmentId: 'seed-appt-td-001',
+        organizationId: 'seed-org-001',
+        businessDate: todayDate,
+        ticketNumber: 5,
+        status: QueueStatus.DONE,
+        calledAt: todayAt(7, 35),
+        completedAt: todayAt(7, 55),
+      },
+    });
+  } catch { /* skip */ }
+
+  // Ticket 6 — Tariq Saleh — DONE (completed earlier today)
+  try {
+    await prisma.queueEntry.upsert({
+      where: { appointmentId: 'seed-appt-td-002' },
+      update: { businessDate: todayDate },
+      create: {
+        id: 'seed-queue-td-002',
+        appointmentId: 'seed-appt-td-002',
+        organizationId: 'seed-org-001',
+        businessDate: todayDate,
+        ticketNumber: 6,
+        status: QueueStatus.DONE,
+        calledAt: todayAt(8, 5),
+        completedAt: todayAt(8, 25),
       },
     });
   } catch { /* skip */ }
@@ -2692,7 +2760,7 @@ Review in 4 weeks with CBC and ferritin results.
 
   console.log(`
 ╔══════════════════════════════════════════════════════════════╗
-║        Al-Nour Medical Center — Demo Seed Ready (B17.0)      ║
+║        Al-Nour Medical Center — Demo Seed Ready (B18.0)      ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  Demo Accounts                                               ║
 ║  ─────────────────────────────────────────────────────────  ║
@@ -2708,11 +2776,11 @@ Review in 4 weeks with CBC and ferritin results.
 ╠══════════════════════════════════════════════════════════════╣
 ║  Data Summary                                                ║
 ║  ─────────────────────────────────────────────────────────  ║
-║  Patients: 20  │  Appointments: 26  │  Doctors: 3           ║
+║  Patients: 20  │  Appointments: 28  │  Doctors: 3           ║
 ║  Encounters: 13  │  Prescriptions: 25  │  Allergies: 6      ║
 ║  Lab Orders: 6  │  Radiology Orders: 3                       ║
 ║  Invoices: 4  │  Payments: 2  │  Clinical Reports: 3        ║
-║  Queue entries today: 5 (DONE / IN_PROGRESS / CALLED / ×2 WAITING)
+║  Today: 8 appts (2 DONE / 1 IN_PROGRESS / 3 CHECKED_IN+CONF / 1 NO_SHOW)
 ╚══════════════════════════════════════════════════════════════╝
   `);
 }

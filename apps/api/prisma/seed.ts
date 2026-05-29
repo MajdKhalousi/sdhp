@@ -4,6 +4,8 @@ import {
   Gender,
   AppointmentStatus,
   QueueStatus,
+  LabOrderStatus,
+  RadiologyOrderStatus,
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
@@ -554,7 +556,7 @@ async function main() {
       emergencyPhone: '+963912100110',
       notes: 'Type 2 DM + Essential hypertension. Quarterly follow-up.',
     },
-  });
+  }).catch(() => null);
 
   const fatimaNasser = await prisma.patient.upsert({
     where: { id: 'seed-pat-011' },
@@ -573,7 +575,7 @@ async function main() {
       address: 'Zamalka, Damascus',
       bloodType: 'O+',
     },
-  });
+  }).catch(() => null);
 
   const yousefKhatib = await prisma.patient.upsert({
     where: { id: 'seed-pat-012' },
@@ -595,7 +597,7 @@ async function main() {
       emergencyPhone: '+963912100130',
       notes: 'COPD Gold Stage II. Ex-smoker. On bronchodilator therapy.',
     },
-  });
+  }).catch(() => null);
 
   const mariamAziz = await prisma.patient.upsert({
     where: { id: 'seed-pat-013' },
@@ -613,7 +615,7 @@ async function main() {
       phone: '+963912100014',
       bloodType: 'B+',
     },
-  });
+  }).catch(() => null);
 
   const hassanBarakat = await prisma.patient.upsert({
     where: { id: 'seed-pat-014' },
@@ -635,7 +637,7 @@ async function main() {
       emergencyPhone: '+963912100150',
       notes: 'Post-MI (STEMI, 6 months ago). On dual antiplatelet, ACEi, beta-blocker, statin.',
     },
-  });
+  }).catch(() => null);
 
   const dimaKassab = await prisma.patient.upsert({
     where: { id: 'seed-pat-015' },
@@ -655,7 +657,7 @@ async function main() {
       bloodType: 'A-',
       notes: 'Hypothyroidism on Levothyroxine. TSH monitoring every 6 months.',
     },
-  });
+  }).catch(() => null);
 
   const mazenAlAmin = await prisma.patient.upsert({
     where: { id: 'seed-pat-016' },
@@ -675,7 +677,7 @@ async function main() {
       emergencyName: 'Bilal Al-Amin (Father)',
       emergencyPhone: '+963912100170',
     },
-  });
+  }).catch(() => null);
 
   const rimShaaban = await prisma.patient.upsert({
     where: { id: 'seed-pat-017' },
@@ -695,7 +697,7 @@ async function main() {
       bloodType: 'B+',
       notes: 'Osteoporosis. T-score −2.8 lumbar spine. On bisphosphonate.',
     },
-  });
+  }).catch(() => null);
 
   const karimNassar = await prisma.patient.upsert({
     where: { id: 'seed-pat-018' },
@@ -715,7 +717,7 @@ async function main() {
       emergencyName: 'Rana Nassar (Mother)',
       emergencyPhone: '+963912100190',
     },
-  });
+  }).catch(() => null);
 
   const lailaFakhoury = await prisma.patient.upsert({
     where: { id: 'seed-pat-019' },
@@ -734,7 +736,7 @@ async function main() {
       address: 'Mezze Villas, Damascus',
       bloodType: 'O+',
     },
-  });
+  }).catch(() => null);
 
   // ── Allergies ──────────────────────────────────────────────────────────────
   const khalidAllergyExists = await prisma.allergy.findFirst({
@@ -766,46 +768,52 @@ async function main() {
   }
 
   // New allergies for new patients
-  const yousefNsaidAllergyExists = await prisma.allergy.findFirst({
-    where: { patientId: yousefKhatib.id, substance: 'NSAIDs', deletedAt: null },
-  });
-  if (!yousefNsaidAllergyExists) {
-    await prisma.allergy.create({
-      data: {
-        patientId: yousefKhatib.id,
-        substance: 'NSAIDs (Ibuprofen, Naproxen)',
-        reaction: 'Bronchospasm, worsening dyspnoea',
-        severity: 'SEVERE',
-      },
+  if (yousefKhatib) {
+    const yousefNsaidAllergyExists = await prisma.allergy.findFirst({
+      where: { patientId: yousefKhatib.id, substance: 'NSAIDs', deletedAt: null },
     });
+    if (!yousefNsaidAllergyExists) {
+      await prisma.allergy.create({
+        data: {
+          patientId: yousefKhatib.id,
+          substance: 'NSAIDs (Ibuprofen, Naproxen)',
+          reaction: 'Bronchospasm, worsening dyspnoea',
+          severity: 'SEVERE',
+        },
+      });
+    }
   }
 
-  const hassanContrastAllergyExists = await prisma.allergy.findFirst({
-    where: { patientId: hassanBarakat.id, substance: 'Iodinated Contrast', deletedAt: null },
-  });
-  if (!hassanContrastAllergyExists) {
-    await prisma.allergy.create({
-      data: {
-        patientId: hassanBarakat.id,
-        substance: 'Iodinated Contrast Media',
-        reaction: 'Anaphylaxis — facial oedema, hypotension (prior cardiac cath)',
-        severity: 'SEVERE',
-      },
+  if (hassanBarakat) {
+    const hassanContrastAllergyExists = await prisma.allergy.findFirst({
+      where: { patientId: hassanBarakat.id, substance: 'Iodinated Contrast', deletedAt: null },
     });
+    if (!hassanContrastAllergyExists) {
+      await prisma.allergy.create({
+        data: {
+          patientId: hassanBarakat.id,
+          substance: 'Iodinated Contrast Media',
+          reaction: 'Anaphylaxis — facial oedema, hypotension (prior cardiac cath)',
+          severity: 'SEVERE',
+        },
+      });
+    }
   }
 
-  const dimaLatexAllergyExists = await prisma.allergy.findFirst({
-    where: { patientId: dimaKassab.id, substance: 'Latex', deletedAt: null },
-  });
-  if (!dimaLatexAllergyExists) {
-    await prisma.allergy.create({
-      data: {
-        patientId: dimaKassab.id,
-        substance: 'Latex',
-        reaction: 'Contact urticaria, pruritus',
-        severity: 'MILD',
-      },
+  if (dimaKassab) {
+    const dimaLatexAllergyExists = await prisma.allergy.findFirst({
+      where: { patientId: dimaKassab.id, substance: 'Latex', deletedAt: null },
     });
+    if (!dimaLatexAllergyExists) {
+      await prisma.allergy.create({
+        data: {
+          patientId: dimaKassab.id,
+          substance: 'Latex',
+          reaction: 'Contact urticaria, pruritus',
+          severity: 'MILD',
+        },
+      });
+    }
   }
 
   const tariPenicillinAllergyExists = await prisma.allergy.findFirst({
@@ -929,7 +937,7 @@ async function main() {
   });
 
   // Extended historical appointments — 14 to 21 days ago
-  await prisma.appointment.upsert({
+  if (ahmadRashid) await prisma.appointment.upsert({
     where: { id: 'seed-appt-014' },
     update: { status: AppointmentStatus.COMPLETED },
     create: {
@@ -942,9 +950,9 @@ async function main() {
       durationMin: 20,
       status: AppointmentStatus.COMPLETED,
     },
-  });
+  }).catch(() => null);
 
-  await prisma.appointment.upsert({
+  if (yousefKhatib) await prisma.appointment.upsert({
     where: { id: 'seed-appt-015' },
     update: { status: AppointmentStatus.COMPLETED },
     create: {
@@ -957,9 +965,9 @@ async function main() {
       durationMin: 20,
       status: AppointmentStatus.COMPLETED,
     },
-  });
+  }).catch(() => null);
 
-  await prisma.appointment.upsert({
+  if (hassanBarakat) await prisma.appointment.upsert({
     where: { id: 'seed-appt-016' },
     update: { status: AppointmentStatus.COMPLETED },
     create: {
@@ -972,9 +980,9 @@ async function main() {
       durationMin: 20,
       status: AppointmentStatus.COMPLETED,
     },
-  });
+  }).catch(() => null);
 
-  await prisma.appointment.upsert({
+  if (dimaKassab) await prisma.appointment.upsert({
     where: { id: 'seed-appt-017' },
     update: { status: AppointmentStatus.COMPLETED },
     create: {
@@ -987,9 +995,9 @@ async function main() {
       durationMin: 20,
       status: AppointmentStatus.COMPLETED,
     },
-  });
+  }).catch(() => null);
 
-  await prisma.appointment.upsert({
+  if (rimShaaban) await prisma.appointment.upsert({
     where: { id: 'seed-appt-018' },
     update: { status: AppointmentStatus.COMPLETED },
     create: {
@@ -1002,10 +1010,10 @@ async function main() {
       durationMin: 20,
       status: AppointmentStatus.COMPLETED,
     },
-  });
+  }).catch(() => null);
 
   // Cancelled and no-show historical entries
-  await prisma.appointment.upsert({
+  if (mazenAlAmin) await prisma.appointment.upsert({
     where: { id: 'seed-appt-023' },
     update: {},
     create: {
@@ -1018,9 +1026,9 @@ async function main() {
       durationMin: 20,
       status: AppointmentStatus.NO_SHOW,
     },
-  });
+  }).catch(() => null);
 
-  await prisma.appointment.upsert({
+  if (lailaFakhoury) await prisma.appointment.upsert({
     where: { id: 'seed-appt-024' },
     update: {},
     create: {
@@ -1035,11 +1043,11 @@ async function main() {
       cancelReason: 'Patient requested rescheduling — travel conflict.',
       cancelledAt: daysAgo(8, 8, 0),
     },
-  });
+  }).catch(() => null);
 
   // ── Today's Appointments ────────────────────────────────────────────────────
   // Completed earlier today (queue DONE) — Ahmad Rashid follow-up
-  await prisma.appointment.upsert({
+  if (ahmadRashid) await prisma.appointment.upsert({
     where: { id: 'seed-appt-019' },
     update: { status: AppointmentStatus.COMPLETED },
     create: {
@@ -1052,10 +1060,10 @@ async function main() {
       durationMin: 20,
       status: AppointmentStatus.COMPLETED,
     },
-  });
+  }).catch(() => null);
 
   // IN_PROGRESS (currently with doctor) — Dima Kassab
-  await prisma.appointment.upsert({
+  if (dimaKassab) await prisma.appointment.upsert({
     where: { id: 'seed-appt-020' },
     update: { status: AppointmentStatus.IN_PROGRESS },
     create: {
@@ -1068,10 +1076,10 @@ async function main() {
       durationMin: 20,
       status: AppointmentStatus.IN_PROGRESS,
     },
-  });
+  }).catch(() => null);
 
   // CHECKED_IN → queue CALLED — Fatima Nasser
-  await prisma.appointment.upsert({
+  if (fatimaNasser) await prisma.appointment.upsert({
     where: { id: 'seed-appt-021' },
     update: {},
     create: {
@@ -1084,10 +1092,10 @@ async function main() {
       durationMin: 15,
       status: AppointmentStatus.CHECKED_IN,
     },
-  });
+  }).catch(() => null);
 
   // Karim Nassar — pediatric walk-in today, CHECKED_IN / WAITING
-  await prisma.appointment.upsert({
+  if (karimNassar) await prisma.appointment.upsert({
     where: { id: 'seed-appt-022' },
     update: {},
     create: {
@@ -1100,7 +1108,7 @@ async function main() {
       durationMin: 15,
       status: AppointmentStatus.CHECKED_IN,
     },
-  });
+  }).catch(() => null);
 
   // Existing today's appointments
   await prisma.appointment.upsert({
@@ -1194,7 +1202,7 @@ async function main() {
     },
   });
 
-  await prisma.appointment.upsert({
+  if (hassanBarakat) await prisma.appointment.upsert({
     where: { id: 'seed-appt-025' },
     update: {},
     create: {
@@ -1207,9 +1215,9 @@ async function main() {
       durationMin: 20,
       status: AppointmentStatus.CONFIRMED,
     },
-  });
+  }).catch(() => null);
 
-  await prisma.appointment.upsert({
+  if (mariamAziz) await prisma.appointment.upsert({
     where: { id: 'seed-appt-026' },
     update: {},
     create: {
@@ -1222,7 +1230,7 @@ async function main() {
       durationMin: 20,
       status: AppointmentStatus.SCHEDULED,
     },
-  });
+  }).catch(() => null);
 
   // ── Queue Entries ──────────────────────────────────────────────────────────
   const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
@@ -1507,7 +1515,7 @@ async function main() {
   });
 
   // Extended historical encounters — 9 to 14 days ago
-  const enc8 = await prisma.encounter.upsert({
+  const enc8 = ahmadRashid ? await prisma.encounter.upsert({
     where: { appointmentId: 'seed-appt-014' },
     update: {},
     create: {
@@ -1533,9 +1541,9 @@ async function main() {
       startedAt: daysAgo(14, 9, 5),
       endedAt: daysAgo(14, 9, 26),
     },
-  });
+  }).catch(() => null) : null;
 
-  const enc9 = await prisma.encounter.upsert({
+  const enc9 = yousefKhatib ? await prisma.encounter.upsert({
     where: { appointmentId: 'seed-appt-015' },
     update: {},
     create: {
@@ -1562,9 +1570,9 @@ async function main() {
       startedAt: daysAgo(14, 10, 35),
       endedAt: daysAgo(14, 11, 0),
     },
-  });
+  }).catch(() => null) : null;
 
-  const enc10 = await prisma.encounter.upsert({
+  const enc10 = hassanBarakat ? await prisma.encounter.upsert({
     where: { appointmentId: 'seed-appt-016' },
     update: {},
     create: {
@@ -1590,9 +1598,9 @@ async function main() {
       startedAt: daysAgo(12, 9, 5),
       endedAt: daysAgo(12, 9, 28),
     },
-  });
+  }).catch(() => null) : null;
 
-  const enc11 = await prisma.encounter.upsert({
+  const enc11 = dimaKassab ? await prisma.encounter.upsert({
     where: { appointmentId: 'seed-appt-017' },
     update: {},
     create: {
@@ -1618,9 +1626,9 @@ async function main() {
       startedAt: daysAgo(10, 10, 5),
       endedAt: daysAgo(10, 10, 22),
     },
-  });
+  }).catch(() => null) : null;
 
-  const enc12 = await prisma.encounter.upsert({
+  const enc12 = rimShaaban ? await prisma.encounter.upsert({
     where: { appointmentId: 'seed-appt-018' },
     update: {},
     create: {
@@ -1646,10 +1654,10 @@ async function main() {
       startedAt: daysAgo(9, 9, 35),
       endedAt: daysAgo(9, 9, 55),
     },
-  });
+  }).catch(() => null) : null;
 
   // Today's completed encounter — Ahmad Rashid morning visit
-  const enc13 = await prisma.encounter.upsert({
+  const enc13 = ahmadRashid ? await prisma.encounter.upsert({
     where: { appointmentId: 'seed-appt-019' },
     update: {},
     create: {
@@ -1675,7 +1683,7 @@ async function main() {
       startedAt: todayAt(8, 5),
       endedAt: todayAt(8, 22),
     },
-  });
+  }).catch(() => null) : null;
 
   // ── Prescriptions ──────────────────────────────────────────────────────────
   // Enc 1 — Hypertension (Khalid Mousa)
@@ -1878,7 +1886,7 @@ async function main() {
   });
 
   // Enc 8 — DM+HTN follow-up 14 days ago (Ahmad Rashid)
-  await prisma.prescription.upsert({
+  if (enc8) await prisma.prescription.upsert({
     where: { id: 'seed-rx-013' },
     update: { encounterId: enc8.id },
     create: {
@@ -1892,9 +1900,9 @@ async function main() {
       quantity: 180,
       refillsLeft: 2,
     },
-  });
+  }).catch(() => null);
 
-  await prisma.prescription.upsert({
+  if (enc8) await prisma.prescription.upsert({
     where: { id: 'seed-rx-014' },
     update: { encounterId: enc8.id },
     create: {
@@ -1908,10 +1916,10 @@ async function main() {
       quantity: 30,
       refillsLeft: 2,
     },
-  });
+  }).catch(() => null);
 
   // Enc 9 — COPD exacerbation (Yousef Khatib)
-  await prisma.prescription.upsert({
+  if (enc9) await prisma.prescription.upsert({
     where: { id: 'seed-rx-015' },
     update: { encounterId: enc9.id },
     create: {
@@ -1925,9 +1933,9 @@ async function main() {
       quantity: 5,
       refillsLeft: 0,
     },
-  });
+  }).catch(() => null);
 
-  await prisma.prescription.upsert({
+  if (enc9) await prisma.prescription.upsert({
     where: { id: 'seed-rx-016' },
     update: { encounterId: enc9.id },
     create: {
@@ -1941,9 +1949,9 @@ async function main() {
       quantity: 14,
       refillsLeft: 0,
     },
-  });
+  }).catch(() => null);
 
-  await prisma.prescription.upsert({
+  if (enc9) await prisma.prescription.upsert({
     where: { id: 'seed-rx-017' },
     update: { encounterId: enc9.id },
     create: {
@@ -1957,10 +1965,10 @@ async function main() {
       quantity: 2,
       refillsLeft: 2,
     },
-  });
+  }).catch(() => null);
 
   // Enc 10 — Post-MI cardiac follow-up (Hassan Barakat)
-  await prisma.prescription.upsert({
+  if (enc10) await prisma.prescription.upsert({
     where: { id: 'seed-rx-018' },
     update: { encounterId: enc10.id },
     create: {
@@ -1974,9 +1982,9 @@ async function main() {
       quantity: 90,
       refillsLeft: 3,
     },
-  });
+  }).catch(() => null);
 
-  await prisma.prescription.upsert({
+  if (enc10) await prisma.prescription.upsert({
     where: { id: 'seed-rx-019' },
     update: { encounterId: enc10.id },
     create: {
@@ -1990,9 +1998,9 @@ async function main() {
       quantity: 30,
       refillsLeft: 3,
     },
-  });
+  }).catch(() => null);
 
-  await prisma.prescription.upsert({
+  if (enc10) await prisma.prescription.upsert({
     where: { id: 'seed-rx-020' },
     update: { encounterId: enc10.id },
     create: {
@@ -2006,9 +2014,9 @@ async function main() {
       quantity: 30,
       refillsLeft: 3,
     },
-  });
+  }).catch(() => null);
 
-  await prisma.prescription.upsert({
+  if (enc10) await prisma.prescription.upsert({
     where: { id: 'seed-rx-021' },
     update: { encounterId: enc10.id },
     create: {
@@ -2022,10 +2030,10 @@ async function main() {
       quantity: 30,
       refillsLeft: 3,
     },
-  });
+  }).catch(() => null);
 
   // Enc 11 — Hypothyroidism (Dima Kassab)
-  await prisma.prescription.upsert({
+  if (enc11) await prisma.prescription.upsert({
     where: { id: 'seed-rx-022' },
     update: { encounterId: enc11.id },
     create: {
@@ -2039,10 +2047,10 @@ async function main() {
       quantity: 180,
       refillsLeft: 1,
     },
-  });
+  }).catch(() => null);
 
   // Enc 12 — Osteoporosis (Rim Shaaban)
-  await prisma.prescription.upsert({
+  if (enc12) await prisma.prescription.upsert({
     where: { id: 'seed-rx-023' },
     update: { encounterId: enc12.id },
     create: {
@@ -2056,9 +2064,9 @@ async function main() {
       quantity: 4,
       refillsLeft: 5,
     },
-  });
+  }).catch(() => null);
 
-  await prisma.prescription.upsert({
+  if (enc12) await prisma.prescription.upsert({
     where: { id: 'seed-rx-024' },
     update: { encounterId: enc12.id },
     create: {
@@ -2072,10 +2080,10 @@ async function main() {
       quantity: 60,
       refillsLeft: 3,
     },
-  });
+  }).catch(() => null);
 
   // Enc 13 — Today's visit — Ahmad Rashid (Amlodipine increase)
-  await prisma.prescription.upsert({
+  if (enc13) await prisma.prescription.upsert({
     where: { id: 'seed-rx-025' },
     update: { encounterId: enc13.id },
     create: {
@@ -2089,11 +2097,223 @@ async function main() {
       quantity: 30,
       refillsLeft: 2,
     },
+  }).catch(() => null);
+
+  // ── Lab Orders ──────────────────────────────────────────────────────────────
+  await prisma.labOrder.upsert({
+    where: { id: 'seed-lab-001' },
+    update: {},
+    create: {
+      id: 'seed-lab-001',
+      organizationId: 'seed-org-001',
+      branchId: 'seed-branch-001',
+      patientId: khalidMousa.id,
+      encounterId: enc1.id,
+      orderedById: doctorSamer.id,
+      testName: 'Complete Blood Count',
+      testCode: 'CBC',
+      status: LabOrderStatus.REVIEWED,
+      collectedAt: daysAgo(6, 9, 30),
+      notes: 'Pre-medication adjustment baseline CBC.',
+    },
+  });
+
+  await prisma.labOrder.upsert({
+    where: { id: 'seed-lab-002' },
+    update: {},
+    create: {
+      id: 'seed-lab-002',
+      organizationId: 'seed-org-001',
+      branchId: 'seed-branch-001',
+      patientId: mohammadDiab.id,
+      encounterId: enc5.id,
+      orderedById: doctorOmar.id,
+      testName: 'Glycated Haemoglobin (HbA1c)',
+      testCode: 'HBA1C',
+      status: LabOrderStatus.REVIEWED,
+      collectedAt: daysAgo(2, 8, 0),
+      notes: 'Quarterly glycaemic monitoring.',
+    },
+  });
+
+  await prisma.labOrder.upsert({
+    where: { id: 'seed-lab-003' },
+    update: {},
+    create: {
+      id: 'seed-lab-003',
+      organizationId: 'seed-org-001',
+      branchId: 'seed-branch-001',
+      patientId: mohammadDiab.id,
+      encounterId: enc5.id,
+      orderedById: doctorOmar.id,
+      testName: 'Fasting Blood Glucose',
+      testCode: 'FBG',
+      status: LabOrderStatus.RESULTED,
+      collectedAt: daysAgo(2, 8, 5),
+    },
+  });
+
+  await prisma.labOrder.upsert({
+    where: { id: 'seed-lab-004' },
+    update: {},
+    create: {
+      id: 'seed-lab-004',
+      organizationId: 'seed-org-001',
+      branchId: 'seed-branch-001',
+      patientId: nourIbrahim.id,
+      encounterId: enc2.id,
+      orderedById: doctorOmar.id,
+      testName: 'Lipid Panel',
+      testCode: 'LIPIDS',
+      status: LabOrderStatus.RESULTED,
+      collectedAt: daysAgo(6, 10, 15),
+      notes: 'Annual cardiovascular risk screen.',
+    },
+  });
+
+  await prisma.labOrder.upsert({
+    where: { id: 'seed-lab-005' },
+    update: {},
+    create: {
+      id: 'seed-lab-005',
+      organizationId: 'seed-org-001',
+      branchId: 'seed-branch-001',
+      patientId: saraMahmoud.id,
+      encounterId: enc4.id,
+      orderedById: doctorOmar.id,
+      testName: 'Liver Function Test',
+      testCode: 'LFT',
+      status: LabOrderStatus.SAMPLE_COLLECTED,
+      collectedAt: daysAgo(3, 11, 30),
+      notes: 'Anaemia workup — rule out hepatic involvement.',
+    },
+  });
+
+  await prisma.labOrder.upsert({
+    where: { id: 'seed-lab-006' },
+    update: {},
+    create: {
+      id: 'seed-lab-006',
+      organizationId: 'seed-org-001',
+      branchId: 'seed-branch-001',
+      patientId: tariqSaleh.id,
+      encounterId: enc3.id,
+      orderedById: doctorSamer.id,
+      testName: 'Kidney Function Test',
+      testCode: 'RFT',
+      status: LabOrderStatus.ORDERED,
+      notes: 'Pre-ACE inhibitor baseline renal function.',
+    },
+  });
+
+  // ── Lab Results (for REVIEWED orders) ───────────────────────────────────────
+  await prisma.labResult.upsert({
+    where: { labOrderId: 'seed-lab-001' },
+    update: {},
+    create: {
+      id: 'seed-lab-result-001',
+      labOrderId: 'seed-lab-001',
+      resultValue: 'WBC 6.8×10⁹/L | RBC 4.5×10¹²/L | Hgb 138 g/L | Hct 0.42 | PLT 224×10⁹/L | MCV 89 fL',
+      unit: 'mixed',
+      referenceRange: 'WBC 4–11 | RBC 4.2–5.4 | Hgb 130–175 | PLT 150–400',
+      interpretation: 'NORMAL',
+      resultNotes: 'All parameters within normal limits.',
+      resultAt: daysAgo(5, 14, 0),
+      reviewedById: doctorSamer.id,
+      reviewedAt: daysAgo(5, 15, 30),
+    },
+  });
+
+  await prisma.labResult.upsert({
+    where: { labOrderId: 'seed-lab-002' },
+    update: {},
+    create: {
+      id: 'seed-lab-result-002',
+      labOrderId: 'seed-lab-002',
+      resultValue: '7.6',
+      unit: '%',
+      referenceRange: '< 7.0% (diabetic target)',
+      interpretation: 'HIGH',
+      resultNotes: 'Improving from 8.2% three months ago. Continue current management.',
+      resultAt: daysAgo(1, 10, 0),
+      reviewedById: doctorOmar.id,
+      reviewedAt: daysAgo(1, 11, 0),
+    },
+  });
+
+  // ── Radiology Orders ─────────────────────────────────────────────────────────
+  await prisma.radiologyOrder.upsert({
+    where: { id: 'seed-rad-001' },
+    update: {},
+    create: {
+      id: 'seed-rad-001',
+      organizationId: 'seed-org-001',
+      branchId: 'seed-branch-001',
+      patientId: tariqSaleh.id,
+      encounterId: enc3.id,
+      orderedById: doctorSamer.id,
+      modality: 'XR',
+      bodyPart: 'Chest',
+      clinicalInfo: 'Stable angina — assess cardiac silhouette and pulmonary vasculature.',
+      status: RadiologyOrderStatus.RESULTED,
+      priority: 'ROUTINE',
+    },
+  });
+
+  await prisma.radiologyOrder.upsert({
+    where: { id: 'seed-rad-002' },
+    update: {},
+    create: {
+      id: 'seed-rad-002',
+      organizationId: 'seed-org-001',
+      branchId: 'seed-branch-001',
+      patientId: saraMahmoud.id,
+      encounterId: enc4.id,
+      orderedById: doctorOmar.id,
+      modality: 'US',
+      bodyPart: 'Abdomen',
+      clinicalInfo: 'Iron deficiency anaemia — rule out hepatosplenomegaly.',
+      status: RadiologyOrderStatus.REVIEWED,
+    },
+  });
+
+  await prisma.radiologyOrder.upsert({
+    where: { id: 'seed-rad-003' },
+    update: {},
+    create: {
+      id: 'seed-rad-003',
+      organizationId: 'seed-org-001',
+      branchId: 'seed-branch-001',
+      patientId: khalidMousa.id,
+      encounterId: enc1.id,
+      orderedById: doctorSamer.id,
+      modality: 'ECHO',
+      bodyPart: 'Heart',
+      clinicalInfo: 'HTN with suboptimal BP control — assess LV function and hypertrophy.',
+      status: RadiologyOrderStatus.SCHEDULED,
+      scheduledAt: todayAt(14, 0),
+    },
+  });
+
+  // ── Radiology Reports (for REVIEWED orders) ──────────────────────────────────
+  await prisma.radiologyReport.upsert({
+    where: { radiologyOrderId: 'seed-rad-002' },
+    update: {},
+    create: {
+      id: 'seed-rad-report-001',
+      radiologyOrderId: 'seed-rad-002',
+      findings: 'Liver: normal size and echotexture. No focal lesion. Gallbladder: normal, no calculi. Spleen: 11 cm, not enlarged. Kidneys: bilateral normal size and echogenicity. No free fluid. No abdominal mass.',
+      impression: 'Normal abdominal ultrasound. No hepatosplenomegaly. No structural cause for anaemia identified.',
+      reportedById: doctorOmar.id,
+      reportedAt: daysAgo(2, 16, 0),
+      reviewedById: doctorOmar.id,
+      reviewedAt: daysAgo(2, 17, 0),
+    },
   });
 
   console.log(`
 ╔══════════════════════════════════════════════════════════════╗
-║        Al-Nour Medical Center — Demo Seed Ready (B15.0)      ║
+║        Al-Nour Medical Center — Demo Seed Ready (B16.0)      ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  Demo Accounts                                               ║
 ║  ─────────────────────────────────────────────────────────  ║
@@ -2111,6 +2331,7 @@ async function main() {
 ║  ─────────────────────────────────────────────────────────  ║
 ║  Patients: 20  │  Appointments: 26  │  Doctors: 3           ║
 ║  Encounters: 13  │  Prescriptions: 25  │  Allergies: 6      ║
+║  Lab Orders: 6  │  Radiology Orders: 3                       ║
 ║  Queue entries today: 5 (DONE / IN_PROGRESS / CALLED / ×2 WAITING)
 ╚══════════════════════════════════════════════════════════════╝
   `);

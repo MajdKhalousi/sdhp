@@ -54,8 +54,8 @@
       "queue": "الطابور",
       "doctorWorkspace": "غرفة الطبيب",
       "doctorQueue": "طابور الطبيب",
-      "technicianLabs": "مختبر الفني",
-      "technicianRadiology": "أشعة الفني",
+      "technicianLabs": "قائمة عمل المختبر",
+      "technicianRadiology": "قائمة عمل الأشعة",
       "invoices": "الفواتير"
     }
   },

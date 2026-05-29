@@ -54,8 +54,8 @@
       "queue": "Queue",
       "doctorWorkspace": "Doctor Workspace",
       "doctorQueue": "Doctor Queue",
-      "technicianLabs": "Technician Labs",
-      "technicianRadiology": "Technician Radiology",
+      "technicianLabs": "Lab Worklist",
+      "technicianRadiology": "Radiology Worklist",
       "invoices": "Invoices"
     }
   },

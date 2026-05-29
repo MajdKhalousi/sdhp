@@ -133,7 +133,7 @@ export default function DashboardPage() {
       value: completedStats?.total ?? '—',
       sub:   t('stats.completedToday.sub'),
       icon: CheckCircle2,
-      href: '/dashboard/appointments',
+      href: `/dashboard/appointments?status=COMPLETED&date=${today}`,
     },
   ];
 

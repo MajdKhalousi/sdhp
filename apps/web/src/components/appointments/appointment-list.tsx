@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ChevronLeft, ChevronRight, CalendarX2 } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
@@ -36,8 +37,11 @@ export function AppointmentList() {
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
 
-  const [status, setStatus] = useState<AppointmentStatus | ''>('');
-  const [date, setDate] = useState('');
+  const searchParams = useSearchParams();
+  const [status, setStatus] = useState<AppointmentStatus | ''>(
+    (searchParams.get('status') ?? '') as AppointmentStatus | '',
+  );
+  const [date, setDate] = useState(searchParams.get('date') ?? '');
   const [doctorId, setDoctorId] = useState('');
   const [page, setPage] = useState(1);
 

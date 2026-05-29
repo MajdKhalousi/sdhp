@@ -23,6 +23,14 @@ export default function DoctorWorkspacePage() {
   const t = useTranslations('doctorWorkspace');
   const tEncounter = useTranslations('encounter');
   const tCommon = useTranslations('common');
+  const tPatient = useTranslations('patient');
+
+  function localizeGender(gender: string | null | undefined): string | null {
+    if (!gender) return null;
+    if (gender === 'MALE') return tPatient('gender.male');
+    if (gender === 'FEMALE') return tPatient('gender.female');
+    return tPatient('gender.other');
+  }
 
   const { data, isLoading, isError, error, refetch, isFetching } = useEncounters({ limit: 50 });
 
@@ -120,7 +128,7 @@ export default function DoctorWorkspacePage() {
                       <p>
                         {t('card.started')} {formatDate(startedAt, displayLocale)} · {formatTime(startedAt, displayLocale)}
                       </p>
-                      {patient.gender && <p>{patient.gender}</p>}
+                      {localizeGender(patient.gender) && <p>{localizeGender(patient.gender)}</p>}
                       {encounter.chiefComplaint && (
                         <p className="mt-1 text-sm text-foreground/80 italic">
                           &ldquo;{encounter.chiefComplaint}&rdquo;

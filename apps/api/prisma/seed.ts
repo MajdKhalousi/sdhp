@@ -206,6 +206,42 @@ async function main() {
     },
   });
 
+  // Accountant
+  await prisma.user.upsert({
+    where: { phone: '+963912004001' },
+    update: {},
+    create: {
+      phone: '+963912004001',
+      email: 'accountant@alnour.sy',
+      passwordHash,
+      firstName: 'Rana',
+      lastName: 'Mansour',
+      firstNameAr: 'رنا',
+      lastNameAr: 'منصور',
+      role: UserRole.ACCOUNTANT,
+      organizationId: 'seed-org-001',
+      branchId: 'seed-branch-001',
+    },
+  });
+
+  // Technician
+  await prisma.user.upsert({
+    where: { phone: '+963912005001' },
+    update: {},
+    create: {
+      phone: '+963912005001',
+      email: 'technician@alnour.sy',
+      passwordHash,
+      firstName: 'Yousef',
+      lastName: 'Haddad',
+      firstNameAr: 'يوسف',
+      lastNameAr: 'حداد',
+      role: UserRole.TECHNICIAN,
+      organizationId: 'seed-org-001',
+      branchId: 'seed-branch-001',
+    },
+  });
+
   // Doctor users
   const drSamerUser = await prisma.user.upsert({
     where: { phone: '+963912001001' },
@@ -2057,7 +2093,7 @@ async function main() {
 
   console.log(`
 ╔══════════════════════════════════════════════════════════════╗
-║        Al-Nour Medical Center — Demo Seed Ready (B14.0)      ║
+║        Al-Nour Medical Center — Demo Seed Ready (B15.0)      ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  Demo Accounts                                               ║
 ║  ─────────────────────────────────────────────────────────  ║
@@ -2068,6 +2104,8 @@ async function main() {
 ║  DOCTOR        +963912001001  /  password123  (Cardiology)   ║
 ║  DOCTOR        +963912001002  /  password123  (Pediatrics)   ║
 ║  DOCTOR        +963912001003  /  password123  (General Med)  ║
+║  ACCOUNTANT    +963912004001  /  password123  (Rana Mansour) ║
+║  TECHNICIAN    +963912005001  /  password123  (Yousef Haddad)║
 ╠══════════════════════════════════════════════════════════════╣
 ║  Data Summary                                                ║
 ║  ─────────────────────────────────────────────────────────  ║

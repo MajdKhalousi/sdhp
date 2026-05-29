@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from '@/i18n/navigation';
-import { AlertTriangle } from 'lucide-react';
+import { useRouter, Link } from '@/i18n/navigation';
+import { AlertTriangle, ArrowLeft } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { usePatient, useUpdatePatient, useDeletePatient } from '@/hooks/use-patient';
 import { useAuthStore } from '@/store/auth';
@@ -244,6 +244,13 @@ export default function PatientPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="space-y-4">
+      <Link
+        href="/dashboard/patients"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-md border transition-colors hover:bg-accent"
+        aria-label={tCommon('actions.back')}
+      >
+        <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+      </Link>
       <PatientHeader patient={patient} isLoading={isLoading} />
 
       {patient && canManage && (

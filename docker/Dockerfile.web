@@ -13,12 +13,12 @@ FROM base AS builder
 WORKDIR /repo
 
 # Copy workspace manifests — enables Docker layer caching for deps
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json .npmrc ./
 COPY apps/web/package.json     ./apps/web/
 COPY packages/shared/package.json ./packages/shared/
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile
+    pnpm install --frozen-lockfile --node-linker=hoisted
 
 # Copy source
 COPY apps/web     ./apps/web

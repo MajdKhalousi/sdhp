@@ -13,10 +13,13 @@ interface LoginResponse {
 }
 
 const DEMO_ACCOUNTS = [
-  { role: 'Org Admin',  phone: '+963912345678', name: 'Ahmad Khalil'    },
-  { role: 'Secretary',  phone: '+963912002001', name: 'Sara Qassem'     },
-  { role: 'Doctor',     phone: '+963912001001', name: 'Dr. Samer Hassan' },
-  { role: 'Super Admin',phone: '+963900000001', name: 'Super Admin'     },
+  { role: 'Org Admin',   phone: '+963912345678', name: 'Ahmad Khalil'     },
+  { role: 'Secretary',   phone: '+963912002001', name: 'Sara Qassem'      },
+  { role: 'Doctor',      phone: '+963912001001', name: 'Dr. Samer Hassan'  },
+  { role: 'Nurse',       phone: '+963912003001', name: 'Amal Hasan'       },
+  { role: 'Accountant',  phone: '+963912004001', name: 'Rana Mansour'     },
+  { role: 'Technician',  phone: '+963912005001', name: 'Yousef Haddad'    },
+  { role: 'Super Admin', phone: '+963900000001', name: 'Super Admin'      },
 ] as const;
 
 const DEMO_PASSWORD = 'password123';

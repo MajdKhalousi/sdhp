@@ -6,6 +6,9 @@ import {
   QueueStatus,
   LabOrderStatus,
   RadiologyOrderStatus,
+  InvoiceStatus,
+  PaymentMethod,
+  ClinicalReportStatus,
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
@@ -209,7 +212,7 @@ async function main() {
   });
 
   // Accountant
-  await prisma.user.upsert({
+  const userAccountant = await prisma.user.upsert({
     where: { phone: '+963912004001' },
     update: {},
     create: {
@@ -2311,9 +2314,385 @@ async function main() {
     },
   });
 
+  // ── Invoices ─────────────────────────────────────────────────────────────────
+  await prisma.invoice.upsert({
+    where: { id: 'seed-inv-001' },
+    update: {},
+    create: {
+      id: 'seed-inv-001',
+      organizationId: 'seed-org-001',
+      branchId: 'seed-branch-001',
+      patientId: khalidMousa.id,
+      encounterId: enc1.id,
+      createdById: userAccountant.id,
+      invoiceNumber: 'INV-SEED-001',
+      status: InvoiceStatus.PAID,
+      subtotal: 225.00,
+      discountAmount: 0,
+      totalAmount: 225.00,
+      paidAmount: 225.00,
+      issuedAt: daysAgo(7),
+      dueDate: daysAgo(2),
+      notes: 'HTN follow-up — cardiology consultation + echocardiography service.',
+    },
+  });
+
+  await prisma.invoiceItem.upsert({
+    where: { id: 'seed-inv-item-001' },
+    update: {},
+    create: {
+      id: 'seed-inv-item-001',
+      invoiceId: 'seed-inv-001',
+      description: 'Cardiology Consultation',
+      quantity: 1,
+      unitPrice: 75.00,
+      totalPrice: 75.00,
+      discount: 0,
+    },
+  });
+
+  await prisma.invoiceItem.upsert({
+    where: { id: 'seed-inv-item-002' },
+    update: {},
+    create: {
+      id: 'seed-inv-item-002',
+      invoiceId: 'seed-inv-001',
+      description: 'Echocardiography Service',
+      quantity: 1,
+      unitPrice: 150.00,
+      totalPrice: 150.00,
+      discount: 0,
+    },
+  });
+
+  await prisma.invoice.upsert({
+    where: { id: 'seed-inv-002' },
+    update: {},
+    create: {
+      id: 'seed-inv-002',
+      organizationId: 'seed-org-001',
+      branchId: 'seed-branch-001',
+      patientId: mohammadDiab.id,
+      encounterId: enc5.id,
+      createdById: userAccountant.id,
+      invoiceNumber: 'INV-SEED-002',
+      status: InvoiceStatus.PARTIALLY_PAID,
+      subtotal: 110.00,
+      discountAmount: 0,
+      totalAmount: 110.00,
+      paidAmount: 55.00,
+      issuedAt: daysAgo(3),
+      dueDate: daysAgo(-7),
+      notes: 'DM quarterly follow-up — consultation + HbA1c + fasting glucose.',
+    },
+  });
+
+  await prisma.invoiceItem.upsert({
+    where: { id: 'seed-inv-item-003' },
+    update: {},
+    create: {
+      id: 'seed-inv-item-003',
+      invoiceId: 'seed-inv-002',
+      description: 'General Medicine Consultation',
+      quantity: 1,
+      unitPrice: 50.00,
+      totalPrice: 50.00,
+      discount: 0,
+    },
+  });
+
+  await prisma.invoiceItem.upsert({
+    where: { id: 'seed-inv-item-004' },
+    update: {},
+    create: {
+      id: 'seed-inv-item-004',
+      invoiceId: 'seed-inv-002',
+      description: 'HbA1c Laboratory Test',
+      quantity: 1,
+      unitPrice: 40.00,
+      totalPrice: 40.00,
+      discount: 0,
+    },
+  });
+
+  await prisma.invoiceItem.upsert({
+    where: { id: 'seed-inv-item-005' },
+    update: {},
+    create: {
+      id: 'seed-inv-item-005',
+      invoiceId: 'seed-inv-002',
+      description: 'Fasting Blood Glucose Test',
+      quantity: 1,
+      unitPrice: 20.00,
+      totalPrice: 20.00,
+      discount: 0,
+    },
+  });
+
+  await prisma.invoice.upsert({
+    where: { id: 'seed-inv-003' },
+    update: {},
+    create: {
+      id: 'seed-inv-003',
+      organizationId: 'seed-org-001',
+      branchId: 'seed-branch-001',
+      patientId: saraMahmoud.id,
+      encounterId: enc4.id,
+      createdById: userAccountant.id,
+      invoiceNumber: 'INV-SEED-003',
+      status: InvoiceStatus.DRAFT,
+      subtotal: 165.00,
+      discountAmount: 10.00,
+      totalAmount: 155.00,
+      paidAmount: 0,
+      notes: 'Anaemia workup — pending final lab results before issue.',
+    },
+  });
+
+  await prisma.invoiceItem.upsert({
+    where: { id: 'seed-inv-item-006' },
+    update: {},
+    create: {
+      id: 'seed-inv-item-006',
+      invoiceId: 'seed-inv-003',
+      description: 'General Medicine Consultation',
+      quantity: 1,
+      unitPrice: 50.00,
+      totalPrice: 50.00,
+      discount: 0,
+    },
+  });
+
+  await prisma.invoiceItem.upsert({
+    where: { id: 'seed-inv-item-007' },
+    update: {},
+    create: {
+      id: 'seed-inv-item-007',
+      invoiceId: 'seed-inv-003',
+      description: 'Abdominal Ultrasound',
+      quantity: 1,
+      unitPrice: 80.00,
+      totalPrice: 80.00,
+      discount: 0,
+    },
+  });
+
+  await prisma.invoiceItem.upsert({
+    where: { id: 'seed-inv-item-008' },
+    update: {},
+    create: {
+      id: 'seed-inv-item-008',
+      invoiceId: 'seed-inv-003',
+      description: 'Liver Function Test',
+      quantity: 1,
+      unitPrice: 35.00,
+      totalPrice: 35.00,
+      discount: 0,
+    },
+  });
+
+  await prisma.invoice.upsert({
+    where: { id: 'seed-inv-004' },
+    update: {},
+    create: {
+      id: 'seed-inv-004',
+      organizationId: 'seed-org-001',
+      branchId: 'seed-branch-001',
+      patientId: tariqSaleh.id,
+      encounterId: enc3.id,
+      createdById: userAccountant.id,
+      invoiceNumber: 'INV-SEED-004',
+      status: InvoiceStatus.ISSUED,
+      subtotal: 135.00,
+      discountAmount: 0,
+      totalAmount: 135.00,
+      paidAmount: 0,
+      issuedAt: daysAgo(5),
+      dueDate: daysAgo(-14),
+      notes: 'Stable angina assessment — cardiology consultation + chest X-ray.',
+    },
+  });
+
+  await prisma.invoiceItem.upsert({
+    where: { id: 'seed-inv-item-009' },
+    update: {},
+    create: {
+      id: 'seed-inv-item-009',
+      invoiceId: 'seed-inv-004',
+      description: 'Cardiology Consultation',
+      quantity: 1,
+      unitPrice: 75.00,
+      totalPrice: 75.00,
+      discount: 0,
+    },
+  });
+
+  await prisma.invoiceItem.upsert({
+    where: { id: 'seed-inv-item-010' },
+    update: {},
+    create: {
+      id: 'seed-inv-item-010',
+      invoiceId: 'seed-inv-004',
+      description: 'Chest X-Ray',
+      quantity: 1,
+      unitPrice: 60.00,
+      totalPrice: 60.00,
+      discount: 0,
+    },
+  });
+
+  // ── Payments ─────────────────────────────────────────────────────────────────
+  await prisma.payment.upsert({
+    where: { id: 'seed-payment-001' },
+    update: {},
+    create: {
+      id: 'seed-payment-001',
+      invoiceId: 'seed-inv-001',
+      amount: 225.00,
+      method: PaymentMethod.CASH,
+      notes: 'Full payment received at reception.',
+      paidAt: daysAgo(7, 10, 0),
+      receivedById: userAccountant.id,
+    },
+  });
+
+  await prisma.payment.upsert({
+    where: { id: 'seed-payment-002' },
+    update: {},
+    create: {
+      id: 'seed-payment-002',
+      invoiceId: 'seed-inv-002',
+      amount: 55.00,
+      method: PaymentMethod.CASH,
+      notes: 'Partial payment — balance $55.00 outstanding.',
+      paidAt: daysAgo(3, 10, 0),
+      receivedById: userAccountant.id,
+    },
+  });
+
+  // ── Clinical Reports ─────────────────────────────────────────────────────────
+  await prisma.clinicalReport.upsert({
+    where: { id: 'seed-clinical-001' },
+    update: {},
+    create: {
+      id: 'seed-clinical-001',
+      organizationId: 'seed-org-001',
+      patientId: khalidMousa.id,
+      encounterId: enc1.id,
+      createdById: drSamerUser.id,
+      title: 'Hypertension Follow-Up Visit',
+      status: ClinicalReportStatus.FINALIZED,
+      content: `PATIENT: Khalid Mousa | MRN: MRN-000002 | DOB: 1981-03-15 | GENDER: Male
+DATE OF VISIT: ${daysAgo(7).toLocaleDateString('en-GB')}
+ATTENDING PHYSICIAN: Dr. Samer Hassan — Cardiology
+
+CHIEF COMPLAINT
+Follow-up for essential hypertension. Patient reports elevated home BP readings and occasional morning headaches.
+
+HISTORY OF PRESENT ILLNESS
+Mr. Khalid Mousa is a 44-year-old male with essential hypertension managed on Amlodipine 5mg + Lisinopril 10mg. Reports good medication compliance. Home BP log shows persistent readings of 150–160/90–95 mmHg over 2 weeks. Occasional morning headaches. No chest pain, dyspnoea, or ankle swelling.
+
+EXAMINATION
+Vitals: BP 148/92 mmHg | HR 78 bpm | SpO₂ 98% | Weight 83 kg | Height 175 cm
+Cardiovascular: Regular rate and rhythm. No murmurs. No pedal oedema.
+Respiratory: Clear bilaterally.
+
+INVESTIGATIONS
+CBC: All parameters within normal limits.
+Echocardiogram: Scheduled.
+
+ASSESSMENT
+Essential hypertension — suboptimal control on current regimen.
+
+PLAN
+1. Increase Amlodipine to 10mg OD.
+2. Continue Lisinopril 10mg OD.
+3. Low-sodium diet and 30-minute daily walking.
+4. Repeat BP check in 2 weeks. Echocardiogram scheduled.
+
+FOLLOW-UP: 2 weeks.`,
+    },
+  });
+
+  await prisma.clinicalReport.upsert({
+    where: { id: 'seed-clinical-002' },
+    update: {},
+    create: {
+      id: 'seed-clinical-002',
+      organizationId: 'seed-org-001',
+      patientId: mohammadDiab.id,
+      encounterId: enc5.id,
+      createdById: drOmarUser.id,
+      title: 'Diabetes Mellitus Quarterly Review',
+      status: ClinicalReportStatus.FINALIZED,
+      content: `PATIENT: Mohammad Diab | MRN: MRN-000006 | DOB: 1961-11-30 | GENDER: Male
+DATE OF VISIT: ${daysAgo(3).toLocaleDateString('en-GB')}
+ATTENDING PHYSICIAN: Dr. Omar Saleh — General Medicine
+
+CHIEF COMPLAINT
+Quarterly diabetes mellitus review. Previous HbA1c 8.2% (3 months ago). Patient reports improved dietary compliance.
+
+HISTORY OF PRESENT ILLNESS
+Mr. Mohammad Diab is a 63-year-old male with Type 2 Diabetes Mellitus on Metformin 1000mg BD. HbA1c today 7.6% — an improvement of 0.6% from the prior reading. No hypoglycaemic episodes. BP 134/82 mmHg.
+
+EXAMINATION
+Vitals: BP 134/82 mmHg | HR 76 bpm | SpO₂ 97% | Weight 88 kg | Height 170 cm | BMI 30.4
+Feet: No ulcers. Peripheral sensation intact bilaterally (10g monofilament).
+Fundoscopy (last month): No diabetic retinopathy.
+
+INVESTIGATIONS
+HbA1c: 7.6% (improving from 8.2%) — above target < 7.0%.
+Fasting Glucose: 142 mg/dL.
+
+ASSESSMENT
+Type 2 DM — glycaemic control improving but not yet at target.
+
+PLAN
+1. Continue Metformin 1000mg BD.
+2. Add Empagliflozin 10mg OD.
+3. Target HbA1c < 7.0% by next review.
+4. Reinforce dietary adherence and 150 min/week moderate activity.
+5. Annual lipid panel, nephrology screen, and foot exam.
+
+FOLLOW-UP: 3 months.`,
+    },
+  });
+
+  await prisma.clinicalReport.upsert({
+    where: { id: 'seed-clinical-003' },
+    update: {},
+    create: {
+      id: 'seed-clinical-003',
+      organizationId: 'seed-org-001',
+      patientId: saraMahmoud.id,
+      encounterId: enc4.id,
+      createdById: drOmarUser.id,
+      title: 'Anaemia Assessment — Working Note',
+      status: ClinicalReportStatus.DRAFT,
+      content: `PATIENT: Sara Mahmoud | MRN: MRN-000001 | DOB: 1992-03-14 | GENDER: Female
+DATE OF VISIT: ${daysAgo(4).toLocaleDateString('en-GB')}
+ATTENDING PHYSICIAN: Dr. Omar Saleh — General Medicine
+
+[DRAFT — Awaiting final laboratory results before finalisation]
+
+CHIEF COMPLAINT
+Mild fatigue and light-headedness for 2 weeks. No fever. No weight loss.
+
+PROVISIONAL ASSESSMENT
+Iron deficiency anaemia — suspected. CBC and serum ferritin ordered. Abdominal US normal (no hepatosplenomegaly). LFT pending.
+
+INTERIM PLAN
+Ferrous Sulfate 325mg TID with orange juice.
+Dietary counselling provided.
+Review in 4 weeks with CBC and ferritin results.
+
+[To be finalised once lab results are reviewed.]`,
+    },
+  });
+
   console.log(`
 ╔══════════════════════════════════════════════════════════════╗
-║        Al-Nour Medical Center — Demo Seed Ready (B16.0)      ║
+║        Al-Nour Medical Center — Demo Seed Ready (B17.0)      ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  Demo Accounts                                               ║
 ║  ─────────────────────────────────────────────────────────  ║
@@ -2332,6 +2711,7 @@ async function main() {
 ║  Patients: 20  │  Appointments: 26  │  Doctors: 3           ║
 ║  Encounters: 13  │  Prescriptions: 25  │  Allergies: 6      ║
 ║  Lab Orders: 6  │  Radiology Orders: 3                       ║
+║  Invoices: 4  │  Payments: 2  │  Clinical Reports: 3        ║
 ║  Queue entries today: 5 (DONE / IN_PROGRESS / CALLED / ×2 WAITING)
 ╚══════════════════════════════════════════════════════════════╝
   `);

@@ -53,9 +53,17 @@ coverage/
 
 # SSL / Certbot
 docker/certbot/
+certbot/
+letsencrypt/
 
-# ENV
+# ENV — production secrets must never be committed
+.env.*
+**/.env.production
 docker/.env.production
+!.env.example
+!.env.production.example
+!apps/**/.env.example
+!docker/.env.example
 
 # Certificates
 *.pem

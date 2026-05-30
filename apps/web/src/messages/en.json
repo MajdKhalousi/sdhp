@@ -1209,6 +1209,11 @@
       "error": {
         "loadFailed": "Failed to load clinic settings",
         "saveFailed": "Failed to save settings"
+      },
+      "validation": {
+        "slotMin": "Slot duration must be greater than 0.",
+        "lunchOrder": "Lunch end time must be after start time.",
+        "dayTimeOrder": "Closing time must be after opening time."
       }
     },
     "visitTypes": {

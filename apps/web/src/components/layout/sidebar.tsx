@@ -13,6 +13,7 @@ import {
   FlaskConical,
   ScanLine,
   Receipt,
+  Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
@@ -69,6 +70,11 @@ const NAV_ITEMS: NavItem[] = [
     icon: Receipt,
     roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY'],
   },
+  {
+    href: '/dashboard/settings/clinic',
+    icon: Settings,
+    roles: ['SUPER_ADMIN', 'ORG_ADMIN'],
+  },
 ];
 
 export function Sidebar() {
@@ -88,6 +94,7 @@ export function Sidebar() {
     '/dashboard/technician/labs':      t('items.technicianLabs'),
     '/dashboard/technician/radiology': t('items.technicianRadiology'),
     '/dashboard/invoices':             t('items.invoices'),
+    '/dashboard/settings/clinic':      t('items.settings'),
   };
 
   const visibleItems = NAV_ITEMS.filter((item) => item.roles.includes(role));
@@ -120,6 +127,8 @@ export function Sidebar() {
                 : item.href === '/dashboard/doctor'
                 ? pathname === '/dashboard/doctor' ||
                   (pathname.startsWith('/dashboard/doctor/') && !pathname.startsWith('/dashboard/doctor/queue'))
+                : item.href === '/dashboard/settings/clinic'
+                ? pathname.startsWith('/dashboard/settings/')
                 : pathname === item.href || pathname.startsWith(item.href + '/');
 
             return (

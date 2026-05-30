@@ -30,8 +30,8 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
   const TABS: TabItem[] = [
     { value: 'clinic',       label: t('tabs.clinic') },
-    { value: 'visit-types',  label: t('tabs.visitTypes'), disabled: true },
-    { value: 'services',     label: t('tabs.services'),   disabled: true },
+    { value: 'visit-types',  label: t('tabs.visitTypes') },
+    { value: 'services',     label: t('tabs.services') },
   ];
 
   return (

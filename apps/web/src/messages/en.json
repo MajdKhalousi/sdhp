@@ -1220,6 +1220,12 @@
       "title": "Visit Types",
       "subtitle": "Manage appointment types and their default pricing",
       "newVisitType": "Add Visit Type",
+      "showInactive": "Show inactive",
+      "delete": "Delete",
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
       "columns": {
         "name": "Name",
         "code": "Code",
@@ -1282,6 +1288,12 @@
       "title": "Services Catalog",
       "subtitle": "Manage billable services and procedures",
       "newService": "Add Service",
+      "showInactive": "Show inactive",
+      "delete": "Delete",
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
       "searchPlaceholder": "Search services…",
       "columns": {
         "name": "Name",

@@ -1220,6 +1220,12 @@
       "title": "أنواع الزيارات",
       "subtitle": "إدارة أنواع المواعيد والأسعار الافتراضية",
       "newVisitType": "إضافة نوع زيارة",
+      "showInactive": "عرض غير النشطة",
+      "delete": "حذف",
+      "status": {
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
       "columns": {
         "name": "الاسم",
         "code": "الرمز",
@@ -1282,6 +1288,12 @@
       "title": "كتالوج الخدمات",
       "subtitle": "إدارة الخدمات والإجراءات القابلة للفوترة",
       "newService": "إضافة خدمة",
+      "showInactive": "عرض غير النشطة",
+      "delete": "حذف",
+      "status": {
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
       "searchPlaceholder": "بحث في الخدمات…",
       "columns": {
         "name": "الاسم",

@@ -26,6 +26,9 @@ import { MedicalFilesModule } from './modules/medical-files/medical-files.module
 import { ClinicalReportsModule } from './modules/clinical-reports/clinical-reports.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
+import { ClinicSettingsModule } from './modules/clinic-settings/clinic-settings.module';
+import { VisitTypesModule } from './modules/visit-types/visit-types.module';
+import { ServicesModule } from './modules/services/services.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -57,6 +60,9 @@ import { RolesGuard } from './common/guards/roles.guard';
     ClinicalReportsModule,
     BillingModule,
     AuditLogsModule,
+    ClinicSettingsModule,
+    VisitTypesModule,
+    ServicesModule,
   ],
   controllers: [AppController],
   providers: [

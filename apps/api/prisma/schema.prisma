@@ -99,6 +99,20 @@ enum ClinicalReportStatus {
   FINALIZED
 }
 
+enum VisitTypeCode {
+  CONSULTATION
+  FOLLOW_UP
+  EMERGENCY
+  PROCEDURE
+  FREE_VISIT
+}
+
+enum ScheduleExceptionType {
+  HOLIDAY
+  LEAVE
+  CUSTOM_HOURS
+}
+
 // ─────────────────────────────────────────────
 // ORGANIZATIONS & BRANCHES
 // ─────────────────────────────────────────────
@@ -132,6 +146,9 @@ model Organization {
   invoices              Invoice[]
   medicalTimelineEvents MedicalTimelineEvent[]
   clinicalReports       ClinicalReport[]
+  clinicSettings        ClinicSettings?
+  visitTypes            VisitType[]
+  services              Service[]
 
   @@map("organizations")
 }
@@ -218,6 +235,7 @@ model Department {
   organization Organization @relation(fields: [organizationId], references: [id])
   branch       Branch?      @relation(fields: [branchId], references: [id])
   doctors      Doctor[]
+  services     Service[]
 
   @@index([organizationId])
   @@map("departments")
@@ -246,6 +264,8 @@ model Doctor {
   orderedRadiologyOrders   RadiologyOrder[]  @relation("RadiologyOrdersOrdered")
   reportedRadiologyReports RadiologyReport[] @relation("RadiologyReportsReported")
   reviewedRadiologyReports RadiologyReport[] @relation("RadiologyReportsReviewed")
+  schedules                DoctorSchedule[]
+  scheduleExceptions       DoctorScheduleException[]
 
   @@map("doctors")
 }
@@ -350,6 +370,7 @@ model Appointment {
   branchId       String?
   patientId      String
   doctorId       String
+  visitTypeId    String?
   scheduledAt    DateTime
   durationMin    Int               @default(15)
   status         AppointmentStatus @default(SCHEDULED)
@@ -365,12 +386,14 @@ model Appointment {
   branch       Branch?      @relation(fields: [branchId], references: [id])
   patient      Patient      @relation(fields: [patientId], references: [id])
   doctor       Doctor       @relation(fields: [doctorId], references: [id])
+  visitType    VisitType?   @relation(fields: [visitTypeId], references: [id])
   queueEntry   QueueEntry?
   encounter    Encounter?
   invoices     Invoice[]
 
   @@index([organizationId])
   @@index([doctorId])
+  @@index([visitTypeId])
   @@index([scheduledAt])
   @@index([patientId])
   @@map("appointments")
@@ -733,6 +756,8 @@ model Invoice {
 model InvoiceItem {
   id          String  @id @default(cuid())
   invoiceId   String
+  visitTypeId String?
+  serviceId   String?
   description String
   quantity    Int     @default(1)
   unitPrice   Decimal @db.Decimal(10, 2)
@@ -743,9 +768,13 @@ model InvoiceItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  invoice Invoice @relation(fields: [invoiceId], references: [id])
+  invoice   Invoice    @relation(fields: [invoiceId], references: [id])
+  visitType VisitType? @relation(fields: [visitTypeId], references: [id])
+  service   Service?   @relation(fields: [serviceId], references: [id])
 
   @@index([invoiceId])
+  @@index([visitTypeId])
+  @@index([serviceId])
   @@map("invoice_items")
 }
 
@@ -793,4 +822,130 @@ model AuditLog {
 
   @@index([organizationId])
   @@map("audit_logs")
+}
+
+// ─────────────────────────────────────────────
+// CLINIC SETTINGS
+// ─────────────────────────────────────────────
+
+model ClinicSettings {
+  id             String  @id @default(cuid())
+  organizationId String  @unique
+  defaultSlotMin Int     @default(20)
+  lunchStartTime String?
+  lunchEndTime   String?
+  timezone       String  @default("Asia/Damascus")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization      @relation(fields: [organizationId], references: [id])
+  workingDays  ClinicWorkingDay[]
+
+  @@map("clinic_settings")
+}
+
+model ClinicWorkingDay {
+  id               String  @id @default(cuid())
+  clinicSettingsId String
+  dayOfWeek        Int     // 0=Sun, 1=Mon … 6=Sat
+  startTime        String  // "08:00"
+  endTime          String  // "17:00"
+  isOpen           Boolean @default(true)
+
+  clinicSettings ClinicSettings @relation(fields: [clinicSettingsId], references: [id], onDelete: Cascade)
+
+  @@unique([clinicSettingsId, dayOfWeek])
+  @@map("clinic_working_days")
+}
+
+// ─────────────────────────────────────────────
+// VISIT TYPES & SERVICES CATALOG
+// ─────────────────────────────────────────────
+
+model VisitType {
+  id              String        @id @default(cuid())
+  organizationId  String
+  name            String
+  nameAr          String?
+  code            VisitTypeCode
+  color           String?
+  durationMinutes Int
+  basePrice       Decimal?      @db.Decimal(10, 2)
+  isActive        Boolean       @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  organization Organization  @relation(fields: [organizationId], references: [id])
+  appointments Appointment[]
+  invoiceItems InvoiceItem[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@map("visit_types")
+}
+
+model Service {
+  id             String  @id @default(cuid())
+  organizationId String
+  name           String
+  nameAr         String?
+  code           String
+  departmentId   String?
+  defaultPrice   Decimal @db.Decimal(10, 2)
+  isActive       Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  organization Organization  @relation(fields: [organizationId], references: [id])
+  department   Department?   @relation(fields: [departmentId], references: [id])
+  invoiceItems InvoiceItem[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@map("services")
+}
+
+// ─────────────────────────────────────────────
+// DOCTOR SCHEDULES
+// ─────────────────────────────────────────────
+
+model DoctorSchedule {
+  id        String  @id @default(cuid())
+  doctorId  String
+  dayOfWeek Int     // 0=Sun, 1=Mon … 6=Sat
+  startTime String  // "08:00"
+  endTime   String  // "16:00"
+  isActive  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  doctor Doctor @relation(fields: [doctorId], references: [id])
+
+  @@unique([doctorId, dayOfWeek])
+  @@index([doctorId])
+  @@map("doctor_schedules")
+}
+
+model DoctorScheduleException {
+  id        String                @id @default(cuid())
+  doctorId  String
+  date      DateTime              // calendar date stored as midnight UTC
+  type      ScheduleExceptionType
+  startTime String?               // null = full day off
+  endTime   String?               // null = full day off
+  reason    String?
+
+  createdAt DateTime @default(now())
+
+  doctor Doctor @relation(fields: [doctorId], references: [id])
+
+  @@unique([doctorId, date])
+  @@index([doctorId])
+  @@map("doctor_schedule_exceptions")
 }

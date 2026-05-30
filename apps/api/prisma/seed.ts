@@ -9,6 +9,7 @@ import {
   InvoiceStatus,
   PaymentMethod,
   ClinicalReportStatus,
+  VisitTypeCode,
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
@@ -2758,6 +2759,125 @@ Review in 4 weeks with CBC and ferritin results.
     },
   });
 
+  // ── Clinic Settings (org-001) ────────────────────────────────────────────
+  await prisma.clinicSettings.upsert({
+    where: { id: 'seed-settings-001' },
+    update: {},
+    create: {
+      id: 'seed-settings-001',
+      organizationId: 'seed-org-001',
+      defaultSlotMin: 20,
+      lunchStartTime: '13:30',
+      lunchEndTime: '14:30',
+      timezone: 'Asia/Damascus',
+    },
+  });
+
+  // Working days: Sun–Thu open 08:00–17:00, Fri–Sat closed
+  const workingDays = [
+    { id: 'seed-wd-0', dayOfWeek: 0, startTime: '08:00', endTime: '17:00', isOpen: true },  // Sun
+    { id: 'seed-wd-1', dayOfWeek: 1, startTime: '08:00', endTime: '17:00', isOpen: true },  // Mon
+    { id: 'seed-wd-2', dayOfWeek: 2, startTime: '08:00', endTime: '17:00', isOpen: true },  // Tue
+    { id: 'seed-wd-3', dayOfWeek: 3, startTime: '08:00', endTime: '17:00', isOpen: true },  // Wed
+    { id: 'seed-wd-4', dayOfWeek: 4, startTime: '08:00', endTime: '17:00', isOpen: true },  // Thu
+    { id: 'seed-wd-5', dayOfWeek: 5, startTime: '08:00', endTime: '13:00', isOpen: false }, // Fri
+    { id: 'seed-wd-6', dayOfWeek: 6, startTime: '08:00', endTime: '13:00', isOpen: false }, // Sat
+  ];
+  for (const wd of workingDays) {
+    await prisma.clinicWorkingDay.upsert({
+      where: { id: wd.id },
+      update: { startTime: wd.startTime, endTime: wd.endTime, isOpen: wd.isOpen },
+      create: { ...wd, clinicSettingsId: 'seed-settings-001' },
+    });
+  }
+
+  // ── Visit Types (org-001) ─────────────────────────────────────────────────
+  const visitTypes: Array<{
+    id: string;
+    code: VisitTypeCode;
+    name: string;
+    nameAr: string;
+    color: string;
+    durationMinutes: number;
+    basePrice: number | null;
+  }> = [
+    {
+      id: 'seed-vt-consultation',
+      code: VisitTypeCode.CONSULTATION,
+      name: 'Consultation',
+      nameAr: 'استشارة',
+      color: '#3B82F6',
+      durationMinutes: 20,
+      basePrice: 50.00,
+    },
+    {
+      id: 'seed-vt-followup',
+      code: VisitTypeCode.FOLLOW_UP,
+      name: 'Follow-Up',
+      nameAr: 'متابعة',
+      color: '#10B981',
+      durationMinutes: 15,
+      basePrice: 30.00,
+    },
+    {
+      id: 'seed-vt-emergency',
+      code: VisitTypeCode.EMERGENCY,
+      name: 'Emergency',
+      nameAr: 'طارئ',
+      color: '#EF4444',
+      durationMinutes: 30,
+      basePrice: 100.00,
+    },
+    {
+      id: 'seed-vt-procedure',
+      code: VisitTypeCode.PROCEDURE,
+      name: 'Procedure',
+      nameAr: 'إجراء طبي',
+      color: '#8B5CF6',
+      durationMinutes: 45,
+      basePrice: 150.00,
+    },
+    {
+      id: 'seed-vt-free',
+      code: VisitTypeCode.FREE_VISIT,
+      name: 'Free Visit',
+      nameAr: 'زيارة مجانية',
+      color: '#6B7280',
+      durationMinutes: 20,
+      basePrice: 0.00,
+    },
+  ];
+
+  for (const vt of visitTypes) {
+    await prisma.visitType.upsert({
+      where: { id: vt.id },
+      update: { name: vt.name, nameAr: vt.nameAr, color: vt.color, durationMinutes: vt.durationMinutes, basePrice: vt.basePrice },
+      create: { ...vt, organizationId: 'seed-org-001' },
+    });
+  }
+
+  // ── Services Catalog (org-001) ────────────────────────────────────────────
+  const services = [
+    { id: 'seed-svc-ecg',        code: 'ECG',        name: 'ECG',                    nameAr: 'تخطيط القلب الكهربائي',           departmentId: 'seed-dept-001', defaultPrice: 25.00 },
+    { id: 'seed-svc-echo',       code: 'ECHO',       name: 'Echocardiography',        nameAr: 'صدى القلب',                       departmentId: 'seed-dept-001', defaultPrice: 60.00 },
+    { id: 'seed-svc-abd-us',     code: 'ABD_US',     name: 'Abdominal Ultrasound',    nameAr: 'الموجات فوق الصوتية للبطن',       departmentId: null,            defaultPrice: 40.00 },
+    { id: 'seed-svc-injection',  code: 'INJECTION',  name: 'Injection Service',       nameAr: 'حقنة',                            departmentId: 'seed-dept-002', defaultPrice: 5.00  },
+    { id: 'seed-svc-dressing',   code: 'DRESSING',   name: 'Wound Dressing',          nameAr: 'تضميد الجرح',                     departmentId: 'seed-dept-002', defaultPrice: 8.00  },
+    { id: 'seed-svc-nebulizer',  code: 'NEBULIZER',  name: 'Nebulizer Treatment',     nameAr: 'جهاز البخار',                     departmentId: 'seed-dept-002', defaultPrice: 10.00 },
+    { id: 'seed-svc-cbc',        code: 'CBC',        name: 'Complete Blood Count',    nameAr: 'صورة دم كاملة',                   departmentId: null,            defaultPrice: 15.00 },
+    { id: 'seed-svc-hba1c',      code: 'HBA1C',      name: 'HbA1c Test',             nameAr: 'فحص السكر التراكمي',               departmentId: null,            defaultPrice: 20.00 },
+    { id: 'seed-svc-lipid',      code: 'LIPID_PANEL',name: 'Lipid Panel',             nameAr: 'تحليل دهون الدم',                 departmentId: null,            defaultPrice: 20.00 },
+    { id: 'seed-svc-xray-chest', code: 'XRAY_CHEST', name: 'Chest X-Ray',             nameAr: 'أشعة سينية للصدر',                departmentId: null,            defaultPrice: 30.00 },
+  ];
+
+  for (const svc of services) {
+    await prisma.service.upsert({
+      where: { id: svc.id },
+      update: { name: svc.name, nameAr: svc.nameAr, defaultPrice: svc.defaultPrice },
+      create: { ...svc, organizationId: 'seed-org-001' },
+    });
+  }
+
   console.log(`
 ╔══════════════════════════════════════════════════════════════╗
 ║        Al-Nour Medical Center — Demo Seed Ready (B18.0)      ║
@@ -2781,6 +2901,7 @@ Review in 4 weeks with CBC and ferritin results.
 ║  Lab Orders: 6  │  Radiology Orders: 3                       ║
 ║  Invoices: 4  │  Payments: 2  │  Clinical Reports: 3        ║
 ║  Today: 8 appts (2 DONE / 1 IN_PROGRESS / 3 CHECKED_IN+CONF / 1 NO_SHOW)
+║  Visit Types: 5  │  Services: 10  │  Clinic Settings: 1     ║
 ╚══════════════════════════════════════════════════════════════╝
   `);
 }

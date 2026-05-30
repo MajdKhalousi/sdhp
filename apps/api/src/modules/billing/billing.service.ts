@@ -125,17 +125,31 @@ export class BillingService {
       await this.assertEncounterBelongsToOrgAndPatient(dto.encounterId, orgId, dto.patientId);
     }
 
+    if (dto.appointmentId) {
+      const existingInvoice = await this.prisma.invoice.findFirst({
+        where: {
+          appointmentId: dto.appointmentId,
+          deletedAt: null,
+          status: { not: InvoiceStatus.CANCELLED },
+        },
+        select: { id: true },
+      });
+      if (existingInvoice) {
+        throw new BadRequestException('Appointment already invoiced');
+      }
+    }
+
     // Look up appointment's visit type before entering the retry loop so we only query once.
     let autoVisitTypeItem: { id: string; name: string; basePrice: number } | null = null;
     if (dto.appointmentId) {
       const appt = await this.prisma.appointment.findFirst({
         where: { id: dto.appointmentId, deletedAt: null },
         select: {
-          visitType: { select: { id: true, name: true, basePrice: true } },
+          visitType: { select: { id: true, name: true, basePrice: true, deletedAt: true } },
         },
       });
       const vt = appt?.visitType;
-      if (vt && vt.basePrice !== null) {
+      if (vt && vt.deletedAt === null && vt.basePrice !== null) {
         autoVisitTypeItem = { id: vt.id, name: vt.name, basePrice: vt.basePrice.toNumber() };
       }
     }

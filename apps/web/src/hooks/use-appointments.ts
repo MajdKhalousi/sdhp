@@ -9,6 +9,7 @@ import type {
   DoctorRef,
 } from '@/types/appointment';
 import type { Patient } from '@/hooks/use-patient';
+import type { VisitType } from '@/types/clinic-settings';
 
 interface PatientsResponse {
   data: Patient[];
@@ -78,6 +79,14 @@ export function useDoctorsList() {
   return useQuery({
     queryKey: ['doctors-list'],
     queryFn: () => api.get<DoctorsResponse>('/v1/doctors', { limit: 100 }),
+    staleTime: 60_000,
+  });
+}
+
+export function useVisitTypesList() {
+  return useQuery({
+    queryKey: ['visit-types', false],
+    queryFn: () => api.get<VisitType[]>('/v1/visit-types'),
     staleTime: 60_000,
   });
 }

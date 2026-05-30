@@ -56,7 +56,9 @@
       "doctorQueue": "طابور الطبيب",
       "technicianLabs": "قائمة عمل المختبر",
       "technicianRadiology": "قائمة عمل الأشعة",
-      "invoices": "الفواتير"
+      "invoices": "الفواتير",
+      "settings": "الإعدادات",
+      "doctors": "الأطباء"
     }
   },
   "dashboard": {
@@ -142,13 +144,27 @@
         "durationLabel": "المدة (بالدقائق)",
         "notesLabel": "ملاحظات",
         "notesOptional": "(اختياري)",
-        "notesPlaceholder": "مثال: محوّل من الدكتور خليل — ألم في الصدر، متابعة مطلوبة"
+        "notesPlaceholder": "مثال: محوّل من الدكتور خليل — ألم في الصدر، متابعة مطلوبة",
+        "visitTypeLabel": "نوع الزيارة",
+        "dateLabel": "التاريخ",
+        "slotLabel": "موعد متاح"
       },
       "select": {
         "selectPatient": "اختر مريضاً",
         "selectDoctor": "اختر طبيباً",
         "loadingPatients": "تحميل المرضى…",
-        "loadingDoctors": "تحميل الأطباء…"
+        "loadingDoctors": "تحميل الأطباء…",
+        "selectDate": "اختر تاريخاً أولاً",
+        "selectDoctorFirst": "اختر طبيباً أولاً",
+        "noVisitTypes": "لا توجد أنواع زيارات",
+        "selectVisitType": "اختر نوع الزيارة (اختياري)",
+        "loadingVisitTypes": "تحميل أنواع الزيارات…"
+      },
+      "slots": {
+        "loading": "تحميل الأوقات المتاحة…",
+        "noSlots": "لا توجد أوقات متاحة في هذا التاريخ",
+        "selectSlot": "اختر وقتاً",
+        "unavailable": "غير متاح"
       },
       "actions": {
         "submit": "جدولة الموعد",
@@ -158,7 +174,8 @@
         "patientRequired": "يرجى اختيار مريض.",
         "doctorRequired": "يرجى اختيار طبيب.",
         "dateTimeRequired": "يرجى تحديد تاريخ ووقت الموعد.",
-        "durationMinimum": "يجب أن تكون المدة 5 دقائق على الأقل."
+        "durationMinimum": "يجب أن تكون المدة 5 دقائق على الأقل.",
+        "slotRequired": "يرجى اختيار موعد."
       }
     },
     "noShow": {
@@ -1057,10 +1074,20 @@
         "notesPlaceholder": "اختياري",
         "submit": "إضافة بند",
         "submitting": "جارٍ الإضافة…",
+        "sourceToggle": {
+          "catalog": "من الكتالوج",
+          "manual": "إدخال يدوي"
+        },
+        "service": "الخدمة",
+        "servicePlaceholder": "اختر خدمة",
+        "loadingServices": "تحميل الخدمات…",
+        "noServices": "لا توجد خدمات",
+        "priceOverride": "السعر (تعديل)",
         "validation": {
           "descriptionRequired": "الوصف مطلوب.",
           "unitPriceRequired": "يجب أن يكون سعر الوحدة أكبر من 0.",
-          "quantityMin": "يجب أن تكون الكمية 1 على الأقل."
+          "quantityMin": "يجب أن تكون الكمية 1 على الأقل.",
+          "serviceRequired": "يرجى اختيار خدمة."
         }
       }
     },
@@ -1136,6 +1163,283 @@
         "amountMin": "يجب أن يكون المبلغ أكبر من 0.",
         "amountExceedsRemaining": "المبلغ يتجاوز الرصيد المتبقي.",
         "methodRequired": "طريقة الدفع مطلوبة."
+      }
+    }
+  },
+  "settings": {
+    "tabs": {
+      "clinic": "العيادة",
+      "visitTypes": "أنواع الزيارات",
+      "services": "الخدمات"
+    },
+    "clinic": {
+      "title": "إعدادات العيادة",
+      "subtitle": "ضبط مدة الحجز الافتراضية وفترة الغداء وساعات العمل",
+      "fields": {
+        "defaultSlotMin": "مدة الحجز الافتراضية",
+        "defaultSlotMinHint": "دقيقة",
+        "lunchStart": "بداية فترة الغداء",
+        "lunchEnd": "نهاية فترة الغداء",
+        "timezone": "المنطقة الزمنية"
+      },
+      "workingDays": {
+        "heading": "ساعات العمل",
+        "columns": {
+          "day": "اليوم",
+          "open": "مفتوح",
+          "start": "يفتح الساعة",
+          "end": "يغلق الساعة"
+        },
+        "days": {
+          "0": "الأحد",
+          "1": "الاثنين",
+          "2": "الثلاثاء",
+          "3": "الأربعاء",
+          "4": "الخميس",
+          "5": "الجمعة",
+          "6": "السبت"
+        },
+        "closed": "مغلق"
+      },
+      "actions": {
+        "save": "حفظ الإعدادات",
+        "saving": "جاري الحفظ…"
+      },
+      "success": "تم حفظ الإعدادات.",
+      "error": {
+        "loadFailed": "فشل تحميل إعدادات العيادة",
+        "saveFailed": "فشل حفظ الإعدادات"
+      }
+    },
+    "visitTypes": {
+      "title": "أنواع الزيارات",
+      "subtitle": "إدارة أنواع المواعيد والأسعار الافتراضية",
+      "newVisitType": "إضافة نوع زيارة",
+      "columns": {
+        "name": "الاسم",
+        "code": "الرمز",
+        "duration": "المدة",
+        "price": "السعر الأساسي",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "code": {
+        "CONSULTATION": "استشارة",
+        "FOLLOW_UP": "متابعة",
+        "EMERGENCY": "طوارئ",
+        "PROCEDURE": "إجراء طبي",
+        "FREE_VISIT": "زيارة مجانية"
+      },
+      "form": {
+        "createTitle": "إضافة نوع زيارة",
+        "editTitle": "تعديل نوع الزيارة",
+        "fields": {
+          "name": "الاسم (إنجليزي)",
+          "nameAr": "الاسم (عربي)",
+          "code": "رمز النوع",
+          "color": "اللون",
+          "durationMinutes": "المدة (دقيقة)",
+          "basePrice": "السعر الأساسي",
+          "isActive": "نشط"
+        },
+        "placeholders": {
+          "name": "مثال: Consultation",
+          "nameAr": "مثال: استشارة",
+          "basePrice": "0"
+        },
+        "codePrompt": "اختر الرمز",
+        "actions": {
+          "save": "حفظ",
+          "saving": "جاري الحفظ…",
+          "create": "إنشاء",
+          "creating": "جاري الإنشاء…"
+        },
+        "validation": {
+          "nameRequired": "الاسم مطلوب.",
+          "codeRequired": "رمز النوع مطلوب.",
+          "durationMin": "يجب أن تكون المدة 5 دقائق على الأقل.",
+          "basePriceMin": "لا يمكن أن يكون السعر الأساسي سالباً."
+        }
+      },
+      "deleteConfirm": "حذف هذا النوع؟",
+      "deleting": "جاري الحذف…",
+      "empty": {
+        "heading": "لم يتم ضبط أنواع الزيارات",
+        "subtext": "أضف أول نوع زيارة للبدء."
+      },
+      "error": {
+        "loadFailed": "فشل تحميل أنواع الزيارات",
+        "saveFailed": "فشل حفظ نوع الزيارة",
+        "deleteFailed": "فشل حذف نوع الزيارة"
+      }
+    },
+    "services": {
+      "title": "كتالوج الخدمات",
+      "subtitle": "إدارة الخدمات والإجراءات القابلة للفوترة",
+      "newService": "إضافة خدمة",
+      "searchPlaceholder": "بحث في الخدمات…",
+      "columns": {
+        "name": "الاسم",
+        "code": "الرمز",
+        "department": "القسم",
+        "price": "السعر الافتراضي",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "filter": {
+        "allDepartments": "جميع الأقسام"
+      },
+      "form": {
+        "createTitle": "إضافة خدمة",
+        "editTitle": "تعديل الخدمة",
+        "fields": {
+          "name": "الاسم (إنجليزي)",
+          "nameAr": "الاسم (عربي)",
+          "code": "رمز الخدمة",
+          "department": "القسم",
+          "defaultPrice": "السعر الافتراضي",
+          "isActive": "نشط"
+        },
+        "placeholders": {
+          "name": "مثال: Complete Blood Count",
+          "nameAr": "مثال: صورة دم كاملة",
+          "code": "مثال: CBC",
+          "defaultPrice": "0"
+        },
+        "noDepartment": "بدون قسم",
+        "actions": {
+          "save": "حفظ",
+          "saving": "جاري الحفظ…",
+          "create": "إنشاء",
+          "creating": "جاري الإنشاء…"
+        },
+        "validation": {
+          "nameRequired": "الاسم مطلوب.",
+          "codeRequired": "رمز الخدمة مطلوب.",
+          "codeFormat": "يجب أن يحتوي الرمز على أحرف كبيرة وأرقام وشرطات سفلية أو مائلة فقط.",
+          "priceMin": "لا يمكن أن يكون السعر سالباً."
+        }
+      },
+      "deleteConfirm": "حذف هذه الخدمة؟",
+      "deleting": "جاري الحذف…",
+      "empty": {
+        "heading": "لم يتم ضبط أي خدمات",
+        "subtext": "أضف أول خدمة للبدء.",
+        "withFilters": "جرب تعديل الفلاتر للعثور على خدمات."
+      },
+      "error": {
+        "loadFailed": "فشل تحميل الخدمات",
+        "saveFailed": "فشل حفظ الخدمة",
+        "deleteFailed": "فشل حذف الخدمة"
+      }
+    }
+  },
+  "doctors": {
+    "list": {
+      "title": "الأطباء",
+      "subtitle": "إدارة ملفات الأطباء وجداول مواعيدهم",
+      "columns": {
+        "name": "الاسم",
+        "specialization": "التخصص",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "manageSchedule": "إدارة الجدول",
+      "empty": {
+        "heading": "لا يوجد أطباء",
+        "subtext": "سيظهر الأطباء هنا بعد إضافتهم للمنظومة."
+      },
+      "error": {
+        "loadFailed": "فشل تحميل قائمة الأطباء"
+      }
+    },
+    "schedule": {
+      "title": "جدول الطبيب",
+      "subtitle": "ضبط ساعات العمل الأسبوعية والاستثناءات",
+      "backToDoctors": "العودة إلى قائمة الأطباء",
+      "weekly": {
+        "heading": "الجدول الأسبوعي",
+        "columns": {
+          "day": "اليوم",
+          "active": "نشط",
+          "start": "من",
+          "end": "إلى"
+        },
+        "days": {
+          "0": "الأحد",
+          "1": "الاثنين",
+          "2": "الثلاثاء",
+          "3": "الأربعاء",
+          "4": "الخميس",
+          "5": "الجمعة",
+          "6": "السبت"
+        },
+        "actions": {
+          "save": "حفظ الجدول",
+          "saving": "جاري الحفظ…"
+        },
+        "error": {
+          "loadFailed": "فشل تحميل الجدول",
+          "saveFailed": "فشل حفظ الجدول"
+        },
+        "empty": {
+          "heading": "لم يتم ضبط الجدول",
+          "subtext": "حدد ساعات العمل الأسبوعية للطبيب."
+        }
+      },
+      "exceptions": {
+        "heading": "استثناءات الجدول",
+        "newException": "إضافة استثناء",
+        "columns": {
+          "date": "التاريخ",
+          "type": "النوع",
+          "hours": "الساعات",
+          "reason": "السبب",
+          "actions": "الإجراءات"
+        },
+        "type": {
+          "HOLIDAY": "إجازة رسمية",
+          "LEAVE": "إجازة",
+          "CUSTOM_HOURS": "ساعات مخصصة"
+        },
+        "fullDay": "يوم إجازة كامل",
+        "form": {
+          "createTitle": "إضافة استثناء",
+          "editTitle": "تعديل الاستثناء",
+          "fields": {
+            "date": "التاريخ",
+            "type": "نوع الاستثناء",
+            "startTime": "وقت البدء",
+            "endTime": "وقت الانتهاء",
+            "reason": "السبب"
+          },
+          "placeholders": {
+            "reason": "السبب (اختياري)"
+          },
+          "typePrompt": "اختر النوع",
+          "actions": {
+            "save": "حفظ",
+            "saving": "جاري الحفظ…",
+            "create": "إضافة",
+            "creating": "جاري الإضافة…"
+          },
+          "validation": {
+            "dateRequired": "التاريخ مطلوب.",
+            "typeRequired": "نوع الاستثناء مطلوب.",
+            "customHoursTime": "وقت البدء والانتهاء مطلوبان للساعات المخصصة."
+          }
+        },
+        "deleteConfirm": "حذف هذا الاستثناء؟",
+        "deleting": "جاري الحذف…",
+        "empty": {
+          "heading": "لا توجد استثناءات",
+          "subtext": "ستظهر استثناءات الجدول هنا."
+        },
+        "error": {
+          "loadFailed": "فشل تحميل الاستثناءات",
+          "saveFailed": "فشل حفظ الاستثناء",
+          "deleteFailed": "فشل حذف الاستثناء"
+        }
       }
     }
   },

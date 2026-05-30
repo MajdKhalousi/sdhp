@@ -22,6 +22,8 @@ export interface InvoiceUserRef {
 export interface InvoiceItem {
   id: string;
   invoiceId: string;
+  visitTypeId: string | null;
+  serviceId: string | null;
   description: string;
   quantity: number;
   unitPrice: string;
@@ -99,11 +101,12 @@ export interface UpdateInvoiceDto {
 }
 
 export interface AddInvoiceItemDto {
-  description: string;
+  description?: string;
   quantity?: number;
-  unitPrice: number;
+  unitPrice?: number;
   discount?: number;
   notes?: string;
+  serviceId?: string;
 }
 
 export interface RecordPaymentDto {

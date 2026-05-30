@@ -9,6 +9,7 @@ import type {
   RecordPaymentDto,
   CancelInvoiceDto,
 } from '@/types/invoice';
+import type { Service } from '@/types/clinic-settings';
 
 export function useInvoices(query: InvoiceQuery = {}) {
   const { organizationId, branchId, patientId, status, from, to } = query;
@@ -119,5 +120,13 @@ export function usePatientInvoices(patientId: string) {
     queryFn: () => api.get<Invoice[]>(`/v1/patients/${patientId}/invoices`),
     staleTime: 30_000,
     enabled: !!patientId,
+  });
+}
+
+export function useServicesList() {
+  return useQuery({
+    queryKey: ['services', undefined, false],
+    queryFn: () => api.get<Service[]>('/v1/services'),
+    staleTime: 60_000,
   });
 }

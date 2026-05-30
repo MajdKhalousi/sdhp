@@ -56,7 +56,9 @@
       "doctorQueue": "Doctor Queue",
       "technicianLabs": "Lab Worklist",
       "technicianRadiology": "Radiology Worklist",
-      "invoices": "Invoices"
+      "invoices": "Invoices",
+      "settings": "Settings",
+      "doctors": "Doctors"
     }
   },
   "dashboard": {
@@ -142,13 +144,27 @@
         "durationLabel": "Duration (minutes)",
         "notesLabel": "Notes",
         "notesOptional": "(optional)",
-        "notesPlaceholder": "e.g., Referred by Dr. Khalil — chest pain, follow-up required"
+        "notesPlaceholder": "e.g., Referred by Dr. Khalil — chest pain, follow-up required",
+        "visitTypeLabel": "Visit Type",
+        "dateLabel": "Date",
+        "slotLabel": "Available Time Slot"
       },
       "select": {
         "selectPatient": "Select a patient",
         "selectDoctor": "Select a doctor",
         "loadingPatients": "Loading patients…",
-        "loadingDoctors": "Loading doctors…"
+        "loadingDoctors": "Loading doctors…",
+        "selectDate": "Select a date first",
+        "selectDoctorFirst": "Select a doctor first",
+        "noVisitTypes": "No visit types available",
+        "selectVisitType": "Select visit type (optional)",
+        "loadingVisitTypes": "Loading visit types…"
+      },
+      "slots": {
+        "loading": "Loading available slots…",
+        "noSlots": "No available slots on this date",
+        "selectSlot": "Select a time slot",
+        "unavailable": "Unavailable"
       },
       "actions": {
         "submit": "Schedule Appointment",
@@ -158,7 +174,8 @@
         "patientRequired": "Please select a patient.",
         "doctorRequired": "Please select a doctor.",
         "dateTimeRequired": "Please set the appointment date and time.",
-        "durationMinimum": "Duration must be at least 5 minutes."
+        "durationMinimum": "Duration must be at least 5 minutes.",
+        "slotRequired": "Please select a time slot."
       }
     },
     "noShow": {
@@ -1057,10 +1074,20 @@
         "notesPlaceholder": "Optional",
         "submit": "Add Item",
         "submitting": "Adding…",
+        "sourceToggle": {
+          "catalog": "From Catalog",
+          "manual": "Manual Entry"
+        },
+        "service": "Service",
+        "servicePlaceholder": "Select a service",
+        "loadingServices": "Loading services…",
+        "noServices": "No services available",
+        "priceOverride": "Price (override)",
         "validation": {
           "descriptionRequired": "Description is required.",
           "unitPriceRequired": "Unit price must be greater than 0.",
-          "quantityMin": "Quantity must be at least 1."
+          "quantityMin": "Quantity must be at least 1.",
+          "serviceRequired": "Please select a service."
         }
       }
     },
@@ -1136,6 +1163,283 @@
         "amountMin": "Amount must be greater than 0.",
         "amountExceedsRemaining": "Amount exceeds remaining balance.",
         "methodRequired": "Payment method is required."
+      }
+    }
+  },
+  "settings": {
+    "tabs": {
+      "clinic": "Clinic",
+      "visitTypes": "Visit Types",
+      "services": "Services"
+    },
+    "clinic": {
+      "title": "Clinic Settings",
+      "subtitle": "Configure default slot duration, lunch break, and working hours",
+      "fields": {
+        "defaultSlotMin": "Default Slot Duration",
+        "defaultSlotMinHint": "minutes",
+        "lunchStart": "Lunch Break Start",
+        "lunchEnd": "Lunch Break End",
+        "timezone": "Timezone"
+      },
+      "workingDays": {
+        "heading": "Working Hours",
+        "columns": {
+          "day": "Day",
+          "open": "Open",
+          "start": "Opens at",
+          "end": "Closes at"
+        },
+        "days": {
+          "0": "Sunday",
+          "1": "Monday",
+          "2": "Tuesday",
+          "3": "Wednesday",
+          "4": "Thursday",
+          "5": "Friday",
+          "6": "Saturday"
+        },
+        "closed": "Closed"
+      },
+      "actions": {
+        "save": "Save Settings",
+        "saving": "Saving…"
+      },
+      "success": "Settings saved.",
+      "error": {
+        "loadFailed": "Failed to load clinic settings",
+        "saveFailed": "Failed to save settings"
+      }
+    },
+    "visitTypes": {
+      "title": "Visit Types",
+      "subtitle": "Manage appointment types and their default pricing",
+      "newVisitType": "Add Visit Type",
+      "columns": {
+        "name": "Name",
+        "code": "Code",
+        "duration": "Duration",
+        "price": "Base Price",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "code": {
+        "CONSULTATION": "Consultation",
+        "FOLLOW_UP": "Follow-up",
+        "EMERGENCY": "Emergency",
+        "PROCEDURE": "Procedure",
+        "FREE_VISIT": "Free Visit"
+      },
+      "form": {
+        "createTitle": "Add Visit Type",
+        "editTitle": "Edit Visit Type",
+        "fields": {
+          "name": "Name (English)",
+          "nameAr": "Name (Arabic)",
+          "code": "Type Code",
+          "color": "Color",
+          "durationMinutes": "Duration (min)",
+          "basePrice": "Base Price",
+          "isActive": "Active"
+        },
+        "placeholders": {
+          "name": "e.g. Consultation",
+          "nameAr": "e.g. استشارة",
+          "basePrice": "0"
+        },
+        "codePrompt": "Select code",
+        "actions": {
+          "save": "Save",
+          "saving": "Saving…",
+          "create": "Create",
+          "creating": "Creating…"
+        },
+        "validation": {
+          "nameRequired": "Name is required.",
+          "codeRequired": "Type code is required.",
+          "durationMin": "Duration must be at least 5 minutes.",
+          "basePriceMin": "Base price cannot be negative."
+        }
+      },
+      "deleteConfirm": "Delete this visit type?",
+      "deleting": "Deleting…",
+      "empty": {
+        "heading": "No visit types configured",
+        "subtext": "Add the first visit type to get started."
+      },
+      "error": {
+        "loadFailed": "Failed to load visit types",
+        "saveFailed": "Failed to save visit type",
+        "deleteFailed": "Failed to delete visit type"
+      }
+    },
+    "services": {
+      "title": "Services Catalog",
+      "subtitle": "Manage billable services and procedures",
+      "newService": "Add Service",
+      "searchPlaceholder": "Search services…",
+      "columns": {
+        "name": "Name",
+        "code": "Code",
+        "department": "Department",
+        "price": "Default Price",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "filter": {
+        "allDepartments": "All departments"
+      },
+      "form": {
+        "createTitle": "Add Service",
+        "editTitle": "Edit Service",
+        "fields": {
+          "name": "Name (English)",
+          "nameAr": "Name (Arabic)",
+          "code": "Service Code",
+          "department": "Department",
+          "defaultPrice": "Default Price",
+          "isActive": "Active"
+        },
+        "placeholders": {
+          "name": "e.g. Complete Blood Count",
+          "nameAr": "e.g. صورة دم كاملة",
+          "code": "e.g. CBC",
+          "defaultPrice": "0"
+        },
+        "noDepartment": "No department",
+        "actions": {
+          "save": "Save",
+          "saving": "Saving…",
+          "create": "Create",
+          "creating": "Creating…"
+        },
+        "validation": {
+          "nameRequired": "Name is required.",
+          "codeRequired": "Service code is required.",
+          "codeFormat": "Code must be uppercase letters, digits, underscores, or hyphens.",
+          "priceMin": "Price cannot be negative."
+        }
+      },
+      "deleteConfirm": "Delete this service?",
+      "deleting": "Deleting…",
+      "empty": {
+        "heading": "No services configured",
+        "subtext": "Add the first service to get started.",
+        "withFilters": "Try adjusting your filters."
+      },
+      "error": {
+        "loadFailed": "Failed to load services",
+        "saveFailed": "Failed to save service",
+        "deleteFailed": "Failed to delete service"
+      }
+    }
+  },
+  "doctors": {
+    "list": {
+      "title": "Doctors",
+      "subtitle": "Manage doctor profiles and schedules",
+      "columns": {
+        "name": "Name",
+        "specialization": "Specialization",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "manageSchedule": "Manage Schedule",
+      "empty": {
+        "heading": "No doctors found",
+        "subtext": "Doctors will appear here once added to the organization."
+      },
+      "error": {
+        "loadFailed": "Failed to load doctors"
+      }
+    },
+    "schedule": {
+      "title": "Doctor Schedule",
+      "subtitle": "Configure weekly working hours and schedule exceptions",
+      "backToDoctors": "Back to Doctors",
+      "weekly": {
+        "heading": "Weekly Schedule",
+        "columns": {
+          "day": "Day",
+          "active": "Active",
+          "start": "Start",
+          "end": "End"
+        },
+        "days": {
+          "0": "Sunday",
+          "1": "Monday",
+          "2": "Tuesday",
+          "3": "Wednesday",
+          "4": "Thursday",
+          "5": "Friday",
+          "6": "Saturday"
+        },
+        "actions": {
+          "save": "Save Schedule",
+          "saving": "Saving…"
+        },
+        "error": {
+          "loadFailed": "Failed to load schedule",
+          "saveFailed": "Failed to save schedule"
+        },
+        "empty": {
+          "heading": "No schedule configured",
+          "subtext": "Set the weekly working hours for this doctor."
+        }
+      },
+      "exceptions": {
+        "heading": "Schedule Exceptions",
+        "newException": "Add Exception",
+        "columns": {
+          "date": "Date",
+          "type": "Type",
+          "hours": "Hours",
+          "reason": "Reason",
+          "actions": "Actions"
+        },
+        "type": {
+          "HOLIDAY": "Holiday",
+          "LEAVE": "Leave",
+          "CUSTOM_HOURS": "Custom Hours"
+        },
+        "fullDay": "Full day off",
+        "form": {
+          "createTitle": "Add Exception",
+          "editTitle": "Edit Exception",
+          "fields": {
+            "date": "Date",
+            "type": "Exception Type",
+            "startTime": "Start Time",
+            "endTime": "End Time",
+            "reason": "Reason"
+          },
+          "placeholders": {
+            "reason": "Optional reason"
+          },
+          "typePrompt": "Select type",
+          "actions": {
+            "save": "Save",
+            "saving": "Saving…",
+            "create": "Add Exception",
+            "creating": "Adding…"
+          },
+          "validation": {
+            "dateRequired": "Date is required.",
+            "typeRequired": "Exception type is required.",
+            "customHoursTime": "Start and end time are required for custom hours."
+          }
+        },
+        "deleteConfirm": "Remove this exception?",
+        "deleting": "Removing…",
+        "empty": {
+          "heading": "No exceptions",
+          "subtext": "Schedule exceptions will appear here."
+        },
+        "error": {
+          "loadFailed": "Failed to load exceptions",
+          "saveFailed": "Failed to save exception",
+          "deleteFailed": "Failed to remove exception"
+        }
       }
     }
   },

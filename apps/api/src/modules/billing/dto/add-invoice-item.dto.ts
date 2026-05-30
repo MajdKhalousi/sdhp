@@ -1,10 +1,13 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsInt, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class AddInvoiceItemDto {
-  @ApiProperty()
+  @ApiPropertyOptional({
+    description: 'Required when serviceId is not provided. Auto-filled from Service.name if serviceId is given.',
+  })
+  @IsOptional()
   @IsString()
-  description: string;
+  description?: string;
 
   @ApiPropertyOptional({ default: 1 })
   @IsOptional()
@@ -12,10 +15,13 @@ export class AddInvoiceItemDto {
   @Min(1)
   quantity?: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional({
+    description: 'Required when serviceId is not provided. Defaults to Service.defaultPrice if serviceId is given; can be overridden.',
+  })
+  @IsOptional()
   @IsNumber()
   @Min(0)
-  unitPrice: number;
+  unitPrice?: number;
 
   @ApiPropertyOptional({ default: 0 })
   @IsOptional()
@@ -27,4 +33,11 @@ export class AddInvoiceItemDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @ApiPropertyOptional({
+    description: 'Service catalog ID. Auto-fills description and unitPrice from Service; both can still be overridden.',
+  })
+  @IsOptional()
+  @IsString()
+  serviceId?: string;
 }

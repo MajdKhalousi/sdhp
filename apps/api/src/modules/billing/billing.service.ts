@@ -39,6 +39,8 @@ const PATIENT_SELECT = {
 const ITEM_SELECT = {
   id: true,
   invoiceId: true,
+  visitTypeId: true,
+  serviceId: true,
   description: true,
   quantity: true,
   unitPrice: true,
@@ -123,6 +125,21 @@ export class BillingService {
       await this.assertEncounterBelongsToOrgAndPatient(dto.encounterId, orgId, dto.patientId);
     }
 
+    // Look up appointment's visit type before entering the retry loop so we only query once.
+    let autoVisitTypeItem: { id: string; name: string; basePrice: number } | null = null;
+    if (dto.appointmentId) {
+      const appt = await this.prisma.appointment.findFirst({
+        where: { id: dto.appointmentId, deletedAt: null },
+        select: {
+          visitType: { select: { id: true, name: true, basePrice: true } },
+        },
+      });
+      const vt = appt?.visitType;
+      if (vt && vt.basePrice !== null) {
+        autoVisitTypeItem = { id: vt.id, name: vt.name, basePrice: vt.basePrice.toNumber() };
+      }
+    }
+
     const MAX_RETRIES = 5;
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       const year = new Date().getFullYear();
@@ -133,7 +150,7 @@ export class BillingService {
       const invoiceNumber = `${prefix}${String(count + 1).padStart(5, '0')}`;
 
       try {
-        return await this.prisma.invoice.create({
+        const invoice = await this.prisma.invoice.create({
           data: {
             organizationId: orgId,
             branchId: dto.branchId,
@@ -148,8 +165,31 @@ export class BillingService {
             notes: dto.notes,
             dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
           },
-          select: INVOICE_SELECT,
+          select: { id: true },
         });
+
+        if (autoVisitTypeItem) {
+          const vtPrice = autoVisitTypeItem.basePrice;
+          await this.prisma.$transaction([
+            this.prisma.invoiceItem.create({
+              data: {
+                invoiceId: invoice.id,
+                visitTypeId: autoVisitTypeItem.id,
+                description: autoVisitTypeItem.name,
+                quantity: 1,
+                unitPrice: vtPrice,
+                discount: 0,
+                totalPrice: vtPrice,
+              },
+            }),
+            this.prisma.invoice.update({
+              where: { id: invoice.id },
+              data: { subtotal: vtPrice, totalAmount: vtPrice },
+            }),
+          ]);
+        }
+
+        return this.fetchInvoice(invoice.id);
       } catch (err) {
         if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
           continue;
@@ -231,9 +271,41 @@ export class BillingService {
       throw new BadRequestException('Items can only be added to DRAFT invoices');
     }
 
+    // Resolve description and unitPrice — from service catalog or from DTO directly.
+    let description: string;
+    let unitPrice: number;
+    let resolvedServiceId: string | undefined;
+
+    if (dto.serviceId) {
+      const service = await this.prisma.service.findFirst({
+        where: {
+          id: dto.serviceId,
+          organizationId: invoice.organizationId,
+          deletedAt: null,
+          isActive: true,
+        },
+        select: { id: true, name: true, defaultPrice: true },
+      });
+      if (!service) {
+        throw new BadRequestException('Service not found or not active in this organization');
+      }
+      description = dto.description ?? service.name;
+      unitPrice = dto.unitPrice ?? service.defaultPrice.toNumber();
+      resolvedServiceId = service.id;
+    } else {
+      if (!dto.description) {
+        throw new BadRequestException('description is required when serviceId is not provided');
+      }
+      if (dto.unitPrice === undefined) {
+        throw new BadRequestException('unitPrice is required when serviceId is not provided');
+      }
+      description = dto.description;
+      unitPrice = dto.unitPrice;
+    }
+
     const qty = dto.quantity ?? 1;
     const discount = dto.discount ?? 0;
-    const totalPrice = qty * dto.unitPrice - discount;
+    const totalPrice = qty * unitPrice - discount;
     if (totalPrice < 0) throw new BadRequestException('Item total price cannot be negative');
 
     const currentSubtotal = invoice.subtotal.toNumber();
@@ -245,9 +317,10 @@ export class BillingService {
       this.prisma.invoiceItem.create({
         data: {
           invoiceId,
-          description: dto.description,
+          serviceId: resolvedServiceId,
+          description,
           quantity: qty,
-          unitPrice: dto.unitPrice,
+          unitPrice,
           discount,
           totalPrice,
           notes: dto.notes,

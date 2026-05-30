@@ -608,7 +608,12 @@
       },
       "allergies": {
         "heading": "Known Allergies",
-        "none": "No known allergies on record."
+        "none": "No known allergies on record.",
+        "severity": {
+          "mild": "Mild",
+          "moderate": "Moderate",
+          "severe": "Severe"
+        }
       },
       "clinicalTab": {
         "emptyPrescriptions": "No prescriptions recorded for this patient.",

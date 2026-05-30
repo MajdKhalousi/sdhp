@@ -608,7 +608,12 @@
       },
       "allergies": {
         "heading": "الحساسيات المعروفة",
-        "none": "لا حساسيات مسجّلة."
+        "none": "لا حساسيات مسجّلة.",
+        "severity": {
+          "mild": "خفيف",
+          "moderate": "متوسط",
+          "severe": "شديد"
+        }
       },
       "clinicalTab": {
         "emptyPrescriptions": "لا وصفات طبية مسجّلة لهذا المريض.",

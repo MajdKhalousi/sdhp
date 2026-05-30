@@ -58,6 +58,7 @@ function AllergiesCard({ allergies, headingLabel, noneLabel }: {
   headingLabel: string;
   noneLabel: string;
 }) {
+  const t = useTranslations('patient');
   if (allergies.length === 0) {
     return (
       <div className="rounded-xl border bg-card px-5 py-3 shadow-sm sm:col-span-2">
@@ -83,12 +84,17 @@ function AllergiesCard({ allergies, headingLabel, noneLabel }: {
       <div className="space-y-2">
         {allergies.map((a) => {
           const badge = a.severity ? (SEVERITY_BADGE[a.severity] ?? SEVERITY_BADGE.MILD) : null;
+          const sev =
+            a.severity === 'MILD'       ? t('detail.allergies.severity.mild')
+            : a.severity === 'MODERATE' ? t('detail.allergies.severity.moderate')
+            : a.severity === 'SEVERE'   ? t('detail.allergies.severity.severe')
+            : null;
           return (
             <div key={a.id} className="flex flex-wrap items-start gap-2">
               <span className="text-sm font-semibold text-foreground">{a.substance}</span>
-              {a.severity && badge && (
+              {sev && badge && (
                 <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${badge}`}>
-                  {a.severity.charAt(0) + a.severity.slice(1).toLowerCase()}
+                  {sev}
                 </span>
               )}
               {a.reaction && (

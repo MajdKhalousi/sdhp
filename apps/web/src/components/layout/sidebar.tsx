@@ -14,6 +14,7 @@ import {
   ScanLine,
   Receipt,
   Settings,
+  UserCog,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
@@ -71,6 +72,11 @@ const NAV_ITEMS: NavItem[] = [
     roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY'],
   },
   {
+    href: '/dashboard/doctors',
+    icon: UserCog,
+    roles: ['SUPER_ADMIN', 'ORG_ADMIN'],
+  },
+  {
     href: '/dashboard/settings/clinic',
     icon: Settings,
     roles: ['SUPER_ADMIN', 'ORG_ADMIN'],
@@ -94,6 +100,7 @@ export function Sidebar() {
     '/dashboard/technician/labs':      t('items.technicianLabs'),
     '/dashboard/technician/radiology': t('items.technicianRadiology'),
     '/dashboard/invoices':             t('items.invoices'),
+    '/dashboard/doctors':               t('items.doctors'),
     '/dashboard/settings/clinic':      t('items.settings'),
   };
 

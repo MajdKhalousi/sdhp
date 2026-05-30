@@ -4,20 +4,25 @@ import { useState } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useCreateAppointment, usePatientsList, useDoctorsList } from '@/hooks/use-appointments';
+import { VisitTypeSelect } from './visit-type-select';
+import { AvailableSlotsPicker } from './available-slots-picker';
+import type { VisitType } from '@/types/clinic-settings';
 
 interface FormState {
   patientId: string;
   doctorId: string;
-  scheduledAt: string;
-  durationMin: string;
+  date: string;
+  visitTypeId: string;
+  selectedSlot: string;
   notes: string;
 }
 
 const INITIAL: FormState = {
   patientId: '',
   doctorId: '',
-  scheduledAt: '',
-  durationMin: '15',
+  date: '',
+  visitTypeId: '',
+  selectedSlot: '',
   notes: '',
 };
 
@@ -25,47 +30,60 @@ export function AppointmentForm() {
   const t = useTranslations('appointment.form');
   const tCommon = useTranslations('common');
   const router = useRouter();
+
   const [form, setForm] = useState<FormState>(INITIAL);
+  const [selectedVisitType, setSelectedVisitType] = useState<VisitType | null>(null);
   const [validationError, setValidationError] = useState('');
 
   const { mutate, isPending, error: mutationError } = useCreateAppointment();
   const { data: patientsData, isLoading: patientsLoading } = usePatientsList();
   const { data: doctorsData, isLoading: doctorsLoading } = useDoctorsList();
 
-  function set(field: keyof FormState) {
-    return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-      setForm((prev) => ({ ...prev, [field]: e.target.value }));
-      setValidationError('');
-    };
-  }
+  const selectedDoctor = doctorsData?.data.find((d) => d.id === form.doctorId) ?? null;
+  const durationMin =
+    selectedVisitType?.durationMinutes ??
+    selectedDoctor?.consultationMinutes ??
+    15;
 
   function handleDoctorChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const doctorId = e.target.value;
-    const doc = doctorsData?.data.find((d) => d.id === doctorId);
-    setForm((prev) => ({
-      ...prev,
-      doctorId,
-      durationMin: doc ? String(doc.consultationMinutes) : prev.durationMin,
-    }));
+    setForm({ ...INITIAL, patientId: form.patientId, doctorId });
+    setSelectedVisitType(null);
+    setValidationError('');
+  }
+
+  function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setForm((prev) => ({ ...prev, date: e.target.value, selectedSlot: '' }));
+    setValidationError('');
+  }
+
+  function handleVisitTypeChange(visitTypeId: string, vt: VisitType | null) {
+    setForm((prev) => ({ ...prev, visitTypeId, selectedSlot: '' }));
+    setSelectedVisitType(vt);
+    setValidationError('');
+  }
+
+  function handleSlotSelect(time: string) {
+    setForm((prev) => ({ ...prev, selectedSlot: time }));
     setValidationError('');
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!form.patientId)  { setValidationError(t('validation.patientRequired'));  return; }
-    if (!form.doctorId)   { setValidationError(t('validation.doctorRequired'));   return; }
-    if (!form.scheduledAt){ setValidationError(t('validation.dateTimeRequired')); return; }
+    if (!form.patientId)   { setValidationError(t('validation.patientRequired'));  return; }
+    if (!form.doctorId)    { setValidationError(t('validation.doctorRequired'));   return; }
+    if (!form.date)        { setValidationError(t('validation.dateTimeRequired')); return; }
+    if (!form.selectedSlot){ setValidationError(t('validation.slotRequired'));     return; }
 
-    const duration = parseInt(form.durationMin, 10);
-    if (!duration || duration < 5) { setValidationError(t('validation.durationMinimum')); return; }
+    const scheduledAt = new Date(`${form.date}T${form.selectedSlot}:00`).toISOString();
 
     mutate(
       {
         patientId: form.patientId,
         doctorId: form.doctorId,
-        scheduledAt: new Date(form.scheduledAt).toISOString(),
-        durationMin: duration,
+        scheduledAt,
+        durationMin,
         ...(form.notes.trim() ? { notes: form.notes.trim() } : {}),
       },
       { onSuccess: () => router.push('/dashboard/appointments') },
@@ -91,7 +109,7 @@ export function AppointmentForm() {
         <select
           id="patientId"
           value={form.patientId}
-          onChange={set('patientId')}
+          onChange={(e) => { setForm((prev) => ({ ...prev, patientId: e.target.value })); setValidationError(''); }}
           disabled={isPending || patientsLoading}
           className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
         >
@@ -126,49 +144,49 @@ export function AppointmentForm() {
         </select>
       </div>
 
-      {/* Scheduled At */}
+      {/* Date */}
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-foreground" htmlFor="scheduledAt">
-          {t('fields.dateTimeLabel')} <span className="text-destructive">*</span>
+        <label className="text-sm font-medium text-foreground" htmlFor="apptDate">
+          {t('fields.dateLabel')} <span className="text-destructive">*</span>
         </label>
         <input
-          id="scheduledAt"
-          type="datetime-local"
-          value={form.scheduledAt}
-          onChange={set('scheduledAt')}
-          disabled={isPending}
+          id="apptDate"
+          type="date"
+          value={form.date}
+          onChange={handleDateChange}
+          disabled={isPending || !form.doctorId}
+          dir="ltr"
           className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
         />
       </div>
 
-      {/* Duration */}
-      <div className="space-y-1.5">
-        <label className="text-sm font-medium text-foreground" htmlFor="durationMin">
-          {t('fields.durationLabel')} <span className="text-destructive">*</span>
-        </label>
-        <input
-          id="durationMin"
-          type="number"
-          min={5}
-          step={5}
-          value={form.durationMin}
-          onChange={set('durationMin')}
-          disabled={isPending}
-          className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
-        />
-      </div>
+      {/* Visit Type */}
+      <VisitTypeSelect
+        value={form.visitTypeId}
+        onChange={handleVisitTypeChange}
+        disabled={isPending}
+      />
+
+      {/* Available Slots */}
+      <AvailableSlotsPicker
+        doctorId={form.doctorId}
+        date={form.date}
+        slotDurationMin={durationMin}
+        selectedSlot={form.selectedSlot}
+        onSelect={handleSlotSelect}
+      />
 
       {/* Notes */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground" htmlFor="notes">
           {t('fields.notesLabel')}{' '}
-          <span className="text-muted-foreground text-xs">{t('fields.notesOptional')}</span>
+          <span className="text-xs text-muted-foreground">{t('fields.notesOptional')}</span>
         </label>
         <textarea
           id="notes"
           rows={3}
           value={form.notes}
-          onChange={set('notes')}
+          onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))}
           disabled={isPending}
           placeholder={t('fields.notesPlaceholder')}
           className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"

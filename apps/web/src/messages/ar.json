@@ -319,7 +319,12 @@
       "readOnly": "هذه الزيارة مكتملة. السجل للقراءة فقط."
     },
     "allergies": {
-      "heading": "الحساسيات المعروفة"
+      "heading": "الحساسيات المعروفة",
+      "severity": {
+        "mild": "خفيف",
+        "moderate": "معتدل",
+        "severe": "شديد"
+      }
     },
     "timestamps": {
       "started": "بدأت",

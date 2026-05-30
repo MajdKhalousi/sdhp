@@ -319,7 +319,12 @@
       "readOnly": "This encounter is complete. The record is read-only."
     },
     "allergies": {
-      "heading": "Known Allergies"
+      "heading": "Known Allergies",
+      "severity": {
+        "mild": "Mild",
+        "moderate": "Moderate",
+        "severe": "Severe"
+      }
     },
     "timestamps": {
       "started": "Started",

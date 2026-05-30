@@ -234,7 +234,22 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
           <div>
             <p className="text-xs font-semibold text-orange-700 dark:text-orange-400">{t('allergies.heading')}</p>
             <p className="mt-0.5 text-xs text-orange-700/80 dark:text-orange-400/80">
-              {allergies.map((a) => a.substance).join(' · ')}
+              {allergies.map((a, i) => {
+                const sev =
+                  a.severity === 'MILD'     ? t('allergies.severity.mild')
+                  : a.severity === 'MODERATE' ? t('allergies.severity.moderate')
+                  : a.severity === 'SEVERE'   ? t('allergies.severity.severe')
+                  : null;
+                return (
+                  <span key={a.id}>
+                    {i > 0 && <span className="mx-1.5">·</span>}
+                    {a.substance}
+                    {sev && (
+                      <span className="ms-1 font-medium text-orange-700 dark:text-orange-400">({sev})</span>
+                    )}
+                  </span>
+                );
+              })}
             </p>
           </div>
         </div>

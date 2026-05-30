@@ -32,6 +32,9 @@ export function DoctorQueuePanel() {
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
 
+  // No doctorId passed — the backend automatically scopes DOCTOR role queries
+  // to the calling doctor's own profile (queue.service.ts buildWhere, DOCTOR branch).
+  // Passing doctorId here would be ignored by the API for security reasons.
   const { data, isLoading, isError, error, refetch, isFetching } = useQueue({
     status: ['WAITING', 'CALLED', 'IN_PROGRESS'],
     date: todayDate(),

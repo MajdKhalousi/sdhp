@@ -14,6 +14,7 @@ import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { AppointmentQueryDto } from './dto/appointment-query.dto';
 import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
 import { MedicalTimelineEventType } from '@prisma/client';
+import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
 
 const PATIENT_SELECT = {
   id: true,
@@ -77,6 +78,7 @@ export class AppointmentsService {
   constructor(
     private prisma: PrismaService,
     private timelineWriter: MedicalTimelineWriterService,
+    private auditWriter: AuditLogsWriterService,
   ) {}
 
   async findAll(query: AppointmentQueryDto, caller: JwtPayload): Promise<PaginatedResponse<AppointmentRecord>> {
@@ -138,6 +140,22 @@ export class AppointmentsService {
       createdById: caller.sub,
       metadata: { appointmentId: result.id, scheduledAt: result.scheduledAt.toISOString() },
     });
+
+    await this.auditWriter.log({
+      caller,
+      action: 'CREATE',
+      resource: 'appointment',
+      resourceId: result.id,
+      newData: toSnapshot({
+        id: result.id,
+        patientId: result.patientId,
+        doctorId: result.doctorId,
+        scheduledAt: result.scheduledAt,
+        durationMin: result.durationMin,
+        status: result.status,
+        branchId: result.branchId,
+      }),
+    });
     return result;
   }
 
@@ -163,6 +181,8 @@ export class AppointmentsService {
       await this.assertBranchBelongsToOrg(dto.branchId, appt.organizationId);
     }
 
+    const isStatusTransition = !!(dto.status && dto.status !== appt.status);
+
     const cancelledAt =
       dto.status === AppointmentStatus.CANCELLED && !appt.cancelledAt
         ? new Date()
@@ -178,7 +198,7 @@ export class AppointmentsService {
       });
     }
 
-    return this.prisma.appointment.update({
+    const result = await this.prisma.appointment.update({
       where: { id },
       data: {
         ...dto,
@@ -187,12 +207,37 @@ export class AppointmentsService {
       },
       select: SELECT,
     });
+
+    if (isStatusTransition) {
+      await this.auditWriter.log({
+        caller,
+        action: 'STATUS_TRANSITION',
+        resource: 'appointment',
+        resourceId: id,
+        oldData: toSnapshot({ status: appt.status }),
+        newData: toSnapshot({ status: dto.status }),
+      });
+    } else {
+      await this.auditWriter.log({
+        caller,
+        action: 'UPDATE',
+        resource: 'appointment',
+        resourceId: id,
+        newData: toSnapshot({
+          ...(dto.scheduledAt !== undefined ? { scheduledAt: dto.scheduledAt } : {}),
+          ...(dto.durationMin !== undefined ? { durationMin: dto.durationMin } : {}),
+          ...(dto.branchId !== undefined ? { branchId: dto.branchId } : {}),
+        }),
+      });
+    }
+
+    return result;
   }
 
   async remove(id: string, caller: JwtPayload) {
     const appt = await this.prisma.appointment.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true, organizationId: true },
+      select: { id: true, organizationId: true, patientId: true, doctorId: true, scheduledAt: true, durationMin: true, status: true, branchId: true },
     });
 
     if (!appt) throw new NotFoundException('Appointment not found');
@@ -201,6 +246,22 @@ export class AppointmentsService {
     await this.prisma.appointment.update({
       where: { id },
       data: { deletedAt: new Date() },
+    });
+
+    await this.auditWriter.log({
+      caller,
+      action: 'SOFT_DELETE',
+      resource: 'appointment',
+      resourceId: id,
+      oldData: toSnapshot({
+        id: appt.id,
+        patientId: appt.patientId,
+        doctorId: appt.doctorId,
+        scheduledAt: appt.scheduledAt,
+        durationMin: appt.durationMin,
+        status: appt.status,
+        branchId: appt.branchId,
+      }),
     });
   }
 

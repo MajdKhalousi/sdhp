@@ -12,6 +12,7 @@ import { CreatePrescriptionDto } from './dto/create-prescription.dto';
 import { UpdatePrescriptionDto } from './dto/update-prescription.dto';
 import { PrescriptionQueryDto } from './dto/prescription-query.dto';
 import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
+import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
 
 const PATIENT_SELECT = {
   id: true,
@@ -72,6 +73,7 @@ export class PrescriptionsService {
   constructor(
     private prisma: PrismaService,
     private timelineWriter: MedicalTimelineWriterService,
+    private auditWriter: AuditLogsWriterService,
   ) {}
 
   async findAll(query: PrescriptionQueryDto, caller: JwtPayload): Promise<PaginatedResponse<PrescriptionRecord>> {
@@ -150,6 +152,23 @@ export class PrescriptionsService {
       },
     });
 
+    await this.auditWriter.log({
+      caller,
+      action: 'CREATE',
+      resource: 'prescription',
+      resourceId: result.id,
+      newData: toSnapshot({
+        id: result.id,
+        encounterId: result.encounterId,
+        medication: result.medication,
+        dosage: result.dosage,
+        frequency: result.frequency,
+        duration: result.duration,
+        quantity: result.quantity,
+        refillsLeft: result.refillsLeft,
+      }),
+    });
+
     return result;
   }
 
@@ -171,17 +190,44 @@ export class PrescriptionsService {
       }
     }
 
-    return this.prisma.prescription.update({
+    const result = await this.prisma.prescription.update({
       where: { id },
       data: { ...dto },
       select: SELECT,
     });
+
+    await this.auditWriter.log({
+      caller,
+      action: 'UPDATE',
+      resource: 'prescription',
+      resourceId: id,
+      newData: toSnapshot({
+        ...(dto.medication !== undefined ? { medication: dto.medication } : {}),
+        ...(dto.dosage !== undefined ? { dosage: dto.dosage } : {}),
+        ...(dto.frequency !== undefined ? { frequency: dto.frequency } : {}),
+        ...(dto.duration !== undefined ? { duration: dto.duration } : {}),
+        ...(dto.quantity !== undefined ? { quantity: dto.quantity } : {}),
+        ...(dto.refillsLeft !== undefined ? { refillsLeft: dto.refillsLeft } : {}),
+      }),
+    });
+
+    return result;
   }
 
   async remove(id: string, caller: JwtPayload) {
     const prescription = await this.prisma.prescription.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true, encounter: { select: { organizationId: true, doctorId: true, endedAt: true } } },
+      select: {
+        id: true,
+        encounterId: true,
+        medication: true,
+        dosage: true,
+        frequency: true,
+        duration: true,
+        quantity: true,
+        refillsLeft: true,
+        encounter: { select: { organizationId: true, doctorId: true, endedAt: true } },
+      },
     });
     if (!prescription) throw new NotFoundException('Prescription not found');
     this.assertOwnership(prescription.encounter.organizationId, caller);
@@ -203,6 +249,23 @@ export class PrescriptionsService {
     await this.prisma.prescription.update({
       where: { id },
       data: { deletedAt: new Date() },
+    });
+
+    await this.auditWriter.log({
+      caller,
+      action: 'SOFT_DELETE',
+      resource: 'prescription',
+      resourceId: id,
+      oldData: toSnapshot({
+        id: prescription.id,
+        encounterId: prescription.encounterId,
+        medication: prescription.medication,
+        dosage: prescription.dosage,
+        frequency: prescription.frequency,
+        duration: prescription.duration,
+        quantity: prescription.quantity,
+        refillsLeft: prescription.refillsLeft,
+      }),
     });
   }
 

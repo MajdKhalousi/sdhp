@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { AlertTriangle, Activity, FileText, Stethoscope, Pill, CheckCircle2, FlaskConical, Scan, ClipboardList } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { useEncounter, useUpdateEncounter } from '@/hooks/use-encounters';
 import { useAllergies } from '@/hooks/use-allergies';
 import { VitalsForm } from './vitals-form';
@@ -39,6 +40,11 @@ function toVitals(raw: Record<string, unknown> | null): VitalsPayload {
   };
 }
 
+function formatDate(iso: string | null, locale = 'en-US') {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 function formatDateTime(iso: string | null, locale = 'en-US') {
   if (!iso) return '—';
   return new Date(iso).toLocaleString(locale, {
@@ -70,8 +76,16 @@ interface Props {
 export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const t = useTranslations('encounter');
   const tCommon = useTranslations('common');
+  const tPatient = useTranslations('patient');
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+
+  function localizeGender(gender: string | null | undefined): string | null {
+    if (!gender) return null;
+    if (gender === 'MALE') return tPatient('gender.male');
+    if (gender === 'FEMALE') return tPatient('gender.female');
+    return tPatient('gender.other');
+  }
 
   const { data: encounter, isLoading, isError, error, refetch } = useEncounter(encounterId);
   const { mutate: update, isPending: saving } = useUpdateEncounter();
@@ -189,15 +203,17 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold">
-              {patient.firstName} {patient.lastName}
+              <Link href={`/dashboard/patients/${patient.id}`} className="hover:underline">
+                {patient.firstName} {patient.lastName}
+              </Link>
             </h2>
             <p className="text-sm text-muted-foreground">
               MRN {patient.mrn}
-              {patient.dateOfBirth && ` · DOB ${patient.dateOfBirth.slice(0, 10)}`}
-              {patient.gender && ` · ${patient.gender}`}
+              {patient.dateOfBirth && ` · DOB ${formatDate(patient.dateOfBirth, displayLocale)}`}
+              {patient.gender && ` · ${localizeGender(patient.gender)}`}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Dr. {doctor.user.firstName} {doctor.user.lastName}
+              {t('header.doctorPrefix')} {doctor.user.firstName} {doctor.user.lastName}
               {doctor.specialization && ` · ${doctor.specialization}`}
             </p>
           </div>

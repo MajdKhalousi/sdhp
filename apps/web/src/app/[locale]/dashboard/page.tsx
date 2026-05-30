@@ -224,7 +224,7 @@ export default function DashboardPage() {
                       </span>
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {formatTime(appt.scheduledAt, displayLocale)} · Dr. {appt.doctor.user.lastName}
+                      {formatTime(appt.scheduledAt, displayLocale)} · {t('doctorPrefix')} {appt.doctor.user.lastName}
                     </p>
                   </div>
                   <AppointmentStatusBadge status={appt.status} />
@@ -272,7 +272,7 @@ export default function DashboardPage() {
                     <p className="flex items-center gap-1 text-xs text-muted-foreground">
                       <span>{relativeWait(entry.createdAt, tQueue('justNow'), tDuration('minuteShort'), tDuration('hourShort'))}</span>
                       <span>·</span>
-                      <span>Dr. {entry.appointment.doctor.user.lastName}</span>
+                      <span>{t('doctorPrefix')} {entry.appointment.doctor.user.lastName}</span>
                     </p>
                   </div>
                   <QueueStatusBadge status={entry.status} />

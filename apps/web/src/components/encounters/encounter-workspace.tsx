@@ -208,8 +208,8 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
               </Link>
             </h2>
             <p className="text-sm text-muted-foreground">
-              MRN {patient.mrn}
-              {patient.dateOfBirth && ` · DOB ${formatDate(patient.dateOfBirth, displayLocale)}`}
+              {t('header.mrn')} {patient.mrn}
+              {patient.dateOfBirth && ` · ${t('header.dob')} ${formatDate(patient.dateOfBirth, displayLocale)}`}
               {patient.gender && ` · ${localizeGender(patient.gender)}`}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">

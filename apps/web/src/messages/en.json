@@ -92,7 +92,8 @@
     "empty": {
       "noAppointmentsToday": "No appointments scheduled for today",
       "queueClear": "Queue is clear"
-    }
+    },
+    "doctorPrefix": "Dr."
   },
   "appointment": {
     "status": {
@@ -331,7 +332,9 @@
       "ended": "Ended"
     },
     "header": {
-      "doctorPrefix": "Dr."
+      "doctorPrefix": "Dr.",
+      "mrn": "MRN",
+      "dob": "DOB"
     },
     "error": {
       "loadFailed": "Failed to load encounter",

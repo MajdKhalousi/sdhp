@@ -92,7 +92,8 @@
     "empty": {
       "noAppointmentsToday": "لا مواعيد مجدولة اليوم",
       "queueClear": "الطابور فارغ"
-    }
+    },
+    "doctorPrefix": "د."
   },
   "appointment": {
     "status": {
@@ -331,7 +332,9 @@
       "ended": "انتهت"
     },
     "header": {
-      "doctorPrefix": "د."
+      "doctorPrefix": "د.",
+      "mrn": "MRN",
+      "dob": "ت.م"
     },
     "error": {
       "loadFailed": "فشل تحميل الزيارة",

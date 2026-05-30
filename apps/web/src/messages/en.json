@@ -305,6 +305,7 @@
     },
     "close": {
       "confirm": "Close this visit? The encounter will be locked and the appointment marked complete.",
+      "noDiagnosisWarning": "This visit has no diagnosis. You can still close it, but please confirm.",
       "alreadyEnded": "Encounter already ended",
       "failed": "Failed to end encounter"
     },

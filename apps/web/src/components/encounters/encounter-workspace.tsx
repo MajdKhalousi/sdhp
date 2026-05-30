@@ -463,6 +463,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
               alreadyEnded={isEnded}
               disabled={isDirty || saving}
               disabledReason={isDirty ? t('actions.saveBeforeClosing') : undefined}
+              hasDiagnosis={!!form.diagnosis.trim()}
             />
           </div>
         )}

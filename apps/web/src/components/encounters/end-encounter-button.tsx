@@ -10,6 +10,7 @@ interface EndEncounterButtonProps {
   alreadyEnded: boolean;
   disabled?: boolean;
   disabledReason?: string;
+  hasDiagnosis?: boolean;
 }
 
 export function EndEncounterButton({
@@ -17,6 +18,7 @@ export function EndEncounterButton({
   alreadyEnded,
   disabled = false,
   disabledReason,
+  hasDiagnosis = true,
 }: EndEncounterButtonProps) {
   const t = useTranslations('encounter');
   const tCommon = useTranslations('common');
@@ -65,6 +67,11 @@ export function EndEncounterButton({
         <p className="text-sm font-medium text-foreground">
           {t('close.confirm')}
         </p>
+        {!hasDiagnosis && (
+          <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
+            {t('close.noDiagnosisWarning')}
+          </p>
+        )}
         {error && <p className="text-xs text-destructive">{error}</p>}
         <div className="flex items-center gap-2">
           <button

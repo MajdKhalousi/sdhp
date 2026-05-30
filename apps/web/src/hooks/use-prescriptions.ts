@@ -52,3 +52,15 @@ export function useCreatePrescription() {
     },
   });
 }
+
+export function useDeletePrescription() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id }: { id: string; encounterId: string }) =>
+      api.delete<void>(`/v1/prescriptions/${id}`),
+    onSuccess: (_, { encounterId }) => {
+      qc.invalidateQueries({ queryKey: ['prescriptions', 'encounter', encounterId] });
+      qc.invalidateQueries({ queryKey: ['patient-timeline'] });
+    },
+  });
+}

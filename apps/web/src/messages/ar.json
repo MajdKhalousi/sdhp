@@ -335,6 +335,9 @@
       "empty": "لم توصَف أي أدوية لهذه الزيارة.",
       "addMedication": "إضافة دواء",
       "adding": "جاري الإضافة…",
+      "deleteConfirm": "هل تريد حذف هذا الدواء؟",
+      "confirmRemove": "حذف",
+      "deleting": "جارٍ الحذف…",
       "fields": {
         "medicationLabel": "الدواء",
         "dosageLabel": "الجرعة",
@@ -353,7 +356,8 @@
         "medicationRequired": "اسم الدواء مطلوب."
       },
       "error": {
-        "addFailed": "فشل إضافة الدواء"
+        "addFailed": "فشل إضافة الدواء",
+        "deleteFailed": "فشل حذف الدواء"
       }
     },
     "labOrders": {

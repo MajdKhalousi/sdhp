@@ -181,10 +181,24 @@ export class PrescriptionsService {
   async remove(id: string, caller: JwtPayload) {
     const prescription = await this.prisma.prescription.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true, encounter: { select: { organizationId: true } } },
+      select: { id: true, encounter: { select: { organizationId: true, doctorId: true, endedAt: true } } },
     });
     if (!prescription) throw new NotFoundException('Prescription not found');
     this.assertOwnership(prescription.encounter.organizationId, caller);
+
+    if (caller.role === UserRole.DOCTOR) {
+      const doctorProfile = await this.prisma.doctor.findFirst({
+        where: { userId: caller.sub, deletedAt: null },
+        select: { id: true },
+      });
+      if (!doctorProfile || doctorProfile.id !== prescription.encounter.doctorId) {
+        throw new ForbiddenException('You can only delete prescriptions from your own encounters');
+      }
+    }
+
+    if (prescription.encounter.endedAt) {
+      throw new BadRequestException('Cannot remove a prescription from a completed encounter');
+    }
 
     await this.prisma.prescription.update({
       where: { id },

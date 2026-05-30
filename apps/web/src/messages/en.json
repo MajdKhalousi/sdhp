@@ -335,6 +335,9 @@
       "empty": "No medications prescribed for this encounter.",
       "addMedication": "Add Medication",
       "adding": "Adding…",
+      "deleteConfirm": "Remove this medication?",
+      "confirmRemove": "Remove",
+      "deleting": "Removing…",
       "fields": {
         "medicationLabel": "Medication",
         "dosageLabel": "Dosage",
@@ -353,7 +356,8 @@
         "medicationRequired": "Medication name is required."
       },
       "error": {
-        "addFailed": "Failed to add medication"
+        "addFailed": "Failed to add medication",
+        "deleteFailed": "Failed to remove medication"
       }
     },
     "labOrders": {

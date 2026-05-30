@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import {
   useEncounterPrescriptions,
   useCreatePrescription,
+  useDeletePrescription,
   type CreatePrescriptionPayload,
 } from '@/hooks/use-prescriptions';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -40,9 +41,12 @@ export function PrescriptionPanel({ encounterId, readOnly }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<PrescriptionForm>(EMPTY_FORM);
   const [formError, setFormError] = useState('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState('');
 
   const { data, isLoading } = useEncounterPrescriptions(encounterId);
   const { mutate: create, isPending: creating } = useCreatePrescription();
+  const { mutate: deletePrescription, isPending: deleting } = useDeletePrescription();
 
   const prescriptions = data?.data ?? [];
 
@@ -80,6 +84,20 @@ export function PrescriptionPanel({ encounterId, readOnly }: Props) {
     setShowForm(false);
   }
 
+  function handleDelete(id: string) {
+    setDeleteError('');
+    deletePrescription(
+      { id, encounterId },
+      {
+        onSuccess: () => setConfirmDeleteId(null),
+        onError: (e) => {
+          setDeleteError(e instanceof Error ? e.message : t('error.deleteFailed'));
+          setConfirmDeleteId(null);
+        },
+      },
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -91,12 +109,17 @@ export function PrescriptionPanel({ encounterId, readOnly }: Props) {
 
   return (
     <div className="space-y-2">
+      {deleteError && (
+        <p className="text-xs text-destructive">{deleteError}</p>
+      )}
+
       {prescriptions.length === 0 && !showForm && (
         <p className="text-sm text-muted-foreground">{t('empty')}</p>
       )}
 
       {prescriptions.map((rx) => {
         const details = [rx.dosage, rx.frequency, rx.duration].filter(Boolean).join(' · ');
+        const isConfirming = confirmDeleteId === rx.id;
         return (
           <div
             key={rx.id}
@@ -111,6 +134,38 @@ export function PrescriptionPanel({ encounterId, readOnly }: Props) {
                 <p className="mt-0.5 text-xs italic text-muted-foreground">{rx.instructions}</p>
               )}
             </div>
+
+            {!readOnly && (
+              isConfirming ? (
+                <div className="flex shrink-0 flex-col items-end gap-1.5">
+                  <span className="text-xs text-muted-foreground">{t('deleteConfirm')}</span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => handleDelete(rx.id)}
+                      disabled={deleting}
+                      className="inline-flex h-7 items-center rounded-md bg-destructive px-2.5 text-xs font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-60"
+                    >
+                      {deleting ? t('deleting') : t('confirmRemove')}
+                    </button>
+                    <button
+                      onClick={() => setConfirmDeleteId(null)}
+                      disabled={deleting}
+                      className="inline-flex h-7 items-center rounded-md border px-2.5 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-60"
+                    >
+                      {tCommon('actions.cancel')}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmDeleteId(rx.id)}
+                  className="shrink-0 inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground/40 transition-colors hover:bg-destructive/10 hover:text-destructive"
+                  aria-label={t('deleteConfirm')}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )
+            )}
           </div>
         );
       })}

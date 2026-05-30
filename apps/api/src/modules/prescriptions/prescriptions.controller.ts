@@ -83,12 +83,12 @@ export class PrescriptionsController {
 
   @Delete(':id')
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse({ description: 'Prescription soft-deleted' })
   @ApiNotFoundResponse({ description: 'Prescription not found' })
   @ApiOperation({
-    summary: 'Soft-delete prescription — ORG_ADMIN restricted to own org, DOCTOR cannot delete',
+    summary: 'Soft-delete prescription — ORG_ADMIN restricted to own org, DOCTOR restricted to own active encounters',
   })
   remove(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.service.remove(id, user);

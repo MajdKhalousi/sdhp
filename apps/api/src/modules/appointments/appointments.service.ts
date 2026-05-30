@@ -15,6 +15,7 @@ import { AppointmentQueryDto } from './dto/appointment-query.dto';
 import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
 import { MedicalTimelineEventType } from '@prisma/client';
 import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
+import { DoctorSchedulesService } from '../doctor-schedules/doctor-schedules.service';
 
 const PATIENT_SELECT = {
   id: true,
@@ -48,6 +49,7 @@ const SELECT = {
   branchId: true,
   patientId: true,
   doctorId: true,
+  visitTypeId: true,
   scheduledAt: true,
   durationMin: true,
   status: true,
@@ -79,6 +81,7 @@ export class AppointmentsService {
     private prisma: PrismaService,
     private timelineWriter: MedicalTimelineWriterService,
     private auditWriter: AuditLogsWriterService,
+    private doctorSchedulesService: DoctorSchedulesService,
   ) {}
 
   async findAll(query: AppointmentQueryDto, caller: JwtPayload): Promise<PaginatedResponse<AppointmentRecord>> {
@@ -117,15 +120,29 @@ export class AppointmentsService {
       await this.assertBranchBelongsToOrg(dto.branchId, organizationId);
     }
 
-    await this.assertNoDoubleBooking(dto.doctorId, new Date(dto.scheduledAt), dto.durationMin ?? 30);
+    if (dto.visitTypeId) {
+      await this.assertVisitTypeBelongsToOrg(dto.visitTypeId, organizationId);
+    }
+
+    const scheduledAt = new Date(dto.scheduledAt);
+    const durationMin = dto.durationMin ?? 30;
+
+    await this.doctorSchedulesService.assertDoctorAvailability(
+      dto.doctorId,
+      scheduledAt,
+      durationMin,
+      organizationId,
+    );
+    await this.assertNoDoubleBooking(dto.doctorId, scheduledAt, durationMin);
 
     const result = await this.prisma.appointment.create({
       data: {
         organizationId,
         patientId: dto.patientId,
         doctorId: dto.doctorId,
-        scheduledAt: new Date(dto.scheduledAt),
-        durationMin: dto.durationMin,
+        visitTypeId: dto.visitTypeId,
+        scheduledAt,
+        durationMin,
         status: dto.status,
         notes: dto.notes,
         cancelReason: dto.cancelReason,
@@ -162,7 +179,15 @@ export class AppointmentsService {
   async update(id: string, dto: UpdateAppointmentDto, caller: JwtPayload) {
     const appt = await this.prisma.appointment.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true, organizationId: true, cancelledAt: true, status: true },
+      select: {
+        id: true,
+        organizationId: true,
+        cancelledAt: true,
+        status: true,
+        doctorId: true,
+        scheduledAt: true,
+        durationMin: true,
+      },
     });
 
     if (!appt) throw new NotFoundException('Appointment not found');
@@ -179,6 +204,23 @@ export class AppointmentsService {
 
     if (dto.branchId) {
       await this.assertBranchBelongsToOrg(dto.branchId, appt.organizationId);
+    }
+
+    if (dto.visitTypeId) {
+      await this.assertVisitTypeBelongsToOrg(dto.visitTypeId, appt.organizationId);
+    }
+
+    if (dto.scheduledAt !== undefined || dto.durationMin !== undefined) {
+      const newScheduledAt = dto.scheduledAt ? new Date(dto.scheduledAt) : appt.scheduledAt;
+      const newDurationMin = dto.durationMin ?? appt.durationMin;
+      await this.doctorSchedulesService.assertDoctorAvailability(
+        appt.doctorId,
+        newScheduledAt,
+        newDurationMin,
+        appt.organizationId,
+        id,
+      );
+      await this.assertNoDoubleBooking(appt.doctorId, newScheduledAt, newDurationMin, id);
     }
 
     const isStatusTransition = !!(dto.status && dto.status !== appt.status);
@@ -406,6 +448,21 @@ export class AppointmentsService {
     if (!branch) {
       throw new BadRequestException(
         'Branch does not belong to this organization or does not exist',
+      );
+    }
+  }
+
+  private async assertVisitTypeBelongsToOrg(
+    visitTypeId: string,
+    organizationId: string,
+  ): Promise<void> {
+    const vt = await this.prisma.visitType.findFirst({
+      where: { id: visitTypeId, organizationId, deletedAt: null, isActive: true },
+      select: { id: true },
+    });
+    if (!vt) {
+      throw new BadRequestException(
+        'Visit type not found or not active in this organization',
       );
     }
   }

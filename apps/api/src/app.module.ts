@@ -29,6 +29,7 @@ import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { ClinicSettingsModule } from './modules/clinic-settings/clinic-settings.module';
 import { VisitTypesModule } from './modules/visit-types/visit-types.module';
 import { ServicesModule } from './modules/services/services.module';
+import { DoctorSchedulesModule } from './modules/doctor-schedules/doctor-schedules.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -63,6 +64,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     ClinicSettingsModule,
     VisitTypesModule,
     ServicesModule,
+    DoctorSchedulesModule,
   ],
   controllers: [AppController],
   providers: [

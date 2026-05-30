@@ -50,6 +50,11 @@ export class CreateAppointmentDto {
   @IsString()
   branchId?: string;
 
+  @ApiPropertyOptional({ example: 'visit-type-cuid', description: 'Visit type ID (optional)' })
+  @IsOptional()
+  @IsString()
+  visitTypeId?: string;
+
   @ApiPropertyOptional({
     description: 'Required for SUPER_ADMIN. Ignored for ORG_ADMIN — their org is used automatically.',
     example: 'org-cuid',

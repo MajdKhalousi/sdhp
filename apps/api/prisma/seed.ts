@@ -2878,6 +2878,38 @@ Review in 4 weeks with CBC and ferritin results.
     });
   }
 
+  // ── Doctor Schedules (org-001) ─────────────────────────────────────────────
+  // Sun(0)–Thu(4) 08:00–16:00 for Samer (Cardiology) and Omar (General Medicine)
+  // Sun(0)–Thu(4) 08:00–14:00 for Layla (Pediatrics, shorter morning shift)
+  const doctorScheduleSeed = [
+    // Dr. Samer Hassan — Cardiology, Sun–Thu 08:00–16:00
+    { doctorId: doctorSamer.id, dayOfWeek: 0, startTime: '08:00', endTime: '16:00' },
+    { doctorId: doctorSamer.id, dayOfWeek: 1, startTime: '08:00', endTime: '16:00' },
+    { doctorId: doctorSamer.id, dayOfWeek: 2, startTime: '08:00', endTime: '16:00' },
+    { doctorId: doctorSamer.id, dayOfWeek: 3, startTime: '08:00', endTime: '16:00' },
+    { doctorId: doctorSamer.id, dayOfWeek: 4, startTime: '08:00', endTime: '16:00' },
+    // Dr. Layla Nasser — Pediatrics, Sun–Thu 08:00–14:00
+    { doctorId: doctorLayla.id, dayOfWeek: 0, startTime: '08:00', endTime: '14:00' },
+    { doctorId: doctorLayla.id, dayOfWeek: 1, startTime: '08:00', endTime: '14:00' },
+    { doctorId: doctorLayla.id, dayOfWeek: 2, startTime: '08:00', endTime: '14:00' },
+    { doctorId: doctorLayla.id, dayOfWeek: 3, startTime: '08:00', endTime: '14:00' },
+    { doctorId: doctorLayla.id, dayOfWeek: 4, startTime: '08:00', endTime: '14:00' },
+    // Dr. Omar Saleh — General Medicine, Sun–Thu 08:00–17:00
+    { doctorId: doctorOmar.id, dayOfWeek: 0, startTime: '08:00', endTime: '17:00' },
+    { doctorId: doctorOmar.id, dayOfWeek: 1, startTime: '08:00', endTime: '17:00' },
+    { doctorId: doctorOmar.id, dayOfWeek: 2, startTime: '08:00', endTime: '17:00' },
+    { doctorId: doctorOmar.id, dayOfWeek: 3, startTime: '08:00', endTime: '17:00' },
+    { doctorId: doctorOmar.id, dayOfWeek: 4, startTime: '08:00', endTime: '17:00' },
+  ];
+
+  for (const s of doctorScheduleSeed) {
+    await prisma.doctorSchedule.upsert({
+      where: { doctorId_dayOfWeek: { doctorId: s.doctorId, dayOfWeek: s.dayOfWeek } },
+      update: { startTime: s.startTime, endTime: s.endTime, isActive: true },
+      create: { ...s, isActive: true },
+    });
+  }
+
   console.log(`
 ╔══════════════════════════════════════════════════════════════╗
 ║        Al-Nour Medical Center — Demo Seed Ready (B18.0)      ║
@@ -2902,6 +2934,7 @@ Review in 4 weeks with CBC and ferritin results.
 ║  Invoices: 4  │  Payments: 2  │  Clinical Reports: 3        ║
 ║  Today: 8 appts (2 DONE / 1 IN_PROGRESS / 3 CHECKED_IN+CONF / 1 NO_SHOW)
 ║  Visit Types: 5  │  Services: 10  │  Clinic Settings: 1     ║
+║  Doctor Schedules: 15 (3 doctors × 5 days)                  ║
 ╚══════════════════════════════════════════════════════════════╝
   `);
 }

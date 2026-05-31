@@ -500,6 +500,10 @@
         "resultAt": "تاريخ النتيجة",
         "reviewedBy": "راجعها"
       },
+      "pendingReview": {
+        "heading": "بانتظار المراجعة",
+        "ordered": "طُلب"
+      },
       "error": {
         "addFailed": "فشل إضافة طلب المختبر",
         "reviewFailed": "فشل مراجعة النتيجة"
@@ -551,6 +555,10 @@
         "reportedBy": "أعده",
         "reviewedBy": "راجعه",
         "reviewedAt": "تاريخ المراجعة"
+      },
+      "pendingReview": {
+        "heading": "بانتظار المراجعة",
+        "ordered": "طُلب"
       },
       "error": {
         "addFailed": "فشل إضافة الطلب الشعاعي",

@@ -500,6 +500,10 @@
         "resultAt": "Result date",
         "reviewedBy": "Reviewed by"
       },
+      "pendingReview": {
+        "heading": "Pending Review",
+        "ordered": "Ordered"
+      },
       "error": {
         "addFailed": "Failed to add lab order",
         "reviewFailed": "Failed to review result"
@@ -551,6 +555,10 @@
         "reportedBy": "Reported by",
         "reviewedBy": "Reviewed by",
         "reviewedAt": "Reviewed"
+      },
+      "pendingReview": {
+        "heading": "Pending Review",
+        "ordered": "Ordered"
       },
       "error": {
         "addFailed": "Failed to add radiology order",

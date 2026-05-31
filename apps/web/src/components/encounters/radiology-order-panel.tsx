@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { AlertCircle, Plus } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import type { BadgeProps } from '@/components/ui/badge';
@@ -185,6 +185,8 @@ interface Props {
 export function RadiologyOrderPanel({ patientId, encounterId, readOnly }: Props) {
   const tRad = useTranslations('encounter');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
+  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<Form>(EMPTY_FORM);
   const [formError, setFormError] = useState('');
@@ -193,6 +195,13 @@ export function RadiologyOrderPanel({ patientId, encounterId, readOnly }: Props)
   const { mutate: create, isPending: creating } = useCreateRadiologyOrder();
 
   const orders = allOrders.filter((o) => o.encounterId === encounterId);
+  const pendingReview = allOrders.filter(
+    (o) =>
+      o.encounterId !== encounterId &&
+      o.status === 'RESULTED' &&
+      o.report !== null &&
+      o.report.reviewedAt === null,
+  );
 
   function setField(key: keyof Form, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -240,6 +249,27 @@ export function RadiologyOrderPanel({ patientId, encounterId, readOnly }: Props)
 
   return (
     <div className="space-y-2">
+      {pendingReview.length > 0 && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-3 dark:border-amber-900/40 dark:bg-amber-950/10">
+          <div className="mb-2 flex items-center gap-1.5">
+            <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+            <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
+              {tRad('radiologyOrders.pendingReview.heading')} ({pendingReview.length})
+            </p>
+          </div>
+          <div className="space-y-3">
+            {pendingReview.map((order) => (
+              <div key={order.id}>
+                <p className="mb-1 ps-1 text-xs text-muted-foreground">
+                  {tRad('radiologyOrders.pendingReview.ordered')}: {formatDate(order.createdAt, displayLocale)}
+                </p>
+                <OrderCard order={order} readOnly={false} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {orders.length === 0 && !showForm && (
         <p className="text-sm text-muted-foreground">{tRad('radiologyOrders.empty')}</p>
       )}

@@ -15,6 +15,17 @@ import type {
   Department,
 } from '@/types/clinic-settings';
 
+// Defensive normalizer — handles bare array, { data: [] }, or { items: [] }
+// so the page never crashes if the backend response shape changes.
+type MaybeList<T> = T[] | { data: T[] } | { items: T[] } | null | undefined;
+function normalizeList<T>(raw: MaybeList<T>): T[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if ('data' in raw && Array.isArray(raw.data)) return raw.data;
+  if ('items' in raw && Array.isArray(raw.items)) return raw.items;
+  return [];
+}
+
 // ─── Clinic Settings ─────────────────────────────────────────────────────────
 
 export function useClinicSettings() {
@@ -53,10 +64,12 @@ export function useVisitTypes(query: VisitTypeQuery = {}) {
   const { includeInactive } = query;
   return useQuery({
     queryKey: ['visit-types', includeInactive],
-    queryFn: () =>
-      api.get<VisitType[]>('/v1/visit-types', {
-        ...(includeInactive ? { includeInactive: true } : {}),
-      }),
+    queryFn: async () =>
+      normalizeList(
+        await api.get<MaybeList<VisitType>>('/v1/visit-types', {
+          ...(includeInactive ? { includeInactive: true } : {}),
+        }),
+      ),
     staleTime: 60_000,
   });
 }
@@ -99,7 +112,8 @@ export function useDeleteVisitType() {
 export function useDepartmentsList() {
   return useQuery({
     queryKey: ['departments-list'],
-    queryFn: () => api.get<Department[]>('/v1/departments'),
+    queryFn: async () =>
+      normalizeList(await api.get<MaybeList<Department>>('/v1/departments')),
     staleTime: 120_000,
   });
 }
@@ -110,11 +124,13 @@ export function useServices(query: ServiceQuery = {}) {
   const { departmentId, includeInactive } = query;
   return useQuery({
     queryKey: ['services', departmentId, includeInactive],
-    queryFn: () =>
-      api.get<Service[]>('/v1/services', {
-        ...(departmentId ? { departmentId } : {}),
-        ...(includeInactive ? { includeInactive: true } : {}),
-      }),
+    queryFn: async () =>
+      normalizeList(
+        await api.get<MaybeList<Service>>('/v1/services', {
+          ...(departmentId ? { departmentId } : {}),
+          ...(includeInactive ? { includeInactive: true } : {}),
+        }),
+      ),
     staleTime: 60_000,
   });
 }

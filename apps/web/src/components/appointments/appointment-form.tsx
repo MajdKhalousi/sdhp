@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { useCreateAppointment, usePatientsList, useDoctorsList } from '@/hooks/use-appointments';
+import { useCreateAppointment, usePatientsList, useDoctorsList, useVisitTypesList } from '@/hooks/use-appointments';
 import { VisitTypeSelect } from './visit-type-select';
 import { AvailableSlotsPicker } from './available-slots-picker';
 import type { VisitType } from '@/types/clinic-settings';
@@ -26,18 +26,49 @@ const INITIAL: FormState = {
   notes: '',
 };
 
-export function AppointmentForm() {
+interface Props {
+  initialPatientId?: string;
+  initialDoctorId?: string;
+  /** YYYY-MM-DD — pre-fills the date field */
+  initialDate?: string;
+  /** UUID of a visit type to pre-select */
+  initialVisitTypeId?: string;
+}
+
+export function AppointmentForm({
+  initialPatientId,
+  initialDoctorId,
+  initialDate,
+  initialVisitTypeId,
+}: Props = {}) {
   const t = useTranslations('appointment.form');
   const tCommon = useTranslations('common');
   const router = useRouter();
 
-  const [form, setForm] = useState<FormState>(INITIAL);
+  const [form, setForm] = useState<FormState>({
+    ...INITIAL,
+    patientId: initialPatientId ?? '',
+    doctorId:  initialDoctorId  ?? '',
+    date:      initialDate      ?? '',
+    visitTypeId: initialVisitTypeId ?? '',
+  });
   const [selectedVisitType, setSelectedVisitType] = useState<VisitType | null>(null);
   const [validationError, setValidationError] = useState('');
 
   const { mutate, isPending, error: mutationError } = useCreateAppointment();
   const { data: patientsData, isLoading: patientsLoading } = usePatientsList();
   const { data: doctorsData, isLoading: doctorsLoading } = useDoctorsList();
+  const { data: visitTypesData } = useVisitTypesList();
+
+  // Resolve the VisitType object for the pre-selected visit type once the list loads.
+  // The ref prevents this from re-running after the user changes visit type manually.
+  const visitTypeResolved = useRef(false);
+  useEffect(() => {
+    if (!initialVisitTypeId || !visitTypesData || visitTypeResolved.current) return;
+    visitTypeResolved.current = true;
+    const vt = visitTypesData.find((v) => v.id === initialVisitTypeId && v.isActive) ?? null;
+    setSelectedVisitType(vt);
+  }, [initialVisitTypeId, visitTypesData]);
 
   const selectedDoctor = doctorsData?.data.find((d) => d.id === form.doctorId) ?? null;
   const durationMin =
@@ -71,17 +102,17 @@ export function AppointmentForm() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!form.patientId)   { setValidationError(t('validation.patientRequired'));  return; }
-    if (!form.doctorId)    { setValidationError(t('validation.doctorRequired'));   return; }
-    if (!form.date)        { setValidationError(t('validation.dateTimeRequired')); return; }
-    if (!form.selectedSlot){ setValidationError(t('validation.slotRequired'));     return; }
+    if (!form.patientId)    { setValidationError(t('validation.patientRequired'));  return; }
+    if (!form.doctorId)     { setValidationError(t('validation.doctorRequired'));   return; }
+    if (!form.date)         { setValidationError(t('validation.dateTimeRequired')); return; }
+    if (!form.selectedSlot) { setValidationError(t('validation.slotRequired'));     return; }
 
     const scheduledAt = new Date(`${form.date}T${form.selectedSlot}:00`).toISOString();
 
     mutate(
       {
         patientId: form.patientId,
-        doctorId: form.doctorId,
+        doctorId:  form.doctorId,
         scheduledAt,
         durationMin,
         ...(form.visitTypeId ? { visitTypeId: form.visitTypeId } : {}),
@@ -111,7 +142,7 @@ export function AppointmentForm() {
           id="patientId"
           value={form.patientId}
           onChange={(e) => { setForm((prev) => ({ ...prev, patientId: e.target.value })); setValidationError(''); }}
-          disabled={isPending || patientsLoading}
+          disabled={isPending || patientsLoading || !!initialPatientId}
           className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
         >
           <option value="">{patientsLoading ? t('select.loadingPatients') : t('select.selectPatient')}</option>

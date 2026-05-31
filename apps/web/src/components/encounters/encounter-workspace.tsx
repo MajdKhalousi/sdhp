@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { AlertTriangle, Activity, FileText, Stethoscope, Pill, CheckCircle2, FlaskConical, Scan, ClipboardList } from 'lucide-react';
+import { AlertTriangle, Activity, FileText, Stethoscope, Pill, CheckCircle2, FlaskConical, Scan, ClipboardList, ChevronRight } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useEncounter, useUpdateEncounter } from '@/hooks/use-encounters';
+import { useVisitTypesList } from '@/hooks/use-appointments';
 import { useAllergies } from '@/hooks/use-allergies';
 import { VitalsForm } from './vitals-form';
 import { PrescriptionPanel } from './prescription-panel';
@@ -90,6 +91,8 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const { data: encounter, isLoading, isError, error, refetch } = useEncounter(encounterId);
   const { mutate: update, isPending: saving } = useUpdateEncounter();
   const { data: allergies = [] } = useAllergies(encounter?.patient.id ?? '');
+  const { data: visitTypes } = useVisitTypesList();
+  const followUpVisitType = visitTypes?.find((vt) => vt.code === 'FOLLOW_UP' && vt.isActive) ?? null;
 
   const [form, setForm] = useState<WorkspaceForm | null>(null);
   const [savedAt, setSavedAt] = useState<string | null>(null);
@@ -435,11 +438,22 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">{t('complete.followUpLabel')}</p>
-                <p className="mt-0.5 text-sm font-medium">
-                  {encounter.followUpDate
-                    ? formatDateTime(encounter.followUpDate, displayLocale)
-                    : t('complete.notScheduled')}
-                </p>
+                {encounter.followUpDate ? (
+                  <div className="mt-0.5 flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-medium">
+                      {formatDateTime(encounter.followUpDate, displayLocale)}
+                    </p>
+                    <Link
+                      href={`/dashboard/appointments/new?patientId=${encounter.patientId}&doctorId=${encounter.doctorId}&followUpDate=${encounter.followUpDate.slice(0, 10)}${followUpVisitType ? `&visitTypeId=${followUpVisitType.id}` : ''}`}
+                      className="inline-flex h-6 items-center gap-1 rounded border border-primary/40 px-2 text-xs font-medium text-primary transition-colors hover:bg-primary/5"
+                    >
+                      {t('complete.bookFollowUp')}
+                      <ChevronRight className="h-3 w-3 rtl:rotate-180" />
+                    </Link>
+                  </div>
+                ) : (
+                  <p className="mt-0.5 text-sm font-medium">{t('complete.notScheduled')}</p>
+                )}
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">{t('complete.endedLabel')}</p>

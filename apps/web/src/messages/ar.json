@@ -138,6 +138,8 @@
     "form": {
       "title": "موعد جديد",
       "subtitle": "جدولة موعد مريض",
+      "followUpTitle": "حجز موعد مراجعة",
+      "followUpSubtitle": "مُعبَّأ من الزيارة — اختر وقتاً متاحاً للتأكيد.",
       "fields": {
         "patientLabel": "المريض",
         "doctorLabel": "الطبيب",
@@ -398,6 +400,7 @@
       "followUpLabel": "المراجعة",
       "endedLabel": "انتهت",
       "notScheduled": "غير مجدولة",
+      "bookFollowUp": "حجز موعد المراجعة",
       "diagnosisOnRecord": "التشخيص مسجّل",
       "readOnly": "هذه الزيارة مكتملة. السجل للقراءة فقط."
     },

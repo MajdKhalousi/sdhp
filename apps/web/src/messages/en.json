@@ -138,6 +138,8 @@
     "form": {
       "title": "New Appointment",
       "subtitle": "Schedule a patient appointment",
+      "followUpTitle": "Book Follow-up Appointment",
+      "followUpSubtitle": "Pre-filled from encounter — select an available slot to confirm.",
       "fields": {
         "patientLabel": "Patient",
         "doctorLabel": "Doctor",
@@ -398,6 +400,7 @@
       "followUpLabel": "Follow-up",
       "endedLabel": "Ended",
       "notScheduled": "Not scheduled",
+      "bookFollowUp": "Book Follow-up",
       "diagnosisOnRecord": "Diagnosis on record",
       "readOnly": "This encounter is complete. The record is read-only."
     },

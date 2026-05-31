@@ -1,11 +1,23 @@
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { AppointmentForm } from '@/components/appointments/appointment-form';
 
-export default function NewAppointmentPage() {
-  const t = useTranslations('appointment.form');
-  const tCommon = useTranslations('common');
+interface Props {
+  searchParams: Promise<{
+    patientId?: string;
+    doctorId?: string;
+    followUpDate?: string;
+    visitTypeId?: string;
+  }>;
+}
+
+export default async function NewAppointmentPage({ searchParams }: Props) {
+  const { patientId, doctorId, followUpDate, visitTypeId } = await searchParams;
+  const isFollowUp = !!followUpDate;
+
+  const t = await getTranslations('appointment.form');
+  const tCommon = await getTranslations('common');
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
@@ -18,13 +30,22 @@ export default function NewAppointmentPage() {
           <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
         </Link>
         <div>
-          <h1 className="text-xl font-semibold">{t('title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
+          <h1 className="text-xl font-semibold">
+            {isFollowUp ? t('followUpTitle') : t('title')}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {isFollowUp ? t('followUpSubtitle') : t('subtitle')}
+          </p>
         </div>
       </div>
 
       <div className="rounded-xl border border-border bg-card p-6">
-        <AppointmentForm />
+        <AppointmentForm
+          initialPatientId={patientId}
+          initialDoctorId={doctorId}
+          initialDate={followUpDate}
+          initialVisitTypeId={visitTypeId}
+        />
       </div>
     </div>
   );

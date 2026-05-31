@@ -9,10 +9,17 @@ import { useAppointments, useDoctorsList } from '@/hooks/use-appointments';
 import { AppointmentStatusBadge } from './appointment-status-badge';
 import { CheckInButton } from '@/components/queue/check-in-button';
 import { NoShowButton } from './no-show-button';
+import { ConfirmButton } from './confirm-button';
+import { CancelAppointmentDialog } from './cancel-appointment-dialog';
+import { RescheduleDialog } from './reschedule-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { AppointmentStatus } from '@/types/appointment';
+import type { Appointment, AppointmentStatus } from '@/types/appointment';
 
-const NO_SHOW_ELIGIBLE: AppointmentStatus[] = ['SCHEDULED', 'CONFIRMED'];
+const CONFIRM_ELIGIBLE: AppointmentStatus[]    = ['SCHEDULED'];
+const CHECKIN_ELIGIBLE: AppointmentStatus[]    = ['SCHEDULED', 'CONFIRMED'];
+const NOSHOW_ELIGIBLE: AppointmentStatus[]     = ['SCHEDULED', 'CONFIRMED'];
+const RESCHEDULE_ELIGIBLE: AppointmentStatus[] = ['SCHEDULED', 'CONFIRMED'];
+const CANCEL_ELIGIBLE: AppointmentStatus[]     = ['SCHEDULED', 'CONFIRMED'];
 
 const ALL_STATUSES: AppointmentStatus[] = [
   'SCHEDULED', 'CONFIRMED', 'CHECKED_IN', 'IN_QUEUE',
@@ -44,6 +51,7 @@ export function AppointmentList() {
   const [date, setDate] = useState(searchParams.get('date') ?? '');
   const [doctorId, setDoctorId] = useState('');
   const [page, setPage] = useState(1);
+  const [rescheduleAppt, setRescheduleAppt] = useState<Appointment | null>(null);
 
   const { data, isLoading, isError, error, refetch } = useAppointments({
     ...(status ? { status: [status] } : {}),
@@ -190,6 +198,13 @@ export function AppointmentList() {
 
   return (
     <div className="space-y-4">
+      {rescheduleAppt && (
+        <RescheduleDialog
+          appointment={rescheduleAppt}
+          onClose={() => setRescheduleAppt(null)}
+        />
+      )}
+
       {filters}
 
       <div className="overflow-hidden rounded-xl border border-border">
@@ -235,13 +250,37 @@ export function AppointmentList() {
                   <AppointmentStatusBadge status={appt.status} />
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex items-center justify-end gap-2">
-                    {NO_SHOW_ELIGIBLE.includes(appt.status) && (
-                      <CheckInButton appointmentId={appt.id} />
-                    )}
-                    {NO_SHOW_ELIGIBLE.includes(appt.status) && (
-                      <NoShowButton appointmentId={appt.id} />
-                    )}
+                  <div className="flex flex-col items-end gap-1.5">
+                    <div className="flex flex-wrap items-center justify-end gap-1.5">
+                      <Link
+                        href={`/dashboard/appointments/${appt.id}`}
+                        className="h-7 rounded-md border px-2 text-xs text-muted-foreground transition-colors hover:bg-accent"
+                      >
+                        {tCommon('actions.view')}
+                      </Link>
+                      {CHECKIN_ELIGIBLE.includes(appt.status) && (
+                        <CheckInButton appointmentId={appt.id} />
+                      )}
+                      {CONFIRM_ELIGIBLE.includes(appt.status) && (
+                        <ConfirmButton appointmentId={appt.id} />
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center justify-end gap-1.5">
+                      {RESCHEDULE_ELIGIBLE.includes(appt.status) && (
+                        <button
+                          onClick={() => setRescheduleAppt(appt)}
+                          className="h-6 rounded border px-2 text-xs text-muted-foreground transition-colors hover:bg-accent"
+                        >
+                          {t('reschedule.trigger' as Parameters<typeof t>[0])}
+                        </button>
+                      )}
+                      {NOSHOW_ELIGIBLE.includes(appt.status) && (
+                        <NoShowButton appointmentId={appt.id} />
+                      )}
+                      {CANCEL_ELIGIBLE.includes(appt.status) && (
+                        <CancelAppointmentDialog appointmentId={appt.id} />
+                      )}
+                    </div>
                   </div>
                 </td>
               </tr>

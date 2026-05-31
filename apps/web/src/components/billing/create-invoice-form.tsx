@@ -7,12 +7,17 @@ import { useCreateInvoice } from '@/hooks/use-invoices';
 import { usePatientsList } from '@/hooks/use-appointments';
 import type { CreateInvoiceDto } from '@/types/invoice';
 
-export function CreateInvoiceForm() {
+interface Props {
+  initialPatientId?: string;
+  appointmentId?: string;
+}
+
+export function CreateInvoiceForm({ initialPatientId, appointmentId }: Props = {}) {
   const t = useTranslations('invoice.form');
   const tCommon = useTranslations('common');
   const router = useRouter();
 
-  const [patientId, setPatientId] = useState('');
+  const [patientId, setPatientId] = useState(initialPatientId ?? '');
   const [dueDate, setDueDate] = useState('');
   const [notes, setNotes] = useState('');
   const [validationError, setValidationError] = useState('');
@@ -34,6 +39,7 @@ export function CreateInvoiceForm() {
 
     const dto: CreateInvoiceDto = {
       patientId,
+      ...(appointmentId ? { appointmentId } : {}),
       ...(dueDate ? { dueDate: `${dueDate}T00:00:00.000Z` } : {}),
       ...(notes.trim() ? { notes: notes.trim() } : {}),
     };
@@ -66,7 +72,7 @@ export function CreateInvoiceForm() {
             setPatientId(e.target.value);
             setValidationError('');
           }}
-          disabled={isPending || patientsLoading}
+          disabled={isPending || patientsLoading || !!initialPatientId}
           className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
         >
           <option value="">{t('fields.patientPlaceholder')}</option>

@@ -84,6 +84,7 @@ export function AppointmentForm() {
         doctorId: form.doctorId,
         scheduledAt,
         durationMin,
+        ...(form.visitTypeId ? { visitTypeId: form.visitTypeId } : {}),
         ...(form.notes.trim() ? { notes: form.notes.trim() } : {}),
       },
       { onSuccess: () => router.push('/dashboard/appointments') },

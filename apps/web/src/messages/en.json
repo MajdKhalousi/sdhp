@@ -7,7 +7,8 @@
       "tryAgain": "Try again",
       "back": "Back",
       "viewAll": "View all",
-      "manage": "Manage"
+      "manage": "Manage",
+      "view": "View"
     },
     "pagination": {
       "previous": "Previous",
@@ -183,6 +184,70 @@
       "confirm": "Confirm",
       "cancel": "Cancel",
       "skipping": "…"
+    },
+    "confirm": {
+      "trigger": "Confirm",
+      "confirming": "Confirming…",
+      "error": "Failed to confirm appointment"
+    },
+    "cancel": {
+      "trigger": "Cancel Appt",
+      "heading": "Cancel this appointment?",
+      "reasonLabel": "Reason (optional)",
+      "reasonPlaceholder": "e.g. Patient request, scheduling conflict",
+      "confirm": "Cancel Appointment",
+      "back": "Go Back",
+      "cancelling": "Cancelling…",
+      "error": "Failed to cancel appointment"
+    },
+    "reschedule": {
+      "trigger": "Reschedule",
+      "title": "Reschedule Appointment",
+      "dateLabel": "New Date",
+      "visitTypeLabel": "Visit Type",
+      "slotLabel": "New Time Slot",
+      "confirm": "Confirm Reschedule",
+      "confirming": "Rescheduling…",
+      "cancel": "Cancel",
+      "validation": {
+        "dateRequired": "Please select a new date.",
+        "slotRequired": "Please select a time slot."
+      }
+    },
+    "detail": {
+      "title": "Appointment Details",
+      "back": "Back to Appointments",
+      "loading": "Loading appointment…",
+      "notFound": "Appointment not found.",
+      "error": {
+        "loadFailed": "Failed to load appointment"
+      },
+      "fields": {
+        "patient": "Patient",
+        "doctor": "Doctor",
+        "scheduled": "Scheduled",
+        "duration": "Duration",
+        "visitType": "Visit Type",
+        "notes": "Notes",
+        "cancelledAt": "Cancelled At",
+        "cancelReason": "Cancel Reason",
+        "status": "Status",
+        "none": "—"
+      },
+      "related": {
+        "title": "Related Records",
+        "patient": "Patient Profile",
+        "encounter": "Encounter",
+        "invoice": "Invoice",
+        "noEncounter": "No encounter linked",
+        "noInvoice": "No invoice linked",
+        "viewEncounter": "View Encounter",
+        "viewInvoice": "View Invoice",
+        "viewPatient": "View Patient"
+      },
+      "actions": {
+        "createInvoice": "Create Invoice"
+      }
     }
   },
   "queue": {
@@ -1488,4 +1553,3 @@
     }
   }
 }
-

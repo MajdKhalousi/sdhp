@@ -44,6 +44,15 @@ export function useAppointments(query: AppointmentQuery = {}) {
   });
 }
 
+export function useAppointment(id: string) {
+  return useQuery({
+    queryKey: ['appointments', id],
+    queryFn: () => api.get<Appointment>(`/v1/appointments/${id}`),
+    staleTime: 30_000,
+    enabled: !!id,
+  });
+}
+
 export function useCreateAppointment() {
   const qc = useQueryClient();
   return useMutation({

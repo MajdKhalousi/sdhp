@@ -1,13 +1,16 @@
-'use client';
-
 import { Link } from '@/i18n/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { CreateInvoiceForm } from '@/components/billing/create-invoice-form';
 
-export default function NewInvoicePage() {
-  const t = useTranslations('invoice.form');
-  const tDetail = useTranslations('invoice.detail');
+interface Props {
+  searchParams: Promise<{ appointmentId?: string; patientId?: string }>;
+}
+
+export default async function NewInvoicePage({ searchParams }: Props) {
+  const t = await getTranslations('invoice.form');
+  const tDetail = await getTranslations('invoice.detail');
+  const { appointmentId, patientId } = await searchParams;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -26,7 +29,10 @@ export default function NewInvoicePage() {
       </div>
 
       <div className="rounded-xl border border-border bg-card p-6">
-        <CreateInvoiceForm />
+        <CreateInvoiceForm
+          initialPatientId={patientId}
+          appointmentId={appointmentId}
+        />
       </div>
     </div>
   );

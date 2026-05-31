@@ -7,7 +7,8 @@
       "tryAgain": "إعادة المحاولة",
       "back": "رجوع",
       "viewAll": "عرض الكل",
-      "manage": "إدارة"
+      "manage": "إدارة",
+      "view": "عرض"
     },
     "pagination": {
       "previous": "السابق",
@@ -183,6 +184,70 @@
       "confirm": "تأكيد",
       "cancel": "إلغاء",
       "skipping": "…"
+    },
+    "confirm": {
+      "trigger": "تأكيد",
+      "confirming": "جاري التأكيد…",
+      "error": "فشل تأكيد الموعد"
+    },
+    "cancel": {
+      "trigger": "إلغاء الموعد",
+      "heading": "هل تريد إلغاء هذا الموعد؟",
+      "reasonLabel": "السبب (اختياري)",
+      "reasonPlaceholder": "مثال: طلب المريض، تعارض في الجدول",
+      "confirm": "إلغاء الموعد",
+      "back": "رجوع",
+      "cancelling": "جاري الإلغاء…",
+      "error": "فشل إلغاء الموعد"
+    },
+    "reschedule": {
+      "trigger": "إعادة جدولة",
+      "title": "إعادة جدولة الموعد",
+      "dateLabel": "التاريخ الجديد",
+      "visitTypeLabel": "نوع الزيارة",
+      "slotLabel": "الوقت الجديد",
+      "confirm": "تأكيد إعادة الجدولة",
+      "confirming": "جاري إعادة الجدولة…",
+      "cancel": "إلغاء",
+      "validation": {
+        "dateRequired": "يرجى اختيار تاريخ جديد.",
+        "slotRequired": "يرجى اختيار وقت."
+      }
+    },
+    "detail": {
+      "title": "تفاصيل الموعد",
+      "back": "العودة إلى المواعيد",
+      "loading": "تحميل الموعد…",
+      "notFound": "الموعد غير موجود.",
+      "error": {
+        "loadFailed": "فشل تحميل الموعد"
+      },
+      "fields": {
+        "patient": "المريض",
+        "doctor": "الطبيب",
+        "scheduled": "موعد",
+        "duration": "المدة",
+        "visitType": "نوع الزيارة",
+        "notes": "ملاحظات",
+        "cancelledAt": "تاريخ الإلغاء",
+        "cancelReason": "سبب الإلغاء",
+        "status": "الحالة",
+        "none": "—"
+      },
+      "related": {
+        "title": "السجلات المرتبطة",
+        "patient": "ملف المريض",
+        "encounter": "الجلسة الطبية",
+        "invoice": "الفاتورة",
+        "noEncounter": "لا توجد جلسة مرتبطة",
+        "noInvoice": "لا توجد فاتورة مرتبطة",
+        "viewEncounter": "عرض الجلسة",
+        "viewInvoice": "عرض الفاتورة",
+        "viewPatient": "عرض المريض"
+      },
+      "actions": {
+        "createInvoice": "إنشاء فاتورة"
+      }
     }
   },
   "queue": {
@@ -1488,4 +1553,3 @@
     }
   }
 }
-

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Put, Version } from '@nestjs/common';
+import { Body, Controller, Get, Put, Res, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
@@ -6,6 +6,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
+import { Response } from 'express';
 import { ClinicSettingsService } from './clinic-settings.service';
 import { UpsertClinicSettingsDto } from './dto/upsert-clinic-settings.dto';
 import { UpsertWorkingDaysDto } from './dto/upsert-working-days.dto';
@@ -33,8 +34,14 @@ export class ClinicSettingsController {
   )
   @ApiOperation({ summary: 'Get clinic settings and working hours' })
   @ApiOkResponse({ description: 'Clinic settings returned (null if not yet configured)' })
-  getSettings(@CurrentUser() user: JwtPayload) {
-    return this.service.getSettings(user);
+  async getSettings(
+    @CurrentUser() user: JwtPayload,
+    @Res() res: Response,
+  ): Promise<void> {
+    // NestJS serializes a null controller return as an empty body (not JSON null).
+    // Using @Res() ensures res.json(null) sends the literal JSON null the client expects.
+    const result = await this.service.getSettings(user);
+    res.json(result ?? null);
   }
 
   @Put()

@@ -62,4 +62,12 @@ export class CreateAppointmentDto {
   @IsOptional()
   @IsString()
   organizationId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Encounter that prompted this follow-up booking.',
+    example: 'encounter-cuid',
+  })
+  @IsOptional()
+  @IsString()
+  sourceEncounterId?: string;
 }

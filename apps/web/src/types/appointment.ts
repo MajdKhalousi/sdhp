@@ -42,6 +42,7 @@ export interface Appointment {
   patientId: string;
   doctorId: string;
   visitTypeId: string | null;
+  sourceEncounterId: string | null;
   scheduledAt: string;
   durationMin: number;
   status: AppointmentStatus;
@@ -61,6 +62,7 @@ export interface AppointmentQuery {
   date?: string;
   branchId?: string;
   organizationId?: string;
+  sourceEncounterId?: string;
   page?: number;
   limit?: number;
 }
@@ -72,6 +74,7 @@ export interface CreateAppointmentDto {
   durationMin: number;
   visitTypeId?: string;
   notes?: string;
+  sourceEncounterId?: string;
 }
 
 export interface AppointmentsResponse {

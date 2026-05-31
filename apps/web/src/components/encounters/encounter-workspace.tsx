@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { AlertTriangle, Activity, FileText, Stethoscope, Pill, CheckCircle2, FlaskConical, Scan, ClipboardList, ChevronRight } from 'lucide-react';
+import { AlertTriangle, Activity, FileText, Stethoscope, Pill, CheckCircle2, FlaskConical, Scan, ClipboardList, CalendarClock } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useEncounter, useUpdateEncounter } from '@/hooks/use-encounters';
@@ -13,6 +13,7 @@ import { LabOrderPanel } from './lab-order-panel';
 import { RadiologyOrderPanel } from './radiology-order-panel';
 import { ClinicalReportPanel } from './clinical-report-panel';
 import { PreviousEncounterPanel } from './previous-encounter-panel';
+import { FollowUpBookingPanel } from './follow-up-booking-panel';
 import { EndEncounterButton } from './end-encounter-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -103,7 +104,6 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const { mutate: update, isPending: saving } = useUpdateEncounter();
   const { data: allergies = [] } = useAllergies(encounter?.patient.id ?? '');
   const { data: visitTypes } = useVisitTypesList();
-  const followUpVisitType = visitTypes?.find((vt) => vt.code === 'FOLLOW_UP' && vt.isActive) ?? null;
   const { data: appointment } = useAppointment(encounter?.appointmentId ?? '');
   const appointmentVisitType = visitTypes?.find((vt) => vt.id === appointment?.visitTypeId) ?? null;
 
@@ -406,6 +406,19 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
         </div>
       </div>
 
+      {/* ── Follow-up appointment booking ───────────────────────────────── */}
+      {encounter.followUpDate && (
+        <div className="rounded-xl border border-border bg-card p-5">
+          <SectionHeading icon={CalendarClock}>{t('sections.followUpBooking')}</SectionHeading>
+          <FollowUpBookingPanel
+            encounterId={encounterId}
+            patientId={encounter.patient.id}
+            defaultDoctorId={encounter.doctorId}
+            followUpDate={encounter.followUpDate}
+          />
+        </div>
+      )}
+
       {/* ── Prescriptions ───────────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card p-5">
         <SectionHeading icon={Pill}>{t('sections.prescriptions')}</SectionHeading>
@@ -471,22 +484,9 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">{t('complete.followUpLabel')}</p>
-                {encounter.followUpDate ? (
-                  <div className="mt-0.5 flex flex-wrap items-center gap-2">
-                    <p className="text-sm font-medium">
-                      {formatDateTime(encounter.followUpDate, displayLocale)}
-                    </p>
-                    <Link
-                      href={`/dashboard/appointments/new?patientId=${encounter.patientId}&doctorId=${encounter.doctorId}&followUpDate=${encounter.followUpDate.slice(0, 10)}${followUpVisitType ? `&visitTypeId=${followUpVisitType.id}` : ''}`}
-                      className="inline-flex h-6 items-center gap-1 rounded border border-primary/40 px-2 text-xs font-medium text-primary transition-colors hover:bg-primary/5"
-                    >
-                      {t('complete.bookFollowUp')}
-                      <ChevronRight className="h-3 w-3 rtl:rotate-180" />
-                    </Link>
-                  </div>
-                ) : (
-                  <p className="mt-0.5 text-sm font-medium">{t('complete.notScheduled')}</p>
-                )}
+                <p className="mt-0.5 text-sm font-medium">
+                  {encounter.followUpDate ? formatDateTime(encounter.followUpDate, displayLocale) : t('complete.notScheduled')}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">{t('complete.endedLabel')}</p>

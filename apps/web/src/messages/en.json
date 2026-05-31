@@ -356,6 +356,7 @@
       "clinicalNotes": "Chief Complaint & Clinical Notes",
       "vitals": "Vitals & Measurements",
       "diagnosisAndTreatment": "Diagnosis & Treatment Plan",
+      "followUpBooking": "Follow-up Appointment",
       "prescriptions": "Prescriptions",
       "labOrders": "Lab Orders",
       "radiology": "Radiology Orders",
@@ -429,6 +430,23 @@
       "chiefComplaint": "Complaint",
       "diagnosis": "Diagnosis",
       "followUp": "Follow-up"
+    },
+    "followUpBooking": {
+      "bookButton": "Book Follow-up Appointment",
+      "alreadyBooked": "Follow-up Booked",
+      "with": "with",
+      "viewAppointments": "View Appointments",
+      "form": {
+        "doctorLabel": "Doctor",
+        "dateLabel": "Date",
+        "visitTypeLabel": "Visit Type",
+        "visitTypeOptional": "— Optional —",
+        "notesLabel": "Notes (optional)",
+        "slotRequired": "Please select a time slot",
+        "bookingFailed": "Booking failed",
+        "submit": "Book Appointment",
+        "submitting": "Booking…"
+      }
     },
     "error": {
       "loadFailed": "Failed to load encounter",

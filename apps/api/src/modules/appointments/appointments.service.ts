@@ -50,6 +50,7 @@ const SELECT = {
   patientId: true,
   doctorId: true,
   visitTypeId: true,
+  sourceEncounterId: true,
   scheduledAt: true,
   durationMin: true,
   status: true,
@@ -135,12 +136,33 @@ export class AppointmentsService {
     );
     await this.assertNoDoubleBooking(dto.doctorId, scheduledAt, durationMin);
 
+    if (dto.sourceEncounterId) {
+      const enc = await this.prisma.encounter.findFirst({
+        where: { id: dto.sourceEncounterId, organizationId, deletedAt: null },
+        select: { id: true },
+      });
+      if (!enc) throw new BadRequestException('Source encounter not found in this organization');
+
+      const existingFollowUp = await this.prisma.appointment.findFirst({
+        where: {
+          sourceEncounterId: dto.sourceEncounterId,
+          status: { notIn: [AppointmentStatus.CANCELLED] },
+          deletedAt: null,
+        },
+        select: { id: true },
+      });
+      if (existingFollowUp) {
+        throw new ConflictException('Follow-up appointment already exists for this encounter');
+      }
+    }
+
     const result = await this.prisma.appointment.create({
       data: {
         organizationId,
         patientId: dto.patientId,
         doctorId: dto.doctorId,
         visitTypeId: dto.visitTypeId,
+        sourceEncounterId: dto.sourceEncounterId,
         scheduledAt,
         durationMin,
         status: dto.status,
@@ -157,6 +179,20 @@ export class AppointmentsService {
       createdById: caller.sub,
       metadata: { appointmentId: result.id, scheduledAt: result.scheduledAt.toISOString() },
     });
+
+    if (dto.sourceEncounterId) {
+      await this.timelineWriter.log({
+        organizationId,
+        patientId: result.patientId,
+        eventType: MedicalTimelineEventType.FOLLOW_UP_BOOKED,
+        createdById: caller.sub,
+        metadata: {
+          appointmentId: result.id,
+          appointmentDate: result.scheduledAt.toISOString(),
+          doctorId: result.doctorId,
+        },
+      });
+    }
 
     await this.auditWriter.log({
       caller,
@@ -315,6 +351,7 @@ export class AppointmentsService {
       ...(query.patientId ? { patientId: query.patientId } : {}),
       ...(query.branchId ? { branchId: query.branchId } : {}),
       ...(dateFilter ? { scheduledAt: dateFilter } : {}),
+      ...(query.sourceEncounterId ? { sourceEncounterId: query.sourceEncounterId } : {}),
     };
 
     if (caller.role === UserRole.SUPER_ADMIN) {

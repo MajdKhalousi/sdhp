@@ -42,4 +42,9 @@ export class AppointmentQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   organizationId?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by source encounter ID (follow-up bookings)', example: 'encounter-cuid' })
+  @IsOptional()
+  @IsString()
+  sourceEncounterId?: string;
 }

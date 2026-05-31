@@ -63,6 +63,7 @@ enum MedicalTimelineEventType {
   PATIENT_UPDATED
   PATIENT_ARCHIVED
   APPOINTMENT_BOOKED
+  FOLLOW_UP_BOOKED
   CHECKED_IN
   QUEUE_JOINED
   ENCOUNTER_STARTED
@@ -365,37 +366,40 @@ model Allergy {
 // ─────────────────────────────────────────────
 
 model Appointment {
-  id             String            @id @default(cuid())
-  organizationId String
-  branchId       String?
-  patientId      String
-  doctorId       String
-  visitTypeId    String?
-  scheduledAt    DateTime
-  durationMin    Int               @default(15)
-  status         AppointmentStatus @default(SCHEDULED)
-  notes          String?
-  cancelledAt    DateTime?
-  cancelReason   String?
+  id                String            @id @default(cuid())
+  organizationId    String
+  branchId          String?
+  patientId         String
+  doctorId          String
+  visitTypeId       String?
+  sourceEncounterId String?
+  scheduledAt       DateTime
+  durationMin       Int               @default(15)
+  status            AppointmentStatus @default(SCHEDULED)
+  notes             String?
+  cancelledAt       DateTime?
+  cancelReason      String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  branch       Branch?      @relation(fields: [branchId], references: [id])
-  patient      Patient      @relation(fields: [patientId], references: [id])
-  doctor       Doctor       @relation(fields: [doctorId], references: [id])
-  visitType    VisitType?   @relation(fields: [visitTypeId], references: [id])
-  queueEntry   QueueEntry?
-  encounter    Encounter?
-  invoices     Invoice[]
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  branch          Branch?      @relation(fields: [branchId], references: [id])
+  patient         Patient      @relation(fields: [patientId], references: [id])
+  doctor          Doctor       @relation(fields: [doctorId], references: [id])
+  visitType       VisitType?   @relation(fields: [visitTypeId], references: [id])
+  sourceEncounter Encounter?   @relation("FollowUpAppointments", fields: [sourceEncounterId], references: [id])
+  queueEntry      QueueEntry?
+  encounter       Encounter?
+  invoices        Invoice[]
 
   @@index([organizationId])
   @@index([doctorId])
   @@index([visitTypeId])
   @@index([scheduledAt])
   @@index([patientId])
+  @@index([sourceEncounterId])
   @@map("appointments")
 }
 
@@ -447,15 +451,16 @@ model Encounter {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  patient         Patient          @relation(fields: [patientId], references: [id])
-  doctor          Doctor           @relation(fields: [doctorId], references: [id])
-  appointment     Appointment?     @relation(fields: [appointmentId], references: [id])
-  prescriptions   Prescription[]
-  labOrders       LabOrder[]
-  radiologyOrders RadiologyOrder[]
-  medicalFiles    MedicalFile[]
-  invoices        Invoice[]
-  clinicalReports ClinicalReport[]
+  patient              Patient       @relation(fields: [patientId], references: [id])
+  doctor               Doctor        @relation(fields: [doctorId], references: [id])
+  appointment          Appointment?  @relation(fields: [appointmentId], references: [id])
+  followUpAppointments Appointment[] @relation("FollowUpAppointments")
+  prescriptions        Prescription[]
+  labOrders            LabOrder[]
+  radiologyOrders      RadiologyOrder[]
+  medicalFiles         MedicalFile[]
+  invoices             Invoice[]
+  clinicalReports      ClinicalReport[]
 
   @@index([organizationId])
   @@index([doctorId])

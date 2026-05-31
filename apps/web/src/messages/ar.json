@@ -356,6 +356,7 @@
       "clinicalNotes": "الشكوى الرئيسية والملاحظات السريرية",
       "vitals": "العلامات الحيوية والقياسات",
       "diagnosisAndTreatment": "التشخيص وخطة العلاج",
+      "followUpBooking": "موعد المراجعة",
       "prescriptions": "الوصفات الطبية",
       "labOrders": "طلبات المختبر",
       "radiology": "الطلبات الشعاعية",
@@ -429,6 +430,23 @@
       "chiefComplaint": "الشكوى",
       "diagnosis": "التشخيص",
       "followUp": "المراجعة"
+    },
+    "followUpBooking": {
+      "bookButton": "حجز موعد مراجعة",
+      "alreadyBooked": "تم حجز المراجعة",
+      "with": "مع",
+      "viewAppointments": "عرض المواعيد",
+      "form": {
+        "doctorLabel": "الطبيب",
+        "dateLabel": "التاريخ",
+        "visitTypeLabel": "نوع الزيارة",
+        "visitTypeOptional": "— اختياري —",
+        "notesLabel": "ملاحظات (اختياري)",
+        "slotRequired": "الرجاء اختيار وقت",
+        "bookingFailed": "فشل الحجز",
+        "submit": "حجز الموعد",
+        "submitting": "جاري الحجز…"
+      }
     },
     "error": {
       "loadFailed": "فشل تحميل الزيارة",

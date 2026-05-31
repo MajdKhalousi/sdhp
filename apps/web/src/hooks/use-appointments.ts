@@ -26,9 +26,9 @@ interface DoctorsResponse {
 }
 
 export function useAppointments(query: AppointmentQuery = {}) {
-  const { status, doctorId, patientId, date, branchId, organizationId, page, limit } = query;
+  const { status, doctorId, patientId, date, branchId, organizationId, sourceEncounterId, page, limit } = query;
   return useQuery({
-    queryKey: ['appointments', status, doctorId, patientId, date, branchId, organizationId, page, limit],
+    queryKey: ['appointments', status, doctorId, patientId, date, branchId, organizationId, sourceEncounterId, page, limit],
     queryFn: () =>
       api.get<AppointmentsResponse>('/v1/appointments', {
         ...(status?.length ? { status } : {}),
@@ -37,6 +37,7 @@ export function useAppointments(query: AppointmentQuery = {}) {
         ...(date ? { date } : {}),
         ...(branchId ? { branchId } : {}),
         ...(organizationId ? { organizationId } : {}),
+        ...(sourceEncounterId ? { sourceEncounterId } : {}),
         ...(page ? { page } : {}),
         ...(limit ? { limit } : {}),
       }),

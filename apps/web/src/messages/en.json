@@ -422,6 +422,14 @@
       "dob": "DOB",
       "ageYears": "yrs"
     },
+    "previousVisits": {
+      "heading": "Last Visit",
+      "empty": "No previous encounters",
+      "doctorPrefix": "Dr.",
+      "chiefComplaint": "Complaint",
+      "diagnosis": "Diagnosis",
+      "followUp": "Follow-up"
+    },
     "error": {
       "loadFailed": "Failed to load encounter",
       "notFound": "Encounter not found."

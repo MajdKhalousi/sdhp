@@ -12,6 +12,7 @@ import { PrescriptionPanel } from './prescription-panel';
 import { LabOrderPanel } from './lab-order-panel';
 import { RadiologyOrderPanel } from './radiology-order-panel';
 import { ClinicalReportPanel } from './clinical-report-panel';
+import { PreviousEncounterPanel } from './previous-encounter-panel';
 import { EndEncounterButton } from './end-encounter-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -283,6 +284,12 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
           </div>
         </div>
       )}
+
+      {/* ── Previous encounters ─────────────────────────────────────────── */}
+      <PreviousEncounterPanel
+        patientId={patient.id}
+        currentEncounterId={encounterId}
+      />
 
       {/* ── Clinical ────────────────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card p-5">

@@ -422,6 +422,14 @@
       "dob": "ت.م",
       "ageYears": "سنة"
     },
+    "previousVisits": {
+      "heading": "الزيارة السابقة",
+      "empty": "لا توجد زيارات سابقة",
+      "doctorPrefix": "د.",
+      "chiefComplaint": "الشكوى",
+      "diagnosis": "التشخيص",
+      "followUp": "المراجعة"
+    },
     "error": {
       "loadFailed": "فشل تحميل الزيارة",
       "notFound": "الزيارة غير موجودة."

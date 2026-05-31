@@ -13,14 +13,17 @@ import { CheckInButton } from '@/components/queue/check-in-button';
 import { ConfirmButton } from '@/components/appointments/confirm-button';
 import { CancelAppointmentDialog } from '@/components/appointments/cancel-appointment-dialog';
 import { RescheduleDialog } from '@/components/appointments/reschedule-dialog';
+import { useAuthStore } from '@/store/auth';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AppointmentStatus } from '@/types/appointment';
 
 const CONFIRM_ELIGIBLE: AppointmentStatus[]    = ['SCHEDULED'];
 const RESCHEDULE_ELIGIBLE: AppointmentStatus[] = ['SCHEDULED', 'CONFIRMED'];
-const CANCEL_ELIGIBLE: AppointmentStatus[]     = ['SCHEDULED', 'CONFIRMED'];
+const CANCEL_ELIGIBLE: AppointmentStatus[]     = ['SCHEDULED', 'CONFIRMED', 'CHECKED_IN', 'IN_QUEUE', 'IN_PROGRESS'];
 const CHECKIN_ELIGIBLE: AppointmentStatus[]    = ['SCHEDULED', 'CONFIRMED'];
 const INVOICE_ELIGIBLE: AppointmentStatus[]    = ['COMPLETED', 'IN_PROGRESS'];
+
+const APPOINTMENT_MUTATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
 
 function formatDateTime(iso: string, locale = 'en-US') {
   return new Date(iso).toLocaleString(locale, {
@@ -46,7 +49,10 @@ export default function AppointmentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const t = useTranslations('appointment.detail');
   const tAppt = useTranslations('appointment');
+  const tInvoice = useTranslations('invoice');
   const locale = useLocale();
+  const { user } = useAuthStore();
+  const canMutate = user ? APPOINTMENT_MUTATE_ROLES.has(user.role) : false;
   const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
 
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
@@ -55,7 +61,8 @@ export default function AppointmentDetailPage() {
   const { data: visitTypes } = useVisitTypesList();
 
   const { data: encountersData } = useEncounters(
-    appointment ? { patientId: appointment.patientId } : {},
+    { patientId: appointment?.patientId },
+    { enabled: !!appointment?.patientId },
   );
   const { data: patientInvoices } = usePatientInvoices(appointment?.patientId ?? '');
 
@@ -212,10 +219,10 @@ export default function AppointmentDetailPage() {
             {CHECKIN_ELIGIBLE.includes(status) && (
               <CheckInButton appointmentId={appointment.id} />
             )}
-            {CONFIRM_ELIGIBLE.includes(status) && (
+            {canMutate && CONFIRM_ELIGIBLE.includes(status) && (
               <ConfirmButton appointmentId={appointment.id} />
             )}
-            {RESCHEDULE_ELIGIBLE.includes(status) && (
+            {canMutate && RESCHEDULE_ELIGIBLE.includes(status) && (
               <button
                 onClick={() => setRescheduleOpen(true)}
                 className="h-9 rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent"
@@ -223,7 +230,7 @@ export default function AppointmentDetailPage() {
                 {tAppt('reschedule.trigger')}
               </button>
             )}
-            {CANCEL_ELIGIBLE.includes(status) && (
+            {canMutate && CANCEL_ELIGIBLE.includes(status) && (
               <CancelAppointmentDialog appointmentId={appointment.id} />
             )}
             {INVOICE_ELIGIBLE.includes(status) && !linkedInvoice && (
@@ -278,7 +285,7 @@ export default function AppointmentDetailPage() {
                   href={`/dashboard/invoices/${linkedInvoice.id}`}
                   className="text-sm font-medium text-primary hover:underline"
                 >
-                  {linkedInvoice.invoiceNumber} — {linkedInvoice.status}
+                  {linkedInvoice.invoiceNumber} — {tInvoice(`status.${linkedInvoice.status}` as Parameters<typeof tInvoice>[0])}
                 </Link>
               ) : (
                 <span className="text-sm text-muted-foreground">{t('related.noInvoice')}</span>

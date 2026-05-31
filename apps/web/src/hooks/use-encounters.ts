@@ -16,11 +16,12 @@ export interface EncounterListParams {
   limit?: number;
 }
 
-export function useEncounters(params: EncounterListParams = {}) {
+export function useEncounters(params: EncounterListParams = {}, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ['encounters', params],
     queryFn: () => api.get<EncounterListResponse>('/v1/encounters', params as Record<string, unknown>),
     staleTime: 30_000,
+    enabled: options.enabled ?? true,
   });
 }
 

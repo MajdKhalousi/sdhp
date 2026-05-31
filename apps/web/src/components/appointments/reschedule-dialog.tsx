@@ -23,7 +23,6 @@ const INITIAL: FormState = { date: '', visitTypeId: '', selectedSlot: '' };
 
 export function RescheduleDialog({ appointment, onClose }: Props) {
   const t = useTranslations('appointment.reschedule');
-  const tCommon = useTranslations('common');
 
   const [form, setForm] = useState<FormState>(INITIAL);
   const [selectedVisitType, setSelectedVisitType] = useState<VisitType | null>(null);

@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, CalendarX2 } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAppointments, useDoctorsList } from '@/hooks/use-appointments';
+import { useAuthStore } from '@/store/auth';
 import { AppointmentStatusBadge } from './appointment-status-badge';
 import { CheckInButton } from '@/components/queue/check-in-button';
 import { NoShowButton } from './no-show-button';
@@ -19,7 +20,9 @@ const CONFIRM_ELIGIBLE: AppointmentStatus[]    = ['SCHEDULED'];
 const CHECKIN_ELIGIBLE: AppointmentStatus[]    = ['SCHEDULED', 'CONFIRMED'];
 const NOSHOW_ELIGIBLE: AppointmentStatus[]     = ['SCHEDULED', 'CONFIRMED'];
 const RESCHEDULE_ELIGIBLE: AppointmentStatus[] = ['SCHEDULED', 'CONFIRMED'];
-const CANCEL_ELIGIBLE: AppointmentStatus[]     = ['SCHEDULED', 'CONFIRMED'];
+const CANCEL_ELIGIBLE: AppointmentStatus[]     = ['SCHEDULED', 'CONFIRMED', 'CHECKED_IN', 'IN_QUEUE', 'IN_PROGRESS'];
+
+const APPOINTMENT_MUTATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
 
 const ALL_STATUSES: AppointmentStatus[] = [
   'SCHEDULED', 'CONFIRMED', 'CHECKED_IN', 'IN_QUEUE',
@@ -42,6 +45,8 @@ export function AppointmentList() {
   const t = useTranslations('appointment');
   const tCommon = useTranslations('common');
   const locale = useLocale();
+  const { user } = useAuthStore();
+  const canMutate = user ? APPOINTMENT_MUTATE_ROLES.has(user.role) : false;
   const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
 
   const searchParams = useSearchParams();
@@ -261,12 +266,12 @@ export function AppointmentList() {
                       {CHECKIN_ELIGIBLE.includes(appt.status) && (
                         <CheckInButton appointmentId={appt.id} />
                       )}
-                      {CONFIRM_ELIGIBLE.includes(appt.status) && (
+                      {canMutate && CONFIRM_ELIGIBLE.includes(appt.status) && (
                         <ConfirmButton appointmentId={appt.id} />
                       )}
                     </div>
                     <div className="flex flex-wrap items-center justify-end gap-1.5">
-                      {RESCHEDULE_ELIGIBLE.includes(appt.status) && (
+                      {canMutate && RESCHEDULE_ELIGIBLE.includes(appt.status) && (
                         <button
                           onClick={() => setRescheduleAppt(appt)}
                           className="h-6 rounded border px-2 text-xs text-muted-foreground transition-colors hover:bg-accent"
@@ -277,7 +282,7 @@ export function AppointmentList() {
                       {NOSHOW_ELIGIBLE.includes(appt.status) && (
                         <NoShowButton appointmentId={appt.id} />
                       )}
-                      {CANCEL_ELIGIBLE.includes(appt.status) && (
+                      {canMutate && CANCEL_ELIGIBLE.includes(appt.status) && (
                         <CancelAppointmentDialog appointmentId={appt.id} />
                       )}
                     </div>

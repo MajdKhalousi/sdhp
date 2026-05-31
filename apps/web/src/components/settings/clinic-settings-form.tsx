@@ -61,8 +61,8 @@ export function ClinicSettingsForm({ settings, upsert }: Props) {
 
   const [values, setValues] = useState<FormState>({
     defaultSlotMin: String(settings?.defaultSlotMin ?? 20),
-    lunchStartTime: settings?.lunchStartTime ?? '13:00',
-    lunchEndTime:   settings?.lunchEndTime   ?? '14:00',
+    lunchStartTime: settings?.lunchStartTime ?? '',
+    lunchEndTime:   settings?.lunchEndTime   ?? '',
     timezone:       settings?.timezone       ?? 'Asia/Damascus',
   });
   const [errors, setErrors]       = useState<FormErrors>({});
@@ -72,9 +72,9 @@ export function ClinicSettingsForm({ settings, upsert }: Props) {
   useEffect(() => {
     if (settings) {
       setValues({
-        defaultSlotMin: String(settings.defaultSlotMin),
-        lunchStartTime: settings.lunchStartTime ?? '13:00',
-        lunchEndTime:   settings.lunchEndTime   ?? '14:00',
+        defaultSlotMin: String(settings.defaultSlotMin ?? 20),
+        lunchStartTime: settings.lunchStartTime ?? '',
+        lunchEndTime:   settings.lunchEndTime   ?? '',
         timezone:       settings.timezone       ?? 'Asia/Damascus',
       });
     }

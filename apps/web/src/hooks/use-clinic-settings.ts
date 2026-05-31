@@ -31,7 +31,14 @@ function normalizeList<T>(raw: MaybeList<T>): T[] {
 export function useClinicSettings() {
   return useQuery({
     queryKey: ['clinic-settings'],
-    queryFn: () => api.get<ClinicSettings | null>('/v1/clinic-settings'),
+    queryFn: () =>
+      api.get<ClinicSettings | null>('/v1/clinic-settings').catch((err: unknown) => {
+        // Settings row may not exist yet for a new org — treat "not found" as null
+        // so the page renders the default editable form instead of an error banner.
+        const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+        if (msg.includes('not found') || msg.includes('404')) return null;
+        throw err;
+      }),
     staleTime: 60_000,
   });
 }

@@ -28,8 +28,9 @@ interface RowError {
 }
 
 function initRows(workingDays: ClinicWorkingDay[]): DayRow[] {
+  const days = Array.isArray(workingDays) ? workingDays : [];
   return Array.from({ length: 7 }, (_, i) => {
-    const day = workingDays.find((d) => d.dayOfWeek === i);
+    const day = days.find((d) => d.dayOfWeek === i);
     return {
       dayOfWeek: i,
       isOpen:    day?.isOpen    ?? false,

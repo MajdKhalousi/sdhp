@@ -1467,6 +1467,9 @@
           "loadFailed": "Failed to load schedule",
           "saveFailed": "Failed to save schedule"
         },
+        "validation": {
+          "timeOrder": "End time must be later than start time."
+        },
         "empty": {
           "heading": "No schedule configured",
           "subtext": "Set the weekly working hours for this doctor."

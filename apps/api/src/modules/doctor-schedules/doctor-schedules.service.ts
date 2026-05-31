@@ -85,6 +85,14 @@ export class DoctorSchedulesService {
       throw new BadRequestException('Duplicate dayOfWeek entries in schedule');
     }
 
+    for (const d of dto.days) {
+      if ((d.isActive ?? true) && toMinutes(d.startTime) >= toMinutes(d.endTime)) {
+        throw new BadRequestException(
+          `Day ${d.dayOfWeek}: end time must be later than start time`,
+        );
+      }
+    }
+
     await this.prisma.$transaction([
       this.prisma.doctorSchedule.deleteMany({ where: { doctorId } }),
       this.prisma.doctorSchedule.createMany({

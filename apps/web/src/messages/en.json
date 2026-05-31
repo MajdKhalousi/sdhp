@@ -419,7 +419,8 @@
     "header": {
       "doctorPrefix": "Dr.",
       "mrn": "MRN",
-      "dob": "DOB"
+      "dob": "DOB",
+      "ageYears": "yrs"
     },
     "error": {
       "loadFailed": "Failed to load encounter",

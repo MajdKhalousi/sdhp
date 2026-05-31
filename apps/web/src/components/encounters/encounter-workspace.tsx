@@ -5,7 +5,7 @@ import { AlertTriangle, Activity, FileText, Stethoscope, Pill, CheckCircle2, Fla
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useEncounter, useUpdateEncounter } from '@/hooks/use-encounters';
-import { useVisitTypesList } from '@/hooks/use-appointments';
+import { useAppointment, useVisitTypesList } from '@/hooks/use-appointments';
 import { useAllergies } from '@/hooks/use-allergies';
 import { VitalsForm } from './vitals-form';
 import { PrescriptionPanel } from './prescription-panel';
@@ -54,6 +54,16 @@ function formatDateTime(iso: string | null, locale = 'en-US') {
   });
 }
 
+function computeAge(dob: string | null): number | null {
+  if (!dob) return null;
+  const birth = new Date(dob);
+  const now = new Date();
+  let age = now.getFullYear() - birth.getFullYear();
+  const m = now.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+  return age >= 0 ? age : null;
+}
+
 function SectionHeading({
   children,
   icon: Icon,
@@ -93,6 +103,8 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const { data: allergies = [] } = useAllergies(encounter?.patient.id ?? '');
   const { data: visitTypes } = useVisitTypesList();
   const followUpVisitType = visitTypes?.find((vt) => vt.code === 'FOLLOW_UP' && vt.isActive) ?? null;
+  const { data: appointment } = useAppointment(encounter?.appointmentId ?? '');
+  const appointmentVisitType = visitTypes?.find((vt) => vt.id === appointment?.visitTypeId) ?? null;
 
   const [form, setForm] = useState<WorkspaceForm | null>(null);
   const [savedAt, setSavedAt] = useState<string | null>(null);
@@ -198,6 +210,10 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const { patient, doctor } = encounter;
   const isEnded = !!encounter.endedAt;
   const readOnly = isEnded || saving;
+  const patientAge = computeAge(patient.dateOfBirth);
+  const visitTypeName = appointmentVisitType
+    ? ((locale === 'ar' && appointmentVisitType.nameAr) || appointmentVisitType.name)
+    : null;
 
   return (
     <div className="space-y-6">
@@ -212,8 +228,11 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
             </h2>
             <p className="text-sm text-muted-foreground">
               {t('header.mrn')} {patient.mrn}
-              {patient.dateOfBirth && ` · ${t('header.dob')} ${formatDate(patient.dateOfBirth, displayLocale)}`}
+              {patientAge !== null && ` · ${patientAge} ${t('header.ageYears')}`}
               {patient.gender && ` · ${localizeGender(patient.gender)}`}
+              {visitTypeName && (
+                <>{' · '}<span className="font-medium text-foreground">{visitTypeName}</span></>
+              )}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
               {t('header.doctorPrefix')} {doctor.user.firstName} {doctor.user.lastName}
@@ -225,7 +244,14 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
               {isEnded ? t('status.completed') : t('status.inProgress')}
             </Badge>
             <span>{t('timestamps.started')} {formatDateTime(encounter.startedAt ?? encounter.createdAt, displayLocale)}</span>
-            {isEnded && <span>{t('timestamps.ended')} {formatDateTime(encounter.endedAt, displayLocale)}</span>}
+            {isEnded && (
+              <span>
+                {t('timestamps.ended')}{' '}
+                <span className="font-medium text-foreground">
+                  {formatDateTime(encounter.endedAt, displayLocale)}
+                </span>
+              </span>
+            )}
           </div>
         </div>
       </div>

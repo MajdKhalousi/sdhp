@@ -419,7 +419,8 @@
     "header": {
       "doctorPrefix": "د.",
       "mrn": "MRN",
-      "dob": "ت.م"
+      "dob": "ت.م",
+      "ageYears": "سنة"
     },
     "error": {
       "loadFailed": "فشل تحميل الزيارة",

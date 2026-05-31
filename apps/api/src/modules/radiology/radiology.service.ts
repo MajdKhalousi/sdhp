@@ -116,10 +116,21 @@ export class RadiologyService {
       await this.assertEncounterBelongsToOrgAndPatient(dto.encounterId, orgId, dto.patientId);
     }
 
+    // DOCTOR: orderedById auto-resolved from caller profile.
+    // Non-DOCTOR + encounterId: derive from encounter.doctorId (encounter workspace flow).
+    // Non-DOCTOR + no encounterId: required from request body (direct API usage).
     let orderedById: string;
     if (caller.role === UserRole.DOCTOR) {
       const doctor = await this.resolveCallerDoctor(caller);
       orderedById = doctor.id;
+    } else if (dto.encounterId) {
+      const enc = await this.prisma.encounter.findFirst({
+        where: { id: dto.encounterId, deletedAt: null },
+        select: { doctorId: true },
+      });
+      if (!enc) throw new BadRequestException('Encounter not found');
+      await this.assertDoctorBelongsToOrg(enc.doctorId, orgId);
+      orderedById = enc.doctorId;
     } else {
       if (!dto.orderedById) throw new BadRequestException('orderedById is required');
       await this.assertDoctorBelongsToOrg(dto.orderedById, orgId);

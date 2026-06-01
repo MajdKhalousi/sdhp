@@ -455,6 +455,15 @@
       "loadFailed": "فشل تحميل الزيارة",
       "notFound": "الزيارة غير موجودة."
     },
+    "billing": {
+      "unpaidWarningTitle": "فاتورة غير مدفوعة",
+      "unpaidWarningDescription": "يوجد على هذا المريض فاتورة غير مدفوعة.",
+      "invoiceNumber": "الفاتورة",
+      "total": "الإجمالي",
+      "paid": "المدفوع",
+      "remaining": "المتبقي",
+      "viewInvoice": "عرض الفاتورة"
+    },
     "prescription": {
       "empty": "لم توصَف أي أدوية لهذه الزيارة.",
       "addMedication": "إضافة دواء",

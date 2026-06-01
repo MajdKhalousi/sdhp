@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { AlertTriangle, Activity, FileText, Stethoscope, Pill, CheckCircle2, FlaskConical, Scan, ClipboardList, CalendarClock } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { AlertTriangle, Activity, FileText, Stethoscope, Pill, CheckCircle2, FlaskConical, Scan, ClipboardList, CalendarClock, Receipt } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useEncounter, useUpdateEncounter } from '@/hooks/use-encounters';
 import { useAppointment, useVisitTypesList } from '@/hooks/use-appointments';
 import { useAllergies } from '@/hooks/use-allergies';
+import { usePatientInvoices } from '@/hooks/use-invoices';
+import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import { VitalsForm } from './vitals-form';
 import { PrescriptionPanel } from './prescription-panel';
 import { LabOrderPanel } from './lab-order-panel';
@@ -18,6 +20,7 @@ import { EndEncounterButton } from './end-encounter-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { VitalsPayload, UpdateEncounterPayload } from '@/types/encounter';
+import type { InvoiceStatus } from '@/types/invoice';
 
 interface WorkspaceForm {
   chiefComplaint: string;
@@ -55,6 +58,20 @@ function formatDateTime(iso: string | null, locale = 'en-US') {
     hour: 'numeric', minute: '2-digit',
   });
 }
+
+function fmtAmount(value: string, locale: string): string {
+  const num = parseFloat(value);
+  if (isNaN(num)) return '—';
+  return (
+    new Intl.NumberFormat(locale, { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(num) + ' SYP'
+  );
+}
+
+const UNPAID_PRIORITY: Partial<Record<InvoiceStatus, number>> = {
+  DRAFT:          0,
+  ISSUED:         1,
+  PARTIALLY_PAID: 2,
+};
 
 function computeAge(dob: string | null): number | null {
   if (!dob) return null;
@@ -106,6 +123,15 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const { data: visitTypes } = useVisitTypesList();
   const { data: appointment } = useAppointment(encounter?.appointmentId ?? '');
   const appointmentVisitType = visitTypes?.find((vt) => vt.id === appointment?.visitTypeId) ?? null;
+  const { data: patientInvoices } = usePatientInvoices(encounter?.patient.id ?? '');
+  const unpaidInvoice = useMemo(() => {
+    if (!patientInvoices) return null;
+    return (
+      patientInvoices
+        .filter((inv) => UNPAID_PRIORITY[inv.status] !== undefined)
+        .sort((a, b) => (UNPAID_PRIORITY[a.status] ?? 99) - (UNPAID_PRIORITY[b.status] ?? 99))[0] ?? null
+    );
+  }, [patientInvoices]);
 
   const [form, setForm] = useState<WorkspaceForm | null>(null);
   const [savedAt, setSavedAt] = useState<string | null>(null);
@@ -284,6 +310,39 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
           </div>
         </div>
       )}
+
+      {/* ── Unpaid invoice banner ────────────────────────────────────────── */}
+      {unpaidInvoice && (() => {
+        const remaining = Math.max(
+          0,
+          parseFloat(unpaidInvoice.totalAmount) - parseFloat(unpaidInvoice.paidAmount),
+        );
+        return (
+          <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/40 dark:bg-amber-950/20">
+            <Receipt className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
+                {t('billing.unpaidWarningTitle')}
+              </p>
+              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-amber-700/80 dark:text-amber-400/80">
+                <span>{t('billing.invoiceNumber')} <span dir="ltr" className="font-mono">{unpaidInvoice.invoiceNumber}</span></span>
+                <InvoiceStatusBadge status={unpaidInvoice.status} />
+                <span>{t('billing.total')} {fmtAmount(unpaidInvoice.totalAmount, displayLocale)}</span>
+                <span>{t('billing.paid')} {fmtAmount(unpaidInvoice.paidAmount, displayLocale)}</span>
+                <span>{t('billing.remaining')} {fmtAmount(String(remaining), displayLocale)}</span>
+              </div>
+              <div className="mt-1.5">
+                <Link
+                  href={`/dashboard/invoices/${unpaidInvoice.id}`}
+                  className="text-xs font-medium text-amber-700 underline hover:no-underline dark:text-amber-400"
+                >
+                  {t('billing.viewInvoice')}
+                </Link>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Previous encounters ─────────────────────────────────────────── */}
       <PreviousEncounterPanel

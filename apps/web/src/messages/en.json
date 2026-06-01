@@ -455,6 +455,15 @@
       "loadFailed": "Failed to load encounter",
       "notFound": "Encounter not found."
     },
+    "billing": {
+      "unpaidWarningTitle": "Unpaid invoice",
+      "unpaidWarningDescription": "This patient has an unpaid invoice.",
+      "invoiceNumber": "Invoice",
+      "total": "Total",
+      "paid": "Paid",
+      "remaining": "Remaining",
+      "viewInvoice": "View invoice"
+    },
     "prescription": {
       "empty": "No medications prescribed for this encounter.",
       "addMedication": "Add Medication",

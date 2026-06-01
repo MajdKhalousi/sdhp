@@ -310,14 +310,18 @@ export class AppointmentsService {
             sourceEncounterId: result.sourceEncounterId,
           },
           caller.sub,
-        ).catch(() => { /* billing error must not surface to caller */ });
+           ).catch((error) => {
+            console.error('AUTO_INVOICE_FAILED', error);
+            });
       } else if (
         dto.status === AppointmentStatus.CANCELLED ||
         dto.status === AppointmentStatus.NO_SHOW
       ) {
         // Auto-cancel the DRAFT invoice if one exists; ISSUED/PAID are never touched.
         await this.billingService.autoCancelDraftInvoiceForAppointment(id)
-          .catch(() => { /* billing error must not surface to caller */ });
+          .catch((error) => {
+          console.error('AUTO_CANCEL_DRAFT_INVOICE_FAILED', error);
+          });;
       }
     } else {
       await this.auditWriter.log({

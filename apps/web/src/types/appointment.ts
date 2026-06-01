@@ -32,6 +32,10 @@ export interface DoctorRef {
   id: string;
   specialization: string | null;
   consultationMinutes: number;
+  departmentId?: string | null;
+  isActive?: boolean;
+  licenseNumber?: string | null;
+  maxPatientsPerDay?: number | null;
   user: DoctorUserRef;
 }
 

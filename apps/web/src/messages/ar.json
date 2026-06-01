@@ -1705,7 +1705,8 @@
         "name": "الاسم",
         "specialization": "التخصص",
         "status": "الحالة",
-        "actions": "الإجراءات"
+        "actions": "الإجراءات",
+        "department": "القسم"
       },
       "manageSchedule": "إدارة الجدول",
       "empty": {
@@ -1713,7 +1714,29 @@
         "subtext": "سيظهر الأطباء هنا بعد إضافتهم للمنظومة."
       },
       "error": {
-        "loadFailed": "فشل تحميل قائمة الأطباء"
+        "loadFailed": "فشل تحميل قائمة الأطباء",
+        "updateFailed": "فشل تحديث بيانات الطبيب"
+      },
+      "status": {
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
+      "actions": {
+        "edit": "تعديل",
+        "save": "حفظ",
+        "saving": "جارٍ الحفظ…",
+        "cancel": "إلغاء"
+      },
+      "form": {
+        "specialization": "الاختصاص",
+        "department": "القسم",
+        "consultationMinutes": "مدة المعاينة بالدقائق",
+        "isActive": "نشط",
+        "noDepartment": "بدون قسم"
+      },
+      "validation": {
+        "specializationMin": "يجب أن يكون الاختصاص حرفين على الأقل.",
+        "consultationMin": "يجب أن تكون مدة المعاينة 5 دقائق على الأقل."
       }
     },
     "schedule": {

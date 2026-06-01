@@ -1705,7 +1705,8 @@
         "name": "Name",
         "specialization": "Specialization",
         "status": "Status",
-        "actions": "Actions"
+        "actions": "Actions",
+        "department": "Department"
       },
       "manageSchedule": "Manage Schedule",
       "empty": {
@@ -1713,7 +1714,29 @@
         "subtext": "Doctors will appear here once added to the organization."
       },
       "error": {
-        "loadFailed": "Failed to load doctors"
+        "loadFailed": "Failed to load doctors",
+        "updateFailed": "Failed to update doctor"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "actions": {
+        "edit": "Edit",
+        "save": "Save",
+        "saving": "Saving…",
+        "cancel": "Cancel"
+      },
+      "form": {
+        "specialization": "Specialization",
+        "department": "Department",
+        "consultationMinutes": "Consultation minutes",
+        "isActive": "Active",
+        "noDepartment": "No department"
+      },
+      "validation": {
+        "specializationMin": "Specialization must be at least 2 characters.",
+        "consultationMin": "Consultation minutes must be at least 5."
       }
     },
     "schedule": {

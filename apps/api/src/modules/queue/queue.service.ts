@@ -2,6 +2,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { AppointmentStatus, Prisma, QueueStatus, UserRole } from '@prisma/client';
@@ -14,6 +15,7 @@ import { QueueQueryDto } from './dto/queue-query.dto';
 import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
 import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
 import { MedicalTimelineEventType } from '@prisma/client';
+import { BillingService } from '../billing/billing.service';
 
 const PATIENT_SELECT = {
   id: true,
@@ -46,6 +48,9 @@ const APPOINTMENT_SELECT = {
   scheduledAt: true,
   status: true,
   branchId: true,
+  patientId: true,
+  visitTypeId: true,
+  sourceEncounterId: true,
   patient: { select: PATIENT_SELECT },
   doctor: { select: DOCTOR_SELECT },
 } as const;
@@ -85,10 +90,13 @@ const QUEUE_TO_APPOINTMENT_STATUS: Partial<Record<QueueStatus, AppointmentStatus
 
 @Injectable()
 export class QueueService {
+  private readonly logger = new Logger(QueueService.name);
+
   constructor(
     private prisma: PrismaService,
     private auditWriter: AuditLogsWriterService,
     private timelineWriter: MedicalTimelineWriterService,
+    private billingService: BillingService,
   ) {}
 
   async findAll(query: QueueQueryDto, caller: JwtPayload): Promise<PaginatedResponse<QueueEntryRecord>> {
@@ -186,6 +194,22 @@ export class QueueService {
           createdById: caller.sub,
           metadata: { appointmentId: dto.appointmentId, ticketNumber: entry.ticketNumber },
         });
+
+        // Auto-invoice: non-blocking; failure must never prevent check-in.
+        await this.billingService.autoCreateInvoiceForAppointment(
+          {
+            id: dto.appointmentId,
+            organizationId,
+            branchId: entry.appointment.branchId,
+            patientId: entry.appointment.patient.id,
+            visitTypeId: entry.appointment.visitTypeId,
+            sourceEncounterId: entry.appointment.sourceEncounterId,
+          },
+          caller.sub,
+        ).catch((err) => {
+          this.logger.error(`AUTO_INVOICE_FAILED appointmentId=${dto.appointmentId}`, err);
+        });
+
         return entry;
       } catch (e) {
         if (!(e instanceof Prisma.PrismaClientKnownRequestError) || e.code !== 'P2002') throw e;

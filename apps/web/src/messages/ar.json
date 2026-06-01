@@ -677,7 +677,9 @@
       "inactive": "غير نشط"
     },
     "header": {
-      "dob": "تاريخ الميلاد:"
+      "dob": "تاريخ الميلاد:",
+      "outstandingBalance": "مستحق: {amount}",
+      "outstandingInvoices": "{count} فاتورة غير مدفوعة"
     },
     "list": {
       "title": "المرضى",

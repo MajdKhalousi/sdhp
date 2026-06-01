@@ -4,6 +4,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { Patient } from '@/hooks/use-patient';
+import { usePatientOutstandingBalance } from '@/hooks/use-invoices';
 
 interface PatientHeaderProps {
   patient?: Patient;
@@ -24,6 +25,15 @@ function formatBloodType(raw: string | null): string {
   return raw.replace('_POS', '+').replace('_NEG', '−');
 }
 
+function formatAmount(value: number, locale: string): string {
+  return (
+    new Intl.NumberFormat(locale === 'ar' ? 'ar-SY' : 'en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(value) + ' SYP'
+  );
+}
+
 function Initials({ name }: { name: string }) {
   const parts = name.trim().split(' ');
   const initials = parts.length >= 2
@@ -40,6 +50,7 @@ export function PatientHeader({ patient, isLoading }: PatientHeaderProps) {
   const t = useTranslations('patient');
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const { data: outstandingBalance } = usePatientOutstandingBalance(patient?.id);
 
   if (isLoading) {
     return (
@@ -73,6 +84,16 @@ export function PatientHeader({ patient, isLoading }: PatientHeaderProps) {
             <Badge variant={patient.isActive ? 'success' : 'outline'}>
               {patient.isActive ? t('status.active') : t('status.inactive')}
             </Badge>
+            {outstandingBalance && outstandingBalance.outstandingAmount > 0 && (
+              <Badge
+                variant="warning"
+                title={t('header.outstandingInvoices', { count: outstandingBalance.invoiceCount })}
+              >
+                {t('header.outstandingBalance', {
+                  amount: formatAmount(outstandingBalance.outstandingAmount, locale),
+                })}
+              </Badge>
+            )}
           </div>
 
           <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">

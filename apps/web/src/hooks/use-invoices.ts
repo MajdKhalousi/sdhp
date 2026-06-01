@@ -144,3 +144,19 @@ export function useServicesList() {
     staleTime: 60_000,
   });
 }
+
+export interface PatientOutstandingBalance {
+  outstandingAmount: number;
+  invoiceCount: number;
+  oldestUnpaidAt: string | null;
+}
+
+export function usePatientOutstandingBalance(patientId: string | undefined) {
+  return useQuery({
+    queryKey: ['patient-outstanding-balance', patientId],
+    queryFn: () =>
+      api.get<PatientOutstandingBalance>(`/v1/patients/${patientId}/outstanding-balance`),
+    staleTime: 30_000,
+    enabled: !!patientId,
+  });
+}

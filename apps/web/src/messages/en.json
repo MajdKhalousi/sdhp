@@ -677,7 +677,9 @@
       "inactive": "Inactive"
     },
     "header": {
-      "dob": "DOB:"
+      "dob": "DOB:",
+      "outstandingBalance": "Outstanding: {amount}",
+      "outstandingInvoices": "{count} unpaid invoice"
     },
     "list": {
       "title": "Patients",

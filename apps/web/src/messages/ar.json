@@ -1346,7 +1346,8 @@
       "visitTypes": "أنواع الزيارات",
       "services": "الخدمات",
       "billing": "الفواتير",
-      "departments": "الأقسام"
+      "departments": "الأقسام",
+      "staff": "الموظفون"
     },
     "clinic": {
       "title": "إعدادات العيادة",
@@ -1618,6 +1619,81 @@
         "loadFailed": "فشل تحميل الأقسام",
         "saveFailed": "فشل حفظ القسم",
         "deleteFailed": "فشل حذف القسم"
+      }
+    },
+    "staff": {
+      "title": "الموظفون",
+      "subtitle": "إدارة أعضاء الفريق وصلاحياتهم",
+      "newStaff": "موظف جديد",
+      "showInactive": "إظهار غير النشطين",
+      "deactivate": "تعطيل",
+      "deactivating": "جارٍ التعطيل…",
+      "deactivateConfirm": "تعطيل هذا الموظف؟ سيفقد الوصول إلى النظام.",
+      "columns": {
+        "name": "الاسم",
+        "phone": "الهاتف",
+        "email": "البريد الإلكتروني",
+        "role": "الدور",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "form": {
+        "createTitle": "موظف جديد",
+        "editTitle": "تعديل بيانات الموظف",
+        "fields": {
+          "firstName": "الاسم الأول",
+          "lastName": "الاسم الأخير",
+          "firstNameAr": "الاسم الأول (بالعربية)",
+          "lastNameAr": "الاسم الأخير (بالعربية)",
+          "phone": "الهاتف",
+          "email": "البريد الإلكتروني",
+          "password": "كلمة المرور",
+          "role": "الدور",
+          "isActive": "نشط"
+        },
+        "placeholders": {
+          "phone": "مثال: 963912345678+",
+          "email": "مثال: staff@clinic.com",
+          "password": "8 أحرف على الأقل"
+        },
+        "validation": {
+          "firstNameRequired": "الاسم الأول مطلوب.",
+          "lastNameRequired": "الاسم الأخير مطلوب.",
+          "phoneRequired": "الهاتف مطلوب.",
+          "passwordRequired": "كلمة المرور مطلوبة (8 أحرف على الأقل).",
+          "roleRequired": "الدور مطلوب.",
+          "emailFormat": "أدخل عنوان بريد إلكتروني صحيح."
+        },
+        "actions": {
+          "create": "إنشاء",
+          "creating": "جارٍ الإنشاء…",
+          "save": "حفظ",
+          "saving": "جارٍ الحفظ…",
+          "cancel": "إلغاء"
+        }
+      },
+      "roles": {
+        "ORG_ADMIN": "مدير",
+        "SECRETARY": "سكرتير",
+        "DOCTOR": "طبيب",
+        "NURSE": "ممرض",
+        "ACCOUNTANT": "محاسب",
+        "TECHNICIAN": "تقني"
+      },
+      "status": {
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
+      "empty": {
+        "heading": "لا يوجد موظفون بعد",
+        "subtext": "أضف موظفين لإدارة الوصول إلى العيادة."
+      },
+      "error": {
+        "loadFailed": "فشل تحميل الموظفين",
+        "saveFailed": "فشل حفظ بيانات الموظف",
+        "deleteFailed": "فشل تعطيل الموظف",
+        "phoneConflict": "رقم الهاتف أو البريد الإلكتروني مستخدم بالفعل.",
+        "emailConflict": "رقم الهاتف أو البريد الإلكتروني مستخدم بالفعل."
       }
     }
   },

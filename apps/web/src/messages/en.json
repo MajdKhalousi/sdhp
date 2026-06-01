@@ -1346,7 +1346,8 @@
       "visitTypes": "Visit Types",
       "services": "Services",
       "billing": "Billing",
-      "departments": "Departments"
+      "departments": "Departments",
+      "staff": "Staff"
     },
     "clinic": {
       "title": "Clinic Settings",
@@ -1618,6 +1619,81 @@
         "loadFailed": "Failed to load departments",
         "saveFailed": "Failed to save department",
         "deleteFailed": "Failed to delete department"
+      }
+    },
+    "staff": {
+      "title": "Staff",
+      "subtitle": "Manage staff members and their access",
+      "newStaff": "New Staff Member",
+      "showInactive": "Show inactive",
+      "deactivate": "Deactivate",
+      "deactivating": "Deactivating…",
+      "deactivateConfirm": "Deactivate this staff member? They will lose access to the system.",
+      "columns": {
+        "name": "Name",
+        "phone": "Phone",
+        "email": "Email",
+        "role": "Role",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "form": {
+        "createTitle": "New Staff Member",
+        "editTitle": "Edit Staff Member",
+        "fields": {
+          "firstName": "First Name",
+          "lastName": "Last Name",
+          "firstNameAr": "First Name (Arabic)",
+          "lastNameAr": "Last Name (Arabic)",
+          "phone": "Phone",
+          "email": "Email",
+          "password": "Password",
+          "role": "Role",
+          "isActive": "Active"
+        },
+        "placeholders": {
+          "phone": "e.g. +963912345678",
+          "email": "e.g. staff@clinic.com",
+          "password": "Min. 8 characters"
+        },
+        "validation": {
+          "firstNameRequired": "First name is required.",
+          "lastNameRequired": "Last name is required.",
+          "phoneRequired": "Phone is required.",
+          "passwordRequired": "Password is required (min. 8 characters).",
+          "roleRequired": "Role is required.",
+          "emailFormat": "Enter a valid email address."
+        },
+        "actions": {
+          "create": "Create",
+          "creating": "Creating…",
+          "save": "Save",
+          "saving": "Saving…",
+          "cancel": "Cancel"
+        }
+      },
+      "roles": {
+        "ORG_ADMIN": "Admin",
+        "SECRETARY": "Secretary",
+        "DOCTOR": "Doctor",
+        "NURSE": "Nurse",
+        "ACCOUNTANT": "Accountant",
+        "TECHNICIAN": "Technician"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "empty": {
+        "heading": "No staff members yet",
+        "subtext": "Add staff members to manage access to the clinic."
+      },
+      "error": {
+        "loadFailed": "Failed to load staff",
+        "saveFailed": "Failed to save staff member",
+        "deleteFailed": "Failed to deactivate staff member",
+        "phoneConflict": "Phone or email is already in use.",
+        "emailConflict": "Phone or email is already in use."
       }
     }
   },

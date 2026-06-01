@@ -72,7 +72,6 @@ export interface CreateVisitTypeDto {
 export interface UpdateVisitTypeDto {
   name?: string;
   nameAr?: string;
-  code?: VisitTypeCode;
   color?: string;
   durationMinutes?: number;
   basePrice?: number | null;

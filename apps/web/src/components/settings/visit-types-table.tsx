@@ -133,8 +133,8 @@ function VisitTypeForm({ mode, initial, onDone }: VisitTypeFormProps) {
 
   function validate(): VTFormErrors {
     const errs: VTFormErrors = {};
-    if (!values.name.trim()) errs.name = t('form.validation.nameRequired');
-    if (!values.code)        errs.code = t('form.validation.codeRequired');
+    if (!values.name.trim())              errs.name = t('form.validation.nameRequired');
+    if (mode === 'create' && !values.code) errs.code = t('form.validation.codeRequired');
     const dur = parseInt(values.durationMinutes, 10);
     if (isNaN(dur) || dur < 5) errs.durationMinutes = t('form.validation.durationMin');
     if (values.basePrice) {
@@ -164,7 +164,6 @@ function VisitTypeForm({ mode, initial, onDone }: VisitTypeFormProps) {
         const dto: UpdateVisitTypeDto = {
           name:            values.name.trim(),
           nameAr:          values.nameAr.trim() || undefined,
-          code:            values.code as VisitTypeCode,
           color:           values.color || undefined,
           durationMinutes: parseInt(values.durationMinutes, 10),
           basePrice:       values.basePrice ? parseFloat(values.basePrice) : null,
@@ -211,12 +210,12 @@ function VisitTypeForm({ mode, initial, onDone }: VisitTypeFormProps) {
         </div>
 
         <div>
-          <FieldLabel required>{t('form.fields.code')}</FieldLabel>
+          <FieldLabel required={mode === 'create'}>{t('form.fields.code')}</FieldLabel>
           <select
             value={values.code}
             onChange={(e) => set('code', e.target.value)}
             className={inputClass(!!errors.code)}
-            disabled={isPending}
+            disabled={isPending || mode === 'edit'}
           >
             <option value="">{t('form.codePrompt')}</option>
             {CODES.map((c) => (

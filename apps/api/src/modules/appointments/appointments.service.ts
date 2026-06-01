@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { AppointmentStatus, Prisma, QueueStatus, UserRole } from '@prisma/client';
@@ -79,6 +80,8 @@ const VALID_TRANSITIONS: Record<AppointmentStatus, AppointmentStatus[]> = {
 
 @Injectable()
 export class AppointmentsService {
+  private readonly logger = new Logger(AppointmentsService.name);
+
   constructor(
     private prisma: PrismaService,
     private timelineWriter: MedicalTimelineWriterService,
@@ -298,8 +301,11 @@ export class AppointmentsService {
         newData: toSnapshot({ status: dto.status }),
       });
 
-      if (dto.status === AppointmentStatus.IN_PROGRESS) {
-        // Fire-and-forget: invoice failure must never block check-in.
+      if (
+        dto.status === AppointmentStatus.IN_QUEUE ||
+        dto.status === AppointmentStatus.IN_PROGRESS
+      ) {
+        // Trigger on IN_QUEUE (Check In) or IN_PROGRESS; idempotency check inside prevents duplicates.
         await this.billingService.autoCreateInvoiceForAppointment(
           {
             id: result.id,
@@ -310,18 +316,18 @@ export class AppointmentsService {
             sourceEncounterId: result.sourceEncounterId,
           },
           caller.sub,
-           ).catch((error) => {
-            console.error('AUTO_INVOICE_FAILED', error);
-            });
+        ).catch((err) => {
+          this.logger.error(`AUTO_INVOICE_FAILED appointmentId=${id}`, err);
+        });
       } else if (
         dto.status === AppointmentStatus.CANCELLED ||
         dto.status === AppointmentStatus.NO_SHOW
       ) {
         // Auto-cancel the DRAFT invoice if one exists; ISSUED/PAID are never touched.
         await this.billingService.autoCancelDraftInvoiceForAppointment(id)
-          .catch((error) => {
-          console.error('AUTO_CANCEL_DRAFT_INVOICE_FAILED', error);
-          });;
+          .catch((err) => {
+            this.logger.error(`AUTO_CANCEL_DRAFT_INVOICE_FAILED appointmentId=${id}`, err);
+          });
       }
     } else {
       await this.auditWriter.log({

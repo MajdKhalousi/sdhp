@@ -73,23 +73,26 @@ services:
   # ── API (NestJS) ──────────────────────────────────────────
   api:
     build:
-      context:    ..
+      context: ..
       dockerfile: docker/Dockerfile.api
     container_name: sdhp_api
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
     restart: unless-stopped
     environment:
-      NODE_ENV:      production
-      DATABASE_URL:  postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
-      REDIS_URL:     redis://:${REDIS_PASSWORD}@redis:6379
-      JWT_SECRET:    ${JWT_SECRET}
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-24h}
-      API_PORT:      3001
-      FRONTEND_URL:  https://${DOMAIN}
+      API_PORT: 3001
+      FRONTEND_URL: https://${DOMAIN}
       MINIO_ENDPOINT: minio
-      MINIO_PORT:     9000
+      MINIO_PORT: 9000
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
-      MINIO_BUCKET:   ${MINIO_BUCKET:-sdhp-files}
+      MINIO_BUCKET: ${MINIO_BUCKET:-sdhp-files}
       MINIO_PUBLIC_ENDPOINT: ${MINIO_PUBLIC_ENDPOINT}
     depends_on:
       postgres:
@@ -100,12 +103,15 @@ services:
         condition: service_completed_successfully
     networks:
       - internal
+      - external
     healthcheck:
-      test:         ['CMD-SHELL', 'wget -qO- http://localhost:3001/api/v1/auth/me 2>&1 | grep -q "Unauthorized\\|message" || exit 1']
-      interval:     30s
-      timeout:      10s
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3001/api/v1/auth/me 2>&1 | grep -q "Unauthorized\\|message" || exit 1']
+      interval: 30s
+      timeout: 10s
       start_period: 40s
-      retries:      3
+      retries: 3
+
+
 
   # ── Web (Next.js) ─────────────────────────────────────────
 

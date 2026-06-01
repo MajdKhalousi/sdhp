@@ -78,3 +78,4 @@ apps/web/pw-temp/
 # Stray npm lockfile in pnpm monorepo
 apps/web/package-lock.json
 docker/nginx.local.http.conf
+*.sql.gz

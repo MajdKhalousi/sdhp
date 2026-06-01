@@ -1215,10 +1215,21 @@
         "date": "التاريخ",
         "reference": "المرجع",
         "receivedBy": "استلم بواسطة",
-        "status": "الحالة"
+        "status": "الحالة",
+        "actions": "الإجراءات"
       },
       "empty": "لا توجد مدفوعات مسجلة.",
       "voided": "ملغاة",
+      "voidAction": "إلغاء",
+      "voidConfirmTitle": "إلغاء الدفعة",
+      "voidConfirmDescription": "سيؤدي ذلك إلى عكس الدفعة وإعادة حساب رصيد الفاتورة.",
+      "voidReason": "السبب",
+      "voidReasonPlaceholder": "مثال: تم إدخال مبلغ خاطئ",
+      "voidSubmit": "تأكيد الإلغاء",
+      "voidCancel": "إلغاء",
+      "voiding": "جارٍ الإلغاء…",
+      "voidError": "فشل إلغاء الدفعة",
+      "voidReasonRequired": "سبب الإلغاء مطلوب",
       "method": {
         "CASH": "نقداً",
         "CARD": "بطاقة",

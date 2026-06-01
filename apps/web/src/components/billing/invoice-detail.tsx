@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { Link } from '@/i18n/navigation';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
-import { useInvoice, useIssueInvoice } from '@/hooks/use-invoices';
+import { useInvoice, useIssueInvoice, useVoidPayment } from '@/hooks/use-invoices';
+import { useAuthStore } from '@/store/auth';
 import { InvoiceStatusBadge } from './invoice-status-badge';
 import { InvoiceItemsTable } from './invoice-items-table';
 import { CancelInvoiceDialog } from './cancel-invoice-dialog';
@@ -117,14 +118,58 @@ function IssueButton({ invoice }: { invoice: Invoice }) {
   );
 }
 
+const VOID_ALLOWED_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
+
 function PaymentsSection({ invoice }: { invoice: Invoice }) {
   const t = useTranslations('invoice.payments');
   const tPayment = useTranslations('invoice.payment');
   const locale = useLocale();
+  const { user } = useAuthStore();
+  const canVoid = VOID_ALLOWED_ROLES.has(user?.role ?? '');
+
   const [showForm, setShowForm] = useState(false);
+  const [voidingId, setVoidingId] = useState<string | null>(null);
+  const [voidReason, setVoidReason] = useState('');
+  const [voidError, setVoidError] = useState('');
+
+  const { mutate: voidPayment, isPending: isVoiding } = useVoidPayment();
 
   const isPayable = invoice.status === 'ISSUED' || invoice.status === 'PARTIALLY_PAID';
   const remaining = parseFloat(invoice.totalAmount) - parseFloat(invoice.paidAmount);
+  const colCount = canVoid ? 7 : 6;
+
+  function openVoid(paymentId: string) {
+    setVoidingId(paymentId);
+    setVoidReason('');
+    setVoidError('');
+    setShowForm(false);
+  }
+
+  function cancelVoid() {
+    setVoidingId(null);
+    setVoidReason('');
+    setVoidError('');
+  }
+
+  function handleVoid(invoiceId: string, paymentId: string) {
+    if (!voidReason.trim()) {
+      setVoidError(t('voidReasonRequired'));
+      return;
+    }
+    setVoidError('');
+    voidPayment(
+      { invoiceId, paymentId, voidReason: voidReason.trim() },
+      {
+        onSuccess: () => {
+          setVoidingId(null);
+          setVoidReason('');
+        },
+        onError: (e) => {
+          setVoidError(e instanceof Error ? e.message : t('voidError'));
+        },
+      },
+    );
+  }
 
   return (
     <div className="overflow-hidden rounded-xl border border-border">
@@ -132,7 +177,7 @@ function PaymentsSection({ invoice }: { invoice: Invoice }) {
         <h3 className="text-sm font-semibold">{t('title')}</h3>
         {isPayable && !showForm && (
           <button
-            onClick={() => setShowForm(true)}
+            onClick={() => { setShowForm(true); cancelVoid(); }}
             className="inline-flex h-7 items-center gap-1.5 rounded-md border px-2.5 text-xs font-medium transition-colors hover:bg-accent"
           >
             <Plus className="h-3 w-3" />
@@ -152,48 +197,112 @@ function PaymentsSection({ invoice }: { invoice: Invoice }) {
                 <th className="px-4 py-2 text-start font-medium">{t('columns.reference')}</th>
                 <th className="px-4 py-2 text-start font-medium">{t('columns.receivedBy')}</th>
                 <th className="px-4 py-2 text-start font-medium">{t('columns.status')}</th>
+                {canVoid && (
+                  <th className="px-4 py-2 text-start font-medium">{t('columns.actions')}</th>
+                )}
               </tr>
             </thead>
             <tbody>
               {invoice.payments.map((payment) => {
                 const isVoided = payment.voidedAt !== null;
+                const isExpanded = voidingId === payment.id;
                 return (
-                  <tr
-                    key={payment.id}
-                    className={`border-t border-border ${isVoided ? 'opacity-60' : ''}`}
-                  >
-                    <td className="px-4 py-3 text-sm font-medium tabular-nums" dir="ltr">
-                      <span className={isVoided ? 'line-through text-muted-foreground' : ''}>
-                        {formatAmount(payment.amount, locale)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {t(`method.${payment.method}` as Parameters<typeof t>[0])}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap" dir="ltr">
-                      {formatDate(payment.paidAt)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground" dir="ltr">
-                      {payment.referenceNumber ?? '—'}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {payment.receivedBy.firstName} {payment.receivedBy.lastName}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {isVoided ? (
-                        <div className="flex flex-col gap-0.5">
-                          <span className="inline-flex w-fit items-center rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
-                            {t('voided')}
-                          </span>
-                          {payment.voidReason && (
-                            <span className="text-xs text-muted-foreground">{payment.voidReason}</span>
+                  <>
+                    <tr
+                      key={payment.id}
+                      className={`border-t border-border ${isVoided ? 'opacity-60' : ''}`}
+                    >
+                      <td className="px-4 py-3 text-sm font-medium tabular-nums" dir="ltr">
+                        <span className={isVoided ? 'line-through text-muted-foreground' : ''}>
+                          {formatAmount(payment.amount, locale)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {t(`method.${payment.method}` as Parameters<typeof t>[0])}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap" dir="ltr">
+                        {formatDate(payment.paidAt)}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground" dir="ltr">
+                        {payment.referenceNumber ?? '—'}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {payment.receivedBy.firstName} {payment.receivedBy.lastName}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {isVoided ? (
+                          <div className="flex flex-col gap-0.5">
+                            <span className="inline-flex w-fit items-center rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
+                              {t('voided')}
+                            </span>
+                            {payment.voidReason && (
+                              <span className="text-xs text-muted-foreground">{payment.voidReason}</span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      {canVoid && (
+                        <td className="px-4 py-3 text-sm">
+                          {!isVoided && (
+                            <button
+                              onClick={() => isExpanded ? cancelVoid() : openVoid(payment.id)}
+                              disabled={isVoiding}
+                              className="inline-flex h-7 items-center rounded-md border border-destructive/40 px-2.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
+                            >
+                              {t('voidAction')}
+                            </button>
                           )}
-                        </div>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
+                        </td>
                       )}
-                    </td>
-                  </tr>
+                    </tr>
+                    {isExpanded && (
+                      <tr key={`${payment.id}-void-form`} className="border-t border-border">
+                        <td colSpan={colCount} className="px-4 pb-4 pt-3">
+                          <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3">
+                            <p className="text-xs font-semibold text-destructive">{t('voidConfirmTitle')}</p>
+                            <p className="mt-0.5 text-xs text-muted-foreground">{t('voidConfirmDescription')}</p>
+                            {voidError && (
+                              <p className="mt-2 text-xs text-destructive">{voidError}</p>
+                            )}
+                            <div className="mt-3 flex flex-wrap items-end gap-2">
+                              <div className="min-w-[200px] flex-1 space-y-1">
+                                <label className="text-xs font-medium">
+                                  {t('voidReason')} <span className="text-destructive">*</span>
+                                </label>
+                                <input
+                                  type="text"
+                                  value={voidReason}
+                                  onChange={(e) => { setVoidReason(e.target.value); setVoidError(''); }}
+                                  placeholder={t('voidReasonPlaceholder')}
+                                  disabled={isVoiding}
+                                  className="h-8 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+                                  autoFocus
+                                />
+                              </div>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleVoid(payment.invoiceId, payment.id)}
+                                  disabled={isVoiding}
+                                  className="inline-flex h-8 items-center rounded-md bg-destructive px-3 text-xs font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                  {isVoiding ? t('voiding') : t('voidSubmit')}
+                                </button>
+                                <button
+                                  onClick={cancelVoid}
+                                  disabled={isVoiding}
+                                  className="h-8 rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-60"
+                                >
+                                  {t('voidCancel')}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
                 );
               })}
             </tbody>

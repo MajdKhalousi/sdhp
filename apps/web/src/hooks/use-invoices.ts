@@ -117,6 +117,17 @@ export function useRecordPayment() {
   });
 }
 
+export function useVoidPayment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ invoiceId, paymentId, voidReason }: { invoiceId: string; paymentId: string; voidReason: string }) =>
+      api.post<Invoice>(`/v1/invoices/${invoiceId}/payments/${paymentId}/void`, { voidReason }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['invoices'] });
+    },
+  });
+}
+
 export function usePatientInvoices(patientId: string) {
   return useQuery({
     queryKey: ['invoices', 'patient', patientId],

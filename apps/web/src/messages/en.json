@@ -1215,10 +1215,21 @@
         "date": "Date",
         "reference": "Reference",
         "receivedBy": "Received By",
-        "status": "Status"
+        "status": "Status",
+        "actions": "Actions"
       },
       "empty": "No payments recorded.",
       "voided": "Voided",
+      "voidAction": "Void",
+      "voidConfirmTitle": "Void payment",
+      "voidConfirmDescription": "This will reverse the payment and recalculate the invoice balance.",
+      "voidReason": "Reason",
+      "voidReasonPlaceholder": "e.g. Wrong amount entered",
+      "voidSubmit": "Confirm Void",
+      "voidCancel": "Cancel",
+      "voiding": "Voiding…",
+      "voidError": "Failed to void payment",
+      "voidReasonRequired": "Void reason is required",
       "method": {
         "CASH": "Cash",
         "CARD": "Card",

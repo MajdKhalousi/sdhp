@@ -86,9 +86,28 @@ export interface VisitTypeQuery {
 
 export interface Department {
   id: string;
+  organizationId: string;
+  branchId: string | null;
   name: string;
   nameAr: string | null;
-  code: string;
+  code: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateDepartmentDto {
+  name: string;
+  nameAr?: string;
+  code?: string;
+  isActive?: boolean;
+}
+
+export interface UpdateDepartmentDto {
+  name?: string;
+  nameAr?: string;
+  code?: string;
+  isActive?: boolean;
 }
 
 // ─── Services ─────────────────────────────────────────────────────────────────

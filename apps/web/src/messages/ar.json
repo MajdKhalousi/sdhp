@@ -1345,7 +1345,8 @@
       "clinic": "العيادة",
       "visitTypes": "أنواع الزيارات",
       "services": "الخدمات",
-      "billing": "الفواتير"
+      "billing": "الفواتير",
+      "departments": "الأقسام"
     },
     "clinic": {
       "title": "إعدادات العيادة",
@@ -1565,6 +1566,58 @@
         "discountRange": "يجب أن يكون الخصم بين 0 و100.",
         "dueDateMin": "لا يمكن أن يكون عدد أيام الاستحقاق سالباً.",
         "noShowFeeMin": "لا يمكن أن تكون رسوم الغياب سالبة."
+      }
+    },
+    "departments": {
+      "title": "الأقسام",
+      "subtitle": "إدارة الأقسام السريرية والإدارية",
+      "newDepartment": "قسم جديد",
+      "showInactive": "عرض غير النشطة",
+      "delete": "حذف",
+      "deleting": "جاري الحذف…",
+      "deleteConfirm": "حذف هذا القسم؟ سيتم فك ارتباط الخدمات والأطباء المرتبطة به.",
+      "status": {
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
+      "columns": {
+        "name": "الاسم",
+        "code": "الرمز",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "form": {
+        "createTitle": "قسم جديد",
+        "editTitle": "تعديل القسم",
+        "fields": {
+          "name": "الاسم (إنجليزي)",
+          "nameAr": "الاسم (عربي)",
+          "code": "الرمز",
+          "isActive": "نشط"
+        },
+        "placeholders": {
+          "name": "مثال: Internal Medicine",
+          "nameAr": "مثال: الطب الداخلي",
+          "code": "مثال: INT-MED"
+        },
+        "actions": {
+          "create": "إنشاء",
+          "creating": "جاري الإنشاء…",
+          "save": "حفظ",
+          "saving": "جاري الحفظ…"
+        },
+        "validation": {
+          "nameRequired": "الاسم مطلوب."
+        }
+      },
+      "empty": {
+        "heading": "لا توجد أقسام بعد",
+        "subtext": "أنشئ الأقسام لتنظيم خدماتك وكوادرك."
+      },
+      "error": {
+        "loadFailed": "فشل تحميل الأقسام",
+        "saveFailed": "فشل حفظ القسم",
+        "deleteFailed": "فشل حذف القسم"
       }
     }
   },

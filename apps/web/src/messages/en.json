@@ -1345,7 +1345,8 @@
       "clinic": "Clinic",
       "visitTypes": "Visit Types",
       "services": "Services",
-      "billing": "Billing"
+      "billing": "Billing",
+      "departments": "Departments"
     },
     "clinic": {
       "title": "Clinic Settings",
@@ -1565,6 +1566,58 @@
         "discountRange": "Discount must be between 0 and 100.",
         "dueDateMin": "Due date days cannot be negative.",
         "noShowFeeMin": "No-show fee cannot be negative."
+      }
+    },
+    "departments": {
+      "title": "Departments",
+      "subtitle": "Manage clinical and administrative departments",
+      "newDepartment": "New Department",
+      "showInactive": "Show inactive",
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "deleteConfirm": "Delete this department? Services and doctors using it will be unlinked.",
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "columns": {
+        "name": "Name",
+        "code": "Code",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "form": {
+        "createTitle": "New Department",
+        "editTitle": "Edit Department",
+        "fields": {
+          "name": "Name (English)",
+          "nameAr": "Name (Arabic)",
+          "code": "Code",
+          "isActive": "Active"
+        },
+        "placeholders": {
+          "name": "e.g. Internal Medicine",
+          "nameAr": "e.g. الطب الداخلي",
+          "code": "e.g. INT-MED"
+        },
+        "actions": {
+          "create": "Create",
+          "creating": "Creating…",
+          "save": "Save",
+          "saving": "Saving…"
+        },
+        "validation": {
+          "nameRequired": "Name is required."
+        }
+      },
+      "empty": {
+        "heading": "No departments yet",
+        "subtext": "Create departments to organize your services and staff."
+      },
+      "error": {
+        "loadFailed": "Failed to load departments",
+        "saveFailed": "Failed to save department",
+        "deleteFailed": "Failed to delete department"
       }
     }
   },

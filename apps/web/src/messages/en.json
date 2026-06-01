@@ -84,6 +84,14 @@
       "completedToday": {
         "label": "Completed Today",
         "sub": "encounters finished"
+      },
+      "collectedToday": {
+        "label": "Collected Today",
+        "sub": "Payments received today"
+      },
+      "outstandingBalance": {
+        "label": "Outstanding Balance",
+        "sub": "Unpaid invoices"
       }
     },
     "sections": {
@@ -1698,6 +1706,11 @@
       "paymentError": "Invoice issued but payment failed. Please record payment manually.",
       "submitButton": "Confirm & Collect",
       "submitting": "Processing…"
+    },
+    "todaySummary": {
+      "title": "Today Summary",
+      "collected": "Collected today",
+      "pending": "Pending"
     }
   },
   "followups": {

@@ -3,11 +3,14 @@
 import { useMemo, useState } from 'react';
 import { CheckCircle2, CreditCard, Receipt } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
-import { useInvoices } from '@/hooks/use-invoices';
+import { useInvoices, useBillingReport } from '@/hooks/use-invoices';
+import { useAuthStore } from '@/store/auth';
 import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import { IssueAndPayDialog } from '@/components/billing/issue-and-pay-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Invoice } from '@/types/invoice';
+
+const BILLING_REPORT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
 
 function formatAmount(value: string, locale: string): string {
   const num = parseFloat(value);
@@ -148,15 +151,25 @@ function InvoiceGroup({ title, invoices, activeId, setActiveId, onSuccess }: Gro
 export function CashierView() {
   const t = useTranslations('cashier');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
+  const user = useAuthStore((s) => s.user);
+  const canSeeBillingReport = BILLING_REPORT_ROLES.has(user?.role ?? '');
   const [activeId, setActiveId] = useState<string | null>(null);
   const { from, to } = useMemo(() => getTodayRange(), []);
 
   const { data, isLoading, isError, error, refetch } = useInvoices({ from, to, limit: 50 });
+  const { data: billingReport } = useBillingReport({ from, to }, canSeeBillingReport);
 
   const invoices = (data?.data ?? []).filter((inv) => inv.status !== 'CANCELLED');
   const pending = invoices.filter((inv) => (inv.status === 'DRAFT' && parseFloat(inv.totalAmount) > 0) || inv.status === 'ISSUED');
   const partial = invoices.filter((inv) => inv.status === 'PARTIALLY_PAID');
   const collected = invoices.filter((inv) => inv.status === 'PAID');
+
+  const pendingToday = [...pending, ...partial].reduce((sum, inv) => {
+    const total = parseFloat(inv.totalAmount);
+    const paid = parseFloat(inv.paidAmount);
+    return sum + Math.max(0, total - paid);
+  }, 0);
 
   if (isLoading) {
     return (
@@ -194,6 +207,27 @@ export function CashierView() {
 
   return (
     <div className="space-y-4">
+      {/* Today summary bar */}
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border border-border bg-muted/40 px-4 py-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {t('todaySummary.title')}
+        </p>
+        {billingReport && (
+          <span className="text-sm">
+            <span className="text-muted-foreground">{t('todaySummary.collected')}:</span>{' '}
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+              {formatAmount(String(billingReport.totalCollected), locale)}
+            </span>
+          </span>
+        )}
+        <span className="text-sm">
+          <span className="text-muted-foreground">{t('todaySummary.pending')}:</span>{' '}
+          <span className={`font-semibold ${pendingToday > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`}>
+            {formatAmount(String(pendingToday), locale)}
+          </span>
+        </span>
+      </div>
+
       <InvoiceGroup
         title={t('groups.pending')}
         invoices={pending}

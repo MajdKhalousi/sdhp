@@ -84,6 +84,14 @@
       "completedToday": {
         "label": "مكتمل اليوم",
         "sub": "زيارة منتهية"
+      },
+      "collectedToday": {
+        "label": "محصل اليوم",
+        "sub": "المدفوعات المستلمة اليوم"
+      },
+      "outstandingBalance": {
+        "label": "المستحقات",
+        "sub": "فواتير غير مدفوعة"
       }
     },
     "sections": {
@@ -1698,6 +1706,11 @@
       "paymentError": "تم إصدار الفاتورة لكن فشل تسجيل الدفعة. يرجى تسجيل الدفع يدويًا.",
       "submitButton": "تأكيد وتحصيل",
       "submitting": "جارٍ المعالجة…"
+    },
+    "todaySummary": {
+      "title": "ملخص اليوم",
+      "collected": "محصل اليوم",
+      "pending": "بانتظار التحصيل"
     }
   },
   "followups": {

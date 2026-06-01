@@ -160,3 +160,37 @@ export function usePatientOutstandingBalance(patientId: string | undefined) {
     enabled: !!patientId,
   });
 }
+
+export interface BillingReport {
+  period: { from: string | null; to: string | null };
+  totalInvoiced: number;
+  totalCollected: number;
+  totalOutstanding: number;
+  collectionRate: number;
+  invoiceCount: number;
+  paidCount: number;
+  partialCount: number;
+  unpaidCount: number;
+  cancelledCount: number;
+}
+
+export interface BillingReportParams {
+  from?: string;
+  to?: string;
+  branchId?: string;
+}
+
+export function useBillingReport(params: BillingReportParams = {}, enabled = true) {
+  const { from, to, branchId } = params;
+  return useQuery({
+    queryKey: ['billing-report', from, to, branchId],
+    queryFn: () =>
+      api.get<BillingReport>('/v1/reports/billing', {
+        ...(from ? { from } : {}),
+        ...(to ? { to } : {}),
+        ...(branchId ? { branchId } : {}),
+      }),
+    staleTime: 30_000,
+    enabled,
+  });
+}

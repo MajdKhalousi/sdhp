@@ -1,11 +1,13 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@/i18n/navigation';
-import { Calendar, Users, ListOrdered, CheckCircle2, Clock } from 'lucide-react';
+import { Calendar, Users, ListOrdered, CheckCircle2, Clock, Banknote, Wallet } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/auth';
+import { useBillingReport } from '@/hooks/use-invoices';
 import { AppointmentStatusBadge } from '@/components/appointments/appointment-status-badge';
 import { QueueStatusBadge } from '@/components/queue/queue-status-badge';
 import type { Appointment, AppointmentsResponse } from '@/types/appointment';
@@ -43,6 +45,17 @@ function formatRole(role: string) {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function formatAmount(value: number, locale: string): string {
+  return (
+    new Intl.NumberFormat(locale === 'ar' ? 'ar-SY' : 'en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value) + ' SYP'
+  );
+}
+
+const BILLING_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
+
 export default function DashboardPage() {
   const t = useTranslations('dashboard');
   const tQueue = useTranslations('doctorQueue.card');
@@ -53,7 +66,19 @@ export default function DashboardPage() {
   const role = user?.role ?? '';
 
   const canReadPatients = role !== 'SECRETARY';
+  const canSeeBilling = BILLING_ROLES.has(role);
   const today = todayStr();
+
+  const todayRange = useMemo(() => {
+    const now = new Date();
+    const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+    return {
+      from: new Date(y, m, d, 0, 0, 0, 0).toISOString(),
+      to: new Date(y, m, d, 23, 59, 59, 999).toISOString(),
+    };
+  }, []);
+
+  const { data: billingReport } = useBillingReport(todayRange, canSeeBilling);
 
   const { data: apptStats } = useQuery({
     queryKey: ['dashboard', 'appts-today'],
@@ -183,6 +208,38 @@ export default function DashboardPage() {
           );
         })}
       </div>
+
+      {/* ── Billing cards (SA / ORG_ADMIN / ACCOUNTANT only) ─────────────── */}
+      {canSeeBilling && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Link
+            href="/dashboard/invoices"
+            className="rounded-xl border bg-card p-6 shadow-sm transition-colors hover:border-primary/40"
+          >
+            <div className="flex items-start justify-between">
+              <p className="text-sm font-medium text-muted-foreground">{t('stats.collectedToday.label')}</p>
+              <Banknote className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+            </div>
+            <p className="mt-2 text-2xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+              {billingReport ? formatAmount(billingReport.totalCollected, locale) : '—'}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{t('stats.collectedToday.sub')}</p>
+          </Link>
+          <Link
+            href="/dashboard/invoices"
+            className="rounded-xl border bg-card p-6 shadow-sm transition-colors hover:border-primary/40"
+          >
+            <div className="flex items-start justify-between">
+              <p className="text-sm font-medium text-muted-foreground">{t('stats.outstandingBalance.label')}</p>
+              <Wallet className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+            </div>
+            <p className="mt-2 text-2xl font-bold tabular-nums text-amber-600 dark:text-amber-400">
+              {billingReport ? formatAmount(billingReport.totalOutstanding, locale) : '—'}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{t('stats.outstandingBalance.sub')}</p>
+          </Link>
+        </div>
+      )}
 
       {/* ── Two-column content ────────────────────────────────────────────── */}
       <div className="grid gap-6 lg:grid-cols-5">

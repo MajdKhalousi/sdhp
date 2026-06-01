@@ -93,7 +93,30 @@
       "outstandingBalance": {
         "label": "المستحقات",
         "sub": "فواتير غير مدفوعة"
+      },
+      "visitsInProgress": {
+        "label": "زيارات قيد المعاينة",
+        "sub": "تتم معاينتها الآن"
+      },
+      "followUpsDue": {
+        "label": "مراجعات مستحقة",
+        "sub": "مجدولة لهذا اليوم"
+      },
+      "pendingLabs": {
+        "label": "تحاليل بانتظار المعالجة",
+        "sub": "بانتظار التنفيذ"
+      },
+      "pendingRadiology": {
+        "label": "أشعة بانتظار المعالجة",
+        "sub": "بانتظار التنفيذ"
+      },
+      "newPatients": {
+        "label": "مرضى جدد اليوم",
+        "sub": "تم تسجيلهم اليوم"
       }
+    },
+    "errors": {
+      "overviewFailed": "فشل تحميل ملخص لوحة التحكم"
     },
     "sections": {
       "todayAppointments": "مواعيد اليوم",
@@ -688,7 +711,7 @@
     "header": {
       "dob": "تاريخ الميلاد:",
       "outstandingBalance": "مستحق: {amount}",
-      "outstandingInvoices": "{count} فاتورة غير مدفوعة"
+      "outstandingInvoices": "{count, plural, one {فاتورة غير مدفوعة واحدة} other {# فواتير غير مدفوعة}}"
     },
     "list": {
       "title": "المرضى",

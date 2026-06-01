@@ -93,7 +93,30 @@
       "outstandingBalance": {
         "label": "Outstanding Balance",
         "sub": "Unpaid invoices"
+      },
+      "visitsInProgress": {
+        "label": "Visits In Progress",
+        "sub": "Currently being seen"
+      },
+      "followUpsDue": {
+        "label": "Follow-ups Due",
+        "sub": "Scheduled for today"
+      },
+      "pendingLabs": {
+        "label": "Pending Labs",
+        "sub": "Awaiting processing"
+      },
+      "pendingRadiology": {
+        "label": "Pending Radiology",
+        "sub": "Awaiting processing"
+      },
+      "newPatients": {
+        "label": "New Patients Today",
+        "sub": "Registered today"
       }
+    },
+    "errors": {
+      "overviewFailed": "Failed to load dashboard overview"
     },
     "sections": {
       "todayAppointments": "Today's Appointments",
@@ -688,7 +711,7 @@
     "header": {
       "dob": "DOB:",
       "outstandingBalance": "Outstanding: {amount}",
-      "outstandingInvoices": "{count} unpaid invoice"
+      "outstandingInvoices": "{count, plural, one {# unpaid invoice} other {# unpaid invoices}}"
     },
     "list": {
       "title": "Patients",

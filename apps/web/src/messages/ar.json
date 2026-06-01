@@ -59,6 +59,7 @@
       "technicianRadiology": "قائمة عمل الأشعة",
       "cashier": "الصندوق",
       "invoices": "الفواتير",
+      "billingReports": "تقارير الفوترة",
       "settings": "الإعدادات",
       "doctors": "الأطباء",
       "followUps": "المراجعات",
@@ -1777,5 +1778,41 @@
     "error": {
       "loadFailed": "فشل تحميل المراجعات"
     }
+  },
+  "billingReports": {
+    "title": "تقارير الفوترة",
+    "subtitle": "ملخص مالي للمنظمة",
+    "period": "الفترة",
+    "today": "اليوم",
+    "thisMonth": "هذا الشهر",
+    "custom": "فترة مخصصة",
+    "from": "من",
+    "to": "إلى",
+    "cards": {
+      "totalInvoiced": "إجمالي الفواتير",
+      "collected": "المحصل",
+      "currentOutstanding": "المستحقات الحالية",
+      "collectionRate": "نسبة التحصيل",
+      "invoices": "فاتورة",
+      "paid": "مدفوعة",
+      "partial": "جزئية",
+      "unpaid": "غير مدفوعة"
+    },
+    "outstandingPatients": {
+      "title": "المرضى أصحاب المستحقات",
+      "patient": "المريض",
+      "mrn": "رقم الملف",
+      "outstanding": "المستحق",
+      "invoices": "الفواتير",
+      "oldestUnpaid": "أقدم مستحق",
+      "action": "إجراء",
+      "viewPatient": "عرض المريض",
+      "empty": "لا توجد مستحقات",
+      "emptyHint": "جميع الفواتير مسددة."
+    },
+    "errors": {
+      "loadFailed": "فشل تحميل تقارير الفوترة"
+    },
+    "forbidden": "لا تملك صلاحية عرض تقارير الفوترة"
   }
 }

@@ -59,6 +59,7 @@
       "technicianRadiology": "Radiology Worklist",
       "cashier": "Cashier",
       "invoices": "Invoices",
+      "billingReports": "Billing Reports",
       "settings": "Settings",
       "doctors": "Doctors",
       "followUps": "Follow-ups",
@@ -1777,5 +1778,41 @@
     "error": {
       "loadFailed": "Failed to load follow-ups"
     }
+  },
+  "billingReports": {
+    "title": "Billing Reports",
+    "subtitle": "Financial summary for your organization",
+    "period": "Period",
+    "today": "Today",
+    "thisMonth": "This Month",
+    "custom": "Custom Range",
+    "from": "From",
+    "to": "To",
+    "cards": {
+      "totalInvoiced": "Total Invoiced",
+      "collected": "Collected",
+      "currentOutstanding": "Current Outstanding",
+      "collectionRate": "Collection Rate",
+      "invoices": "invoices",
+      "paid": "paid",
+      "partial": "partial",
+      "unpaid": "unpaid"
+    },
+    "outstandingPatients": {
+      "title": "Patients with Outstanding Balances",
+      "patient": "Patient",
+      "mrn": "MRN",
+      "outstanding": "Outstanding",
+      "invoices": "Invoices",
+      "oldestUnpaid": "Oldest Unpaid",
+      "action": "Action",
+      "viewPatient": "View Patient",
+      "empty": "No outstanding balances",
+      "emptyHint": "All invoices are settled."
+    },
+    "errors": {
+      "loadFailed": "Failed to load billing reports"
+    },
+    "forbidden": "You do not have permission to view billing reports"
   }
 }

@@ -14,6 +14,7 @@ import {
   ScanLine,
   CreditCard,
   Receipt,
+  BarChart2,
   Settings,
   UserCog,
   CalendarClock,
@@ -90,6 +91,11 @@ const NAV_ITEMS: NavItem[] = [
     roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY'],
   },
   {
+    href: '/dashboard/reports/billing',
+    icon: BarChart2,
+    roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT'],
+  },
+  {
     href: '/dashboard/doctors',
     icon: UserCog,
     roles: ['SUPER_ADMIN', 'ORG_ADMIN'],
@@ -121,6 +127,7 @@ export function Sidebar() {
     '/dashboard/follow-ups':            t('items.followUps'),
     '/dashboard/cashier':              t('items.cashier'),
     '/dashboard/invoices':             t('items.invoices'),
+    '/dashboard/reports/billing':      t('items.billingReports'),
     '/dashboard/doctors':               t('items.doctors'),
     '/dashboard/settings/clinic':      t('items.settings'),
   };

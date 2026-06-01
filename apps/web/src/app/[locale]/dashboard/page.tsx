@@ -213,7 +213,7 @@ export default function DashboardPage() {
       {canSeeBilling && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Link
-            href="/dashboard/invoices"
+            href="/dashboard/reports/billing"
             className="rounded-xl border bg-card p-6 shadow-sm transition-colors hover:border-primary/40"
           >
             <div className="flex items-start justify-between">
@@ -226,7 +226,7 @@ export default function DashboardPage() {
             <p className="mt-1 text-xs text-muted-foreground">{t('stats.collectedToday.sub')}</p>
           </Link>
           <Link
-            href="/dashboard/invoices"
+            href="/dashboard/reports/billing"
             className="rounded-xl border bg-card p-6 shadow-sm transition-colors hover:border-primary/40"
           >
             <div className="flex items-start justify-between">

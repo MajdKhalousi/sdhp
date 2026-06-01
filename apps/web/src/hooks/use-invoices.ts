@@ -194,3 +194,42 @@ export function useBillingReport(params: BillingReportParams = {}, enabled = tru
     enabled,
   });
 }
+
+export interface OutstandingPatient {
+  patientId: string;
+  firstName: string;
+  lastName: string;
+  mrn: string;
+  outstandingAmount: number;
+  invoiceCount: number;
+  oldestUnpaidAt: string | null;
+}
+
+export interface PaginatedOutstandingPatientsResponse {
+  data: OutstandingPatient[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface OutstandingPatientsParams {
+  branchId?: string;
+  page?: number;
+  limit?: number;
+}
+
+export function useOutstandingPatients(params: OutstandingPatientsParams = {}, enabled = true) {
+  const { branchId, page, limit } = params;
+  return useQuery({
+    queryKey: ['outstanding-patients', branchId, page, limit],
+    queryFn: () =>
+      api.get<PaginatedOutstandingPatientsResponse>('/v1/billing/outstanding-patients', {
+        ...(branchId ? { branchId } : {}),
+        ...(page !== undefined ? { page } : {}),
+        ...(limit !== undefined ? { limit } : {}),
+      }),
+    staleTime: 30_000,
+    enabled,
+  });
+}

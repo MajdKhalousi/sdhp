@@ -1,7 +1,9 @@
 import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { QueueStatusBadge } from './queue-status-badge';
+import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import type { QueueEntry, QueueStatus } from '@/types/queue';
+import type { Invoice } from '@/types/invoice';
 
 function relativeTime(iso: string) {
   const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
@@ -19,7 +21,7 @@ const STATUS_LEFT: Record<QueueStatus, string> = {
   SKIPPED:     'border-s-4 border-s-muted-foreground/30',
 };
 
-export function QueueTicket({ entry }: { entry: QueueEntry }) {
+export function QueueTicket({ entry, invoice }: { entry: QueueEntry; invoice?: Invoice }) {
   const t = useTranslations('queue.ticket');
   const { ticketNumber, status, createdAt, calledAt, appointment } = entry;
   const { patient, doctor } = appointment;
@@ -51,6 +53,11 @@ export function QueueTicket({ entry }: { entry: QueueEntry }) {
           {doctor.specialization ? ` · ${doctor.specialization}` : ''}
           {patient.phone ? ` · ${patient.phone}` : ''}
         </p>
+        {invoice && invoice.status !== 'CANCELLED' && (
+          <div className="mt-1">
+            <InvoiceStatusBadge status={invoice.status} />
+          </div>
+        )}
       </div>
 
       <div className="hidden shrink-0 text-end sm:block">

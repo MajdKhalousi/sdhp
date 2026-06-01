@@ -1,15 +1,36 @@
 'use client';
 
+import { useMemo } from 'react';
 import { RefreshCw, Stethoscope } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useQueue } from '@/hooks/use-queue';
+import { useInvoices } from '@/hooks/use-invoices';
 import { QueueStatusBadge } from '@/components/queue/queue-status-badge';
+import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import { StartEncounterButton } from './start-encounter-button';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { Invoice, InvoiceStatus } from '@/types/invoice';
 
 function todayDate() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
 }
+
+function getTodayRange() {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+  return {
+    from: new Date(y, m, d, 0, 0, 0, 0).toISOString(),
+    to:   new Date(y, m, d, 23, 59, 59, 999).toISOString(),
+  };
+}
+
+const INVOICE_PRIORITY: Record<InvoiceStatus, number> = {
+  DRAFT:          0,
+  ISSUED:         1,
+  PARTIALLY_PAID: 2,
+  PAID:           3,
+  CANCELLED:      99,
+};
 
 function formatScheduled(iso: string, locale: string): string {
   return new Date(iso).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
@@ -40,6 +61,19 @@ export function DoctorQueuePanel() {
     date: todayDate(),
     limit: 50,
   });
+
+  const { from, to } = useMemo(() => getTodayRange(), []);
+  const { data: invoicesData } = useInvoices({ from, to, limit: 50 });
+  const invoiceMap = useMemo(() => {
+    const map = new Map<string, Invoice>();
+    for (const inv of invoicesData?.data ?? []) {
+      const existing = map.get(inv.patientId);
+      if (!existing || INVOICE_PRIORITY[inv.status] < INVOICE_PRIORITY[existing.status]) {
+        map.set(inv.patientId, inv);
+      }
+    }
+    return map;
+  }, [invoicesData]);
 
   const header = (
     <div className="flex items-center justify-between">
@@ -113,6 +147,7 @@ export function DoctorQueuePanel() {
           const { patient, doctor } = appointment;
           const waited = waitMins(entry.createdAt);
           const isLong = waited >= 20;
+          const patientInvoice = invoiceMap.get(patient.id);
           return (
             <div key={entry.id} className="rounded-xl border border-border bg-card p-4">
               <div className="flex items-start gap-4">
@@ -133,8 +168,11 @@ export function DoctorQueuePanel() {
                       {t('card.waited', { duration: relativeWait(entry.createdAt, t('card.justNow')) })}
                     </span>
                   </div>
-                  <div className="mt-1.5">
+                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                     <QueueStatusBadge status={entry.status} />
+                    {patientInvoice && patientInvoice.status !== 'CANCELLED' && (
+                      <InvoiceStatusBadge status={patientInvoice.status} />
+                    )}
                   </div>
                 </div>
 

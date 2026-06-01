@@ -1,17 +1,36 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { RefreshCw, Inbox } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useQueue } from '@/hooks/use-queue';
 import { useDoctorsList } from '@/hooks/use-appointments';
+import { useInvoices } from '@/hooks/use-invoices';
 import { QueueTicket } from './queue-ticket';
 import { AdvanceQueueButton } from './advance-queue-button';
 import { SkipQueueButton } from './skip-queue-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { QueueStatus } from '@/types/queue';
+import type { Invoice, InvoiceStatus } from '@/types/invoice';
 
 const SKIPPABLE: QueueStatus[] = ['WAITING', 'CALLED'];
+
+function getTodayRange() {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+  return {
+    from: new Date(y, m, d, 0, 0, 0, 0).toISOString(),
+    to:   new Date(y, m, d, 23, 59, 59, 999).toISOString(),
+  };
+}
+
+const INVOICE_PRIORITY: Record<InvoiceStatus, number> = {
+  DRAFT:          0,
+  ISSUED:         1,
+  PARTIALLY_PAID: 2,
+  PAID:           3,
+  CANCELLED:      99,
+};
 
 const ALL_STATUSES: QueueStatus[] = ['WAITING', 'CALLED', 'IN_PROGRESS', 'DONE', 'SKIPPED'];
 
@@ -42,6 +61,19 @@ export function QueueBoard() {
   });
 
   const { data: doctorsData } = useDoctorsList();
+
+  const { from, to } = useMemo(() => getTodayRange(), []);
+  const { data: invoicesData } = useInvoices({ from, to, limit: 100 });
+  const invoiceMap = useMemo(() => {
+    const map = new Map<string, Invoice>();
+    for (const inv of invoicesData?.data ?? []) {
+      const existing = map.get(inv.patientId);
+      if (!existing || INVOICE_PRIORITY[inv.status] < INVOICE_PRIORITY[existing.status]) {
+        map.set(inv.patientId, inv);
+      }
+    }
+    return map;
+  }, [invoicesData]);
 
   const filters = (
     <div className="flex flex-wrap items-center gap-2">
@@ -181,7 +213,7 @@ export function QueueBoard() {
       <div className="space-y-3">
         {data.data.map((entry) => (
           <div key={entry.id} className="space-y-1">
-            <QueueTicket entry={entry} />
+            <QueueTicket entry={entry} invoice={invoiceMap.get(entry.appointment.patient.id)} />
             {SKIPPABLE.includes(entry.status) && (
               <div className="flex items-center justify-end gap-2 px-1">
                 <AdvanceQueueButton entryId={entry.id} status={entry.status} />

@@ -59,7 +59,9 @@
       "technicianRadiology": "قائمة عمل الأشعة",
       "invoices": "الفواتير",
       "settings": "الإعدادات",
-      "doctors": "الأطباء"
+      "doctors": "الأطباء",
+      "followUps": "المراجعات",
+      "myFollowUps": "مراجعاتي"
     }
   },
   "dashboard": {
@@ -913,6 +915,11 @@
       "notes": "ملاحظات",
       "plan": "خطة العلاج",
       "followUp": "متابعة",
+      "followUpStatus": {
+        "dueToday": "مستحق اليوم",
+        "pending": "قيد الانتظار",
+        "overdue": "متأخر · {days}ي"
+      },
       "medicalEvent": "حدث طبي",
       "doctorPrefix": "د.",
       "duration": {
@@ -1591,6 +1598,65 @@
       "uploadStorageFailed": "فشل رفع الملف إلى التخزين ({status})",
       "uploadRegistrationFailed": "تم رفع الملف ولكن فشل تسجيله، يرجى المحاولة أو التواصل مع الإدارة",
       "uploadFailed": "حدث خطأ أثناء رفع الملف"
+    }
+  },
+  "followups": {
+    "title": "المراجعات",
+    "subtitle": "إدارة مواعيد مراجعة المرضى",
+    "doctorView": {
+      "title": "مراجعاتي",
+      "subtitle": "المرضى الذين يحتاجون إلى متابعة"
+    },
+    "tabs": {
+      "dueToday": "مستحقة اليوم",
+      "missed": "فائتة",
+      "overdue": "متأخرة",
+      "pending": "بانتظار الحجز",
+      "upcoming": "قادمة"
+    },
+    "status": {
+      "PENDING": "بانتظار الحجز",
+      "DUE_TODAY": "مستحقة اليوم",
+      "UPCOMING": "محجوزة",
+      "OVERDUE": "متأخرة",
+      "COMPLETED": "مكتملة",
+      "MISSED": "فائتة"
+    },
+    "columns": {
+      "patient": "المريض",
+      "doctor": "الطبيب",
+      "recommendedDate": "التاريخ الموصى به",
+      "status": "الحالة",
+      "daysDelta": "فرق الحجز",
+      "linkedAppointment": "الموعد",
+      "actions": "الإجراءات"
+    },
+    "daysDelta": {
+      "onTime": "في الوقت",
+      "late": "متأخر +{days}ي",
+      "early": "مبكر {days}ي"
+    },
+    "actions": {
+      "bookNow": "احجز الآن",
+      "viewAppointment": "عرض",
+      "openEncounter": "فتح الزيارة",
+      "viewPatient": "المريض"
+    },
+    "filter": {
+      "byDoctor": "تصفية حسب الطبيب",
+      "dateFrom": "من تاريخ",
+      "dateTo": "إلى تاريخ"
+    },
+    "empty": {
+      "dueToday": "لا توجد مراجعات مستحقة اليوم",
+      "missed": "لا توجد مراجعات فائتة",
+      "overdue": "لا توجد مراجعات متأخرة",
+      "pending": "لا توجد مراجعات بانتظار الحجز",
+      "upcoming": "لا توجد مراجعات قادمة",
+      "withFilters": "لا توجد مراجعات تطابق الفلاتر الحالية"
+    },
+    "error": {
+      "loadFailed": "فشل تحميل المراجعات"
     }
   }
 }

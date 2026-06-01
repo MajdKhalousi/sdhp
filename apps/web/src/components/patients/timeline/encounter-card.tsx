@@ -7,6 +7,29 @@ import { formatTime } from './format-time';
 
 type Props = { event: Extract<TimelineEvent, { type: 'ENCOUNTER' }> };
 
+type FollowUpPillInfo =
+  | { status: 'DUE_TODAY' }
+  | { status: 'PENDING' }
+  | { status: 'OVERDUE'; days: number };
+
+function computeFollowUpPill(followUpDate: string): FollowUpPillInfo {
+  // UTC+3, no DST — matches backend Damascus boundary
+  const DAMASCUS_OFFSET_MS = 3 * 60 * 60 * 1000;
+  const nowDamascus = new Date(Date.now() + DAMASCUS_OFFSET_MS);
+  const todayStr = [
+    nowDamascus.getUTCFullYear(),
+    String(nowDamascus.getUTCMonth() + 1).padStart(2, '0'),
+    String(nowDamascus.getUTCDate()).padStart(2, '0'),
+  ].join('-');
+  const dateStr = followUpDate.slice(0, 10);
+  if (dateStr === todayStr) return { status: 'DUE_TODAY' };
+  if (dateStr > todayStr) return { status: 'PENDING' };
+  const days = Math.round(
+    (new Date(todayStr).getTime() - new Date(dateStr).getTime()) / 86_400_000,
+  );
+  return { status: 'OVERDUE', days };
+}
+
 function encounterDuration(
   start: string,
   end: string | null,
@@ -31,6 +54,7 @@ export function EncounterCard({ event }: Props) {
   const doctor = `${t('doctorPrefix')} ${data.doctor.firstName} ${data.doctor.lastName}`;
   const durationUnits = { min: t('duration.minute'), h: t('duration.hourShort'), m: t('duration.minuteShort') };
   const isActive = !data.endedAt;
+  const followUpPill = data.followUpDate ? computeFollowUpPill(data.followUpDate) : null;
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-s-4 border-s-blue-400">
@@ -99,10 +123,29 @@ export function EncounterCard({ event }: Props) {
             </div>
           )}
           {data.followUpDate && (
-            <p className="text-xs text-muted-foreground">
-              {t('followUp')}{' '}
-              <span className="text-foreground">{formatDate(data.followUpDate, displayLocale)}</span>
-            </p>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <p className="text-xs text-muted-foreground">
+                {t('followUp')}{' '}
+                <span className="text-foreground" dir="ltr">
+                  {formatDate(data.followUpDate, displayLocale)}
+                </span>
+              </p>
+              {followUpPill && (
+                <Badge
+                  variant={
+                    followUpPill.status === 'DUE_TODAY' ? 'warning' :
+                    followUpPill.status === 'OVERDUE'   ? 'danger'  : 'outline'
+                  }
+                  className="text-xs"
+                >
+                  {followUpPill.status === 'DUE_TODAY'
+                    ? t('followUpStatus.dueToday')
+                    : followUpPill.status === 'OVERDUE'
+                    ? t('followUpStatus.overdue', { days: followUpPill.days })
+                    : t('followUpStatus.pending')}
+                </Badge>
+              )}
+            </div>
           )}
         </div>
       )}

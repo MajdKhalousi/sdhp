@@ -26,15 +26,17 @@ interface Props {
   patientId: string;
   defaultDoctorId: string;
   followUpDate: string;
+  initialShowForm?: boolean;
+  onSuccess?: () => void;
 }
 
-export function FollowUpBookingPanel({ encounterId, patientId, defaultDoctorId, followUpDate }: Props) {
+export function FollowUpBookingPanel({ encounterId, patientId, defaultDoctorId, followUpDate, initialShowForm, onSuccess }: Props) {
   const t = useTranslations('encounter.followUpBooking');
   const tCommon = useTranslations('common');
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
 
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(initialShowForm ?? false);
   const [doctorId, setDoctorId] = useState(defaultDoctorId);
   const [date, setDate] = useState(followUpDate.slice(0, 10));
   const [visitTypeId, setVisitTypeId] = useState('');
@@ -84,7 +86,7 @@ export function FollowUpBookingPanel({ encounterId, patientId, defaultDoctorId, 
         ...(notes.trim() ? { notes: notes.trim() } : {}),
       },
       {
-        onSuccess: () => setShowForm(false),
+        onSuccess: () => { setShowForm(false); onSuccess?.(); },
         onError: (e) => setBookError(e instanceof Error ? e.message : t('form.bookingFailed')),
       },
     );

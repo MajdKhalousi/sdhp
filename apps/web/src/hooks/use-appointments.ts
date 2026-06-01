@@ -61,6 +61,7 @@ export function useCreateAppointment() {
       api.post<Appointment>('/v1/appointments', dto),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['appointments'] });
+      qc.invalidateQueries({ queryKey: ['follow-ups'] });
     },
   });
 }

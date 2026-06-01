@@ -465,6 +465,8 @@ model Encounter {
   @@index([organizationId])
   @@index([doctorId])
   @@index([patientId])
+  @@index([organizationId, followUpDate])
+  @@index([organizationId, doctorId, followUpDate])
   @@map("encounters")
 }
 

@@ -15,6 +15,8 @@ import {
   Receipt,
   Settings,
   UserCog,
+  CalendarClock,
+  BookMarked,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
@@ -57,6 +59,11 @@ const NAV_ITEMS: NavItem[] = [
     roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR'],
   },
   {
+    href: '/dashboard/my-follow-ups',
+    icon: BookMarked,
+    roles: ['DOCTOR'],
+  },
+  {
     href: '/dashboard/technician/labs',
     icon: FlaskConical,
     roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'TECHNICIAN'],
@@ -65,6 +72,11 @@ const NAV_ITEMS: NavItem[] = [
     href: '/dashboard/technician/radiology',
     icon: ScanLine,
     roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'TECHNICIAN'],
+  },
+  {
+    href: '/dashboard/follow-ups',
+    icon: CalendarClock,
+    roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'BRANCH_ADMIN', 'NURSE', 'SECRETARY'],
   },
   {
     href: '/dashboard/invoices',
@@ -99,6 +111,8 @@ export function Sidebar() {
     '/dashboard/doctor/queue':         t('items.doctorQueue'),
     '/dashboard/technician/labs':      t('items.technicianLabs'),
     '/dashboard/technician/radiology': t('items.technicianRadiology'),
+    '/dashboard/my-follow-ups':         t('items.myFollowUps'),
+    '/dashboard/follow-ups':            t('items.followUps'),
     '/dashboard/invoices':             t('items.invoices'),
     '/dashboard/doctors':               t('items.doctors'),
     '/dashboard/settings/clinic':      t('items.settings'),

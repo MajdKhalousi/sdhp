@@ -59,7 +59,9 @@
       "technicianRadiology": "Radiology Worklist",
       "invoices": "Invoices",
       "settings": "Settings",
-      "doctors": "Doctors"
+      "doctors": "Doctors",
+      "followUps": "Follow-ups",
+      "myFollowUps": "My Follow-ups"
     }
   },
   "dashboard": {
@@ -913,6 +915,11 @@
       "notes": "Notes",
       "plan": "Plan",
       "followUp": "Follow-up",
+      "followUpStatus": {
+        "dueToday": "Due today",
+        "pending": "Pending",
+        "overdue": "Overdue · {days}d"
+      },
       "medicalEvent": "Medical event",
       "doctorPrefix": "Dr.",
       "duration": {
@@ -1591,6 +1598,65 @@
       "uploadStorageFailed": "Failed to upload file to storage ({status})",
       "uploadRegistrationFailed": "File uploaded but registration failed, please retry or contact admin",
       "uploadFailed": "An error occurred while uploading the file"
+    }
+  },
+  "followups": {
+    "title": "Follow-ups",
+    "subtitle": "Manage patient follow-up appointments",
+    "doctorView": {
+      "title": "My Follow-ups",
+      "subtitle": "Patients requiring follow-up care"
+    },
+    "tabs": {
+      "dueToday": "Due Today",
+      "missed": "Missed",
+      "overdue": "Overdue",
+      "pending": "Pending",
+      "upcoming": "Upcoming"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "DUE_TODAY": "Due Today",
+      "UPCOMING": "Upcoming",
+      "OVERDUE": "Overdue",
+      "COMPLETED": "Completed",
+      "MISSED": "Missed"
+    },
+    "columns": {
+      "patient": "Patient",
+      "doctor": "Doctor",
+      "recommendedDate": "Recommended Date",
+      "status": "Status",
+      "daysDelta": "Booking Offset",
+      "linkedAppointment": "Appointment",
+      "actions": "Actions"
+    },
+    "daysDelta": {
+      "onTime": "On time",
+      "late": "+{days}d late",
+      "early": "{days}d early"
+    },
+    "actions": {
+      "bookNow": "Book Now",
+      "viewAppointment": "View",
+      "openEncounter": "Open Encounter",
+      "viewPatient": "Patient"
+    },
+    "filter": {
+      "byDoctor": "Filter by doctor",
+      "dateFrom": "From date",
+      "dateTo": "To date"
+    },
+    "empty": {
+      "dueToday": "No follow-ups due today",
+      "missed": "No missed follow-ups",
+      "overdue": "No overdue follow-ups",
+      "pending": "No pending follow-ups",
+      "upcoming": "No upcoming follow-ups",
+      "withFilters": "No follow-ups match the current filters"
+    },
+    "error": {
+      "loadFailed": "Failed to load follow-ups"
     }
   }
 }

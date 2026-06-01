@@ -30,6 +30,7 @@ import { ClinicSettingsModule } from './modules/clinic-settings/clinic-settings.
 import { VisitTypesModule } from './modules/visit-types/visit-types.module';
 import { ServicesModule } from './modules/services/services.module';
 import { DoctorSchedulesModule } from './modules/doctor-schedules/doctor-schedules.module';
+import { FollowupsModule } from './modules/followups/followups.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -65,6 +66,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     VisitTypesModule,
     ServicesModule,
     DoctorSchedulesModule,
+    FollowupsModule,
   ],
   controllers: [AppController],
   providers: [

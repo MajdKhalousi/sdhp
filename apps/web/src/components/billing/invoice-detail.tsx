@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { Link } from '@/i18n/navigation';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
@@ -87,7 +87,7 @@ function IssueButton({ invoice }: { invoice: Invoice }) {
                 onSuccess: () => setConfirming(false),
                 onError: (e) => {
                   setConfirming(false);
-                  setError(e instanceof Error ? e.message : t('issuing'));
+                  setError(e instanceof Error ? e.message : t('issueFailed'));
                 },
               });
             }}
@@ -118,14 +118,14 @@ function IssueButton({ invoice }: { invoice: Invoice }) {
   );
 }
 
-const VOID_ALLOWED_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
+const BILLING_WRITE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
 
 function PaymentsSection({ invoice }: { invoice: Invoice }) {
   const t = useTranslations('invoice.payments');
   const tPayment = useTranslations('invoice.payment');
   const locale = useLocale();
   const { user } = useAuthStore();
-  const canVoid = VOID_ALLOWED_ROLES.has(user?.role ?? '');
+  const canVoid = BILLING_WRITE_ROLES.has(user?.role ?? '');
 
   const [showForm, setShowForm] = useState(false);
   const [voidingId, setVoidingId] = useState<string | null>(null);
@@ -207,9 +207,8 @@ function PaymentsSection({ invoice }: { invoice: Invoice }) {
                 const isVoided = payment.voidedAt !== null;
                 const isExpanded = voidingId === payment.id;
                 return (
-                  <>
+                  <Fragment key={payment.id}>
                     <tr
-                      key={payment.id}
                       className={`border-t border-border ${isVoided ? 'opacity-60' : ''}`}
                     >
                       <td className="px-4 py-3 text-sm font-medium tabular-nums" dir="ltr">
@@ -258,7 +257,7 @@ function PaymentsSection({ invoice }: { invoice: Invoice }) {
                       )}
                     </tr>
                     {isExpanded && (
-                      <tr key={`${payment.id}-void-form`} className="border-t border-border">
+                      <tr className="border-t border-border">
                         <td colSpan={colCount} className="px-4 pb-4 pt-3">
                           <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3">
                             <p className="text-xs font-semibold text-destructive">{t('voidConfirmTitle')}</p>
@@ -302,7 +301,7 @@ function PaymentsSection({ invoice }: { invoice: Invoice }) {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>
@@ -335,6 +334,7 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
   const locale = useLocale();
 
   const { data: invoice, isLoading, isError, error, refetch } = useInvoice(invoiceId);
+  const { user } = useAuthStore();
 
   if (isLoading) {
     return (
@@ -377,6 +377,7 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
   const remainingStr = isNaN(remaining) ? '—' : formatAmount(String(remaining), locale);
   const isDraft = invoice.status === 'DRAFT';
   const isCancellable = invoice.status === 'DRAFT' || invoice.status === 'ISSUED';
+  const canCancel = BILLING_WRITE_ROLES.has(user?.role ?? '');
 
   return (
     <div className="space-y-6">
@@ -406,7 +407,7 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
         {/* Actions */}
         <div className="flex flex-wrap items-center gap-2">
           {isDraft && <IssueButton invoice={invoice} />}
-          {isCancellable && <CancelInvoiceDialog invoiceId={invoice.id} />}
+          {isCancellable && canCancel && <CancelInvoiceDialog invoiceId={invoice.id} />}
         </div>
       </div>
 

@@ -154,7 +154,7 @@ export function CashierView() {
   const { data, isLoading, isError, error, refetch } = useInvoices({ from, to, limit: 50 });
 
   const invoices = (data?.data ?? []).filter((inv) => inv.status !== 'CANCELLED');
-  const pending = invoices.filter((inv) => inv.status === 'DRAFT' || inv.status === 'ISSUED');
+  const pending = invoices.filter((inv) => (inv.status === 'DRAFT' && parseFloat(inv.totalAmount) > 0) || inv.status === 'ISSUED');
   const partial = invoices.filter((inv) => inv.status === 'PARTIALLY_PAID');
   const collected = invoices.filter((inv) => inv.status === 'PAID');
 

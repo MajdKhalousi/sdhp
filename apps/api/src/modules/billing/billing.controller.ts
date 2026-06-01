@@ -63,6 +63,8 @@ export class BillingController {
   @Roles(
     UserRole.SUPER_ADMIN,
     UserRole.ORG_ADMIN,
+    UserRole.DOCTOR,
+    UserRole.NURSE,
     UserRole.SECRETARY,
     UserRole.ACCOUNTANT,
   )

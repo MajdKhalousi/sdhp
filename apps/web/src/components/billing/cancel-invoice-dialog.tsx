@@ -41,7 +41,7 @@ export function CancelInvoiceDialog({ invoiceId, onSuccess }: CancelInvoiceDialo
           onSuccess?.();
         },
         onError: (e) => {
-          setError(e instanceof Error ? e.message : t('cancelling'));
+          setError(e instanceof Error ? e.message : t('cancelFailed'));
         },
       },
     );

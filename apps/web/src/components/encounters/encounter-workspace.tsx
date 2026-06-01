@@ -128,7 +128,10 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
     if (!patientInvoices) return null;
     return (
       patientInvoices
-        .filter((inv) => UNPAID_PRIORITY[inv.status] !== undefined)
+        .filter((inv) =>
+          UNPAID_PRIORITY[inv.status] !== undefined &&
+          !(inv.status === 'DRAFT' && parseFloat(inv.totalAmount) <= 0),
+        )
         .sort((a, b) => (UNPAID_PRIORITY[a.status] ?? 99) - (UNPAID_PRIORITY[b.status] ?? 99))[0] ?? null
     );
   }, [patientInvoices]);

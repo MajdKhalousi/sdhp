@@ -1715,7 +1715,9 @@
       },
       "error": {
         "loadFailed": "فشل تحميل قائمة الأطباء",
-        "updateFailed": "فشل تحديث بيانات الطبيب"
+        "updateFailed": "فشل تحديث بيانات الطبيب",
+        "createFailed": "فشل إنشاء ملف الطبيب",
+        "userConflict": "هذا المستخدم لديه ملف طبيب بالفعل"
       },
       "status": {
         "active": "نشط",
@@ -1725,18 +1727,31 @@
         "edit": "تعديل",
         "save": "حفظ",
         "saving": "جارٍ الحفظ…",
-        "cancel": "إلغاء"
+        "cancel": "إلغاء",
+        "create": "إنشاء",
+        "creating": "جارـ الإنشاء…"
       },
       "form": {
         "specialization": "الاختصاص",
         "department": "القسم",
         "consultationMinutes": "مدة المعاينة بالدقائق",
         "isActive": "نشط",
-        "noDepartment": "بدون قسم"
+        "noDepartment": "بدون قسم",
+        "createTitle": "ملف طبيب جديد",
+        "userId": "حساب الطبيب",
+        "licenseNumber": "رقم الترخيص",
+        "maxPatientsPerDay": "الحد الأقصى للمرضى يومياً",
+        "noDoctorUsers": "لا توجد حسابات طبيب متاحة"
       },
       "validation": {
         "specializationMin": "يجب أن يكون الاختصاص حرفين على الأقل.",
-        "consultationMin": "يجب أن تكون مدة المعاينة 5 دقائق على الأقل."
+        "consultationMin": "يجب أن تكون مدة المعاينة 5 دقائق على الأقل.",
+        "userRequired": "يرجى اختيار حساب الطبيب.",
+        "maxPatientsMin": "يجب أن يكون الحد الأقصى للمرضى يومياً 1 على الأقل."
+      },
+      "newDoctor": "طبيب جديد",
+      "hints": {
+        "createStaffFirst": "أنشئ موظفاً بدور طبيب أولاً، ثم عد إلى هنا."
       }
     },
     "schedule": {

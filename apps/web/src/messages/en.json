@@ -1715,7 +1715,9 @@
       },
       "error": {
         "loadFailed": "Failed to load doctors",
-        "updateFailed": "Failed to update doctor"
+        "updateFailed": "Failed to update doctor",
+        "createFailed": "Failed to create doctor profile",
+        "userConflict": "This user already has a doctor profile"
       },
       "status": {
         "active": "Active",
@@ -1725,18 +1727,31 @@
         "edit": "Edit",
         "save": "Save",
         "saving": "Saving…",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "create": "Create",
+        "creating": "Creating…"
       },
       "form": {
         "specialization": "Specialization",
         "department": "Department",
         "consultationMinutes": "Consultation minutes",
         "isActive": "Active",
-        "noDepartment": "No department"
+        "noDepartment": "No department",
+        "createTitle": "New Doctor Profile",
+        "userId": "Doctor Account",
+        "licenseNumber": "License Number",
+        "maxPatientsPerDay": "Max Patients / Day",
+        "noDoctorUsers": "No available doctor accounts"
       },
       "validation": {
         "specializationMin": "Specialization must be at least 2 characters.",
-        "consultationMin": "Consultation minutes must be at least 5."
+        "consultationMin": "Consultation minutes must be at least 5.",
+        "userRequired": "Please select a doctor account.",
+        "maxPatientsMin": "Max patients per day must be at least 1."
+      },
+      "newDoctor": "New Doctor",
+      "hints": {
+        "createStaffFirst": "Create a staff member with the Doctor role first, then return here."
       }
     },
     "schedule": {

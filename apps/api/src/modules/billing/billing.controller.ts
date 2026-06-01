@@ -138,7 +138,7 @@ export class BillingController {
 
   @Patch(':id/issue')
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ACCOUNTANT)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY, UserRole.ACCOUNTANT)
   @ApiOperation({ summary: 'Issue a DRAFT invoice. Requires at least one item. Sets issuedAt.' })
   @ApiOkResponse({ description: 'Invoice issued' })
   @ApiNotFoundResponse({ description: 'Invoice not found' })
@@ -164,7 +164,7 @@ export class BillingController {
 
   @Post(':id/payments')
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ACCOUNTANT)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY, UserRole.ACCOUNTANT)
   @ApiOperation({ summary: 'Record a payment on ISSUED or PARTIALLY_PAID invoice. Atomic paidAmount update.' })
   @ApiCreatedResponse({ description: 'Payment recorded, invoice status updated' })
   @ApiNotFoundResponse({ description: 'Invoice not found' })

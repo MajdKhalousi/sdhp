@@ -57,6 +57,7 @@
       "doctorQueue": "طابور الطبيب",
       "technicianLabs": "قائمة عمل المختبر",
       "technicianRadiology": "قائمة عمل الأشعة",
+      "cashier": "الصندوق",
       "invoices": "الفواتير",
       "settings": "الإعدادات",
       "doctors": "الأطباء",
@@ -1648,6 +1649,31 @@
       "uploadStorageFailed": "فشل رفع الملف إلى التخزين ({status})",
       "uploadRegistrationFailed": "تم رفع الملف ولكن فشل تسجيله، يرجى المحاولة أو التواصل مع الإدارة",
       "uploadFailed": "حدث خطأ أثناء رفع الملف"
+    }
+  },
+  "cashier": {
+    "title": "الصندوق",
+    "subtitle": "تحصيل مدفوعات مرضى اليوم",
+    "noInvoices": "لا توجد فواتير لهذا اليوم",
+    "noInvoicesHint": "يتم إنشاء الفواتير تلقائيًا عند تسجيل دخول المرضى.",
+    "groups": {
+      "pending": "بانتظار الدفع",
+      "partial": "مدفوعة جزئيًا",
+      "collected": "محصّلة اليوم"
+    },
+    "actions": {
+      "issueAndPay": "إصدار وتحصيل",
+      "collectPayment": "تحصيل الدفع",
+      "collectRemaining": "تحصيل المتبقي",
+      "paid": "مدفوعة"
+    },
+    "issueAndPayDialog": {
+      "title": "تحصيل الدفع",
+      "issuingNote": "سيتم إصدار الفاتورة تلقائيًا.",
+      "issueError": "فشل إصدار الفاتورة.",
+      "paymentError": "تم إصدار الفاتورة لكن فشل تسجيل الدفعة. يرجى تسجيل الدفع يدويًا.",
+      "submitButton": "تأكيد وتحصيل",
+      "submitting": "جارٍ المعالجة…"
     }
   },
   "followups": {

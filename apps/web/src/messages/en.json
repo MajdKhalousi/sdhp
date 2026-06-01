@@ -57,6 +57,7 @@
       "doctorQueue": "Doctor Queue",
       "technicianLabs": "Lab Worklist",
       "technicianRadiology": "Radiology Worklist",
+      "cashier": "Cashier",
       "invoices": "Invoices",
       "settings": "Settings",
       "doctors": "Doctors",
@@ -1648,6 +1649,31 @@
       "uploadStorageFailed": "Failed to upload file to storage ({status})",
       "uploadRegistrationFailed": "File uploaded but registration failed, please retry or contact admin",
       "uploadFailed": "An error occurred while uploading the file"
+    }
+  },
+  "cashier": {
+    "title": "Cashier",
+    "subtitle": "Collect payments for today's patients",
+    "noInvoices": "No invoices for today",
+    "noInvoicesHint": "Invoices are created automatically when patients check in.",
+    "groups": {
+      "pending": "Pending Payment",
+      "partial": "Partially Paid",
+      "collected": "Collected Today"
+    },
+    "actions": {
+      "issueAndPay": "Issue & Collect",
+      "collectPayment": "Collect Payment",
+      "collectRemaining": "Collect Remaining",
+      "paid": "Paid"
+    },
+    "issueAndPayDialog": {
+      "title": "Collect Payment",
+      "issuingNote": "This invoice will be issued automatically.",
+      "issueError": "Failed to issue the invoice.",
+      "paymentError": "Invoice issued but payment failed. Please record payment manually.",
+      "submitButton": "Confirm & Collect",
+      "submitting": "Processing…"
     }
   },
   "followups": {

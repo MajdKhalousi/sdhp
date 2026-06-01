@@ -12,6 +12,7 @@ import {
   ClipboardList,
   FlaskConical,
   ScanLine,
+  CreditCard,
   Receipt,
   Settings,
   UserCog,
@@ -79,6 +80,11 @@ const NAV_ITEMS: NavItem[] = [
     roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'BRANCH_ADMIN', 'NURSE', 'SECRETARY'],
   },
   {
+    href: '/dashboard/cashier',
+    icon: CreditCard,
+    roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY'],
+  },
+  {
     href: '/dashboard/invoices',
     icon: Receipt,
     roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY'],
@@ -113,6 +119,7 @@ export function Sidebar() {
     '/dashboard/technician/radiology': t('items.technicianRadiology'),
     '/dashboard/my-follow-ups':         t('items.myFollowUps'),
     '/dashboard/follow-ups':            t('items.followUps'),
+    '/dashboard/cashier':              t('items.cashier'),
     '/dashboard/invoices':             t('items.invoices'),
     '/dashboard/doctors':               t('items.doctors'),
     '/dashboard/settings/clinic':      t('items.settings'),

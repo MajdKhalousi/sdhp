@@ -16,6 +16,7 @@ import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeli
 import { MedicalTimelineEventType } from '@prisma/client';
 import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
 import { DoctorSchedulesService } from '../doctor-schedules/doctor-schedules.service';
+import { BillingService } from '../billing/billing.service';
 
 const PATIENT_SELECT = {
   id: true,
@@ -83,6 +84,7 @@ export class AppointmentsService {
     private timelineWriter: MedicalTimelineWriterService,
     private auditWriter: AuditLogsWriterService,
     private doctorSchedulesService: DoctorSchedulesService,
+    private billingService: BillingService,
   ) {}
 
   async findAll(query: AppointmentQueryDto, caller: JwtPayload): Promise<PaginatedResponse<AppointmentRecord>> {
@@ -295,6 +297,28 @@ export class AppointmentsService {
         oldData: toSnapshot({ status: appt.status }),
         newData: toSnapshot({ status: dto.status }),
       });
+
+      if (dto.status === AppointmentStatus.IN_PROGRESS) {
+        // Fire-and-forget: invoice failure must never block check-in.
+        await this.billingService.autoCreateInvoiceForAppointment(
+          {
+            id: result.id,
+            organizationId: result.organizationId,
+            branchId: result.branchId,
+            patientId: result.patientId,
+            visitTypeId: result.visitTypeId,
+            sourceEncounterId: result.sourceEncounterId,
+          },
+          caller.sub,
+        ).catch(() => { /* billing error must not surface to caller */ });
+      } else if (
+        dto.status === AppointmentStatus.CANCELLED ||
+        dto.status === AppointmentStatus.NO_SHOW
+      ) {
+        // Auto-cancel the DRAFT invoice if one exists; ISSUED/PAID are never touched.
+        await this.billingService.autoCancelDraftInvoiceForAppointment(id)
+          .catch(() => { /* billing error must not surface to caller */ });
+      }
     } else {
       await this.auditWriter.log({
         caller,

@@ -30,6 +30,7 @@ import { AddInvoiceItemDto } from './dto/add-invoice-item.dto';
 import { CancelInvoiceDto } from './dto/cancel-invoice.dto';
 import { RecordPaymentDto } from './dto/record-payment.dto';
 import { BillingQueryDto } from './dto/billing-query.dto';
+import { UpdateBillingPolicyDto } from './dto/update-billing-policy.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
@@ -173,6 +174,31 @@ export class BillingController {
     @CurrentUser() user: JwtPayload,
   ) {
     return this.service.recordPayment(id, dto, user);
+  }
+}
+
+@ApiTags('Billing')
+@ApiBearerAuth()
+@Controller('billing')
+export class BillingPolicyController {
+  constructor(private readonly service: BillingService) {}
+
+  @Get('policy')
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
+  @ApiOperation({ summary: 'Get org billing policy. Auto-creates with defaults on first access.' })
+  @ApiOkResponse({ description: 'Billing policy returned' })
+  getPolicy(@CurrentUser() user: JwtPayload) {
+    return this.service.getBillingPolicy(user);
+  }
+
+  @Patch('policy')
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
+  @ApiOperation({ summary: 'Update org billing policy. All fields are optional.' })
+  @ApiOkResponse({ description: 'Billing policy updated' })
+  upsertPolicy(@Body() dto: UpdateBillingPolicyDto, @CurrentUser() user: JwtPayload) {
+    return this.service.upsertBillingPolicy(dto, user);
   }
 }
 

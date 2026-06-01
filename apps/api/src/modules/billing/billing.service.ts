@@ -14,6 +14,7 @@ import { AddInvoiceItemDto } from './dto/add-invoice-item.dto';
 import { CancelInvoiceDto } from './dto/cancel-invoice.dto';
 import { RecordPaymentDto } from './dto/record-payment.dto';
 import { BillingQueryDto } from './dto/billing-query.dto';
+import { UpdateBillingPolicyDto } from './dto/update-billing-policy.dto';
 import { AuditLogsWriterService } from '../audit-logs/audit-logs-writer.service';
 
 // ── Select constants ───────────────────────────────────────────────────────
@@ -63,6 +64,20 @@ const PAYMENT_SELECT = {
   createdAt: true,
   updatedAt: true,
   receivedBy: { select: USER_SELECT },
+} as const;
+
+const BILLING_POLICY_SELECT = {
+  id: true,
+  organizationId: true,
+  autoCreateInvoiceOnCheckin: true,
+  invoiceNumberPrefix: true,
+  freeFollowUpWindowDays: true,
+  followUpDiscountPercent: true,
+  requirePaymentBeforeEncounter: true,
+  defaultDueDateDays: true,
+  noShowFeeAmount: true,
+  createdAt: true,
+  updatedAt: true,
 } as const;
 
 const INVOICE_SELECT = {
@@ -493,6 +508,173 @@ export class BillingService {
       },
       select: INVOICE_SELECT,
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  // ── Auto-invoice hooks ─────────────────────────────────────────────────────
+
+  /**
+   * Called when an appointment transitions to IN_PROGRESS.
+   * Silently skips if policy disables auto-create, or a live invoice already exists.
+   * Never throws — callers must catch and swallow.
+   */
+  async autoCreateInvoiceForAppointment(
+    appt: {
+      id: string;
+      organizationId: string;
+      branchId: string | null;
+      patientId: string;
+      visitTypeId: string | null;
+      sourceEncounterId: string | null;
+    },
+    createdById: string,
+  ): Promise<void> {
+    // 1. Ensure policy row exists, read settings.
+    const policy = await this.prisma.billingPolicy.upsert({
+      where: { organizationId: appt.organizationId },
+      create: { organizationId: appt.organizationId },
+      update: {},
+      select: {
+        autoCreateInvoiceOnCheckin: true,
+        freeFollowUpWindowDays: true,
+        followUpDiscountPercent: true,
+      },
+    });
+
+    if (!policy.autoCreateInvoiceOnCheckin) return;
+
+    // 2. Skip if a live (non-cancelled) invoice already exists for this appointment.
+    const existing = await this.prisma.invoice.findFirst({
+      where: { appointmentId: appt.id, deletedAt: null, status: { not: InvoiceStatus.CANCELLED } },
+      select: { id: true },
+    });
+    if (existing) return;
+
+    // 3. Determine follow-up discount.
+    let itemDiscountPercent = 0;
+    const windowDays = policy.freeFollowUpWindowDays;
+    const discountPct = policy.followUpDiscountPercent.toNumber();
+
+    if (windowDays > 0 && discountPct > 0 && appt.sourceEncounterId) {
+      const sourceEnc = await this.prisma.encounter.findFirst({
+        where: { id: appt.sourceEncounterId, deletedAt: null },
+        select: { startedAt: true },
+      });
+      if (sourceEnc) {
+        const daysDiff = Math.floor((Date.now() - sourceEnc.startedAt.getTime()) / 86_400_000);
+        if (daysDiff <= windowDays) itemDiscountPercent = discountPct;
+      }
+    }
+
+    // 4. Atomically claim the next sequence number.
+    const seqRow = await this.prisma.billingPolicy.update({
+      where: { organizationId: appt.organizationId },
+      data: { nextInvoiceSequence: { increment: 1 } },
+      select: { nextInvoiceSequence: true, invoiceNumberPrefix: true, defaultDueDateDays: true },
+    });
+    const year = new Date().getFullYear();
+    const invoiceNumber = `${seqRow.invoiceNumberPrefix}-${year}-${String(seqRow.nextInvoiceSequence).padStart(5, '0')}`;
+    const dueDate =
+      seqRow.defaultDueDateDays > 0
+        ? new Date(Date.now() + seqRow.defaultDueDateDays * 86_400_000)
+        : undefined;
+
+    // 5. Resolve visit-type item (auto-line-item mirrors manual invoice creation).
+    let visitTypeItem: { id: string; name: string; basePrice: number } | null = null;
+    if (appt.visitTypeId) {
+      const vt = await this.prisma.visitType.findFirst({
+        where: { id: appt.visitTypeId, deletedAt: null },
+        select: { id: true, name: true, basePrice: true },
+      });
+      if (vt && vt.basePrice !== null) {
+        visitTypeItem = { id: vt.id, name: vt.name, basePrice: vt.basePrice.toNumber() };
+      }
+    }
+
+    // 6. Create the DRAFT invoice.
+    const invoice = await this.prisma.invoice.create({
+      data: {
+        organizationId: appt.organizationId,
+        branchId: appt.branchId,
+        patientId: appt.patientId,
+        appointmentId: appt.id,
+        createdById,
+        invoiceNumber,
+        subtotal: 0,
+        discountAmount: 0,
+        totalAmount: 0,
+        dueDate,
+      },
+      select: { id: true },
+    });
+
+    // 7. Attach visit-type line item with any follow-up discount.
+    if (visitTypeItem) {
+      const unitPrice = visitTypeItem.basePrice;
+      const itemDiscount = itemDiscountPercent > 0
+        ? parseFloat((unitPrice * itemDiscountPercent / 100).toFixed(2))
+        : 0;
+      const totalPrice = parseFloat((unitPrice - itemDiscount).toFixed(2));
+
+      await this.prisma.$transaction([
+        this.prisma.invoiceItem.create({
+          data: {
+            invoiceId: invoice.id,
+            visitTypeId: visitTypeItem.id,
+            description: visitTypeItem.name,
+            quantity: 1,
+            unitPrice,
+            discount: itemDiscount,
+            totalPrice,
+          },
+        }),
+        this.prisma.invoice.update({
+          where: { id: invoice.id },
+          data: { subtotal: unitPrice, discountAmount: itemDiscount, totalAmount: totalPrice },
+        }),
+      ]);
+    }
+  }
+
+  /**
+   * Called when an appointment is CANCELLED or NO_SHOW.
+   * Cancels the DRAFT invoice if one exists. Never touches ISSUED/PARTIALLY_PAID/PAID.
+   * Never throws — callers must catch and swallow.
+   */
+  async autoCancelDraftInvoiceForAppointment(appointmentId: string): Promise<void> {
+    const invoice = await this.prisma.invoice.findFirst({
+      where: { appointmentId, deletedAt: null, status: InvoiceStatus.DRAFT },
+      select: { id: true },
+    });
+    if (!invoice) return;
+
+    await this.prisma.invoice.update({
+      where: { id: invoice.id },
+      data: {
+        status: InvoiceStatus.CANCELLED,
+        cancelledAt: new Date(),
+        cancelReason: 'Auto-cancelled: appointment cancelled or no-show',
+      },
+    });
+  }
+
+  // ── Billing Policy ─────────────────────────────────────────────────────────
+
+  async getBillingPolicy(caller: JwtPayload) {
+    return this.prisma.billingPolicy.upsert({
+      where: { organizationId: caller.organizationId },
+      create: { organizationId: caller.organizationId },
+      update: {},
+      select: BILLING_POLICY_SELECT,
+    });
+  }
+
+  async upsertBillingPolicy(dto: UpdateBillingPolicyDto, caller: JwtPayload) {
+    return this.prisma.billingPolicy.upsert({
+      where: { organizationId: caller.organizationId },
+      create: { organizationId: caller.organizationId, ...dto },
+      update: dto,
+      select: BILLING_POLICY_SELECT,
     });
   }
 

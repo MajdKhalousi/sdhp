@@ -1,6 +1,7 @@
 import { Sidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
 import { AuthGuard } from '@/components/layout/auth-guard';
+import { Toaster } from '@/components/ui/toast';
 
 export default function DashboardLayout({
   children,
@@ -16,6 +17,7 @@ export default function DashboardLayout({
           <main className="flex-1 overflow-auto p-6">{children}</main>
         </div>
       </div>
+      <Toaster />
     </AuthGuard>
   );
 }

@@ -114,6 +114,20 @@ enum ScheduleExceptionType {
   CUSTOM_HOURS
 }
 
+enum ReminderChannel {
+  IN_APP
+  SMS
+  WHATSAPP
+  EMAIL
+}
+
+enum ReminderStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
+}
+
 // ─────────────────────────────────────────────
 // ORGANIZATIONS & BRANCHES
 // ─────────────────────────────────────────────
@@ -150,6 +164,8 @@ model Organization {
   clinicSettings        ClinicSettings?
   visitTypes            VisitType[]
   services              Service[]
+  followUpReminders     FollowUpReminder[]
+  billingPolicy         BillingPolicy?
 
   @@map("organizations")
 }
@@ -311,7 +327,8 @@ model Patient {
   invoices              Invoice[]
   clinicalReports       ClinicalReport[]
 
-  timelineEvents  MedicalTimelineEvent[]
+  timelineEvents    MedicalTimelineEvent[]
+  followUpReminders FollowUpReminder[]
 
   @@unique([organizationId, mrn])
   @@index([organizationId])
@@ -393,6 +410,7 @@ model Appointment {
   queueEntry      QueueEntry?
   encounter       Encounter?
   invoices        Invoice[]
+  reminders       FollowUpReminder[]
 
   @@index([organizationId])
   @@index([doctorId])
@@ -461,6 +479,7 @@ model Encounter {
   medicalFiles         MedicalFile[]
   invoices             Invoice[]
   clinicalReports      ClinicalReport[]
+  reminders            FollowUpReminder[]
 
   @@index([organizationId])
   @@index([doctorId])
@@ -806,6 +825,26 @@ model Payment {
   @@map("payments")
 }
 
+model BillingPolicy {
+  id                            String  @id @default(cuid())
+  organizationId                String  @unique
+  autoCreateInvoiceOnCheckin    Boolean @default(true)
+  freeFollowUpWindowDays        Int     @default(0)
+  followUpDiscountPercent       Decimal @default(0) @db.Decimal(5, 2)
+  requirePaymentBeforeEncounter Boolean @default(false)
+  defaultDueDateDays            Int     @default(0)
+  noShowFeeAmount               Decimal @default(0) @db.Decimal(10, 2)
+  invoiceNumberPrefix           String  @default("INV")
+  nextInvoiceSequence           Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@map("billing_policies")
+}
+
 // ─────────────────────────────────────────────
 // AUDIT LOGS
 // ─────────────────────────────────────────────
@@ -955,4 +994,35 @@ model DoctorScheduleException {
   @@unique([doctorId, date])
   @@index([doctorId])
   @@map("doctor_schedule_exceptions")
+}
+
+// ─────────────────────────────────────────────
+// FOLLOW-UP REMINDERS
+// ─────────────────────────────────────────────
+
+model FollowUpReminder {
+  id             String          @id @default(cuid())
+  organizationId String
+  patientId      String
+  encounterId    String
+  appointmentId  String?
+  channel        ReminderChannel @default(IN_APP)
+  scheduledFor   DateTime
+  status         ReminderStatus  @default(PENDING)
+  sentAt         DateTime?
+  failureReason  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  patient      Patient      @relation(fields: [patientId], references: [id])
+  encounter    Encounter    @relation(fields: [encounterId], references: [id])
+  appointment  Appointment? @relation(fields: [appointmentId], references: [id])
+
+  @@index([organizationId])
+  @@index([patientId])
+  @@index([encounterId])
+  @@index([status, scheduledFor])
+  @@map("follow_up_reminders")
 }

@@ -6,6 +6,8 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useFollowUps } from '@/hooks/use-follow-ups';
 import { useDoctorsList } from '@/hooks/use-appointments';
+import { useCreateReminder } from '@/hooks/use-follow-up-reminders';
+import { useToast } from '@/hooks/use-toast';
 import { Tabs } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FollowUpStatusBadge } from './follow-up-status-badge';
@@ -42,12 +44,34 @@ export function FollowUpList() {
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
 
+  const { toast } = useToast();
+  const createReminder = useCreateReminder();
+
   const [activeTab, setActiveTab] = useState<FollowUpStatus>('DUE_TODAY');
   const [doctorId, setDoctorId] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [page, setPage] = useState(1);
   const [expandedEncounterId, setExpandedEncounterId] = useState<string | null>(null);
+
+  function handleSendReminder(encounterId: string) {
+    createReminder.mutate(
+      { encounterId, body: { channel: 'IN_APP' } },
+      {
+        onSuccess: () => toast({ title: t('reminder.queued'), variant: 'success' }),
+        onError: (err: unknown) => {
+          const isDuplicate =
+            err instanceof Error && err.name === 'ConflictError';
+          toast({
+            title: isDuplicate ? t('reminder.alreadyQueued') : t('reminder.failed'),
+            variant: isDuplicate ? 'default' : 'error',
+          });
+        },
+      },
+    );
+  }
+
+  const showReminderButton = activeTab !== 'UPCOMING';
 
   const { data, isLoading, isError, error, refetch } = useFollowUps({
     status: [activeTab],
@@ -312,6 +336,15 @@ export function FollowUpList() {
                                 className="h-7 rounded-md border border-primary/40 px-2 text-xs font-medium text-primary transition-colors hover:bg-primary/5"
                               >
                                 {t('actions.bookNow')}
+                              </button>
+                            )}
+                            {showReminderButton && (
+                              <button
+                                onClick={() => handleSendReminder(item.encounterId)}
+                                disabled={createReminder.isPending}
+                                className="h-7 rounded-md border px-2 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-40"
+                              >
+                                {t('actions.sendReminder')}
                               </button>
                             )}
                           </div>

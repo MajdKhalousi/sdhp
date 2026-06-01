@@ -1280,7 +1280,8 @@
     "tabs": {
       "clinic": "Clinic",
       "visitTypes": "Visit Types",
-      "services": "Services"
+      "services": "Services",
+      "billing": "Billing"
     },
     "clinic": {
       "title": "Clinic Settings",
@@ -1458,6 +1459,48 @@
         "loadFailed": "Failed to load services",
         "saveFailed": "Failed to save service",
         "deleteFailed": "Failed to delete service"
+      }
+    },
+    "billing": {
+      "title": "Billing Policy",
+      "subtitle": "Configure how invoices are created, follow-up pricing, and payment rules",
+      "sections": {
+        "invoicing": "Invoice Settings",
+        "followUp": "Follow-up Policy",
+        "encounter": "Encounter & Payment",
+        "noShow": "No-show Fee"
+      },
+      "fields": {
+        "autoCreateInvoiceOnCheckin": "Auto-create invoice on check-in",
+        "autoCreateInvoiceOnCheckinHint": "Automatically create a draft invoice when a patient is checked in",
+        "invoiceNumberPrefix": "Invoice number prefix",
+        "invoiceNumberPrefixHint": "1–6 uppercase letters or digits (e.g. INV, CLI)",
+        "freeFollowUpWindowDays": "Free follow-up window",
+        "freeFollowUpWindowDaysHint": "days — 0 = disabled; follow-ups within this many days of the last consultation are free",
+        "followUpDiscountPercent": "Follow-up discount",
+        "followUpDiscountPercentHint": "% discount applied to follow-ups outside the free window (0 = no discount)",
+        "requirePaymentBeforeEncounter": "Require payment before encounter",
+        "requirePaymentBeforeEncounterHint": "Show an unpaid invoice warning before the doctor sees the patient — does not block clinical access",
+        "defaultDueDateDays": "Invoice due date",
+        "defaultDueDateDaysHint": "days after issuance (0 = due same day)",
+        "noShowFeeAmount": "No-show fee",
+        "noShowFeeAmountHint": "Amount charged when an appointment is marked no-show (0 = no fee)"
+      },
+      "actions": {
+        "save": "Save Billing Policy",
+        "saving": "Saving…"
+      },
+      "success": "Billing policy saved.",
+      "error": {
+        "loadFailed": "Failed to load billing policy",
+        "saveFailed": "Failed to save billing policy"
+      },
+      "validation": {
+        "prefixFormat": "Prefix must be 1–6 uppercase letters or digits.",
+        "windowMin": "Free follow-up window cannot be negative.",
+        "discountRange": "Discount must be between 0 and 100.",
+        "dueDateMin": "Due date days cannot be negative.",
+        "noShowFeeMin": "No-show fee cannot be negative."
       }
     }
   },
@@ -1640,7 +1683,13 @@
       "bookNow": "Book Now",
       "viewAppointment": "View",
       "openEncounter": "Open Encounter",
-      "viewPatient": "Patient"
+      "viewPatient": "Patient",
+      "sendReminder": "Remind"
+    },
+    "reminder": {
+      "queued": "Reminder queued",
+      "alreadyQueued": "Reminder already queued",
+      "failed": "Failed to queue reminder"
     },
     "filter": {
       "byDoctor": "Filter by doctor",

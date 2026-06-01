@@ -1280,7 +1280,8 @@
     "tabs": {
       "clinic": "العيادة",
       "visitTypes": "أنواع الزيارات",
-      "services": "الخدمات"
+      "services": "الخدمات",
+      "billing": "الفواتير"
     },
     "clinic": {
       "title": "إعدادات العيادة",
@@ -1458,6 +1459,48 @@
         "loadFailed": "فشل تحميل الخدمات",
         "saveFailed": "فشل حفظ الخدمة",
         "deleteFailed": "فشل حذف الخدمة"
+      }
+    },
+    "billing": {
+      "title": "سياسة الفوترة",
+      "subtitle": "ضبط قواعد إنشاء الفواتير وتسعير المتابعة وشروط الدفع",
+      "sections": {
+        "invoicing": "إعدادات الفاتورة",
+        "followUp": "سياسة المتابعة",
+        "encounter": "الاستشارة والدفع",
+        "noShow": "رسوم الغياب"
+      },
+      "fields": {
+        "autoCreateInvoiceOnCheckin": "إنشاء فاتورة تلقائية عند تسجيل الوصول",
+        "autoCreateInvoiceOnCheckinHint": "إنشاء فاتورة مسودة تلقائياً عند تسجيل وصول المريض",
+        "invoiceNumberPrefix": "بادئة رقم الفاتورة",
+        "invoiceNumberPrefixHint": "1–6 أحرف أو أرقام كبيرة (مثال: INV، CLI)",
+        "freeFollowUpWindowDays": "نافذة المتابعة المجانية",
+        "freeFollowUpWindowDaysHint": "يوم — 0 = معطّل؛ زيارات المتابعة خلال هذه الأيام من آخر استشارة مجانية",
+        "followUpDiscountPercent": "خصم المتابعة",
+        "followUpDiscountPercentHint": "نسبة الخصم على زيارات المتابعة خارج النافذة المجانية (0 = بلا خصم)",
+        "requirePaymentBeforeEncounter": "اشتراط الدفع قبل الاستشارة",
+        "requirePaymentBeforeEncounterHint": "عرض تحذير بفاتورة غير مدفوعة قبل دخول المريض — لا يحجب الرعاية السريرية",
+        "defaultDueDateDays": "تاريخ استحقاق الفاتورة",
+        "defaultDueDateDaysHint": "أيام بعد الإصدار (0 = نفس اليوم)",
+        "noShowFeeAmount": "رسوم الغياب",
+        "noShowFeeAmountHint": "المبلغ المفروض عند تسجيل الموعد كغياب (0 = بلا رسوم)"
+      },
+      "actions": {
+        "save": "حفظ سياسة الفوترة",
+        "saving": "جاري الحفظ…"
+      },
+      "success": "تم حفظ سياسة الفوترة.",
+      "error": {
+        "loadFailed": "فشل تحميل سياسة الفوترة",
+        "saveFailed": "فشل حفظ سياسة الفوترة"
+      },
+      "validation": {
+        "prefixFormat": "يجب أن تكون البادئة من 1–6 أحرف أو أرقام كبيرة.",
+        "windowMin": "لا يمكن أن تكون نافذة المتابعة المجانية سالبة.",
+        "discountRange": "يجب أن يكون الخصم بين 0 و100.",
+        "dueDateMin": "لا يمكن أن يكون عدد أيام الاستحقاق سالباً.",
+        "noShowFeeMin": "لا يمكن أن تكون رسوم الغياب سالبة."
       }
     }
   },
@@ -1640,7 +1683,13 @@
       "bookNow": "احجز الآن",
       "viewAppointment": "عرض",
       "openEncounter": "فتح الزيارة",
-      "viewPatient": "المريض"
+      "viewPatient": "المريض",
+      "sendReminder": "تذكير"
+    },
+    "reminder": {
+      "queued": "تم جدولة التذكير",
+      "alreadyQueued": "التذكير مجدول مسبقاً",
+      "failed": "فشل جدولة التذكير"
     },
     "filter": {
       "byDoctor": "تصفية حسب الطبيب",

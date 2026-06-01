@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { AppointmentStatus, Prisma, UserRole } from '@prisma/client';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { AppointmentStatus, Prisma, ReminderChannel, ReminderStatus, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { FollowUpQueryDto } from './dto/follow-up-query.dto';
+import { CreateReminderDto } from './dto/create-reminder.dto';
 import { FollowUpItem, FollowUpStatus } from './followups.types';
 
 // Damascus is permanently UTC+3 (no DST since 2022).
@@ -142,6 +143,68 @@ export class FollowupsService {
       page,
       limit,
     };
+  }
+
+  async createReminder(
+    encounterId: string,
+    dto: CreateReminderDto,
+    caller: JwtPayload,
+  ) {
+    const encounter = await this.prisma.encounter.findFirst({
+      where: { id: encounterId, organizationId: caller.organizationId, deletedAt: null },
+      select: {
+        id: true,
+        organizationId: true,
+        patientId: true,
+        followUpDate: true,
+        followUpAppointments: {
+          where: { deletedAt: null },
+          orderBy: { createdAt: 'desc' as const },
+          select: { id: true, status: true },
+          take: 1,
+        },
+      },
+    });
+
+    if (!encounter) throw new NotFoundException('Encounter not found');
+    if (!encounter.followUpDate) throw new BadRequestException('Encounter has no follow-up date');
+
+    const channel = dto.channel ?? ReminderChannel.IN_APP;
+
+    const existing = await this.prisma.followUpReminder.findFirst({
+      where: { encounterId, channel, status: ReminderStatus.PENDING },
+      select: { id: true },
+    });
+    if (existing) {
+      throw new ConflictException('Pending reminder already exists for this follow-up');
+    }
+
+    const activeAppt = encounter.followUpAppointments.find(
+      (a) => a.status !== AppointmentStatus.CANCELLED,
+    );
+
+    return this.prisma.followUpReminder.create({
+      data: {
+        organizationId: encounter.organizationId,
+        patientId: encounter.patientId,
+        encounterId,
+        appointmentId: activeAppt?.id ?? null,
+        channel,
+        scheduledFor: encounter.followUpDate,
+        status: ReminderStatus.PENDING,
+      },
+      select: {
+        id: true,
+        organizationId: true,
+        patientId: true,
+        encounterId: true,
+        appointmentId: true,
+        channel: true,
+        scheduledFor: true,
+        status: true,
+        createdAt: true,
+      },
+    });
   }
 
   private toItem(e: EncounterRow, todayStart: Date, todayEnd: Date): FollowUpItem {

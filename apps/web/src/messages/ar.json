@@ -1130,6 +1130,11 @@
       },
       "error": {
         "loadFailed": "فشل تحميل الفواتير"
+      },
+      "pagination": {
+        "previous": "السابق",
+        "next": "التالي",
+        "pageOf": "صفحة {page} من {total}"
       }
     },
     "detail": {
@@ -1208,9 +1213,11 @@
         "method": "طريقة الدفع",
         "date": "التاريخ",
         "reference": "المرجع",
-        "receivedBy": "استلم بواسطة"
+        "receivedBy": "استلم بواسطة",
+        "status": "الحالة"
       },
       "empty": "لا توجد مدفوعات مسجلة.",
+      "voided": "ملغاة",
       "method": {
         "CASH": "نقداً",
         "CARD": "بطاقة",

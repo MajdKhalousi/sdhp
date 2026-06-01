@@ -3,6 +3,7 @@ import { api } from '@/lib/api';
 import type {
   Invoice,
   InvoiceQuery,
+  PaginatedInvoicesResponse,
   CreateInvoiceDto,
   UpdateInvoiceDto,
   AddInvoiceItemDto,
@@ -12,17 +13,19 @@ import type {
 import type { Service } from '@/types/clinic-settings';
 
 export function useInvoices(query: InvoiceQuery = {}) {
-  const { organizationId, branchId, patientId, status, from, to } = query;
+  const { organizationId, branchId, patientId, status, from, to, page, limit } = query;
   return useQuery({
-    queryKey: ['invoices', organizationId, branchId, patientId, status, from, to],
+    queryKey: ['invoices', organizationId, branchId, patientId, status, from, to, page, limit],
     queryFn: () =>
-      api.get<Invoice[]>('/v1/invoices', {
+      api.get<PaginatedInvoicesResponse>('/v1/invoices', {
         ...(organizationId ? { organizationId } : {}),
         ...(branchId ? { branchId } : {}),
         ...(patientId ? { patientId } : {}),
         ...(status ? { status } : {}),
         ...(from ? { from } : {}),
         ...(to ? { to } : {}),
+        ...(page !== undefined ? { page } : {}),
+        ...(limit !== undefined ? { limit } : {}),
       }),
     staleTime: 30_000,
   });

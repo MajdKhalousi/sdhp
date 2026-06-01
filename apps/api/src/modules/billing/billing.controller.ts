@@ -29,6 +29,7 @@ import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { AddInvoiceItemDto } from './dto/add-invoice-item.dto';
 import { CancelInvoiceDto } from './dto/cancel-invoice.dto';
 import { RecordPaymentDto } from './dto/record-payment.dto';
+import { VoidPaymentDto } from './dto/void-payment.dto';
 import { BillingQueryDto } from './dto/billing-query.dto';
 import { UpdateBillingPolicyDto } from './dto/update-billing-policy.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -174,6 +175,22 @@ export class BillingController {
     @CurrentUser() user: JwtPayload,
   ) {
     return this.service.recordPayment(id, dto, user);
+  }
+
+  @Post(':id/payments/:paymentId/void')
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ACCOUNTANT)
+  @ApiOperation({ summary: 'Void a payment. Subtracts amount from paidAmount, recalculates invoice status. voidReason required.' })
+  @ApiOkResponse({ description: 'Payment voided, invoice status recalculated' })
+  @ApiNotFoundResponse({ description: 'Invoice or payment not found' })
+  @ApiForbiddenResponse({ description: 'Cross-org access denied or insufficient role' })
+  voidPayment(
+    @Param('id') id: string,
+    @Param('paymentId') paymentId: string,
+    @Body() dto: VoidPaymentDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.service.voidPayment(id, paymentId, dto, user);
   }
 }
 

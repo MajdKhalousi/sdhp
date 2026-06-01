@@ -42,9 +42,17 @@ export function InvoiceList() {
   const canCreate = user ? INVOICE_CREATE_ROLES.has(user.role) : false;
 
   const [statusFilter, setStatusFilter] = useState<StatusTab>('');
+  const [page, setPage] = useState(1);
+
+  function handleStatusChange(tab: StatusTab) {
+    setStatusFilter(tab);
+    setPage(1);
+  }
 
   const { data, isLoading, isError, error, refetch } = useInvoices({
     ...(statusFilter ? { status: statusFilter as InvoiceStatus } : {}),
+    page,
+    limit: 20,
   });
 
   const columns = [
@@ -63,7 +71,7 @@ export function InvoiceList() {
         {STATUS_TABS.map((tab) => (
           <button
             key={tab}
-            onClick={() => setStatusFilter(tab)}
+            onClick={() => handleStatusChange(tab)}
             className={cn(
               'h-7 rounded-full px-3 text-xs font-medium transition-colors',
               statusFilter === tab
@@ -143,7 +151,7 @@ export function InvoiceList() {
     );
   }
 
-  if (!data || data.length === 0) {
+  if (!data || data.data.length === 0) {
     return (
       <div className="space-y-4">
         {statusTabs}
@@ -177,7 +185,7 @@ export function InvoiceList() {
               </tr>
             </thead>
             <tbody>
-              {data.map((invoice) => (
+              {data.data.map((invoice) => (
                 <tr
                   key={invoice.id}
                   className="border-t border-border transition-colors hover:bg-muted/20 cursor-pointer"
@@ -221,6 +229,27 @@ export function InvoiceList() {
         </div>
       </div>
 
+      {data.totalPages > 1 && (
+        <div className="flex items-center justify-between gap-4 pt-1 text-sm">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page <= 1}
+            className="inline-flex h-8 items-center rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {t('list.pagination.previous')}
+          </button>
+          <span className="text-xs text-muted-foreground">
+            {t('list.pagination.pageOf', { page, total: data.totalPages })}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
+            disabled={page >= data.totalPages}
+            className="inline-flex h-8 items-center rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {t('list.pagination.next')}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

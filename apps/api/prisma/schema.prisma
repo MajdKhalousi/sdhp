@@ -225,6 +225,7 @@ model User {
   uploadedFiles    MedicalFile[]
   createdInvoices       Invoice[]              @relation("InvoicesCreated")
   receivedPayments      Payment[]              @relation("PaymentsReceived")
+  voidedPayments        Payment[]              @relation("PaymentsVoided")
   timelineEventsCreated MedicalTimelineEvent[] @relation("TimelineEventsCreated")
   createdClinicalReports ClinicalReport[]
 
@@ -813,15 +814,20 @@ model Payment {
   notes           String?
   paidAt          DateTime      @default(now())
   receivedById    String
+  voidedAt        DateTime?
+  voidReason      String?
+  voidedById      String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   invoice    Invoice @relation(fields: [invoiceId], references: [id])
   receivedBy User    @relation("PaymentsReceived", fields: [receivedById], references: [id])
+  voidedBy   User?   @relation("PaymentsVoided", fields: [voidedById], references: [id])
 
   @@index([invoiceId])
   @@index([receivedById])
+  @@index([voidedById])
   @@map("payments")
 }
 

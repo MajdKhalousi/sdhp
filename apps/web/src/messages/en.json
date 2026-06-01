@@ -1130,6 +1130,11 @@
       },
       "error": {
         "loadFailed": "Failed to load invoices"
+      },
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "pageOf": "Page {page} of {total}"
       }
     },
     "detail": {
@@ -1208,9 +1213,11 @@
         "method": "Method",
         "date": "Date",
         "reference": "Reference",
-        "receivedBy": "Received By"
+        "receivedBy": "Received By",
+        "status": "Status"
       },
       "empty": "No payments recorded.",
+      "voided": "Voided",
       "method": {
         "CASH": "Cash",
         "CARD": "Card",

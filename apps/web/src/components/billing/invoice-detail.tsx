@@ -151,28 +151,51 @@ function PaymentsSection({ invoice }: { invoice: Invoice }) {
                 <th className="px-4 py-2 text-start font-medium">{t('columns.date')}</th>
                 <th className="px-4 py-2 text-start font-medium">{t('columns.reference')}</th>
                 <th className="px-4 py-2 text-start font-medium">{t('columns.receivedBy')}</th>
+                <th className="px-4 py-2 text-start font-medium">{t('columns.status')}</th>
               </tr>
             </thead>
             <tbody>
-              {invoice.payments.map((payment) => (
-                <tr key={payment.id} className="border-t border-border">
-                  <td className="px-4 py-3 text-sm font-medium tabular-nums" dir="ltr">
-                    {formatAmount(payment.amount, locale)}
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    {t(`method.${payment.method}` as Parameters<typeof t>[0])}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap" dir="ltr">
-                    {formatDate(payment.paidAt)}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground" dir="ltr">
-                    {payment.referenceNumber ?? '—'}
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    {payment.receivedBy.firstName} {payment.receivedBy.lastName}
-                  </td>
-                </tr>
-              ))}
+              {invoice.payments.map((payment) => {
+                const isVoided = payment.voidedAt !== null;
+                return (
+                  <tr
+                    key={payment.id}
+                    className={`border-t border-border ${isVoided ? 'opacity-60' : ''}`}
+                  >
+                    <td className="px-4 py-3 text-sm font-medium tabular-nums" dir="ltr">
+                      <span className={isVoided ? 'line-through text-muted-foreground' : ''}>
+                        {formatAmount(payment.amount, locale)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {t(`method.${payment.method}` as Parameters<typeof t>[0])}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap" dir="ltr">
+                      {formatDate(payment.paidAt)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground" dir="ltr">
+                      {payment.referenceNumber ?? '—'}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {payment.receivedBy.firstName} {payment.receivedBy.lastName}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {isVoided ? (
+                        <div className="flex flex-col gap-0.5">
+                          <span className="inline-flex w-fit items-center rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
+                            {t('voided')}
+                          </span>
+                          {payment.voidReason && (
+                            <span className="text-xs text-muted-foreground">{payment.voidReason}</span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

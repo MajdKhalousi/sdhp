@@ -43,6 +43,9 @@ export interface InvoicePayment {
   notes: string | null;
   paidAt: string;
   receivedById: string;
+  voidedAt: string | null;
+  voidReason: string | null;
+  voidedById: string | null;
   createdAt: string;
   updatedAt: string;
   receivedBy: InvoiceUserRef;
@@ -82,6 +85,16 @@ export interface InvoiceQuery {
   status?: InvoiceStatus;
   from?: string;
   to?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedInvoicesResponse {
+  data: Invoice[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export interface CreateInvoiceDto {

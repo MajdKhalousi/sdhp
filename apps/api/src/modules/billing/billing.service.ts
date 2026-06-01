@@ -13,9 +13,11 @@ import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { AddInvoiceItemDto } from './dto/add-invoice-item.dto';
 import { CancelInvoiceDto } from './dto/cancel-invoice.dto';
 import { RecordPaymentDto } from './dto/record-payment.dto';
+import { VoidPaymentDto } from './dto/void-payment.dto';
 import { BillingQueryDto } from './dto/billing-query.dto';
 import { UpdateBillingPolicyDto } from './dto/update-billing-policy.dto';
 import { AuditLogsWriterService } from '../audit-logs/audit-logs-writer.service';
+import { PaginatedResponse } from '../../common/types/paginated-response.type';
 
 // ── Select constants ───────────────────────────────────────────────────────
 
@@ -61,6 +63,9 @@ const PAYMENT_SELECT = {
   notes: true,
   paidAt: true,
   receivedById: true,
+  voidedAt: true,
+  voidReason: true,
+  voidedById: true,
   createdAt: true,
   updatedAt: true,
   receivedBy: { select: USER_SELECT },
@@ -169,14 +174,9 @@ export class BillingService {
       }
     }
 
-    const MAX_RETRIES = 5;
+    const MAX_RETRIES = 3;
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      const year = new Date().getFullYear();
-      const prefix = `INV-${year}-`;
-      const count = await this.prisma.invoice.count({
-        where: { organizationId: orgId, invoiceNumber: { startsWith: prefix } },
-      });
-      const invoiceNumber = `${prefix}${String(count + 1).padStart(5, '0')}`;
+      const invoiceNumber = await this.allocateInvoiceNumber(orgId);
 
       try {
         const invoice = await this.prisma.invoice.create({
@@ -221,6 +221,7 @@ export class BillingService {
         return this.fetchInvoice(invoice.id);
       } catch (err) {
         if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+          // Sequence number collided with a legacy count-based invoice — increment again.
           continue;
         }
         throw err;
@@ -229,21 +230,33 @@ export class BillingService {
     throw new ConflictException('Failed to generate a unique invoice number after multiple attempts');
   }
 
-  async findAll(query: BillingQueryDto, caller: JwtPayload) {
+  async findAll(query: BillingQueryDto, caller: JwtPayload): Promise<PaginatedResponse<any> & { totalPages: number }> {
     const orgId = this.resolveReadOrgId(query, caller);
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const skip = (page - 1) * limit;
 
-    return this.prisma.invoice.findMany({
-      where: {
-        ...(orgId ? { organizationId: orgId } : {}),
-        ...(query.branchId ? { branchId: query.branchId } : {}),
-        ...(query.patientId ? { patientId: query.patientId } : {}),
-        ...(query.status ? { status: query.status } : {}),
-        deletedAt: null,
-        ...this.createdAtFilter(query.from, query.to),
-      },
-      select: INVOICE_SELECT,
-      orderBy: { createdAt: 'desc' },
-    });
+    const where = {
+      ...(orgId ? { organizationId: orgId } : {}),
+      ...(query.branchId ? { branchId: query.branchId } : {}),
+      ...(query.patientId ? { patientId: query.patientId } : {}),
+      ...(query.status ? { status: query.status } : {}),
+      deletedAt: null as null,
+      ...this.createdAtFilter(query.from, query.to),
+    };
+
+    const [data, total] = await Promise.all([
+      this.prisma.invoice.findMany({
+        where,
+        select: INVOICE_SELECT,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.invoice.count({ where }),
+    ]);
+
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async findOne(id: string, caller: JwtPayload) {
@@ -538,6 +551,7 @@ export class BillingService {
         autoCreateInvoiceOnCheckin: true,
         freeFollowUpWindowDays: true,
         followUpDiscountPercent: true,
+        defaultDueDateDays: true,
       },
     });
 
@@ -566,17 +580,11 @@ export class BillingService {
       }
     }
 
-    // 4. Atomically claim the next sequence number.
-    const seqRow = await this.prisma.billingPolicy.update({
-      where: { organizationId: appt.organizationId },
-      data: { nextInvoiceSequence: { increment: 1 } },
-      select: { nextInvoiceSequence: true, invoiceNumberPrefix: true, defaultDueDateDays: true },
-    });
-    const year = new Date().getFullYear();
-    const invoiceNumber = `${seqRow.invoiceNumberPrefix}-${year}-${String(seqRow.nextInvoiceSequence).padStart(5, '0')}`;
+    // 4. Atomically claim the next sequence number (shared with manual create).
+    const invoiceNumber = await this.allocateInvoiceNumber(appt.organizationId);
     const dueDate =
-      seqRow.defaultDueDateDays > 0
-        ? new Date(Date.now() + seqRow.defaultDueDateDays * 86_400_000)
+      policy.defaultDueDateDays > 0
+        ? new Date(Date.now() + policy.defaultDueDateDays * 86_400_000)
         : undefined;
 
     // 5. Resolve visit-type item (auto-line-item mirrors manual invoice creation).
@@ -658,6 +666,57 @@ export class BillingService {
     });
   }
 
+  async voidPayment(invoiceId: string, paymentId: string, dto: VoidPaymentDto, caller: JwtPayload) {
+    const invoice = await this.fetchInvoice(invoiceId);
+    this.assertOrgAccess(invoice, caller);
+
+    if (invoice.status === InvoiceStatus.CANCELLED) {
+      throw new BadRequestException('Cannot void a payment on a cancelled invoice');
+    }
+
+    const payment = await this.prisma.payment.findFirst({
+      where: { id: paymentId, invoiceId },
+      select: { id: true, amount: true, voidedAt: true },
+    });
+    if (!payment) throw new NotFoundException('Payment not found');
+    if (payment.voidedAt !== null) {
+      throw new BadRequestException('Payment has already been voided');
+    }
+
+    const newPaidAmount = Math.max(0, invoice.paidAmount.toNumber() - payment.amount.toNumber());
+    const totalAmountNum = invoice.totalAmount.toNumber();
+
+    let newStatus: InvoiceStatus;
+    if (newPaidAmount <= 0) {
+      newStatus = InvoiceStatus.ISSUED;
+    } else if (newPaidAmount >= totalAmountNum) {
+      newStatus = InvoiceStatus.PAID;
+    } else {
+      newStatus = InvoiceStatus.PARTIALLY_PAID;
+    }
+
+    const [, updatedInvoice] = await this.prisma.$transaction([
+      this.prisma.payment.update({
+        where: { id: paymentId },
+        data: { voidedAt: new Date(), voidReason: dto.voidReason, voidedById: caller.sub },
+      }),
+      this.prisma.invoice.update({
+        where: { id: invoiceId },
+        data: { paidAmount: newPaidAmount, status: newStatus },
+        select: INVOICE_SELECT,
+      }),
+    ]);
+
+    await this.auditWriter.log({
+      caller,
+      action: 'PAYMENT_VOIDED',
+      resource: 'invoice',
+      resourceId: invoiceId,
+    });
+
+    return updatedInvoice;
+  }
+
   // ── Billing Policy ─────────────────────────────────────────────────────────
 
   async getBillingPolicy(caller: JwtPayload) {
@@ -679,6 +738,22 @@ export class BillingService {
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────
+
+  /**
+   * Atomically claims the next invoice number from BillingPolicy.nextInvoiceSequence.
+   * Shared by both manual create() and autoCreateInvoiceForAppointment() so that all
+   * invoices for an org draw from a single monotonic counter.
+   */
+  private async allocateInvoiceNumber(orgId: string): Promise<string> {
+    const seqRow = await this.prisma.billingPolicy.upsert({
+      where: { organizationId: orgId },
+      create: { organizationId: orgId, nextInvoiceSequence: 1 },
+      update: { nextInvoiceSequence: { increment: 1 } },
+      select: { nextInvoiceSequence: true, invoiceNumberPrefix: true },
+    });
+    const year = new Date().getFullYear();
+    return `${seqRow.invoiceNumberPrefix}-${year}-${String(seqRow.nextInvoiceSequence).padStart(5, '0')}`;
+  }
 
   private async resolveCreateOrgId(dto: CreateInvoiceDto, caller: JwtPayload): Promise<string> {
     if (caller.role === UserRole.SUPER_ADMIN) {

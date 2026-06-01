@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { AppointmentStatus, QueueStatus, UserRole } from '@prisma/client';
+import { AppointmentStatus, InvoiceStatus, QueueStatus, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { ReportQueryDto } from './dto/report-query.dto';
@@ -234,6 +234,91 @@ export class ReportsService {
     };
   }
 
+  async getBillingReport(query: ReportQueryDto, caller: JwtPayload) {
+    const orgId = this.resolveOrgId(query, caller);
+
+    if (query.branchId && orgId) {
+      await this.assertBranchBelongsToOrg(query.branchId, orgId);
+    }
+
+    const baseWhere = {
+      ...(orgId ? { organizationId: orgId } : {}),
+      ...(query.branchId ? { branchId: query.branchId } : {}),
+      totalAmount: { gt: 0 },
+      deletedAt: null as null,
+    };
+
+    const [periodGroups, outstandingAgg] = await Promise.all([
+      // Period-scoped groupBy for non-DRAFT statuses, filtered by issuedAt range
+      this.prisma.invoice.groupBy({
+        by: ['status'],
+        where: {
+          ...baseWhere,
+          status: {
+            in: [
+              InvoiceStatus.ISSUED,
+              InvoiceStatus.PARTIALLY_PAID,
+              InvoiceStatus.PAID,
+              InvoiceStatus.CANCELLED,
+            ],
+          },
+          ...this.issuedAtFilter(query.from, query.to),
+        },
+        _sum: { totalAmount: true, paidAmount: true },
+        _count: { _all: true },
+      }),
+      // All-time outstanding — intentionally not filtered by date
+      this.prisma.invoice.aggregate({
+        where: {
+          ...baseWhere,
+          status: { in: [InvoiceStatus.ISSUED, InvoiceStatus.PARTIALLY_PAID] },
+        },
+        _sum: { totalAmount: true, paidAmount: true },
+      }),
+    ]);
+
+    const byStatus = new Map(periodGroups.map((g) => [g.status, g]));
+    const issuedGroup = byStatus.get(InvoiceStatus.ISSUED);
+    const partialGroup = byStatus.get(InvoiceStatus.PARTIALLY_PAID);
+    const paidGroup = byStatus.get(InvoiceStatus.PAID);
+    const cancelledGroup = byStatus.get(InvoiceStatus.CANCELLED);
+
+    const activeGroups = [issuedGroup, partialGroup, paidGroup];
+    const totalInvoiced = activeGroups.reduce(
+      (s, g) => s + (g?._sum.totalAmount?.toNumber() ?? 0),
+      0,
+    );
+    const totalCollected = activeGroups.reduce(
+      (s, g) => s + (g?._sum.paidAmount?.toNumber() ?? 0),
+      0,
+    );
+    const invoiceCount = activeGroups.reduce((s, g) => s + (g?._count._all ?? 0), 0);
+    const paidCount = paidGroup?._count._all ?? 0;
+    const partialCount = partialGroup?._count._all ?? 0;
+    const unpaidCount = issuedGroup?._count._all ?? 0;
+    const cancelledCount = cancelledGroup?._count._all ?? 0;
+
+    const outstandingTotal = outstandingAgg._sum.totalAmount?.toNumber() ?? 0;
+    const outstandingPaid = outstandingAgg._sum.paidAmount?.toNumber() ?? 0;
+    const totalOutstanding = Math.max(0, outstandingTotal - outstandingPaid);
+
+    const collectionRate =
+      totalInvoiced === 0 ? 0 : Math.round((totalCollected / totalInvoiced) * 10000) / 100;
+
+    return {
+      period: { from: query.from ?? null, to: query.to ?? null },
+      totalInvoiced,
+      totalCollected,
+      totalOutstanding,
+      collectionRate,
+      invoiceCount,
+      paidCount,
+      partialCount,
+      unpaidCount,
+      cancelledCount,
+    };
+  }
+
   // ── Private helpers ────────────────────────────────────────────────────────
 
   private async buildContext(query: ReportQueryDto, caller: JwtPayload) {
@@ -290,6 +375,16 @@ export class ReportsService {
     if (!from && !to) return {};
     return {
       createdAt: {
+        ...(from ? { gte: new Date(from) } : {}),
+        ...(to ? { lte: new Date(to) } : {}),
+      },
+    };
+  }
+
+  private issuedAtFilter(from?: string, to?: string) {
+    if (!from && !to) return {};
+    return {
+      issuedAt: {
         ...(from ? { gte: new Date(from) } : {}),
         ...(to ? { lte: new Date(to) } : {}),
       },

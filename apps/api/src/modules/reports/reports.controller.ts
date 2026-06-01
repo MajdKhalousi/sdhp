@@ -64,4 +64,17 @@ export class ReportsController {
   getQueue(@Query() query: ReportQueryDto, @CurrentUser() user: JwtPayload) {
     return this.service.getQueueReport(query, user);
   }
+
+  @Get('billing')
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ACCOUNTANT)
+  @ApiOperation({
+    summary:
+      'Billing summary — totalInvoiced, totalCollected, totalOutstanding, collectionRate, invoice status counts. Period filtered by issuedAt. totalOutstanding is always all-time.',
+  })
+  @ApiOkResponse({ description: 'Billing summary metrics' })
+  @ApiForbiddenResponse({ description: 'Cross-org access denied or insufficient role' })
+  getBillingReport(@Query() query: ReportQueryDto, @CurrentUser() user: JwtPayload) {
+    return this.service.getBillingReport(query, user);
+  }
 }

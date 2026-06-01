@@ -32,6 +32,7 @@ import { RecordPaymentDto } from './dto/record-payment.dto';
 import { VoidPaymentDto } from './dto/void-payment.dto';
 import { BillingQueryDto } from './dto/billing-query.dto';
 import { UpdateBillingPolicyDto } from './dto/update-billing-policy.dto';
+import { OutstandingPatientsQueryDto } from './dto/outstanding-patients-query.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
@@ -219,6 +220,22 @@ export class BillingPolicyController {
   upsertPolicy(@Body() dto: UpdateBillingPolicyDto, @CurrentUser() user: JwtPayload) {
     return this.service.upsertBillingPolicy(dto, user);
   }
+
+  @Get('outstanding-patients')
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ACCOUNTANT)
+  @ApiOperation({
+    summary:
+      'Paginated list of patients with outstanding balances (ISSUED + PARTIALLY_PAID invoices), sorted by outstanding amount descending.',
+  })
+  @ApiOkResponse({ description: 'Outstanding patients list' })
+  @ApiForbiddenResponse({ description: 'Insufficient role' })
+  getOutstandingPatients(
+    @Query() query: OutstandingPatientsQueryDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.service.getOutstandingPatients(query, user);
+  }
 }
 
 @ApiTags('Billing')
@@ -247,5 +264,29 @@ export class PatientInvoicesController {
     @CurrentUser() user: JwtPayload,
   ) {
     return this.service.findByPatient(patientId, query, user);
+  }
+
+  @Get(':patientId/outstanding-balance')
+  @Version('1')
+  @Roles(
+    UserRole.SUPER_ADMIN,
+    UserRole.ORG_ADMIN,
+    UserRole.DOCTOR,
+    UserRole.NURSE,
+    UserRole.SECRETARY,
+    UserRole.ACCOUNTANT,
+  )
+  @ApiOperation({
+    summary:
+      'Outstanding balance for a patient — sum of (totalAmount - paidAmount) across all ISSUED and PARTIALLY_PAID invoices.',
+  })
+  @ApiOkResponse({ description: 'Patient outstanding balance' })
+  @ApiNotFoundResponse({ description: 'Patient not found' })
+  @ApiForbiddenResponse({ description: 'Cross-org access denied' })
+  getPatientOutstandingBalance(
+    @Param('patientId') patientId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.service.getPatientOutstandingBalance(patientId, user);
   }
 }

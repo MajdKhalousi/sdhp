@@ -16,6 +16,7 @@ import { RecordPaymentDto } from './dto/record-payment.dto';
 import { VoidPaymentDto } from './dto/void-payment.dto';
 import { BillingQueryDto } from './dto/billing-query.dto';
 import { UpdateBillingPolicyDto } from './dto/update-billing-policy.dto';
+import { OutstandingPatientsQueryDto } from './dto/outstanding-patients-query.dto';
 import { AuditLogsWriterService } from '../audit-logs/audit-logs-writer.service';
 import { PaginatedResponse } from '../../common/types/paginated-response.type';
 
@@ -522,6 +523,119 @@ export class BillingService {
       select: INVOICE_SELECT,
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  // ── Analytics ──────────────────────────────────────────────────────────────
+
+  async getOutstandingPatients(query: OutstandingPatientsQueryDto, caller: JwtPayload) {
+    const orgId = caller.organizationId;
+    const page = query.page ?? 1;
+    const limit = Math.min(query.limit ?? 20, 100);
+
+    if (query.branchId) await this.assertBranchBelongsToOrg(query.branchId, orgId);
+
+    // Fetch all outstanding invoices with patient info.
+    // Application-level grouping is intentional: Prisma groupBy cannot include nested
+    // relation fields alongside _sum aggregates, and MVP clinic scale (hundreds of
+    // outstanding invoices) makes in-process aggregation negligible.
+    const invoices = await this.prisma.invoice.findMany({
+      where: {
+        organizationId: orgId,
+        ...(query.branchId ? { branchId: query.branchId } : {}),
+        status: { in: [InvoiceStatus.ISSUED, InvoiceStatus.PARTIALLY_PAID] },
+        totalAmount: { gt: 0 },
+        deletedAt: null,
+      },
+      select: {
+        patientId: true,
+        totalAmount: true,
+        paidAmount: true,
+        issuedAt: true,
+        patient: { select: { id: true, firstName: true, lastName: true, mrn: true } },
+      },
+    });
+
+    const patientMap = new Map<string, {
+      patientId: string;
+      firstName: string;
+      lastName: string;
+      mrn: string;
+      outstandingAmount: number;
+      invoiceCount: number;
+      oldestUnpaidAt: string | null;
+    }>();
+
+    for (const inv of invoices) {
+      const outstanding = inv.totalAmount.toNumber() - inv.paidAmount.toNumber();
+      if (outstanding <= 0) continue;
+
+      const existing = patientMap.get(inv.patientId);
+      if (existing) {
+        existing.outstandingAmount += outstanding;
+        existing.invoiceCount += 1;
+        if (inv.issuedAt) {
+          if (!existing.oldestUnpaidAt || inv.issuedAt < new Date(existing.oldestUnpaidAt)) {
+            existing.oldestUnpaidAt = inv.issuedAt.toISOString();
+          }
+        }
+      } else {
+        patientMap.set(inv.patientId, {
+          patientId: inv.patientId,
+          firstName: inv.patient.firstName,
+          lastName: inv.patient.lastName,
+          mrn: inv.patient.mrn,
+          outstandingAmount: outstanding,
+          invoiceCount: 1,
+          oldestUnpaidAt: inv.issuedAt ? inv.issuedAt.toISOString() : null,
+        });
+      }
+    }
+
+    const sorted = Array.from(patientMap.values()).sort(
+      (a, b) => b.outstandingAmount - a.outstandingAmount,
+    );
+    const total = sorted.length;
+    const data = sorted.slice((page - 1) * limit, page * limit);
+
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+  }
+
+  async getPatientOutstandingBalance(patientId: string, caller: JwtPayload) {
+    const patient = await this.prisma.patient.findFirst({
+      where: { id: patientId, deletedAt: null },
+      select: { id: true, organizationId: true },
+    });
+    if (!patient) throw new NotFoundException('Patient not found');
+    if (caller.role !== UserRole.SUPER_ADMIN && patient.organizationId !== caller.organizationId) {
+      throw new ForbiddenException('Cannot access patient from another organization');
+    }
+
+    const invoices = await this.prisma.invoice.findMany({
+      where: {
+        patientId,
+        organizationId: patient.organizationId,
+        status: { in: [InvoiceStatus.ISSUED, InvoiceStatus.PARTIALLY_PAID] },
+        totalAmount: { gt: 0 },
+        deletedAt: null,
+      },
+      select: { totalAmount: true, paidAmount: true, issuedAt: true },
+    });
+
+    let outstandingAmount = 0;
+    let oldestUnpaidAt: string | null = null;
+
+    for (const inv of invoices) {
+      const outstanding = inv.totalAmount.toNumber() - inv.paidAmount.toNumber();
+      if (outstanding <= 0) continue;
+      outstandingAmount += outstanding;
+      if (inv.issuedAt) {
+        if (!oldestUnpaidAt || inv.issuedAt < new Date(oldestUnpaidAt)) {
+          oldestUnpaidAt = inv.issuedAt.toISOString();
+        }
+      }
+    }
+
+    return { outstandingAmount, invoiceCount: invoices.length, oldestUnpaidAt };
   }
 
   // ── Auto-invoice hooks ─────────────────────────────────────────────────────

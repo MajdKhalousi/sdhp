@@ -1546,11 +1546,11 @@
         "followUpDiscountPercent": "Follow-up discount",
         "followUpDiscountPercentHint": "% discount applied to follow-ups outside the free window (0 = no discount)",
         "requirePaymentBeforeEncounter": "Require payment before encounter",
-        "requirePaymentBeforeEncounterHint": "Show an unpaid invoice warning before the doctor sees the patient — does not block clinical access",
+        "requirePaymentBeforeEncounterHint": "Advisory only — not enforced by the system.",
         "defaultDueDateDays": "Invoice due date",
         "defaultDueDateDaysHint": "days after issuance (0 = due same day)",
         "noShowFeeAmount": "No-show fee",
-        "noShowFeeAmountHint": "Amount charged when an appointment is marked no-show (0 = no fee)"
+        "noShowFeeAmountHint": "Planned feature — not yet automatically applied."
       },
       "actions": {
         "save": "Save Billing Policy",

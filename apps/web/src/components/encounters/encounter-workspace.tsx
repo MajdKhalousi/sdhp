@@ -21,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { VitalsPayload, UpdateEncounterPayload } from '@/types/encounter';
 import type { InvoiceStatus } from '@/types/invoice';
+import { formatDateDisplay, formatDateTimeDisplay, formatTimeDisplay } from '@/lib/format-date';
 
 interface WorkspaceForm {
   chiefComplaint: string;
@@ -44,19 +45,6 @@ function toVitals(raw: Record<string, unknown> | null): VitalsPayload {
     weight:           s(raw.weight),
     height:           s(raw.height),
   };
-}
-
-function formatDate(iso: string | null, locale = 'en-US') {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-function formatDateTime(iso: string | null, locale = 'en-US') {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleString(locale, {
-    month: 'short', day: 'numeric', year: 'numeric',
-    hour: 'numeric', minute: '2-digit',
-  });
 }
 
 function fmtAmount(value: string, locale: string): string {
@@ -198,7 +186,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
           isDirtyRef.current = false;
           setIsDirty(false);
           onDirtyChange?.(false);
-          setSavedAt(new Date().toLocaleTimeString(displayLocale, { hour: 'numeric', minute: '2-digit' }));
+          setSavedAt(formatTimeDisplay(new Date()));
         },
         onError: (e) => setSaveError(e instanceof Error ? e.message : 'Save failed'),
       },
@@ -276,12 +264,12 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
             <Badge variant={isEnded ? 'success' : 'warning'}>
               {isEnded ? t('status.completed') : t('status.inProgress')}
             </Badge>
-            <span>{t('timestamps.started')} {formatDateTime(encounter.startedAt ?? encounter.createdAt, displayLocale)}</span>
+            <span>{t('timestamps.started')} {formatDateTimeDisplay(encounter.startedAt ?? encounter.createdAt)}</span>
             {isEnded && (
               <span>
                 {t('timestamps.ended')}{' '}
                 <span className="font-medium text-foreground">
-                  {formatDateTime(encounter.endedAt, displayLocale)}
+                  {formatDateTimeDisplay(encounter.endedAt)}
                 </span>
               </span>
             )}
@@ -573,12 +561,12 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
               <div>
                 <p className="text-xs text-muted-foreground">{t('complete.followUpLabel')}</p>
                 <p className="mt-0.5 text-sm font-medium">
-                  {encounter.followUpDate ? formatDateTime(encounter.followUpDate, displayLocale) : t('complete.notScheduled')}
+                  {encounter.followUpDate ? formatDateTimeDisplay(encounter.followUpDate) : t('complete.notScheduled')}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">{t('complete.endedLabel')}</p>
-                <p className="mt-0.5 text-sm font-medium">{formatDateTime(encounter.endedAt, displayLocale)}</p>
+                <p className="mt-0.5 text-sm font-medium">{formatDateTimeDisplay(encounter.endedAt)}</p>
               </div>
             </div>
             <p className="text-xs text-muted-foreground">{t('complete.readOnly')}</p>

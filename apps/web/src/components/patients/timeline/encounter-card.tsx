@@ -5,6 +5,7 @@ import { Link } from '@/i18n/navigation';
 import { Badge } from '@/components/ui/badge';
 import type { TimelineEvent } from '@/types/timeline';
 import { formatTime } from './format-time';
+import { formatDateDisplay } from '@/lib/format-date';
 
 type Props = { event: Extract<TimelineEvent, { type: 'ENCOUNTER' }> };
 
@@ -41,10 +42,6 @@ function encounterDuration(
   if (mins < 60) return `${mins} ${units.min}`;
   const h = Math.floor(mins / 60);
   return `${h}${units.h} ${mins % 60}${units.m}`;
-}
-
-function formatDate(iso: string, displayLocale: string): string {
-  return new Date(iso).toLocaleDateString(displayLocale, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 export function EncounterCard({ event }: Props) {
@@ -128,7 +125,7 @@ export function EncounterCard({ event }: Props) {
               <p className="text-xs text-muted-foreground">
                 {t('followUp')}{' '}
                 <span className="text-foreground" dir="ltr">
-                  {formatDate(data.followUpDate, displayLocale)}
+                  {formatDateDisplay(data.followUpDate)}
                 </span>
               </p>
               {followUpPill && (

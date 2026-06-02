@@ -5,11 +5,7 @@ import { History, ChevronDown } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useEncounters } from '@/hooks/use-encounters';
 import { Skeleton } from '@/components/ui/skeleton';
-
-function formatDate(iso: string | null, locale = 'en-US') {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
-}
+import { formatDateDisplay } from '@/lib/format-date';
 
 interface Props {
   patientId: string;
@@ -71,7 +67,7 @@ export function PreviousEncounterPanel({ patientId, currentEncounterId }: Props)
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-xs font-semibold text-muted-foreground">
-                      {formatDate(enc.startedAt ?? enc.createdAt, displayLocale)}
+                      {formatDateDisplay(enc.startedAt ?? enc.createdAt)}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {t('doctorPrefix')} {enc.doctor.user.firstName} {enc.doctor.user.lastName}
@@ -100,7 +96,7 @@ export function PreviousEncounterPanel({ patientId, currentEncounterId }: Props)
 
                   {enc.followUpDate && (
                     <p className="text-xs text-muted-foreground">
-                      {t('followUp')}: {formatDate(enc.followUpDate, displayLocale)}
+                      {t('followUp')}: {formatDateDisplay(enc.followUpDate)}
                     </p>
                   )}
                 </div>

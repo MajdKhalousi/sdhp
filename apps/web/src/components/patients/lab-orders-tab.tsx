@@ -7,6 +7,7 @@ import type { BadgeProps } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePatientLabOrders, type LabOrder, type LabResult } from '@/hooks/use-labs';
 import type { LabOrderStatus } from '@/types/timeline';
+import { formatDateDisplay } from '@/lib/format-date';
 
 const STATUS_VARIANT: Record<LabOrderStatus, BadgeProps['variant']> = {
   ORDERED:          'default',
@@ -18,14 +19,6 @@ const STATUS_VARIANT: Record<LabOrderStatus, BadgeProps['variant']> = {
 };
 
 const PRIORITY_OPTIONS = ['ROUTINE', 'URGENT', 'STAT'] as const;
-
-function formatDate(iso: string, locale: string): string {
-  return new Date(iso).toLocaleDateString(locale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
 
 function ResultSection({ result }: { result: LabResult }) {
   const tLab = useTranslations('encounter');
@@ -64,12 +57,12 @@ function ResultSection({ result }: { result: LabResult }) {
         )}
         {result.resultAt && (
           <p className="text-xs text-muted-foreground">
-            {tLab('labOrders.result.resultAt')}: {formatDate(result.resultAt, displayLocale)}
+            {tLab('labOrders.result.resultAt')}: {formatDateDisplay(result.resultAt)}
           </p>
         )}
         {reviewer && result.reviewedAt && (
           <p className="text-xs text-muted-foreground">
-            {tLab('labOrders.result.reviewedBy')}: {reviewer} · {formatDate(result.reviewedAt, displayLocale)}
+            {tLab('labOrders.result.reviewedBy')}: {reviewer} · {formatDateDisplay(result.reviewedAt)}
           </p>
         )}
       </div>
@@ -91,7 +84,7 @@ function LabOrderItem({ order }: { order: LabOrder }) {
         <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
           {t('cards.labOrder')}
         </span>
-        <span className="text-xs text-muted-foreground" dir="ltr">{formatDate(order.createdAt, displayLocale)}</span>
+        <span className="text-xs text-muted-foreground" dir="ltr">{formatDateDisplay(order.createdAt)}</span>
       </div>
 
       <p className="font-medium text-sm text-foreground">
@@ -119,7 +112,7 @@ function LabOrderItem({ order }: { order: LabOrder }) {
       <div className="mt-1.5 space-y-0.5 text-xs text-muted-foreground">
         <p>{tPatient('labOrders.orderedBy')}: {doctor}</p>
         {order.collectedAt && (
-          <p>{tPatient('labOrders.collectedAt')}: {formatDate(order.collectedAt, displayLocale)}</p>
+          <p>{tPatient('labOrders.collectedAt')}: {formatDateDisplay(order.collectedAt)}</p>
         )}
         {order.notes && (
           <p>{tPatient('labOrders.notes')}: {order.notes}</p>

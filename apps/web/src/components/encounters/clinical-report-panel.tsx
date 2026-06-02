@@ -14,6 +14,7 @@ import {
 } from '@/hooks/use-clinical-reports';
 import { useAuthStore } from '@/store/auth';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatDateDisplay } from '@/lib/format-date';
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -233,11 +234,7 @@ export function ClinicalReportPanel({
         const author = report.createdBy
           ? `${report.createdBy.firstName} ${report.createdBy.lastName}`
           : null;
-        const updatedDate = new Date(report.updatedAt).toLocaleDateString(displayLocale, {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        });
+        const updatedDate = formatDateDisplay(report.updatedAt);
 
         return (
           <div

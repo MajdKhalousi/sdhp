@@ -26,13 +26,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { Patient, CreatePatientInput, UpdatePatientInput } from '@/hooks/use-patient';
 import type { Allergy } from '@/hooks/use-allergies';
-
-function formatDate(iso: string | null, locale = 'en-US'): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString(locale, {
-    year: 'numeric', month: 'short', day: 'numeric',
-  });
-}
+import { formatDateDisplay } from '@/lib/format-date';
 
 function formatBloodType(raw: string | null): string {
   if (!raw) return '—';
@@ -126,7 +120,7 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
   const t = useTranslations('patient');
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
-  const registeredDate = formatDate(patient.createdAt, displayLocale);
+  const registeredDate = formatDateDisplay(patient.createdAt);
 
   return (
     <div className="grid gap-4 sm:grid-cols-2">
@@ -134,7 +128,7 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
         <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {t('detail.overview.demographics')}
         </p>
-        <InfoRow label={t('detail.overview.fields.dateOfBirth')} value={formatDate(patient.dateOfBirth, displayLocale)} />
+        <InfoRow label={t('detail.overview.fields.dateOfBirth')} value={formatDateDisplay(patient.dateOfBirth)} />
         <InfoRow
           label={t('detail.overview.fields.gender')}
           value={patient.gender ? t(`gender.${patient.gender.toLowerCase()}` as Parameters<typeof t>[0]) : '—'}

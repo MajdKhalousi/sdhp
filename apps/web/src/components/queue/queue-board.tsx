@@ -13,6 +13,7 @@ import { SkipQueueButton } from './skip-queue-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { QueueStatus } from '@/types/queue';
 import type { Invoice, InvoiceStatus } from '@/types/invoice';
+import { formatTimeDisplay } from '@/lib/format-date';
 
 const SKIPPABLE: QueueStatus[] = ['WAITING', 'CALLED'];
 
@@ -139,7 +140,7 @@ export function QueueBoard() {
         {dataUpdatedAt > 0 && !isFetching && (
           <span className="text-xs text-muted-foreground">
             {t('board.updatedAt', {
-              time: new Date(dataUpdatedAt).toLocaleTimeString(displayLocale, { hour: 'numeric', minute: '2-digit' }),
+              time: formatTimeDisplay(new Date(dataUpdatedAt)),
             })}
           </span>
         )}

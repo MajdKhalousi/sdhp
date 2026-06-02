@@ -2,6 +2,7 @@
 
 import { useMemo, memo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
+import { formatDateDisplay } from '@/lib/format-date';
 import type { TimelineEvent } from '@/types/timeline';
 import { TimelineEventCard } from './timeline-event-card';
 
@@ -11,7 +12,7 @@ interface DateGroup {
   events: TimelineEvent[];
 }
 
-function groupByLocalDate(events: TimelineEvent[], displayLocale: string): DateGroup[] {
+function groupByLocalDate(events: TimelineEvent[]): DateGroup[] {
   const groups = new Map<string, TimelineEvent[]>();
   for (const event of events) {
     const d = new Date(event.timestamp);
@@ -24,14 +25,7 @@ function groupByLocalDate(events: TimelineEvent[], displayLocale: string): DateG
     groups.get(key)!.push(event);
   }
   return Array.from(groups.entries()).map(([key, evts]) => {
-    const [year, month, day] = key.split('-').map(Number);
-    const dateLabel = new Date(year, month - 1, day).toLocaleDateString(displayLocale, {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-    return { key, dateLabel, events: evts };
+    return { key, dateLabel: formatDateDisplay(key), events: evts };
   });
 }
 
@@ -53,8 +47,7 @@ interface Props {
 export const TimelineEventList = memo(function TimelineEventList({ events }: Props) {
   const t = useTranslations('timeline.dateGroups');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
-  const groups = useMemo(() => groupByLocalDate(events, displayLocale), [events, displayLocale]);
+  const groups = useMemo(() => groupByLocalDate(events), [events]);
   const today = todayKey();
   const yesterday = yesterdayKey();
 

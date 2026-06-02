@@ -10,13 +10,7 @@ import type { CreatePatientInput, UpdatePatientInput } from '@/hooks/use-patient
 import { usePatients, useCreatePatient, useDeletePatient } from '@/hooks/use-patient';
 import { PatientForm } from '@/components/patients/patient-form';
 import { useAuthStore } from '@/store/auth';
-
-function formatDate(iso: string | null, locale = 'en-US'): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString(locale, {
-    year: 'numeric', month: 'short', day: 'numeric',
-  });
-}
+import { formatDateDisplay } from '@/lib/format-date';
 
 const PATIENT_EDIT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
 const PATIENT_ARCHIVE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
@@ -198,7 +192,7 @@ export default function PatientsPage() {
                           {patient.mrn}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
-                          {formatDate(patient.dateOfBirth, displayLocale)}
+                          {formatDateDisplay(patient.dateOfBirth)}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">
                           {patient.gender

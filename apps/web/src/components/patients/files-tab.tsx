@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Download, FolderOpen, Trash2, Upload } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
+import { formatDateDisplay } from '@/lib/format-date';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore, type AuthUser } from '@/store/auth';
 import {
@@ -85,10 +86,7 @@ function FileListItem({
   }
 
   const uploader = `${file.uploadedBy.firstName} ${file.uploadedBy.lastName}`;
-  const date = new Date(file.createdAt).toLocaleDateString(
-    locale === 'ar' ? 'ar-u-nu-latn' : 'en-US',
-    { year: 'numeric', month: 'short', day: 'numeric' },
-  );
+  const date = formatDateDisplay(file.createdAt);
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-s-4 border-s-slate-400">

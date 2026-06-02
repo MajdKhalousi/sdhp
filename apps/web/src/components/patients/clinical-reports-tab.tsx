@@ -10,17 +10,10 @@ import {
 } from '@/hooks/use-clinical-reports';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { ClinicalReport } from '@/hooks/use-clinical-reports';
+import { formatDateDisplay } from '@/lib/format-date';
 
 interface Props {
   patientId: string;
-}
-
-function formatDate(iso: string, locale: string): string {
-  return new Date(iso).toLocaleDateString(locale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
 }
 
 function ReportCard({
@@ -85,15 +78,15 @@ function ReportCard({
 
             <p className="mt-0.5 text-xs text-muted-foreground">
               {author && `${t('reports.createdBy')} ${author} · `}
-              {t('reports.createdAt')} {formatDate(report.createdAt, displayLocale)}
+              {t('reports.createdAt')} {formatDateDisplay(report.createdAt)}
               {report.updatedAt !== report.createdAt &&
-                ` · ${t('reports.updatedAt')} ${formatDate(report.updatedAt, displayLocale)}`}
+                ` · ${t('reports.updatedAt')} ${formatDateDisplay(report.updatedAt)}`}
             </p>
 
             {report.encounter && (
               <>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  {t('reports.encounter')}: {formatDate(report.encounter.startedAt, displayLocale)}
+                  {t('reports.encounter')}: {formatDateDisplay(report.encounter.startedAt)}
                 </p>
                 {report.encounter.chiefComplaint && (
                   <p className="mt-0.5 text-xs text-muted-foreground" dir="auto">

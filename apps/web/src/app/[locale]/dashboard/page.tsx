@@ -16,6 +16,7 @@ import { AppointmentStatusBadge } from '@/components/appointments/appointment-st
 import { QueueStatusBadge } from '@/components/queue/queue-status-badge';
 import type { Appointment, AppointmentsResponse } from '@/types/appointment';
 import type { QueueEntry, QueueResponse } from '@/types/queue';
+import { formatTimeDisplay } from '@/lib/format-date';
 
 interface StatCard {
   key: string;
@@ -37,14 +38,6 @@ const NEW_PATIENT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
 
 function todayStr() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
-}
-
-function formatTime(iso: string, locale = 'en-US') {
-  return new Date(iso).toLocaleTimeString(locale, {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  });
 }
 
 function relativeWait(iso: string, justNow: string, minShort: string, hrShort: string): string {
@@ -338,7 +331,7 @@ export default function DashboardPage() {
                         </span>
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {formatTime(appt.scheduledAt, displayLocale)} · {t('doctorPrefix')} {appt.doctor.user.lastName}
+                        {formatTimeDisplay(appt.scheduledAt)} · {t('doctorPrefix')} {appt.doctor.user.lastName}
                       </p>
                     </div>
                     <AppointmentStatusBadge status={appt.status} />

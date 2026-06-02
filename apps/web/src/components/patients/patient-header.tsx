@@ -5,19 +5,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { Patient } from '@/hooks/use-patient';
 import { usePatientOutstandingBalance } from '@/hooks/use-invoices';
+import { formatDateDisplay } from '@/lib/format-date';
 
 interface PatientHeaderProps {
   patient?: Patient;
   isLoading: boolean;
-}
-
-function formatDate(iso: string | null, displayLocale: string): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString(displayLocale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
 }
 
 function formatBloodType(raw: string | null): string {
@@ -99,7 +91,7 @@ export function PatientHeader({ patient, isLoading }: PatientHeaderProps) {
           <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
             <span className="font-mono text-xs" dir="ltr">{patient.mrn}</span>
             {patient.dateOfBirth && (
-              <span>{t('header.dob')} {formatDate(patient.dateOfBirth, displayLocale)}</span>
+              <span>{t('header.dob')} {formatDateDisplay(patient.dateOfBirth)}</span>
             )}
             {patient.gender && (
               <span>{t(`gender.${patient.gender.toLowerCase()}` as Parameters<typeof t>[0])}</span>

@@ -4,6 +4,7 @@ import { QueueStatusBadge } from './queue-status-badge';
 import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import type { QueueEntry, QueueStatus } from '@/types/queue';
 import type { Invoice } from '@/types/invoice';
+import { formatTimeDisplay } from '@/lib/format-date';
 
 function relativeTime(iso: string, justNow: string) {
   const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
@@ -11,10 +12,6 @@ function relativeTime(iso: string, justNow: string) {
   if (mins < 60) return `${mins}m`;
   const hrs = Math.floor(mins / 60);
   return `${hrs}h ${mins % 60}m`;
-}
-
-function formatScheduled(iso: string, locale: string): string {
-  return new Date(iso).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
 }
 
 const STATUS_LEFT: Record<QueueStatus, string> = {
@@ -61,7 +58,7 @@ export function QueueTicket({ entry, invoice, visitTypeName }: { entry: QueueEnt
         </p>
         {appointment.scheduledAt && (
           <p className="text-xs text-muted-foreground">
-            {t('scheduled', { time: formatScheduled(appointment.scheduledAt, displayLocale) })}
+            {t('scheduled', { time: formatTimeDisplay(appointment.scheduledAt) })}
           </p>
         )}
         {visitTypeName && (

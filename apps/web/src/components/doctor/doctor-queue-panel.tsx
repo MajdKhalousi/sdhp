@@ -10,6 +10,7 @@ import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import { StartEncounterButton } from './start-encounter-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Invoice, InvoiceStatus } from '@/types/invoice';
+import { formatTimeDisplay } from '@/lib/format-date';
 
 function todayDate() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
@@ -31,10 +32,6 @@ const INVOICE_PRIORITY: Record<InvoiceStatus, number> = {
   PAID:           3,
   CANCELLED:      99,
 };
-
-function formatScheduled(iso: string, locale: string): string {
-  return new Date(iso).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
-}
 
 function relativeWait(iso: string, justNow: string): string {
   const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
@@ -163,7 +160,7 @@ export function DoctorQueuePanel() {
                     </span>
                   </p>
                   <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-                    <span>{t('card.scheduled', { time: formatScheduled(appointment.scheduledAt, displayLocale) })}</span>
+                    <span>{t('card.scheduled', { time: formatTimeDisplay(appointment.scheduledAt) })}</span>
                     <span className={isLong ? 'font-medium text-amber-600 dark:text-amber-400' : ''}>
                       {t('card.waited', { duration: relativeWait(entry.createdAt, t('card.justNow')) })}
                     </span>

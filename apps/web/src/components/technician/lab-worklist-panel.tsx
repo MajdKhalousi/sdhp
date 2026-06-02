@@ -11,6 +11,7 @@ import {
 import type { LabOrder } from '@/hooks/use-labs';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatDateDisplay } from '@/lib/format-date';
 
 const PENDING_STATUSES = ['ORDERED', 'SAMPLE_COLLECTED', 'IN_PROGRESS'] as const;
 type PendingStatus = typeof PENDING_STATUSES[number];
@@ -21,13 +22,6 @@ const STATUS_VARIANT: Record<PendingStatus, BadgeVariant> = {
   SAMPLE_COLLECTED: 'warning',
   IN_PROGRESS:      'default',
 };
-
-function formatDate(iso: string, locale: string): string {
-  return new Date(iso).toLocaleDateString(locale === 'ar' ? 'ar-u-nu-latn' : 'en-US', {
-    month: 'short',
-    day: 'numeric',
-  });
-}
 
 // ── Lab status badge ──────────────────────────────────────────────────────────
 
@@ -220,7 +214,7 @@ function LabOrderCard({ order }: { order: LabOrder }) {
                 {order.patient.mrn}
               </span>
             </span>
-            <span>{t('card.orderedAt', { date: formatDate(order.createdAt, locale) })}</span>
+            <span>{t('card.orderedAt', { date: formatDateDisplay(order.createdAt) })}</span>
             {order.testCode && (
               <span className="font-mono text-muted-foreground/70">{order.testCode}</span>
             )}

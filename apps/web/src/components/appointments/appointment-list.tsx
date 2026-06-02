@@ -18,6 +18,7 @@ import { useInvoices } from '@/hooks/use-invoices';
 import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import type { Appointment, AppointmentStatus } from '@/types/appointment';
 import type { InvoiceStatus } from '@/types/invoice';
+import { formatDateTimeDisplay } from '@/lib/format-date';
 
 const CONFIRM_ELIGIBLE: AppointmentStatus[]    = ['SCHEDULED'];
 const CHECKIN_ELIGIBLE: AppointmentStatus[]    = ['SCHEDULED', 'CONFIRMED'];
@@ -35,16 +36,6 @@ const ALL_STATUSES: AppointmentStatus[] = [
 
 function todayStr() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
-}
-
-function formatDateTime(iso: string, locale = 'en-US') {
-  return new Date(iso).toLocaleString(locale, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
 }
 
 const LIMIT = 20;
@@ -285,7 +276,7 @@ export function AppointmentList() {
                     <p className="text-xs text-muted-foreground">{appt.doctor.specialization}</p>
                   )}
                 </td>
-                <td className="px-4 py-3 text-sm whitespace-nowrap" dir="ltr">{formatDateTime(appt.scheduledAt, displayLocale)}</td>
+                <td className="px-4 py-3 text-sm whitespace-nowrap" dir="ltr">{formatDateTimeDisplay(appt.scheduledAt)}</td>
                 <td className="px-4 py-3 text-sm text-muted-foreground">
                   {getVisitTypeName(appt.visitTypeId)}
                 </td>

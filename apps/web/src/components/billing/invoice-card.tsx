@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { InvoiceStatusBadge } from './invoice-status-badge';
+import { formatDateDisplay } from '@/lib/format-date';
 import type { Invoice } from '@/types/invoice';
 
 interface InvoiceCardProps {
@@ -17,13 +18,6 @@ function formatAmount(value: string, locale: string): string {
       maximumFractionDigits: 2,
     }).format(num) + ' SYP'
   );
-}
-
-function formatDate(iso: string | null): string {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 export function InvoiceCard({ invoice }: InvoiceCardProps) {
@@ -58,13 +52,13 @@ export function InvoiceCard({ invoice }: InvoiceCardProps) {
         <div>
           <p className="text-muted-foreground">{t('list.columns.date')}</p>
           <p className="font-medium" dir="ltr">
-            {formatDate(invoice.issuedAt ?? invoice.createdAt)}
+            {formatDateDisplay(invoice.issuedAt ?? invoice.createdAt)}
           </p>
         </div>
         {invoice.dueDate && (
           <div>
             <p className="text-muted-foreground">{t('list.columns.dueDate')}</p>
-            <p className="font-medium" dir="ltr">{formatDate(invoice.dueDate)}</p>
+            <p className="font-medium" dir="ltr">{formatDateDisplay(invoice.dueDate)}</p>
           </div>
         )}
       </div>

@@ -13,13 +13,10 @@ import {
 import { AvailableSlotsPicker } from '@/components/appointments/available-slots-picker';
 import { Badge } from '@/components/ui/badge';
 import type { VisitType } from '@/types/clinic-settings';
+import { formatDateDisplay } from '@/lib/format-date';
 
 const FIELD_CLASS =
   'h-8 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60';
-
-function formatDate(iso: string, locale: string) {
-  return new Date(iso).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
-}
 
 interface Props {
   encounterId: string;
@@ -114,7 +111,7 @@ export function FollowUpBookingPanel({ encounterId, patientId, defaultDoctorId, 
         <span className="text-sm text-muted-foreground">
           {t('with')} Dr. {dr.user.firstName} {dr.user.lastName}
           {' · '}
-          {formatDate(bookedAppointment.scheduledAt, displayLocale)}
+          {formatDateDisplay(bookedAppointment.scheduledAt)}
         </span>
         <Link
           href={`/dashboard/appointments?patientId=${patientId}`}

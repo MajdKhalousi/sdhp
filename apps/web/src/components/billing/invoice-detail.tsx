@@ -11,6 +11,7 @@ import { InvoiceItemsTable } from './invoice-items-table';
 import { CancelInvoiceDialog } from './cancel-invoice-dialog';
 import { RecordPaymentForm } from './record-payment-form';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatDateDisplay } from '@/lib/format-date';
 import type { Invoice } from '@/types/invoice';
 
 function formatAmount(value: string, locale: string): string {
@@ -22,13 +23,6 @@ function formatAmount(value: string, locale: string): string {
       maximumFractionDigits: 2,
     }).format(num) + ' SYP'
   );
-}
-
-function formatDate(iso: string | null): string {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 function InfoRow({ label, children }: { label: string; children: React.ReactNode }) {
@@ -220,7 +214,7 @@ function PaymentsSection({ invoice }: { invoice: Invoice }) {
                         {t(`method.${payment.method}` as Parameters<typeof t>[0])}
                       </td>
                       <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap" dir="ltr">
-                        {formatDate(payment.paidAt)}
+                        {formatDateDisplay(payment.paidAt)}
                       </td>
                       <td className="px-4 py-3 text-sm text-muted-foreground" dir="ltr">
                         {payment.referenceNumber ?? '—'}
@@ -430,20 +424,20 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
           <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {t('title')}
           </p>
-          <InfoRow label={t('fields.date')}>{formatDate(invoice.issuedAt ?? invoice.createdAt)}</InfoRow>
+          <InfoRow label={t('fields.date')}>{formatDateDisplay(invoice.issuedAt ?? invoice.createdAt)}</InfoRow>
           {invoice.dueDate && (
             <InfoRow label={t('fields.dueDate')}>
-              <span dir="ltr">{formatDate(invoice.dueDate)}</span>
+              <span dir="ltr">{formatDateDisplay(invoice.dueDate)}</span>
             </InfoRow>
           )}
           {invoice.issuedAt && (
             <InfoRow label={t('fields.issuedAt')}>
-              <span dir="ltr">{formatDate(invoice.issuedAt)}</span>
+              <span dir="ltr">{formatDateDisplay(invoice.issuedAt)}</span>
             </InfoRow>
           )}
           {invoice.cancelledAt && (
             <InfoRow label={t('fields.cancelledAt')}>
-              <span dir="ltr">{formatDate(invoice.cancelledAt)}</span>
+              <span dir="ltr">{formatDateDisplay(invoice.cancelledAt)}</span>
             </InfoRow>
           )}
           <InfoRow label={t('fields.createdBy')}>

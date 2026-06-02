@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { usePatientInvoices } from '@/hooks/use-invoices';
 import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatDateDisplay } from '@/lib/format-date';
 
 function formatAmount(value: string, locale: string): string {
   const num = parseFloat(value);
@@ -18,12 +19,6 @@ function formatAmount(value: string, locale: string): string {
   );
 }
 
-function formatDate(iso: string | null): string {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
 
 interface InvoicesTabProps {
   patientId: string;
@@ -115,10 +110,10 @@ export function InvoicesTab({ patientId }: InvoicesTabProps) {
                     {!isNaN(rem) ? formatAmount(String(rem), locale) : '—'}
                   </td>
                   <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap" dir="ltr">
-                    {formatDate(invoice.dueDate)}
+                    {formatDateDisplay(invoice.dueDate)}
                   </td>
                   <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap" dir="ltr">
-                    {formatDate(invoice.issuedAt ?? invoice.createdAt)}
+                    {formatDateDisplay(invoice.issuedAt ?? invoice.createdAt)}
                   </td>
                 </tr>
               );

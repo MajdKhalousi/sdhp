@@ -15,6 +15,7 @@ import {
   type RadiologyReport,
 } from '@/hooks/use-radiology';
 import type { RadiologyOrderStatus } from '@/types/timeline';
+import { formatDateDisplay } from '@/lib/format-date';
 
 const STATUS_VARIANT: Record<RadiologyOrderStatus, BadgeProps['variant']> = {
   ORDERED:     'default',
@@ -30,12 +31,6 @@ const PRIORITY_OPTIONS = ['ROUTINE', 'URGENT', 'STAT'] as const;
 
 const FIELD_CLASS =
   'h-8 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring';
-
-function formatDate(iso: string, locale: string): string {
-  return new Date(iso).toLocaleDateString(locale, {
-    year: 'numeric', month: 'short', day: 'numeric',
-  });
-}
 
 function ReportSection({ report }: { report: RadiologyReport }) {
   const tRad = useTranslations('encounter');
@@ -72,17 +67,17 @@ function ReportSection({ report }: { report: RadiologyReport }) {
         )}
         {reportedBy && report.reportedAt && (
           <p className="text-xs text-muted-foreground">
-            {tRad('radiologyOrders.report.reportedBy')}: {reportedBy} · {formatDate(report.reportedAt, displayLocale)}
+            {tRad('radiologyOrders.report.reportedBy')}: {reportedBy} · {formatDateDisplay(report.reportedAt)}
           </p>
         )}
         {!reportedBy && report.reportedAt && (
           <p className="text-xs text-muted-foreground">
-            {tRad('radiologyOrders.report.reportedAt')}: {formatDate(report.reportedAt, displayLocale)}
+            {tRad('radiologyOrders.report.reportedAt')}: {formatDateDisplay(report.reportedAt)}
           </p>
         )}
         {reviewedBy && report.reviewedAt && (
           <p className="text-xs text-muted-foreground">
-            {tRad('radiologyOrders.report.reviewedBy')}: {reviewedBy} · {formatDate(report.reviewedAt, displayLocale)}
+            {tRad('radiologyOrders.report.reviewedBy')}: {reviewedBy} · {formatDateDisplay(report.reviewedAt)}
           </p>
         )}
       </div>
@@ -261,7 +256,7 @@ export function RadiologyOrderPanel({ patientId, encounterId, readOnly }: Props)
             {pendingReview.map((order) => (
               <div key={order.id}>
                 <p className="mb-1 ps-1 text-xs text-muted-foreground">
-                  {tRad('radiologyOrders.pendingReview.ordered')}: {formatDate(order.createdAt, displayLocale)}
+                  {tRad('radiologyOrders.pendingReview.ordered')}: {formatDateDisplay(order.createdAt)}
                 </p>
                 <OrderCard order={order} readOnly={false} />
               </div>

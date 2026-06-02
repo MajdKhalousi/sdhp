@@ -4,17 +4,14 @@ import { useLocale, useTranslations } from 'next-intl';
 import { LogOut, Menu } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
 import { useRouter, usePathname } from '@/i18n/navigation';
+import { formatDateDisplay } from '@/lib/format-date';
 
 interface HeaderProps {
   onMenuClick?: () => void;
 }
 
-function todayLabel(locale: string): string {
-  return new Date().toLocaleDateString(locale === 'ar' ? 'ar-u-nu-latn' : 'en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
+function todayLabel(): string {
+  return formatDateDisplay(new Date());
 }
 
 function formatRole(role: string): string {
@@ -61,7 +58,7 @@ export function Header({ onMenuClick }: HeaderProps = {}) {
             <Menu className="h-5 w-5" />
           </button>
         )}
-        <p className="text-sm font-medium text-muted-foreground">{todayLabel(locale)}</p>
+        <p className="text-sm font-medium text-muted-foreground">{todayLabel()}</p>
       </div>
 
       <div className="flex items-center gap-2">

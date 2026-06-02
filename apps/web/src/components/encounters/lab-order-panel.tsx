@@ -15,6 +15,7 @@ import {
   type LabResult,
 } from '@/hooks/use-labs';
 import type { LabOrderStatus } from '@/types/timeline';
+import { formatDateDisplay } from '@/lib/format-date';
 
 const STATUS_VARIANT: Record<LabOrderStatus, BadgeProps['variant']> = {
   ORDERED:          'default',
@@ -29,12 +30,6 @@ const PRIORITY_OPTIONS = ['ROUTINE', 'URGENT', 'STAT'] as const;
 
 const FIELD_CLASS =
   'h-8 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring';
-
-function formatDate(iso: string, locale: string): string {
-  return new Date(iso).toLocaleDateString(locale, {
-    year: 'numeric', month: 'short', day: 'numeric',
-  });
-}
 
 function ResultSection({ result }: { result: LabResult }) {
   const tLab = useTranslations('encounter');
@@ -73,12 +68,12 @@ function ResultSection({ result }: { result: LabResult }) {
         )}
         {result.resultAt && (
           <p className="text-xs text-muted-foreground">
-            {tLab('labOrders.result.resultAt')}: {formatDate(result.resultAt, displayLocale)}
+            {tLab('labOrders.result.resultAt')}: {formatDateDisplay(result.resultAt)}
           </p>
         )}
         {reviewer && result.reviewedAt && (
           <p className="text-xs text-muted-foreground">
-            {tLab('labOrders.result.reviewedBy')}: {reviewer} · {formatDate(result.reviewedAt, displayLocale)}
+            {tLab('labOrders.result.reviewedBy')}: {reviewer} · {formatDateDisplay(result.reviewedAt)}
           </p>
         )}
       </div>
@@ -248,7 +243,7 @@ export function LabOrderPanel({ patientId, encounterId, readOnly }: Props) {
             {pendingReview.map((order) => (
               <div key={order.id}>
                 <p className="mb-1 ps-1 text-xs text-muted-foreground">
-                  {tLab('labOrders.pendingReview.ordered')}: {formatDate(order.createdAt, displayLocale)}
+                  {tLab('labOrders.pendingReview.ordered')}: {formatDateDisplay(order.createdAt)}
                 </p>
                 <OrderCard order={order} readOnly={false} />
               </div>

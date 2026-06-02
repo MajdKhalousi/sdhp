@@ -7,6 +7,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { useBillingReport, useOutstandingPatients } from '@/hooks/use-invoices';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatDateDisplay } from '@/lib/format-date';
 
 const BILLING_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
 
@@ -40,13 +41,6 @@ function formatAmount(value: number, locale: string): string {
       maximumFractionDigits: 0,
     }).format(value) + ' SYP'
   );
-}
-
-function formatDate(iso: string | null, locale: string): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString(locale === 'ar' ? 'ar-u-nu-latn' : 'en-US', {
-    year: 'numeric', month: 'short', day: 'numeric',
-  });
 }
 
 const PRESET_ORDER: Preset[] = ['today', 'thisMonth', 'custom'];
@@ -258,7 +252,7 @@ export default function BillingReportsPage() {
                         {p.invoiceCount}
                       </td>
                       <td className="px-5 py-3 text-muted-foreground">
-                        {formatDate(p.oldestUnpaidAt, locale)}
+                        {formatDateDisplay(p.oldestUnpaidAt)}
                       </td>
                       <td className="px-5 py-3">
                         <Link

@@ -11,6 +11,7 @@ import {
 import type { RadiologyOrder } from '@/hooks/use-radiology';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatDateDisplay } from '@/lib/format-date';
 
 const PENDING_STATUSES = ['ORDERED', 'SCHEDULED', 'IN_PROGRESS'] as const;
 type PendingStatus = typeof PENDING_STATUSES[number];
@@ -21,13 +22,6 @@ const STATUS_VARIANT: Record<PendingStatus, BadgeVariant> = {
   SCHEDULED:   'warning',
   IN_PROGRESS: 'default',
 };
-
-function formatDate(iso: string, locale: string): string {
-  return new Date(iso).toLocaleDateString(locale === 'ar' ? 'ar-u-nu-latn' : 'en-US', {
-    month: 'short',
-    day: 'numeric',
-  });
-}
 
 // ── Radiology status badge ────────────────────────────────────────────────────
 
@@ -215,7 +209,7 @@ function RadiologyOrderCard({ order }: { order: RadiologyOrder }) {
                 {order.patient.mrn}
               </span>
             </span>
-            <span>{t('card.orderedAt', { date: formatDate(order.createdAt, locale) })}</span>
+            <span>{t('card.orderedAt', { date: formatDateDisplay(order.createdAt) })}</span>
           </div>
           <div className="mt-1.5">
             <RadiologyStatusBadge

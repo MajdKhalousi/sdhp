@@ -11,6 +11,7 @@ import {
   type RadiologyReport,
 } from '@/hooks/use-radiology';
 import type { RadiologyOrderStatus } from '@/types/timeline';
+import { formatDateDisplay } from '@/lib/format-date';
 
 const STATUS_VARIANT: Record<RadiologyOrderStatus, BadgeProps['variant']> = {
   ORDERED:     'default',
@@ -23,14 +24,6 @@ const STATUS_VARIANT: Record<RadiologyOrderStatus, BadgeProps['variant']> = {
 
 const MODALITY_OPTIONS = ['X-RAY', 'CT', 'MRI', 'ULTRASOUND', 'ECHO'] as const;
 const PRIORITY_OPTIONS = ['ROUTINE', 'URGENT', 'STAT'] as const;
-
-function formatDate(iso: string, locale: string): string {
-  return new Date(iso).toLocaleDateString(locale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
 
 function ReportSection({ report }: { report: RadiologyReport }) {
   const tRad = useTranslations('encounter');
@@ -67,17 +60,17 @@ function ReportSection({ report }: { report: RadiologyReport }) {
         )}
         {reportedBy && report.reportedAt && (
           <p className="text-xs text-muted-foreground">
-            {tRad('radiologyOrders.report.reportedBy')}: {reportedBy} · {formatDate(report.reportedAt, displayLocale)}
+            {tRad('radiologyOrders.report.reportedBy')}: {reportedBy} · {formatDateDisplay(report.reportedAt)}
           </p>
         )}
         {!reportedBy && report.reportedAt && (
           <p className="text-xs text-muted-foreground">
-            {tRad('radiologyOrders.report.reportedAt')}: {formatDate(report.reportedAt, displayLocale)}
+            {tRad('radiologyOrders.report.reportedAt')}: {formatDateDisplay(report.reportedAt)}
           </p>
         )}
         {reviewedBy && report.reviewedAt && (
           <p className="text-xs text-muted-foreground">
-            {tRad('radiologyOrders.report.reviewedBy')}: {reviewedBy} · {formatDate(report.reviewedAt, displayLocale)}
+            {tRad('radiologyOrders.report.reviewedBy')}: {reviewedBy} · {formatDateDisplay(report.reviewedAt)}
           </p>
         )}
       </div>
@@ -99,7 +92,7 @@ function RadiologyOrderItem({ order }: { order: RadiologyOrder }) {
         <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
           {t('cards.radiology')}
         </span>
-        <span className="text-xs text-muted-foreground" dir="ltr">{formatDate(order.createdAt, displayLocale)}</span>
+        <span className="text-xs text-muted-foreground" dir="ltr">{formatDateDisplay(order.createdAt)}</span>
       </div>
 
       <p className="font-medium text-sm text-foreground">
@@ -127,7 +120,7 @@ function RadiologyOrderItem({ order }: { order: RadiologyOrder }) {
       <div className="mt-1.5 space-y-0.5 text-xs text-muted-foreground">
         <p>{tPatient('radiologyOrders.orderedBy')}: {doctor}</p>
         {order.scheduledAt && (
-          <p>{tPatient('radiologyOrders.scheduledAt')}: {formatDate(order.scheduledAt, displayLocale)}</p>
+          <p>{tPatient('radiologyOrders.scheduledAt')}: {formatDateDisplay(order.scheduledAt)}</p>
         )}
         {order.clinicalInfo && (
           <p>{tPatient('radiologyOrders.clinicalInfo')}: {order.clinicalInfo}</p>

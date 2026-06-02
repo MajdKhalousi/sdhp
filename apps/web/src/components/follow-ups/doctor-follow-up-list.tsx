@@ -9,6 +9,7 @@ import { Tabs } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FollowUpStatusBadge } from './follow-up-status-badge';
 import type { FollowUpStatus } from '@/types/follow-up';
+import { formatDateDisplay, formatDateTimeDisplay } from '@/lib/format-date';
 
 const LIMIT = 20;
 
@@ -40,20 +41,6 @@ const EMPTY_KEY: Record<FollowUpStatus, string> = {
   UPCOMING:  'empty.upcoming',
   COMPLETED: 'empty.upcoming',
 };
-
-function formatDate(iso: string, locale: string) {
-  return new Date(iso).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-function formatDateTime(iso: string, locale: string) {
-  return new Date(iso).toLocaleString(locale, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-}
 
 export function DoctorFollowUpList() {
   const t = useTranslations('followups');
@@ -243,7 +230,7 @@ export function DoctorFollowUpList() {
 
                       {/* Recommended Date */}
                       <td className="px-4 py-3 text-sm whitespace-nowrap" dir="ltr">
-                        {formatDate(item.followUpDate, displayLocale)}
+                        {formatDateDisplay(item.followUpDate)}
                       </td>
 
                       {/* Status */}
@@ -261,7 +248,7 @@ export function DoctorFollowUpList() {
                         {item.linkedAppointment ? (
                           <div>
                             <p className="text-sm whitespace-nowrap" dir="ltr">
-                              {formatDateTime(item.linkedAppointment.scheduledAt, displayLocale)}
+                              {formatDateTimeDisplay(item.linkedAppointment.scheduledAt)}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {item.linkedAppointment.status}

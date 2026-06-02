@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import type { Allergy } from '@/hooks/use-allergies';
+import { formatDateDisplay } from '@/lib/format-date';
 
 interface Props {
   allergies: Allergy[];
@@ -33,14 +34,6 @@ const DOT_STYLES: Record<AlertSeverity, string> = {
   warning:  'bg-orange-500 dark:bg-orange-400',
   info:     'bg-slate-400 dark:bg-slate-500',
 };
-
-function formatDateShort(iso: string, displayLocale: string): string {
-  return new Date(iso).toLocaleDateString(displayLocale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
 
 function isOverdue(dateStr: string): boolean {
   const today = new Date();
@@ -100,7 +93,7 @@ export function PatientSafetyAlerts({
       items.push({
         id: 'followup',
         severity: 'warning',
-        message: `${t('overdueFollowUp')} ${formatDateShort(overdueFollowUpDate, displayLocale)}`,
+        message: `${t('overdueFollowUp')} ${formatDateDisplay(overdueFollowUpDate)}`,
       });
     }
 

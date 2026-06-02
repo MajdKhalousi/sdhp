@@ -6,16 +6,12 @@ import { usePatientTimeline } from '@/hooks/use-patient-timeline';
 import { usePatientLabOrders } from '@/hooks/use-labs';
 import { usePatientRadiologyOrders } from '@/hooks/use-radiology';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatDateDisplay } from '@/lib/format-date';
 
 const CLINICAL_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE']);
 
 const PENDING_LAB_STATUSES = new Set(['ORDERED', 'SAMPLE_COLLECTED', 'IN_PROGRESS']);
 const PENDING_RADIOLOGY_STATUSES = new Set(['ORDERED', 'SCHEDULED', 'IN_PROGRESS']);
-
-function formatDate(iso: string | null | undefined, locale: string): string {
-  if (!iso) return '';
-  return new Date(iso).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' });
-}
 
 interface SnapshotRowProps {
   label: string;
@@ -117,7 +113,7 @@ export function PatientClinicalSummary({ patientId, onViewHistory }: Props) {
             value={
               enc ? (
                 <span>
-                  {formatDate(enc.startedAt, displayLocale)}
+                  {formatDateDisplay(enc.startedAt)}
                   {enc.chiefComplaint && (
                     <span className="block text-xs font-normal text-muted-foreground line-clamp-1">
                       {enc.chiefComplaint}
@@ -142,7 +138,7 @@ export function PatientClinicalSummary({ patientId, onViewHistory }: Props) {
           {/* Next Follow-up */}
           <SnapshotRow
             label={t('nextFollowUp')}
-            value={enc?.followUpDate ? formatDate(enc.followUpDate, displayLocale) : na}
+            value={enc?.followUpDate ? formatDateDisplay(enc.followUpDate) : na}
           />
 
           {/* Pending Labs */}

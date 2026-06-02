@@ -1,3 +1,7 @@
+import { formatTimeDisplay } from '@/lib/format-date';
+
 export function formatTime(value: string | Date, locale = 'en-US'): string {
-  return new Date(value).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
+  // locale param kept for API compatibility; output is always HH:mm
+  void locale;
+  return formatTimeDisplay(value);
 }

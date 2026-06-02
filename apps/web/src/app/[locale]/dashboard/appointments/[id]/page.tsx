@@ -16,6 +16,7 @@ import { RescheduleDialog } from '@/components/appointments/reschedule-dialog';
 import { useAuthStore } from '@/store/auth';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AppointmentStatus } from '@/types/appointment';
+import { formatDateTimeDisplay } from '@/lib/format-date';
 
 const CONFIRM_ELIGIBLE: AppointmentStatus[]    = ['SCHEDULED'];
 const RESCHEDULE_ELIGIBLE: AppointmentStatus[] = ['SCHEDULED', 'CONFIRMED'];
@@ -24,17 +25,6 @@ const CHECKIN_ELIGIBLE: AppointmentStatus[]    = ['SCHEDULED', 'CONFIRMED'];
 const INVOICE_ELIGIBLE: AppointmentStatus[]    = ['COMPLETED', 'IN_PROGRESS'];
 
 const APPOINTMENT_MUTATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
-
-function formatDateTime(iso: string, locale = 'en-US') {
-  return new Date(iso).toLocaleString(locale, {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-}
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -174,7 +164,7 @@ export default function AppointmentDetailPage() {
 
             <Field label={t('fields.scheduled')}>
               <span dir="ltr" className="inline-block">
-                {formatDateTime(appointment.scheduledAt, displayLocale)}
+                {formatDateTimeDisplay(appointment.scheduledAt)}
               </span>
             </Field>
 
@@ -203,7 +193,7 @@ export default function AppointmentDetailPage() {
             <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3 space-y-2">
               <Field label={t('fields.cancelledAt')}>
                 <span dir="ltr" className="inline-block">
-                  {formatDateTime(appointment.cancelledAt, displayLocale)}
+                  {formatDateTimeDisplay(appointment.cancelledAt)}
                 </span>
               </Field>
               {appointment.cancelReason && (

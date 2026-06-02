@@ -6,16 +6,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useEncounters } from '@/hooks/use-encounters';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-
-function formatTime(iso: string | null, locale: string): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
-}
-
-function formatDate(iso: string | null, locale: string): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
-}
+import { formatDateDisplay, formatTimeDisplay } from '@/lib/format-date';
 
 export default function DoctorWorkspacePage() {
   const locale = useLocale();
@@ -132,7 +123,7 @@ export default function DoctorWorkspacePage() {
 
                     <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
                       <p>
-                        {t('card.started')} {formatDate(startedAt, displayLocale)} · {formatTime(startedAt, displayLocale)}
+                        {t('card.started')} {formatDateDisplay(startedAt)} · {formatTimeDisplay(startedAt)}
                       </p>
                       {localizeGender(patient.gender) && <p>{localizeGender(patient.gender)}</p>}
                       {encounter.chiefComplaint && (

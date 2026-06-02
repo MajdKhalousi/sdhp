@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import {
@@ -107,12 +108,36 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  isMobileDrawer?: boolean;
+  onClose?: () => void;
+}
+
+export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) {
   const t = useTranslations('nav');
   const pathname = usePathname();
   const locale = useLocale();
   const { user } = useAuthStore();
   const role = user?.role ?? '';
+
+  // Close drawer on Escape key
+  useEffect(() => {
+    if (!isMobileDrawer || !onClose) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [isMobileDrawer, onClose]);
+
+  // Close drawer when the user navigates to a new route.
+  // mountedPathRef captures the path at the moment the drawer opens; any
+  // subsequent pathname change means navigation has occurred.
+  const mountedPathRef = useRef(pathname);
+  useEffect(() => {
+    if (!isMobileDrawer || !onClose) return;
+    if (pathname !== mountedPathRef.current) {
+      onClose();
+    }
+  }, [pathname, isMobileDrawer, onClose]);
 
   const navItemLabels: Record<string, string> = {
     '/dashboard':                      t('items.dashboard'),
@@ -134,8 +159,12 @@ export function Sidebar() {
 
   const visibleItems = NAV_ITEMS.filter((item) => item.roles.includes(role));
 
+  const asideClass = isMobileDrawer
+    ? `fixed inset-y-0 z-50 flex w-64 flex-col border-r bg-sidebar ${locale === 'ar' ? 'right-0' : 'left-0'}`
+    : 'flex h-screen w-64 flex-col border-r bg-sidebar';
+
   return (
-    <aside className="flex h-screen w-64 flex-col border-r bg-sidebar">
+    <aside className={asideClass}>
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-5">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">

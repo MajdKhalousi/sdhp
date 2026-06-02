@@ -1,9 +1,13 @@
 'use client';
 
-import { useLocale } from 'next-intl';
-import { LogOut } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { LogOut, Menu } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
 import { useRouter, usePathname } from '@/i18n/navigation';
+
+interface HeaderProps {
+  onMenuClick?: () => void;
+}
 
 function todayLabel(locale: string): string {
   return new Date().toLocaleDateString(locale === 'ar' ? 'ar-SY' : 'en-US', {
@@ -20,8 +24,9 @@ function formatRole(role: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-export function Header() {
+export function Header({ onMenuClick }: HeaderProps = {}) {
   const locale = useLocale();
+  const t = useTranslations('nav');
   const router = useRouter();
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
@@ -45,7 +50,19 @@ export function Header() {
 
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b bg-card px-6">
-      <p className="text-sm font-medium text-muted-foreground">{todayLabel(locale)}</p>
+      <div className="flex items-center gap-2">
+        {/* Hamburger — visible only below lg */}
+        {onMenuClick && (
+          <button
+            onClick={onMenuClick}
+            className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground lg:hidden"
+            aria-label={t('openMenu')}
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        )}
+        <p className="text-sm font-medium text-muted-foreground">{todayLabel(locale)}</p>
+      </div>
 
       <div className="flex items-center gap-2">
         {/* Language toggle */}

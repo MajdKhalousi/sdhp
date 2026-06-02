@@ -48,6 +48,7 @@
     "brand": "Elaji Health",
     "brandSubtitle": "المنصة الصحية",
     "footer": "منصة علاجي الصحية",
+    "openMenu": "فتح القائمة",
     "items": {
       "dashboard": "الرئيسية",
       "patients": "المرضى",
@@ -154,7 +155,11 @@
         "scheduled": "الموعد",
         "duration": "المدة",
         "status": "الحالة",
-        "visitType": "نوع الزيارة"
+        "visitType": "نوع الزيارة",
+        "invoice": "الفاتورة"
+      },
+      "invoiceStatus": {
+        "noInvoice": "لا توجد فاتورة"
       },
       "filter": {
         "byStatus": "تصفية بالحالة",
@@ -343,15 +348,20 @@
       "booked": "تم حجز الموعد. أصدر تذكرة طابور لإضافة هذا المريض لقائمة الانتظار.",
       "fields": {
         "patientLabel": "المريض",
+        "patientSearchPlaceholder": "ابحث بالاسم أو الهاتف أو رقم الملف",
         "doctorLabel": "الطبيب",
         "dateTimeLabel": "التاريخ والوقت",
-        "durationLabel": "المدة (بالدقائق)"
+        "durationLabel": "المدة (بالدقائق)",
+        "visitTypeLabel": "نوع الزيارة",
+        "visitTypeOptional": "اختياري"
       },
       "select": {
         "selectPatient": "اختر مريضاً",
         "selectDoctor": "اختر طبيباً",
         "loadingPatients": "تحميل المرضى…",
-        "loadingDoctors": "تحميل الأطباء…"
+        "loadingDoctors": "تحميل الأطباء…",
+        "selectVisitType": "اختر نوع الزيارة",
+        "loadingVisitTypes": "تحميل أنواع الزيارات…"
       },
       "conflict": "هذا المريض لديه تذكرة طابور اليوم بالفعل.",
       "actions": {
@@ -361,7 +371,8 @@
         "checkingIn": "جاري التسجيل…",
         "backToQueue": "العودة إلى الطابور",
         "viewQueue": "عرض الطابور ←",
-        "cancel": "إلغاء"
+        "cancel": "إلغاء",
+        "setNow": "الآن"
       },
       "validation": {
         "patientRequired": "يرجى اختيار مريض.",
@@ -504,7 +515,11 @@
       "total": "الإجمالي",
       "paid": "المدفوع",
       "remaining": "المتبقي",
-      "viewInvoice": "عرض الفاتورة"
+      "viewInvoice": "عرض الفاتورة",
+      "billingFollowUp": "متابعة الفوترة",
+      "createOrCheckInvoice": "إنشاء أو مراجعة الفاتورة",
+      "viewInvoices": "عرض الفواتير",
+      "billingSettled": "الفوترة مكتملة"
     },
     "prescription": {
       "empty": "لم توصَف أي أدوية لهذه الزيارة.",

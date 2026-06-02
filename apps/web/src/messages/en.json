@@ -48,6 +48,7 @@
     "brand": "Elaji Health",
     "brandSubtitle": "Health Platform",
     "footer": "Elaji Health Platform",
+    "openMenu": "Open menu",
     "items": {
       "dashboard": "Dashboard",
       "patients": "Patients",
@@ -154,7 +155,11 @@
         "scheduled": "Scheduled",
         "duration": "Duration",
         "status": "Status",
-        "visitType": "Visit Type"
+        "visitType": "Visit Type",
+        "invoice": "Invoice"
+      },
+      "invoiceStatus": {
+        "noInvoice": "No invoice"
       },
       "filter": {
         "byStatus": "Filter by status",
@@ -343,15 +348,20 @@
       "booked": "Appointment booked. Issue a queue ticket to add this patient to the waiting list.",
       "fields": {
         "patientLabel": "Patient",
+        "patientSearchPlaceholder": "Search by name, phone, or MRN",
         "doctorLabel": "Doctor",
         "dateTimeLabel": "Date & Time",
-        "durationLabel": "Duration (minutes)"
+        "durationLabel": "Duration (minutes)",
+        "visitTypeLabel": "Visit Type",
+        "visitTypeOptional": "optional"
       },
       "select": {
         "selectPatient": "Select a patient",
         "selectDoctor": "Select a doctor",
         "loadingPatients": "Loading patients…",
-        "loadingDoctors": "Loading doctors…"
+        "loadingDoctors": "Loading doctors…",
+        "selectVisitType": "Select visit type",
+        "loadingVisitTypes": "Loading visit types…"
       },
       "conflict": "This patient already has a queue ticket for today.",
       "actions": {
@@ -361,7 +371,8 @@
         "checkingIn": "Checking in…",
         "backToQueue": "Back to Queue",
         "viewQueue": "View queue →",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "setNow": "Now"
       },
       "validation": {
         "patientRequired": "Please select a patient.",
@@ -504,7 +515,11 @@
       "total": "Total",
       "paid": "Paid",
       "remaining": "Remaining",
-      "viewInvoice": "View invoice"
+      "viewInvoice": "View invoice",
+      "billingFollowUp": "Billing follow-up",
+      "createOrCheckInvoice": "Create or check invoice",
+      "viewInvoices": "View invoices",
+      "billingSettled": "Billing settled"
     },
     "prescription": {
       "empty": "No medications prescribed for this encounter.",

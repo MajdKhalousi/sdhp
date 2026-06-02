@@ -36,6 +36,10 @@ export interface Patient {
   lastName: string;
   firstNameAr: string | null;
   lastNameAr: string | null;
+  fatherName: string | null;
+  fatherNameAr: string | null;
+  motherName: string | null;
+  motherNameAr: string | null;
   dateOfBirth: string | null;
   gender: string | null;
   phone: string | null;
@@ -78,6 +82,10 @@ export interface CreatePatientInput {
   chronicDiseases?: string | null;
   emergencyName?: string | null;
   emergencyPhone?: string | null;
+  fatherName?: string | null;
+  fatherNameAr?: string | null;
+  motherName?: string | null;
+  motherNameAr?: string | null;
 }
 
 export type UpdatePatientInput = Partial<CreatePatientInput>;

@@ -33,6 +33,10 @@ interface FormState {
   chronicDiseases: string;
   emergencyContactName: string;
   emergencyContactPhone: string;
+  fatherName: string;
+  fatherNameAr: string;
+  motherName: string;
+  motherNameAr: string;
 }
 
 interface FormErrors {
@@ -74,6 +78,10 @@ function initState(mode: 'create' | 'edit', p?: Patient): FormState {
       chronicDiseases: p.chronicDiseases ?? '',
       emergencyContactName: p.emergencyContactName ?? p.emergencyName ?? '',
       emergencyContactPhone: p.emergencyContactPhone ?? p.emergencyPhone ?? '',
+      fatherName: p.fatherName ?? '',
+      fatherNameAr: p.fatherNameAr ?? '',
+      motherName: p.motherName ?? '',
+      motherNameAr: p.motherNameAr ?? '',
     };
   }
   return {
@@ -91,6 +99,10 @@ function initState(mode: 'create' | 'edit', p?: Patient): FormState {
     chronicDiseases: '',
     emergencyContactName: '',
     emergencyContactPhone: '',
+    fatherName: '',
+    fatherNameAr: '',
+    motherName: '',
+    motherNameAr: '',
   };
 }
 
@@ -182,6 +194,10 @@ export function PatientForm({
       chronicDiseases: values.chronicDiseases.trim() || null,
       emergencyName: values.emergencyContactName.trim() || null,
       emergencyPhone: values.emergencyContactPhone.trim() || null,
+      fatherName: values.fatherName.trim() || null,
+      fatherNameAr: values.fatherNameAr.trim() || null,
+      motherName: values.motherName.trim() || null,
+      motherNameAr: values.motherNameAr.trim() || null,
     };
 
     void onSubmit(payload);
@@ -249,6 +265,64 @@ export function PatientForm({
                 dir="ltr"
               />
               <FieldError message={errors.dateOfBirth} />
+            </div>
+
+          </div>
+        </div>
+
+        {/* ── Family information ────────────────────────── */}
+        <div className="rounded-xl border bg-card p-6 shadow-sm">
+          <h2 className="mb-4 text-sm font-semibold text-muted-foreground">{t('sections.family')}</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+            <div>
+              <FieldLabel>{t('fields.fatherName')}</FieldLabel>
+              <input
+                type="text"
+                value={values.fatherName}
+                onChange={(e) => set('fatherName', e.target.value)}
+                className={inputClass()}
+                placeholder={t('placeholders.fatherName')}
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div>
+              <FieldLabel>{t('fields.fatherNameAr')}</FieldLabel>
+              <input
+                type="text"
+                value={values.fatherNameAr}
+                onChange={(e) => set('fatherNameAr', e.target.value)}
+                className={inputClass()}
+                placeholder={t('placeholders.fatherNameAr')}
+                disabled={isSubmitting}
+                dir="rtl"
+              />
+            </div>
+
+            <div>
+              <FieldLabel>{t('fields.motherName')}</FieldLabel>
+              <input
+                type="text"
+                value={values.motherName}
+                onChange={(e) => set('motherName', e.target.value)}
+                className={inputClass()}
+                placeholder={t('placeholders.motherName')}
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div>
+              <FieldLabel>{t('fields.motherNameAr')}</FieldLabel>
+              <input
+                type="text"
+                value={values.motherNameAr}
+                onChange={(e) => set('motherNameAr', e.target.value)}
+                className={inputClass()}
+                placeholder={t('placeholders.motherNameAr')}
+                disabled={isSubmitting}
+                dir="rtl"
+              />
             </div>
 
           </div>

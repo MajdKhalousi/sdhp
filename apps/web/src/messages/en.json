@@ -785,6 +785,7 @@
       },
       "overview": {
         "demographics": "Demographics",
+        "family": "Family Information",
         "contact": "Contact",
         "emergencyContact": "Emergency Contact",
         "clinicalNotes": "Clinical Notes",
@@ -800,7 +801,11 @@
           "nationalId": "National ID",
           "address": "Address",
           "name": "Name",
-          "city": "City"
+          "city": "City",
+          "fatherName": "Father's Name",
+          "fatherNameAr": "Father's Name (Arabic)",
+          "motherName": "Mother's Name",
+          "motherNameAr": "Mother's Name (Arabic)"
         }
       },
       "allergies": {
@@ -871,6 +876,7 @@
     "form": {
       "sections": {
         "basicInfo": "Basic Information",
+        "family": "Family Information",
         "contact": "Contact Details",
         "additional": "Additional Information",
         "medical": "Medical Information",
@@ -890,7 +896,11 @@
         "allergies": "Allergies",
         "chronicDiseases": "Chronic Diseases",
         "emergencyName": "Contact Name",
-        "emergencyPhone": "Contact Phone"
+        "emergencyPhone": "Contact Phone",
+        "fatherName": "Father's Name",
+        "fatherNameAr": "Father's Name (Arabic)",
+        "motherName": "Mother's Name",
+        "motherNameAr": "Mother's Name (Arabic)"
       },
       "placeholders": {
         "firstName": "First name",
@@ -901,7 +911,11 @@
         "allergies": "List any known allergies",
         "chronicDiseases": "List any chronic conditions",
         "emergencyName": "Full name",
-        "phone": "+963..."
+        "phone": "+963...",
+        "fatherName": "Father's first and last name",
+        "fatherNameAr": "اسم الأب",
+        "motherName": "Mother's first and last name",
+        "motherNameAr": "اسم الأم"
       },
       "gender": {
         "selectPrompt": "Select gender",

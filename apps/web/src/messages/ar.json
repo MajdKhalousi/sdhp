@@ -785,6 +785,7 @@
       },
       "overview": {
         "demographics": "البيانات الأساسية",
+        "family": "معلومات الأسرة",
         "contact": "معلومات التواصل",
         "emergencyContact": "جهة الاتصال الطارئة",
         "clinicalNotes": "ملاحظات سريرية",
@@ -800,7 +801,11 @@
           "nationalId": "رقم الهوية",
           "address": "العنوان",
           "name": "الاسم",
-          "city": "المدينة"
+          "city": "المدينة",
+          "fatherName": "اسم الأب",
+          "fatherNameAr": "اسم الأب (بالعربية)",
+          "motherName": "اسم الأم",
+          "motherNameAr": "اسم الأم (بالعربية)"
         }
       },
       "allergies": {
@@ -871,6 +876,7 @@
     "form": {
       "sections": {
         "basicInfo": "المعلومات الأساسية",
+        "family": "معلومات الأسرة",
         "contact": "بيانات التواصل",
         "additional": "معلومات إضافية",
         "medical": "المعلومات الطبية",
@@ -890,7 +896,11 @@
         "allergies": "الحساسيات",
         "chronicDiseases": "الأمراض المزمنة",
         "emergencyName": "اسم جهة الاتصال",
-        "emergencyPhone": "رقم هاتف جهة الاتصال"
+        "emergencyPhone": "رقم هاتف جهة الاتصال",
+        "fatherName": "اسم الأب",
+        "fatherNameAr": "اسم الأب (بالعربية)",
+        "motherName": "اسم الأم",
+        "motherNameAr": "اسم الأم (بالعربية)"
       },
       "placeholders": {
         "firstName": "الاسم الأول",
@@ -901,7 +911,11 @@
         "allergies": "اذكر الحساسيات إن وجدت",
         "chronicDiseases": "اذكر الأمراض المزمنة إن وجدت",
         "emergencyName": "الاسم الكامل",
-        "phone": "+963..."
+        "phone": "+963...",
+        "fatherName": "الاسم الأول والأخير للأب",
+        "fatherNameAr": "اسم الأب",
+        "motherName": "الاسم الأول والأخير للأم",
+        "motherNameAr": "اسم الأم"
       },
       "gender": {
         "selectPrompt": "اختر الجنس",

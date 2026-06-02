@@ -156,6 +156,18 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
         {patient.city && <InfoRow label={t('detail.overview.fields.city')} value={patient.city} />}
       </div>
 
+      {(patient.fatherName || patient.fatherNameAr || patient.motherName || patient.motherNameAr) && (
+        <div className="rounded-xl border bg-card px-5 py-3 shadow-sm sm:col-span-2">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {t('detail.overview.family')}
+          </p>
+          {patient.fatherName && <InfoRow label={t('detail.overview.fields.fatherName')} value={patient.fatherName} />}
+          {patient.fatherNameAr && <InfoRow label={t('detail.overview.fields.fatherNameAr')} value={<span dir="rtl">{patient.fatherNameAr}</span>} />}
+          {patient.motherName && <InfoRow label={t('detail.overview.fields.motherName')} value={patient.motherName} />}
+          {patient.motherNameAr && <InfoRow label={t('detail.overview.fields.motherNameAr')} value={<span dir="rtl">{patient.motherNameAr}</span>} />}
+        </div>
+      )}
+
       {((patient.emergencyContactName ?? patient.emergencyName) || (patient.emergencyContactPhone ?? patient.emergencyPhone)) && (
         <div className="rounded-xl border bg-card px-5 py-3 shadow-sm sm:col-span-2">
           <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">

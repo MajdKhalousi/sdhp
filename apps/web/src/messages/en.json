@@ -192,7 +192,8 @@
         "notesPlaceholder": "e.g., Referred by Dr. Khalil — chest pain, follow-up required",
         "visitTypeLabel": "Visit Type",
         "dateLabel": "Date",
-        "slotLabel": "Available Time Slot"
+        "slotLabel": "Available Time Slot",
+        "patientSearchPlaceholder": "Search by name, phone, or MRN"
       },
       "select": {
         "selectPatient": "Select a patient",

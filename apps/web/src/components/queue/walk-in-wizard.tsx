@@ -50,14 +50,18 @@ export function WalkInWizard() {
   const activeDoctors  = (doctorsData?.data  ?? []).filter((d) => d.isActive !== false);
   const activeVisitTypes = (visitTypesData ?? []).filter((vt) => vt.isActive);
 
-  const searchLower = patientSearch.toLowerCase().trim();
-  const filteredPatients = searchLower
-    ? activePatients.filter(
-        (p) =>
-          `${p.firstName} ${p.lastName}`.toLowerCase().includes(searchLower) ||
-          (p.mrn ?? '').toLowerCase().includes(searchLower) ||
-          (p.phone ?? '').includes(patientSearch.trim()),
-      )
+  const searchNorm = patientSearch.toLowerCase().replace(/\s+/g, ' ').trim();
+  const filteredPatients = searchNorm
+    ? activePatients.filter((p) => {
+        const full = `${p.firstName} ${p.lastName}`.toLowerCase();
+        const rev  = `${p.lastName} ${p.firstName}`.toLowerCase();
+        return (
+          full.includes(searchNorm) ||
+          rev.includes(searchNorm) ||
+          (p.mrn ?? '').toLowerCase().includes(searchNorm) ||
+          (p.phone ?? '').includes(patientSearch.trim())
+        );
+      })
     : activePatients;
 
   function set(field: keyof Step1Form) {

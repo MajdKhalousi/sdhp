@@ -192,7 +192,8 @@
         "notesPlaceholder": "مثال: محوّل من الدكتور خليل — ألم في الصدر، متابعة مطلوبة",
         "visitTypeLabel": "نوع الزيارة",
         "dateLabel": "التاريخ",
-        "slotLabel": "موعد متاح"
+        "slotLabel": "موعد متاح",
+        "patientSearchPlaceholder": "ابحث بالاسم أو الهاتف أو رقم الملف"
       },
       "select": {
         "selectPatient": "اختر مريضاً",

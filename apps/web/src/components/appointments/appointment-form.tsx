@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useCreateAppointment, usePatientsList, useDoctorsList, useVisitTypesList } from '@/hooks/use-appointments';
@@ -54,6 +54,7 @@ export function AppointmentForm({
   });
   const [selectedVisitType, setSelectedVisitType] = useState<VisitType | null>(null);
   const [validationError, setValidationError] = useState('');
+  const [patientSearch, setPatientSearch] = useState('');
 
   const { mutate, isPending, error: mutationError } = useCreateAppointment();
   const { data: patientsData, isLoading: patientsLoading } = usePatientsList();
@@ -70,13 +71,32 @@ export function AppointmentForm({
     setSelectedVisitType(vt);
   }, [initialVisitTypeId, visitTypesData]);
 
-  const activePatients = (patientsData?.data ?? [])
-    .filter((p) => p.isActive)
-    .sort(
-      (a, b) =>
-        a.lastName.localeCompare(b.lastName) ||
-        a.firstName.localeCompare(b.firstName),
-    );
+  const activePatients = useMemo(
+    () =>
+      (patientsData?.data ?? [])
+        .filter((p) => p.isActive)
+        .sort(
+          (a, b) =>
+            a.lastName.localeCompare(b.lastName) ||
+            a.firstName.localeCompare(b.firstName),
+        ),
+    [patientsData],
+  );
+
+  const searchNorm = patientSearch.toLowerCase().replace(/\s+/g, ' ').trim();
+  const filteredPatients = useMemo(() => {
+    if (!searchNorm) return activePatients;
+    return activePatients.filter((p) => {
+      const full = `${p.firstName} ${p.lastName}`.toLowerCase();
+      const rev  = `${p.lastName} ${p.firstName}`.toLowerCase();
+      return (
+        full.includes(searchNorm) ||
+        rev.includes(searchNorm) ||
+        (p.mrn ?? '').toLowerCase().includes(searchNorm) ||
+        (p.phone ?? '').includes(patientSearch.trim())
+      );
+    });
+  }, [activePatients, searchNorm, patientSearch]);
 
   const activeDoctors = (doctorsData?.data ?? []).filter(
     (d) => d.isActive !== false,
@@ -150,6 +170,20 @@ export function AppointmentForm({
         <label className="text-sm font-medium text-foreground" htmlFor="patientId">
           {t('fields.patientLabel')} <span className="text-destructive">*</span>
         </label>
+        {!initialPatientId && (
+          <input
+            type="text"
+            value={patientSearch}
+            onChange={(e) => {
+              setPatientSearch(e.target.value);
+              setForm((prev) => ({ ...prev, patientId: '' }));
+              setValidationError('');
+            }}
+            disabled={isPending || patientsLoading}
+            placeholder={t('fields.patientSearchPlaceholder')}
+            className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
+          />
+        )}
         <select
           id="patientId"
           value={form.patientId}
@@ -158,7 +192,7 @@ export function AppointmentForm({
           className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
         >
           <option value="">{patientsLoading ? t('select.loadingPatients') : t('select.selectPatient')}</option>
-          {activePatients.map((p) => (
+          {filteredPatients.map((p) => (
             <option key={p.id} value={p.id}>
               {p.firstName} {p.lastName} — {p.mrn}
             </option>

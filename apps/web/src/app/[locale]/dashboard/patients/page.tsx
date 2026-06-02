@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Link } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { Search, UserX } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -12,6 +12,7 @@ import { PatientForm } from '@/components/patients/patient-form';
 import { DuplicateWarning } from '@/components/patients/duplicate-warning';
 import { DiscardConfirm } from '@/components/patients/discard-confirm';
 import { useAuthStore } from '@/store/auth';
+import { useUnsavedGuardStore } from '@/store/unsaved-guard';
 import { formatDateDisplay } from '@/lib/format-date';
 
 const PATIENT_EDIT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
@@ -35,7 +36,6 @@ export default function PatientsPage() {
   const [pendingPayload, setPendingPayload] = useState<CreatePatientInput | null>(null);
   const [duplicateMatches, setDuplicateMatches] = useState<DuplicateCandidate[]>([]);
   const [isCreateFormDirty, setIsCreateFormDirty] = useState(false);
-  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   // 350 ms debounce — avoids firing on every keystroke
   useEffect(() => {
@@ -55,8 +55,24 @@ export default function PatientsPage() {
   const createPatient = useCreatePatient();
   const deletePatient = useDeletePatient();
   const checkDuplicate = useCheckDuplicatePatient();
+  const guard = useUnsavedGuardStore();
+  const router = useRouter();
 
   const patients = data?.data ?? [];
+
+  // Sync guard enabled state with form open+dirty status
+  useEffect(() => {
+    guard.setEnabled(isCreateOpen && isCreateFormDirty);
+  }, [isCreateOpen, isCreateFormDirty]);
+
+  // Reset guard when patients page unmounts (navigated away while form was open)
+  useEffect(() => {
+    return () => {
+      const s = useUnsavedGuardStore.getState();
+      s.setEnabled(false);
+      s.stayHere();
+    };
+  }, []);
 
   function closeCreateForm() {
     setIsCreateOpen(false);
@@ -64,15 +80,10 @@ export default function PatientsPage() {
     setDuplicateMatches([]);
     setPendingPayload(null);
     setIsCreateFormDirty(false);
-    setShowDiscardConfirm(false);
   }
 
   function requestCloseCreateForm() {
-    if (isCreateFormDirty || duplicateMatches.length > 0) {
-      setShowDiscardConfirm(true);
-    } else {
-      closeCreateForm();
-    }
+    guard.requestNavigate(closeCreateForm);
   }
 
   async function doCreate(payload: CreatePatientInput) {
@@ -170,13 +181,13 @@ export default function PatientsPage() {
               {createError}
             </p>
           )}
-          {showDiscardConfirm && (
+          {guard.showConfirm && (
             <DiscardConfirm
-              onStay={() => setShowDiscardConfirm(false)}
-              onDiscard={closeCreateForm}
+              onStay={guard.stayHere}
+              onDiscard={guard.confirmLeave}
             />
           )}
-          {!showDiscardConfirm && duplicateMatches.length > 0 && (
+          {!guard.showConfirm && duplicateMatches.length > 0 && (
             <DuplicateWarning
               matches={duplicateMatches}
               onCreateAnyway={handleCreateAnyway}
@@ -260,6 +271,12 @@ export default function PatientsPage() {
                         <td className="px-4 py-3 whitespace-nowrap">
                           <Link
                             href={`/dashboard/patients/${patient.id}`}
+                            onClick={(e) => {
+                              if (guard.enabled) {
+                                e.preventDefault();
+                                guard.requestNavigate(() => router.push(`/dashboard/patients/${patient.id}`));
+                              }
+                            }}
                             className="font-medium text-foreground transition-colors hover:text-primary"
                           >
                             {locale === 'ar' && patient.firstNameAr
@@ -290,6 +307,12 @@ export default function PatientsPage() {
                           <div className="flex items-center gap-2">
                             <Link
                               href={`/dashboard/patients/${patient.id}`}
+                              onClick={(e) => {
+                                if (guard.enabled) {
+                                  e.preventDefault();
+                                  guard.requestNavigate(() => router.push(`/dashboard/patients/${patient.id}`));
+                                }
+                              }}
                               className="rounded-md border px-2.5 py-1 text-xs font-medium transition-colors hover:bg-accent"
                             >
                               {t('list.view')}

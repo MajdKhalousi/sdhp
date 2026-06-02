@@ -743,7 +743,7 @@
     },
     "list": {
       "title": "المرضى",
-      "searchPlaceholder": "بحث بالاسم أو MRN…",
+      "searchPlaceholder": "بحث بالاسم أو الهاتف أو رقم الملف...",
       "registeredCount": "{count, plural, zero {لا مرضى مسجّلون} one {مريض واحد مسجّل} two {مريضان مسجّلان} few {# مرضى مسجّلون} many {# مريضاً مسجّلاً} other {# مريض مسجّل}}",
       "showingOf": "عرض {shown} من {total}",
       "columns": {

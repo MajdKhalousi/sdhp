@@ -743,7 +743,7 @@
     },
     "list": {
       "title": "Patients",
-      "searchPlaceholder": "Search by name, MRN…",
+      "searchPlaceholder": "Search by name, phone, MRN...",
       "registeredCount": "{count, plural, one {# patient registered} other {# patients registered}}",
       "showingOf": "Showing {shown} of {total} patients",
       "columns": {

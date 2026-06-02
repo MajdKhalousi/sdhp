@@ -60,19 +60,26 @@ export class PatientsService {
         ? { deletedAt: null }
         : { organizationId: caller.organizationId, deletedAt: null };
 
-    const where: Prisma.PatientWhereInput = query.search
-      ? {
-          ...baseWhere,
-          OR: [
-            { firstName:   { contains: query.search, mode: 'insensitive' } },
-            { lastName:    { contains: query.search, mode: 'insensitive' } },
-            { firstNameAr: { contains: query.search, mode: 'insensitive' } },
-            { lastNameAr:  { contains: query.search, mode: 'insensitive' } },
-            { mrn:         { contains: query.search, mode: 'insensitive' } },
-            { phone:       { contains: query.search } },
-          ],
-        }
-      : baseWhere;
+    const searchRaw = (query.search ?? '').replace(/\s+/g, ' ').trim();
+    const tokens = searchRaw ? searchRaw.split(' ') : [];
+
+    const where: Prisma.PatientWhereInput =
+      tokens.length === 0
+        ? baseWhere
+        : {
+            ...baseWhere,
+            AND: tokens.map((token) => ({
+              OR: [
+                { firstName:   { contains: token, mode: 'insensitive' } },
+                { lastName:    { contains: token, mode: 'insensitive' } },
+                { firstNameAr: { contains: token, mode: 'insensitive' } },
+                { lastNameAr:  { contains: token, mode: 'insensitive' } },
+                { mrn:         { contains: token, mode: 'insensitive' } },
+                { phone:       { contains: token } },
+                { nationalId:  { contains: token, mode: 'insensitive' } },
+              ],
+            })),
+          };
 
     const [data, total] = await Promise.all([
       this.prisma.patient.findMany({ where, select: SELECT, orderBy: { createdAt: 'desc' }, skip, take: limit }),

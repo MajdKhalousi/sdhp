@@ -33,7 +33,7 @@ export default function PatientsPage() {
 
   // 350 ms debounce — avoids firing on every keystroke
   useEffect(() => {
-    const id = setTimeout(() => setDebouncedSearch(search.trim()), 350);
+    const id = setTimeout(() => setDebouncedSearch(search.replace(/\s+/g, ' ').trim()), 350);
     return () => clearTimeout(id);
   }, [search]);
 

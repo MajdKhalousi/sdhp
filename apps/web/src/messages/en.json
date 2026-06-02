@@ -950,6 +950,21 @@
       "pendingLabs": "pending lab orders",
       "pendingRadiology": "pending radiology orders",
       "missingEmergencyContact": "Emergency contact not on file"
+    },
+    "duplicate": {
+      "heading": "Possible duplicate patient",
+      "description": "The following patient(s) may already be registered. Review before creating a new file.",
+      "archivedBadge": "Archived",
+      "reasons": {
+        "nationalId": "Same national ID",
+        "phone": "Same phone number",
+        "name": "Same name",
+        "nameAndDob": "Same name and date of birth"
+      },
+      "actions": {
+        "createAnyway": "Create Anyway",
+        "viewPatient": "View Patient"
+      }
     }
   },
   "doctorWorkspace": {

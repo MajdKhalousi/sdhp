@@ -1,6 +1,30 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 
+export type DuplicateReason = 'nationalId' | 'phone' | 'name' | 'nameAndDob';
+
+export interface DuplicateCandidate {
+  id: string;
+  mrn: string;
+  firstName: string;
+  lastName: string;
+  firstNameAr: string | null;
+  lastNameAr: string | null;
+  phone: string | null;
+  dateOfBirth: string | null;
+  isActive: boolean;
+  isArchived: boolean;
+  reasons: DuplicateReason[];
+}
+
+export interface DuplicateCheckQuery {
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
+  nationalId?: string | null;
+  dateOfBirth?: string;
+}
+
 export type PatientGender = 'MALE' | 'FEMALE' | 'OTHER';
 export type PatientStatus = 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
 
@@ -107,5 +131,18 @@ export function useDeletePatient() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['patients'] });
     },
+  });
+}
+
+export function useCheckDuplicatePatient() {
+  return useMutation({
+    mutationFn: (query: DuplicateCheckQuery) =>
+      api.get<{ matches: DuplicateCandidate[] }>('/v1/patients/check-duplicate', {
+        firstName: query.firstName,
+        lastName: query.lastName,
+        ...(query.phone   ? { phone:       query.phone }       : {}),
+        ...(query.nationalId ? { nationalId: query.nationalId } : {}),
+        ...(query.dateOfBirth ? { dateOfBirth: query.dateOfBirth } : {}),
+      }),
   });
 }

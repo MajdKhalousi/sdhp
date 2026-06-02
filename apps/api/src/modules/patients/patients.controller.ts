@@ -22,6 +22,7 @@ import {
 import { UserRole } from '@prisma/client';
 import { PatientsService } from './patients.service';
 import { PatientQueryDto } from './dto/patient-query.dto';
+import { DuplicateCheckQueryDto } from './dto/duplicate-check-query.dto';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -40,6 +41,14 @@ export class PatientsController {
   @ApiOperation({ summary: 'List patients — SUPER_ADMIN: all | others: own org only' })
   findAll(@Query() query: PatientQueryDto, @CurrentUser() user: JwtPayload) {
     return this.service.findAll(query, user);
+  }
+
+  @Get('check-duplicate')
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR, UserRole.SECRETARY, UserRole.NURSE, UserRole.ACCOUNTANT)
+  @ApiOperation({ summary: 'Check for potential duplicate patients before create — org-scoped, includes archived' })
+  checkDuplicate(@Query() query: DuplicateCheckQueryDto, @CurrentUser() user: JwtPayload) {
+    return this.service.checkDuplicate(query, user);
   }
 
   @Get(':id')

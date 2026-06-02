@@ -11,6 +11,7 @@ import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { PatientQueryDto } from './dto/patient-query.dto';
+import { DuplicateCheckQueryDto } from './dto/duplicate-check-query.dto';
 import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
 import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
 import { MedicalTimelineEventType } from '@prisma/client';
@@ -98,6 +99,107 @@ export class PatientsService {
     if (!patient) throw new NotFoundException('Patient not found');
     this.assertOwnership(patient.organizationId, caller);
     return patient;
+  }
+
+  async checkDuplicate(query: DuplicateCheckQueryDto, caller: JwtPayload) {
+    type DuplicateReason = 'nationalId' | 'phone' | 'name' | 'nameAndDob';
+
+    const orgWhere: Prisma.PatientWhereInput =
+      caller.role === UserRole.SUPER_ADMIN
+        ? {}
+        : { organizationId: caller.organizationId };
+
+    const firstName  = query.firstName.replace(/\s+/g, ' ').trim();
+    const lastName   = query.lastName.replace(/\s+/g, ' ').trim();
+    const nationalId = query.nationalId?.replace(/\s+/g, ' ').trim() || undefined;
+    const phoneDigits = query.phone?.replace(/\D/g, '') || undefined;
+    const phoneSuffix = phoneDigits && phoneDigits.length >= 9 ? phoneDigits.slice(-9) : undefined;
+
+    const orConditions: Prisma.PatientWhereInput[] = [
+      {
+        firstName: { equals: firstName, mode: 'insensitive' },
+        lastName:  { equals: lastName,  mode: 'insensitive' },
+      },
+      {
+        firstNameAr: { equals: firstName, mode: 'insensitive' },
+        lastNameAr:  { equals: lastName,  mode: 'insensitive' },
+      },
+    ];
+
+    if (nationalId) {
+      orConditions.push({ nationalId: { equals: nationalId, mode: 'insensitive' } });
+    }
+    if (phoneSuffix) {
+      orConditions.push({ phone: { contains: phoneSuffix } });
+    }
+
+    const DUP_SELECT = {
+      id: true,
+      mrn: true,
+      firstName: true,
+      lastName: true,
+      firstNameAr: true,
+      lastNameAr: true,
+      phone: true,
+      dateOfBirth: true,
+      nationalId: true,
+      isActive: true,
+      deletedAt: true,
+    } as const;
+
+    const candidates = await this.prisma.patient.findMany({
+      where: { ...orgWhere, OR: orConditions },
+      select: DUP_SELECT,
+    });
+
+    const matches = candidates.map((c) => {
+      const reasons: DuplicateReason[] = [];
+
+      if (nationalId && c.nationalId) {
+        if (c.nationalId.replace(/\s+/g, ' ').trim().toLowerCase() === nationalId.toLowerCase()) {
+          reasons.push('nationalId');
+        }
+      }
+
+      if (phoneSuffix && c.phone) {
+        const cDigits = c.phone.replace(/\D/g, '');
+        if (cDigits.length >= 9 && cDigits.slice(-9) === phoneSuffix) {
+          reasons.push('phone');
+        }
+      }
+
+      const firstMatch =
+        c.firstName.toLowerCase() === firstName.toLowerCase() ||
+        Boolean(c.firstNameAr && c.firstNameAr.toLowerCase() === firstName.toLowerCase());
+      const lastMatch =
+        c.lastName.toLowerCase() === lastName.toLowerCase() ||
+        Boolean(c.lastNameAr && c.lastNameAr.toLowerCase() === lastName.toLowerCase());
+
+      if (firstMatch && lastMatch) {
+        const cDob = c.dateOfBirth ? c.dateOfBirth.toISOString().split('T')[0] : null;
+        if (query.dateOfBirth && cDob === query.dateOfBirth) {
+          reasons.push('nameAndDob');
+        } else {
+          reasons.push('name');
+        }
+      }
+
+      return {
+        id: c.id,
+        mrn: c.mrn,
+        firstName: c.firstName,
+        lastName: c.lastName,
+        firstNameAr: c.firstNameAr,
+        lastNameAr: c.lastNameAr,
+        phone: c.phone,
+        dateOfBirth: c.dateOfBirth ? c.dateOfBirth.toISOString().split('T')[0] : null,
+        isActive: c.isActive,
+        isArchived: c.deletedAt !== null,
+        reasons,
+      };
+    });
+
+    return { matches };
   }
 
   async create(dto: CreatePatientDto, caller: JwtPayload) {

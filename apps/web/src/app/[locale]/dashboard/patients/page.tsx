@@ -6,9 +6,10 @@ import { Search, UserX } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import type { CreatePatientInput, UpdatePatientInput } from '@/hooks/use-patient';
-import { usePatients, useCreatePatient, useDeletePatient } from '@/hooks/use-patient';
+import type { CreatePatientInput, UpdatePatientInput, DuplicateCandidate } from '@/hooks/use-patient';
+import { usePatients, useCreatePatient, useDeletePatient, useCheckDuplicatePatient } from '@/hooks/use-patient';
 import { PatientForm } from '@/components/patients/patient-form';
+import { DuplicateWarning } from '@/components/patients/duplicate-warning';
 import { useAuthStore } from '@/store/auth';
 import { formatDateDisplay } from '@/lib/format-date';
 
@@ -30,6 +31,8 @@ export default function PatientsPage() {
   const [createError, setCreateError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [archiveConfirmId, setArchiveConfirmId] = useState<string | null>(null);
+  const [pendingPayload, setPendingPayload] = useState<CreatePatientInput | null>(null);
+  const [duplicateMatches, setDuplicateMatches] = useState<DuplicateCandidate[]>([]);
 
   // 350 ms debounce — avoids firing on every keystroke
   useEffect(() => {
@@ -40,17 +43,52 @@ export default function PatientsPage() {
   const { data, isLoading, isError, error, refetch } = usePatients(debouncedSearch);
   const createPatient = useCreatePatient();
   const deletePatient = useDeletePatient();
+  const checkDuplicate = useCheckDuplicatePatient();
 
   const patients = data?.data ?? [];
 
-  async function handleCreate(formData: CreatePatientInput | UpdatePatientInput) {
-    setCreateError(null);
+  async function doCreate(payload: CreatePatientInput) {
     try {
-      await createPatient.mutateAsync(formData as CreatePatientInput);
+      await createPatient.mutateAsync(payload);
       setIsCreateOpen(false);
+      setPendingPayload(null);
+      setDuplicateMatches([]);
     } catch (err) {
       setCreateError(err instanceof Error ? err.message : t('list.errors.createFailed'));
     }
+  }
+
+  async function handleCreate(formData: CreatePatientInput | UpdatePatientInput) {
+    setCreateError(null);
+    const payload = formData as CreatePatientInput;
+    try {
+      const result = await checkDuplicate.mutateAsync({
+        firstName:   payload.firstName,
+        lastName:    payload.lastName,
+        phone:       payload.phone,
+        nationalId:  payload.nationalId ?? undefined,
+        dateOfBirth: payload.dateOfBirth,
+      });
+      if (result.matches.length > 0) {
+        setPendingPayload(payload);
+        setDuplicateMatches(result.matches);
+        return;
+      }
+      await doCreate(payload);
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : t('list.errors.createFailed'));
+    }
+  }
+
+  async function handleCreateAnyway() {
+    if (!pendingPayload) return;
+    setCreateError(null);
+    await doCreate(pendingPayload);
+  }
+
+  function handleCancelDuplicateWarning() {
+    setPendingPayload(null);
+    setDuplicateMatches([]);
   }
 
   async function handleDelete(patientId: string) {
@@ -100,18 +138,27 @@ export default function PatientsPage() {
 
       {/* ── Create form ──────────────────────────────────── */}
       {isCreateOpen && (
-        <div>
+        <div className="space-y-4">
           {createError && (
-            <p className="mb-3 rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-2 text-sm text-destructive">
+            <p className="rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-2 text-sm text-destructive">
               {createError}
             </p>
           )}
-          <PatientForm
-            mode="create"
-            onSubmit={handleCreate}
-            onCancel={() => { setIsCreateOpen(false); setCreateError(null); }}
-            isSubmitting={createPatient.isPending}
-          />
+          {duplicateMatches.length > 0 ? (
+            <DuplicateWarning
+              matches={duplicateMatches}
+              onCreateAnyway={handleCreateAnyway}
+              onCancel={handleCancelDuplicateWarning}
+              isCreating={createPatient.isPending}
+            />
+          ) : (
+            <PatientForm
+              mode="create"
+              onSubmit={handleCreate}
+              onCancel={() => { setIsCreateOpen(false); setCreateError(null); }}
+              isSubmitting={createPatient.isPending || checkDuplicate.isPending}
+            />
+          )}
         </div>
       )}
 

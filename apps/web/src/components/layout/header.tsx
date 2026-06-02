@@ -32,8 +32,10 @@ export function Header({ onMenuClick }: HeaderProps = {}) {
   const guard = useUnsavedGuardStore();
 
   function handleLogout() {
-    logout();
-    router.replace('/login');
+    guard.requestNavigate(() => {
+      logout();
+      router.replace('/login');
+    });
   }
 
   function toggleLocale() {

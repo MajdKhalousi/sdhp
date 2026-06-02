@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Link, usePathname } from '@/i18n/navigation';
+import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
+import { useUnsavedGuardStore } from '@/store/unsaved-guard';
 import {
   Activity,
   LayoutDashboard,
@@ -117,6 +118,8 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
   const t = useTranslations('nav');
   const pathname = usePathname();
   const locale = useLocale();
+  const router = useRouter();
+  const guard = useUnsavedGuardStore();
   const { user } = useAuthStore();
   const role = user?.role ?? '';
 
@@ -200,6 +203,12 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
                 <Link
                   href={item.href}
                   locale={locale}
+                  onClick={(e) => {
+                    if (guard.enabled) {
+                      e.preventDefault();
+                      guard.requestNavigate(() => router.push(item.href));
+                    }
+                  }}
                   className={cn(
                     'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                     isActive

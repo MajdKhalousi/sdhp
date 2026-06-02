@@ -788,6 +788,7 @@
         "family": "معلومات الأسرة",
         "contact": "معلومات التواصل",
         "emergencyContact": "جهة الاتصال الطارئة",
+        "noEmergencyContact": "لا توجد جهة اتصال طارئة مسجلة.",
         "clinicalNotes": "ملاحظات سريرية",
         "chronicDiseases": "الأمراض المزمنة",
         "fields": {

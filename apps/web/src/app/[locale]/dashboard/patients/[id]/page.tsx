@@ -168,15 +168,19 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
         </div>
       )}
 
-      {((patient.emergencyContactName ?? patient.emergencyName) || (patient.emergencyContactPhone ?? patient.emergencyPhone)) && (
-        <div className="rounded-xl border bg-card px-5 py-3 shadow-sm sm:col-span-2">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            {t('detail.overview.emergencyContact')}
-          </p>
-          <InfoRow label={t('detail.overview.fields.name')} value={patient.emergencyContactName ?? patient.emergencyName} />
-          <InfoRow label={t('detail.overview.fields.phone')} value={patient.emergencyContactPhone ?? patient.emergencyPhone} />
-        </div>
-      )}
+      <div className="rounded-xl border bg-card px-5 py-3 shadow-sm sm:col-span-2">
+        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {t('detail.overview.emergencyContact')}
+        </p>
+        {(patient.emergencyContactName ?? patient.emergencyName) || (patient.emergencyContactPhone ?? patient.emergencyPhone) ? (
+          <>
+            <InfoRow label={t('detail.overview.fields.name')} value={patient.emergencyContactName ?? patient.emergencyName} />
+            <InfoRow label={t('detail.overview.fields.phone')} value={patient.emergencyContactPhone ?? patient.emergencyPhone} />
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">{t('detail.overview.noEmergencyContact')}</p>
+        )}
+      </div>
 
       {patient.chronicDiseases && (
         <div className="rounded-xl border bg-card px-5 py-3 shadow-sm sm:col-span-2">
@@ -208,6 +212,7 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
 const PATIENT_EDIT_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
 const PATIENT_ARCHIVE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
 const CLINICAL_ROLES        = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE']);
+const SAFETY_ALERT_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY']);
 const RECEPTION_ACTION_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
 const INVOICE_CREATE_ROLES   = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
 const PENDING_LAB_STATUSES = new Set(['ORDERED', 'SAMPLE_COLLECTED', 'IN_PROGRESS']);
@@ -222,6 +227,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
   const canEdit            = user ? PATIENT_EDIT_ROLES.has(user.role) : false;
   const canArchive         = user ? PATIENT_ARCHIVE_ROLES.has(user.role) : false;
   const hasClinicalRole    = user ? CLINICAL_ROLES.has(user.role) : false;
+  const canSeeSafetyAlerts = user ? SAFETY_ALERT_ROLES.has(user.role) : false;
   const canBookAppointment = user ? RECEPTION_ACTION_ROLES.has(user.role) : false;
   const canCheckIn         = user ? RECEPTION_ACTION_ROLES.has(user.role) : false;
   const canCreateInvoice   = user ? INVOICE_CREATE_ROLES.has(user.role) : false;
@@ -406,7 +412,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
               patientId={id}
               onViewHistory={() => setActiveTab('timeline')}
             />
-            {patient && hasClinicalRole && (
+            {patient && canSeeSafetyAlerts && (
               <PatientSafetyAlerts
                 allergies={allergies}
                 chronicDiseases={patient.chronicDiseases}

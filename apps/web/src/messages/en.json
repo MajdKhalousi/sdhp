@@ -788,6 +788,7 @@
         "family": "Family Information",
         "contact": "Contact",
         "emergencyContact": "Emergency Contact",
+        "noEmergencyContact": "No emergency contact on file.",
         "clinicalNotes": "Clinical Notes",
         "chronicDiseases": "Chronic Diseases",
         "fields": {

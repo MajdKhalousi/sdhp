@@ -99,6 +99,12 @@ export default function DoctorWorkspacePage() {
           <Stethoscope className="h-8 w-8 text-muted-foreground/40" />
           <p className="text-sm font-medium text-muted-foreground">{t('empty.heading')}</p>
           <p className="text-xs text-muted-foreground">{t('empty.description')}</p>
+          <Link
+            href="/dashboard/doctor/queue"
+            className="mt-1 inline-flex h-8 items-center rounded-md bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            {t('empty.goToQueue')}
+          </Link>
         </div>
       ) : (
         <div className="space-y-3">

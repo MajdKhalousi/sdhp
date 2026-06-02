@@ -956,7 +956,8 @@
     "refresh": "Refresh",
     "empty": {
       "heading": "No active encounters",
-      "description": "Encounters will appear here once a patient visit is started from the queue."
+      "description": "Encounters will appear here once a patient visit is started from the queue.",
+      "goToQueue": "Go to Doctor Queue"
     },
     "card": {
       "started": "Started",

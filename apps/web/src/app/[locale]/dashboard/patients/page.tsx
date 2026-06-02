@@ -144,21 +144,20 @@ export default function PatientsPage() {
               {createError}
             </p>
           )}
-          {duplicateMatches.length > 0 ? (
+          {duplicateMatches.length > 0 && (
             <DuplicateWarning
               matches={duplicateMatches}
               onCreateAnyway={handleCreateAnyway}
               onCancel={handleCancelDuplicateWarning}
               isCreating={createPatient.isPending}
             />
-          ) : (
-            <PatientForm
-              mode="create"
-              onSubmit={handleCreate}
-              onCancel={() => { setIsCreateOpen(false); setCreateError(null); }}
-              isSubmitting={createPatient.isPending || checkDuplicate.isPending}
-            />
           )}
+          <PatientForm
+            mode="create"
+            onSubmit={handleCreate}
+            onCancel={() => { setIsCreateOpen(false); setCreateError(null); setDuplicateMatches([]); setPendingPayload(null); }}
+            isSubmitting={createPatient.isPending || checkDuplicate.isPending}
+          />
         </div>
       )}
 

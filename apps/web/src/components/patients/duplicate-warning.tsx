@@ -24,6 +24,7 @@ export function DuplicateWarning({ matches, onCreateAnyway, onCancel, isCreating
   const t = useTranslations('patient.duplicate');
   const tForm = useTranslations('patient.form');
   const locale = useLocale();
+  const isPhoneOnly = matches.every(m => m.reasons.length === 1 && m.reasons[0] === 'phone');
 
   return (
     <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-700/50 dark:bg-amber-900/10">
@@ -31,7 +32,7 @@ export function DuplicateWarning({ matches, onCreateAnyway, onCancel, isCreating
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
         <div>
           <p className="text-sm font-semibold text-amber-900 dark:text-amber-300">{t('heading')}</p>
-          <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-400">{t('description')}</p>
+          <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-400">{isPhoneOnly ? t('phoneOnlyDescription') : t('description')}</p>
         </div>
       </div>
 

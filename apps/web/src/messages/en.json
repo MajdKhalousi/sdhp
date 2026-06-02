@@ -954,6 +954,7 @@
     "duplicate": {
       "heading": "Possible duplicate patient",
       "description": "The following patient(s) may already be registered. Review before creating a new file.",
+      "phoneOnlyDescription": "A matching phone number may belong to the same patient or a family member. Review before creating a new file.",
       "archivedBadge": "Archived",
       "reasons": {
         "nationalId": "Same national ID",

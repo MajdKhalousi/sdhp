@@ -71,6 +71,8 @@ export interface PatientsResponse {
 export interface CreatePatientInput {
   firstName: string;
   lastName: string;
+  firstNameAr?: string | null;
+  lastNameAr?: string | null;
   gender: PatientGender;
   dateOfBirth: string;
   phone: string;

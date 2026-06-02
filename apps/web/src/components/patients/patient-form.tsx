@@ -21,6 +21,8 @@ interface PatientFormProps {
 interface FormState {
   firstName: string;
   lastName: string;
+  firstNameAr: string;
+  lastNameAr: string;
   gender: PatientGender | '';
   dateOfBirth: string;
   phone: string;
@@ -66,6 +68,8 @@ function initState(mode: 'create' | 'edit', p?: Patient): FormState {
     return {
       firstName: p.firstName,
       lastName: p.lastName,
+      firstNameAr: p.firstNameAr ?? '',
+      lastNameAr: p.lastNameAr ?? '',
       gender: (p.gender as PatientGender | null) ?? '',
       dateOfBirth: p.dateOfBirth ?? '',
       phone: p.phone ?? '',
@@ -87,6 +91,8 @@ function initState(mode: 'create' | 'edit', p?: Patient): FormState {
   return {
     firstName: '',
     lastName: '',
+    firstNameAr: '',
+    lastNameAr: '',
     gender: '',
     dateOfBirth: '',
     phone: '',
@@ -183,6 +189,8 @@ export function PatientForm({
     const payload: CreatePatientInput = {
       firstName: values.firstName.trim(),
       lastName: values.lastName.trim(),
+      firstNameAr: values.firstNameAr.trim() || null,
+      lastNameAr: values.lastNameAr.trim() || null,
       gender: values.gender as PatientGender,
       dateOfBirth: values.dateOfBirth,
       phone: values.phone.trim(),
@@ -236,6 +244,32 @@ export function PatientForm({
                 disabled={isSubmitting}
               />
               <FieldError message={errors.lastName} />
+            </div>
+
+            <div>
+              <FieldLabel>{t('fields.firstNameAr')}</FieldLabel>
+              <input
+                type="text"
+                value={values.firstNameAr}
+                onChange={(e) => set('firstNameAr', e.target.value)}
+                className={inputClass()}
+                placeholder={t('placeholders.firstNameAr')}
+                disabled={isSubmitting}
+                dir="rtl"
+              />
+            </div>
+
+            <div>
+              <FieldLabel>{t('fields.lastNameAr')}</FieldLabel>
+              <input
+                type="text"
+                value={values.lastNameAr}
+                onChange={(e) => set('lastNameAr', e.target.value)}
+                className={inputClass()}
+                placeholder={t('placeholders.lastNameAr')}
+                disabled={isSubmitting}
+                dir="rtl"
+              />
             </div>
 
             <div>

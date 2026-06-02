@@ -885,6 +885,8 @@
       "fields": {
         "firstName": "First Name",
         "lastName": "Last Name",
+        "firstNameAr": "First Name (Arabic)",
+        "lastNameAr": "Last Name (Arabic)",
         "gender": "Gender",
         "dateOfBirth": "Date of Birth",
         "phone": "Phone Number",
@@ -905,6 +907,8 @@
       "placeholders": {
         "firstName": "First name",
         "lastName": "Last name",
+        "firstNameAr": "الاسم الأول",
+        "lastNameAr": "اسم العائلة",
         "nationalId": "National ID number",
         "address": "Street address",
         "city": "City",

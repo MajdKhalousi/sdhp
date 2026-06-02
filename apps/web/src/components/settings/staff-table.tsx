@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, Fragment } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { Plus, Pencil, UserX, Users } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import {
   useStaff,
   useCreateStaff,
@@ -67,9 +68,10 @@ interface StaffFormProps {
   mode: 'create' | 'edit';
   initial?: StaffUser;
   onDone: () => void;
+  onCreated?: (role: string) => void;
 }
 
-function StaffForm({ mode, initial, onDone }: StaffFormProps) {
+function StaffForm({ mode, initial, onDone, onCreated }: StaffFormProps) {
   const t       = useTranslations('settings.staff');
   const tCommon = useTranslations('common');
   const create  = useCreateStaff();
@@ -127,6 +129,7 @@ function StaffForm({ mode, initial, onDone }: StaffFormProps) {
           isActive:    true,
         };
         await create.mutateAsync(dto);
+        onCreated?.(values.role);
       } else if (initial) {
         const dto: UpdateStaffDto = {
           firstName:   values.firstName.trim(),
@@ -325,11 +328,19 @@ const COL_COUNT = 6;
 export function StaffTable() {
   const t       = useTranslations('settings.staff');
   const tCommon = useTranslations('common');
+  const locale  = useLocale();
 
   const [showInactive, setShowInactive] = useState(false);
   const [expandedId, setExpandedId]     = useState<string | 'new' | null>(null);
   const [deletingId, setDeletingId]     = useState<string | null>(null);
   const [deleteError, setDeleteError]   = useState<string | null>(null);
+  const [doctorHint, setDoctorHint]     = useState(false);
+
+  useEffect(() => {
+    if (!doctorHint) return;
+    const id = setTimeout(() => setDoctorHint(false), 10_000);
+    return () => clearTimeout(id);
+  }, [doctorHint]);
 
   const { data: allStaff, isLoading, isError, error, refetch } = useStaff();
   const deleteStaff = useDeleteStaff();
@@ -425,9 +436,32 @@ export function StaffTable() {
     );
   }
 
+  const doctorHintBanner = doctorHint ? (
+    <div className="flex items-start justify-between gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
+      <p className="text-foreground">
+        {t('doctorProfileHint.message')}{' '}
+        <Link
+          href="/dashboard/doctors"
+          locale={locale}
+          className="font-medium text-primary hover:underline"
+        >
+          {t('doctorProfileHint.action')}
+        </Link>
+      </p>
+      <button
+        onClick={() => setDoctorHint(false)}
+        className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+        aria-label={t('doctorProfileHint.dismiss')}
+      >
+        ✕
+      </button>
+    </div>
+  ) : null;
+
   if (items.length === 0 && expandedId !== 'new') {
     return (
       <div className="space-y-3">
+        {doctorHintBanner}
         {toolbar}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-12 text-center">
           <Users className="h-8 w-8 text-muted-foreground/50" />
@@ -440,6 +474,7 @@ export function StaffTable() {
 
   return (
     <div className="space-y-3">
+      {doctorHintBanner}
       {toolbar}
 
       <div className="overflow-hidden rounded-xl border border-border">
@@ -452,7 +487,11 @@ export function StaffTable() {
                 <tr className="border-t border-border bg-muted/10">
                   <td colSpan={COL_COUNT} className="p-4">
                     <p className="mb-3 text-sm font-semibold">{t('form.createTitle')}</p>
-                    <StaffForm mode="create" onDone={() => setExpandedId(null)} />
+                    <StaffForm
+                      mode="create"
+                      onDone={() => setExpandedId(null)}
+                      onCreated={(role) => setDoctorHint(role === 'DOCTOR')}
+                    />
                   </td>
                 </tr>
               )}

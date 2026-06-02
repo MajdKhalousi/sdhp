@@ -1694,6 +1694,11 @@
         "deleteFailed": "Failed to deactivate staff member",
         "phoneConflict": "Phone or email is already in use.",
         "emailConflict": "Phone or email is already in use."
+      },
+      "doctorProfileHint": {
+        "message": "Doctor user created. Go to Doctors to create a doctor profile for this account.",
+        "action": "Go to Doctors",
+        "dismiss": "Dismiss"
       }
     }
   },

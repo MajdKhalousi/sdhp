@@ -381,7 +381,8 @@
         "patientRequired": "يرجى اختيار مريض.",
         "doctorRequired": "يرجى اختيار طبيب.",
         "dateTimeRequired": "يرجى تحديد تاريخ ووقت الموعد.",
-        "durationMinimum": "يجب أن تكون المدة 5 دقائق على الأقل."
+        "durationMinimum": "يجب أن تكون المدة 5 دقائق على الأقل.",
+        "patientNotFound": "تعذر تحميل المريض. يرجى البحث يدويًا."
       }
     },
     "checkIn": {

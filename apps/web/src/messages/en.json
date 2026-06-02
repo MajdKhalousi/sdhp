@@ -381,7 +381,8 @@
         "patientRequired": "Please select a patient.",
         "doctorRequired": "Please select a doctor.",
         "dateTimeRequired": "Please set the appointment date and time.",
-        "durationMinimum": "Duration must be at least 5 minutes."
+        "durationMinimum": "Duration must be at least 5 minutes.",
+        "patientNotFound": "Patient could not be loaded. Please search manually."
       }
     },
     "checkIn": {

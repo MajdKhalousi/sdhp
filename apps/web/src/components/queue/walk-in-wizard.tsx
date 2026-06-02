@@ -1,11 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useCreateAppointment, usePatientsList, useDoctorsList, useVisitTypesList } from '@/hooks/use-appointments';
 import { useCheckIn } from '@/hooks/use-queue';
 import { PatientCombobox } from '@/components/appointments/patient-combobox';
+
+interface WalkInWizardProps {
+  initialPatientId?: string;
+}
 
 interface Step1Form {
   patientId: string;
@@ -29,14 +33,19 @@ const INITIAL: Step1Form = {
   visitTypeId: '',
 };
 
-export function WalkInWizard() {
+export function WalkInWizard({ initialPatientId }: WalkInWizardProps = {}) {
   const t = useTranslations('queue.walkIn');
   const tCommon = useTranslations('common');
   const router = useRouter();
   const locale = useLocale();
   const [step, setStep] = useState<1 | 2>(1);
-  const [form, setForm] = useState<Step1Form>(() => ({ ...INITIAL, scheduledAt: nowDateTimeLocal() }));
+  const [form, setForm] = useState<Step1Form>(() => ({
+    ...INITIAL,
+    scheduledAt: nowDateTimeLocal(),
+    patientId: initialPatientId ?? '',
+  }));
   const [validationError, setValidationError] = useState('');
+  const [initialPatientError, setInitialPatientError] = useState('');
   const [createdAppointmentId, setCreatedAppointmentId] = useState('');
 
   const { mutate: createAppt, isPending: creatingAppt, error: apptError } = useCreateAppointment();
@@ -49,6 +58,17 @@ export function WalkInWizard() {
   const activePatients = (patientsData?.data ?? []).filter((p) => p.isActive);
   const activeDoctors  = (doctorsData?.data  ?? []).filter((d) => d.isActive !== false);
   const activeVisitTypes = (visitTypesData ?? []).filter((vt) => vt.isActive);
+
+  const initialCheckDone = useRef(false);
+  useEffect(() => {
+    if (!initialPatientId || initialCheckDone.current || patientsLoading) return;
+    initialCheckDone.current = true;
+    const found = activePatients.some((p) => p.id === initialPatientId);
+    if (!found) {
+      setForm((prev) => ({ ...prev, patientId: '' }));
+      setInitialPatientError(t('validation.patientNotFound'));
+    }
+  }, [patientsLoading, activePatients, initialPatientId, t]);
 
   function set(field: keyof Step1Form) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -205,6 +225,12 @@ export function WalkInWizard() {
       {displayError && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {displayError}
+        </div>
+      )}
+
+      {initialPatientError && (
+        <div className="rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800 dark:border-orange-900/40 dark:bg-orange-950/20 dark:text-orange-400">
+          {initialPatientError}
         </div>
       )}
 

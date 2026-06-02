@@ -1,10 +1,15 @@
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { WalkInWizard } from '@/components/queue/walk-in-wizard';
 
-export default function WalkInPage() {
-  const t = useTranslations('queue.walkIn');
+interface Props {
+  searchParams: Promise<{ patientId?: string }>;
+}
+
+export default async function WalkInPage({ searchParams }: Props) {
+  const { patientId } = await searchParams;
+  const t = await getTranslations('queue.walkIn');
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
@@ -23,7 +28,7 @@ export default function WalkInPage() {
       </div>
 
       <div className="rounded-xl border border-border bg-card p-6">
-        <WalkInWizard />
+        <WalkInWizard initialPatientId={patientId} />
       </div>
     </div>
   );

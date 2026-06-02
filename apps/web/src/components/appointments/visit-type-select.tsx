@@ -46,7 +46,7 @@ export function VisitTypeSelect({ value, onChange, disabled }: Props) {
         {active.map((vt) => {
           const name  = locale === 'ar' && vt.nameAr ? vt.nameAr : vt.name;
           const price = vt.basePrice
-            ? `${parseFloat(vt.basePrice).toLocaleString()} SYP`
+            ? `${parseFloat(vt.basePrice).toLocaleString(locale === 'ar' ? 'ar-u-nu-latn' : 'en-US')} SYP`
             : null;
           const label = [name, price, `${vt.durationMinutes} min`]
             .filter(Boolean)

@@ -27,7 +27,7 @@ function formatBloodType(raw: string | null): string {
 
 function formatAmount(value: number, locale: string): string {
   return (
-    new Intl.NumberFormat(locale === 'ar' ? 'ar-SY' : 'en-US', {
+    new Intl.NumberFormat(locale === 'ar' ? 'ar-u-nu-latn' : 'en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     }).format(value) + ' SYP'
@@ -49,7 +49,7 @@ function Initials({ name }: { name: string }) {
 export function PatientHeader({ patient, isLoading }: PatientHeaderProps) {
   const t = useTranslations('patient');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const { data: outstandingBalance } = usePatientOutstandingBalance(patient?.id);
 
   if (isLoading) {

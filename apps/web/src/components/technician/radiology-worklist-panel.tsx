@@ -23,7 +23,7 @@ const STATUS_VARIANT: Record<PendingStatus, BadgeVariant> = {
 };
 
 function formatDate(iso: string, locale: string): string {
-  return new Date(iso).toLocaleDateString(locale === 'ar' ? 'ar-SY' : 'en-US', {
+  return new Date(iso).toLocaleDateString(locale === 'ar' ? 'ar-u-nu-latn' : 'en-US', {
     month: 'short',
     day: 'numeric',
   });

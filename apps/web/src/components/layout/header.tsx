@@ -10,7 +10,7 @@ interface HeaderProps {
 }
 
 function todayLabel(locale: string): string {
-  return new Date().toLocaleDateString(locale === 'ar' ? 'ar-SY' : 'en-US', {
+  return new Date().toLocaleDateString(locale === 'ar' ? 'ar-u-nu-latn' : 'en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',

@@ -25,7 +25,7 @@ export default function PatientsPage() {
   const t = useTranslations('patient');
   const tCommon = useTranslations('common');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const { user } = useAuthStore();
   const canEdit = user ? PATIENT_EDIT_ROLES.has(user.role) : false;
   const canArchive = user ? PATIENT_ARCHIVE_ROLES.has(user.role) : false;

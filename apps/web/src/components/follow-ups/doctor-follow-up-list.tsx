@@ -59,7 +59,7 @@ export function DoctorFollowUpList() {
   const t = useTranslations('followups');
   const tCommon = useTranslations('common');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
 
   const [activeTab, setActiveTab] = useState<FollowUpStatus>('DUE_TODAY');
   const [dateFrom, setDateFrom] = useState('');

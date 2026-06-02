@@ -59,7 +59,7 @@ export function PatientSafetyAlerts({
 }: Props) {
   const t = useTranslations('patient.safety');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
 
   const alerts = useMemo<AlertItem[]>(() => {
     const items: AlertItem[] = [];

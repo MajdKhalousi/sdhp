@@ -53,7 +53,7 @@ export default function AppointmentDetailPage() {
   const locale = useLocale();
   const { user } = useAuthStore();
   const canMutate = user ? APPOINTMENT_MUTATE_ROLES.has(user.role) : false;
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
 
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
 

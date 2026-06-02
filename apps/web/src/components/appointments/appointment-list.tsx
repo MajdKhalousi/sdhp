@@ -56,7 +56,7 @@ export function AppointmentList() {
   const { user } = useAuthStore();
   const canMutate = user ? APPOINTMENT_MUTATE_ROLES.has(user.role) : false;
   const canSeeBilling = user ? BILLING_ROLES.has(user.role) : false;
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
 
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<AppointmentStatus | ''>(

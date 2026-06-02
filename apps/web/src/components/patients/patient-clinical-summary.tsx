@@ -39,7 +39,7 @@ interface Props {
 export function PatientClinicalSummary({ patientId, onViewHistory }: Props) {
   const t = useTranslations('patient.clinicalSummary');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
 
   const { user } = useAuthStore();
   const hasClinicalRole = !!user && CLINICAL_ROLES.has(user.role);

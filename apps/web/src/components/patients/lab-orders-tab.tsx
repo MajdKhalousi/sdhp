@@ -30,7 +30,7 @@ function formatDate(iso: string, locale: string): string {
 function ResultSection({ result }: { result: LabResult }) {
   const tLab = useTranslations('encounter');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const reviewer = result.reviewedBy
     ? `${result.reviewedBy.user.firstName} ${result.reviewedBy.user.lastName}`
     : null;
@@ -82,7 +82,7 @@ function LabOrderItem({ order }: { order: LabOrder }) {
   const tLab = useTranslations('encounter');
   const tPatient = useTranslations('patient');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const doctor = `${order.orderedBy.user.firstName} ${order.orderedBy.user.lastName}`;
 
   return (

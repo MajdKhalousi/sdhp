@@ -50,7 +50,7 @@ function formatDate(iso: string, displayLocale: string): string {
 export function EncounterCard({ event }: Props) {
   const t = useTranslations('timeline.cards');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const { data } = event;
   const doctor = `${t('doctorPrefix')} ${data.doctor.firstName} ${data.doctor.lastName}`;
   const durationUnits = { min: t('duration.minute'), h: t('duration.hourShort'), m: t('duration.minuteShort') };

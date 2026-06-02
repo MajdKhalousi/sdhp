@@ -19,7 +19,7 @@ interface Props {
 export function PreviousEncounterPanel({ patientId, currentEncounterId }: Props) {
   const t = useTranslations('encounter.previousVisits');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
 
   const [open, setOpen] = useState(false);
 

@@ -86,7 +86,7 @@ function FileListItem({
 
   const uploader = `${file.uploadedBy.firstName} ${file.uploadedBy.lastName}`;
   const date = new Date(file.createdAt).toLocaleDateString(
-    locale === 'ar' ? 'ar-SY' : 'en-US',
+    locale === 'ar' ? 'ar-u-nu-latn' : 'en-US',
     { year: 'numeric', month: 'short', day: 'numeric' },
   );
 

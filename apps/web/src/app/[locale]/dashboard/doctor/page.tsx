@@ -19,7 +19,7 @@ function formatDate(iso: string | null, locale: string): string {
 
 export default function DoctorWorkspacePage() {
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const t = useTranslations('doctorWorkspace');
   const tEncounter = useTranslations('encounter');
   const tCommon = useTranslations('common');

@@ -46,7 +46,7 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
 
   function formatAmt(n: number): string {
     return (
-      new Intl.NumberFormat(locale === 'ar' ? 'ar-SY' : 'en-US', {
+      new Intl.NumberFormat(locale === 'ar' ? 'ar-u-nu-latn' : 'en-US', {
         minimumFractionDigits: 0,
         maximumFractionDigits: 2,
       }).format(n) + ' SYP'

@@ -108,7 +108,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const tCommon = useTranslations('common');
   const tPatient = useTranslations('patient');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
 
   function localizeGender(gender: string | null | undefined): string | null {
     if (!gender) return null;

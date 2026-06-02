@@ -35,7 +35,7 @@ function getDateRange(preset: Preset, customFrom: string, customTo: string) {
 
 function formatAmount(value: number, locale: string): string {
   return (
-    new Intl.NumberFormat(locale === 'ar' ? 'ar-SY' : 'en-US', {
+    new Intl.NumberFormat(locale === 'ar' ? 'ar-u-nu-latn' : 'en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value) + ' SYP'
@@ -44,7 +44,7 @@ function formatAmount(value: number, locale: string): string {
 
 function formatDate(iso: string | null, locale: string): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString(locale === 'ar' ? 'ar-SY' : 'en-US', {
+  return new Date(iso).toLocaleDateString(locale === 'ar' ? 'ar-u-nu-latn' : 'en-US', {
     year: 'numeric', month: 'short', day: 'numeric',
   });
 }

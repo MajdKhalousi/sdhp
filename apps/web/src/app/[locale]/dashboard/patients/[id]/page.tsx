@@ -125,7 +125,7 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Allergy[] }) {
   const t = useTranslations('patient');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const registeredDate = formatDate(patient.createdAt, displayLocale);
 
   return (

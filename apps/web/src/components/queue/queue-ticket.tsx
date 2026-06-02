@@ -28,7 +28,7 @@ const STATUS_LEFT: Record<QueueStatus, string> = {
 export function QueueTicket({ entry, invoice, visitTypeName }: { entry: QueueEntry; invoice?: Invoice; visitTypeName?: string }) {
   const t = useTranslations('queue.ticket');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const { ticketNumber, status, createdAt, calledAt, appointment } = entry;
   const { patient, doctor } = appointment;
 

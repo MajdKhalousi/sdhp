@@ -10,7 +10,7 @@ type Props = { event: Extract<TimelineEvent, { type: 'CLINICAL_REPORT_CREATED' }
 export function ClinicalReportCard({ event }: Props) {
   const t = useTranslations('timeline');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const { data } = event;
   const isDraft = data.status === 'DRAFT';
   const author = data.createdBy

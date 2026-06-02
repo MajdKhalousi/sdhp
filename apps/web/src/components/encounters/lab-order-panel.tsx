@@ -39,7 +39,7 @@ function formatDate(iso: string, locale: string): string {
 function ResultSection({ result }: { result: LabResult }) {
   const tLab = useTranslations('encounter');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const reviewer = result.reviewedBy
     ? `${result.reviewedBy.user.firstName} ${result.reviewedBy.user.lastName}`
     : null;
@@ -174,7 +174,7 @@ export function LabOrderPanel({ patientId, encounterId, readOnly }: Props) {
   const tLab = useTranslations('encounter');
   const tCommon = useTranslations('common');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<Form>(EMPTY_FORM);
   const [formError, setFormError] = useState('');

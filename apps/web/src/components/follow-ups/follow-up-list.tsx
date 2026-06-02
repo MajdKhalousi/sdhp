@@ -42,7 +42,7 @@ export function FollowUpList() {
   const t = useTranslations('followups');
   const tCommon = useTranslations('common');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
 
   const { toast } = useToast();
   const createReminder = useCreateReminder();

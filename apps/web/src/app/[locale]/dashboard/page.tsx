@@ -64,7 +64,7 @@ function formatRole(role: string) {
 
 function formatAmount(value: number, locale: string): string {
   return (
-    new Intl.NumberFormat(locale === 'ar' ? 'ar-SY' : 'en-US', {
+    new Intl.NumberFormat(locale === 'ar' ? 'ar-u-nu-latn' : 'en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value) + ' SYP'
@@ -76,7 +76,7 @@ export default function DashboardPage() {
   const tQueue = useTranslations('doctorQueue.card');
   const tDuration = useTranslations('timeline.cards.duration');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const user = useAuthStore((s) => s.user);
   const role = user?.role ?? '';
   const today = todayStr();

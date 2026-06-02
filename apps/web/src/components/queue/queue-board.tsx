@@ -46,7 +46,7 @@ export function QueueBoard() {
   const t = useTranslations('queue');
   const tCommon = useTranslations('common');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
 
   const [status, setStatus] = useState<QueueStatus | '' | 'ALL'>('');
   const [todayOnly, setTodayOnly] = useState(true);

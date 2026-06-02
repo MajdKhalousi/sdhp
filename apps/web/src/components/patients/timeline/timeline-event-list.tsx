@@ -53,7 +53,7 @@ interface Props {
 export const TimelineEventList = memo(function TimelineEventList({ events }: Props) {
   const t = useTranslations('timeline.dateGroups');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const groups = useMemo(() => groupByLocalDate(events, displayLocale), [events, displayLocale]);
   const today = todayKey();
   const yesterday = yesterdayKey();

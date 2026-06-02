@@ -40,7 +40,7 @@ function formatDate(iso: string, locale: string): string {
 function ReportSection({ report }: { report: RadiologyReport }) {
   const tRad = useTranslations('encounter');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const reportedBy = report.reportedBy
     ? `${report.reportedBy.user.firstName} ${report.reportedBy.user.lastName}`
     : null;
@@ -186,7 +186,7 @@ export function RadiologyOrderPanel({ patientId, encounterId, readOnly }: Props)
   const tRad = useTranslations('encounter');
   const tCommon = useTranslations('common');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<Form>(EMPTY_FORM);
   const [formError, setFormError] = useState('');

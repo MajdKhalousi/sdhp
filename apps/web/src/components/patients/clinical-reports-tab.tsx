@@ -34,7 +34,7 @@ function ReportCard({
 }) {
   const t = useTranslations('patient');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const isDraft = report.status === 'DRAFT';
 
   const { download: downloadPdf, downloadingId } = useDownloadReportPdf();

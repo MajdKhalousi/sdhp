@@ -51,7 +51,7 @@ export function DoctorQueuePanel() {
   const t = useTranslations('doctorQueue');
   const tCommon = useTranslations('common');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
 
   // No doctorId passed — the backend automatically scopes DOCTOR role queries
   // to the calling doctor's own profile (queue.service.ts buildWhere, DOCTOR branch).

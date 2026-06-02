@@ -16,7 +16,7 @@ function formatAmount(value: string, locale: string): string {
   const num = parseFloat(value);
   if (isNaN(num)) return '— SYP';
   return (
-    new Intl.NumberFormat(locale === 'ar' ? 'ar-SY' : 'en-US', {
+    new Intl.NumberFormat(locale === 'ar' ? 'ar-u-nu-latn' : 'en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     }).format(num) + ' SYP'

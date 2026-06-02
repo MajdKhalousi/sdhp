@@ -35,7 +35,7 @@ function formatDate(iso: string, locale: string): string {
 function ReportSection({ report }: { report: RadiologyReport }) {
   const tRad = useTranslations('encounter');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const reportedBy = report.reportedBy
     ? `${report.reportedBy.user.firstName} ${report.reportedBy.user.lastName}`
     : null;
@@ -90,7 +90,7 @@ function RadiologyOrderItem({ order }: { order: RadiologyOrder }) {
   const tRad = useTranslations('encounter');
   const tPatient = useTranslations('patient');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
+  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const doctor = `${order.orderedBy.user.firstName} ${order.orderedBy.user.lastName}`;
 
   return (

@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { LogOut, Menu } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
+import { useUnsavedGuardStore } from '@/store/unsaved-guard';
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { formatDateDisplay } from '@/lib/format-date';
 
@@ -28,6 +29,7 @@ export function Header({ onMenuClick }: HeaderProps = {}) {
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const guard = useUnsavedGuardStore();
 
   function handleLogout() {
     logout();
@@ -36,7 +38,7 @@ export function Header({ onMenuClick }: HeaderProps = {}) {
 
   function toggleLocale() {
     const next = locale === 'ar' ? 'en' : 'ar';
-    router.replace(pathname, { locale: next });
+    guard.requestNavigate(() => router.replace(pathname, { locale: next }));
   }
 
   const initials = user

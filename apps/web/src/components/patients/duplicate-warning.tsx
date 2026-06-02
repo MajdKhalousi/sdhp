@@ -2,8 +2,9 @@
 
 import { AlertTriangle } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
-import { Link } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import type { DuplicateCandidate, DuplicateReason } from '@/hooks/use-patient';
+import { useUnsavedGuardStore } from '@/store/unsaved-guard';
 
 interface Props {
   matches: DuplicateCandidate[];
@@ -24,6 +25,8 @@ export function DuplicateWarning({ matches, onCreateAnyway, onCancel, isCreating
   const t = useTranslations('patient.duplicate');
   const tForm = useTranslations('patient.form');
   const locale = useLocale();
+  const router = useRouter();
+  const guard = useUnsavedGuardStore();
   const isPhoneOnly = matches.every(m => m.reasons.length === 1 && m.reasons[0] === 'phone');
 
   return (
@@ -73,6 +76,12 @@ export function DuplicateWarning({ matches, onCreateAnyway, onCancel, isCreating
                 </div>
                 <Link
                   href={`/dashboard/patients/${c.id}`}
+                  onClick={(e) => {
+                    if (guard.enabled) {
+                      e.preventDefault();
+                      guard.requestNavigate(() => router.push(`/dashboard/patients/${c.id}`));
+                    }
+                  }}
                   className="shrink-0 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors hover:bg-accent"
                 >
                   {t('actions.viewPatient')}

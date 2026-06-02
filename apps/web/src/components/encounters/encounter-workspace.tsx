@@ -244,6 +244,9 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const visitTypeName = appointmentVisitType
     ? ((locale === 'ar' && appointmentVisitType.nameAr) || appointmentVisitType.name)
     : null;
+  const invoiceCreateHref = encounter.appointmentId
+    ? `/dashboard/invoices/new?appointmentId=${encounter.appointmentId}&patientId=${patient.id}`
+    : `/dashboard/invoices`;
 
   return (
     <div className="space-y-6">
@@ -579,6 +582,50 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
               </div>
             </div>
             <p className="text-xs text-muted-foreground">{t('complete.readOnly')}</p>
+
+            {/* ── Billing follow-up ──────────────────────────────────────── */}
+            {patientInvoices !== undefined && (
+              <div className="border-t border-border pt-3">
+                {unpaidInvoice ? (
+                  <div className="flex items-start gap-2">
+                    <Receipt className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
+                        {t('billing.billingFollowUp')}
+                      </p>
+                      <p className="mt-0.5 text-xs text-amber-700/80 dark:text-amber-400/80">
+                        {t('billing.unpaidWarningTitle')} ·{' '}
+                        <span dir="ltr" className="font-mono">{unpaidInvoice.invoiceNumber}</span>
+                      </p>
+                      <Link
+                        href={`/dashboard/invoices/${unpaidInvoice.id}`}
+                        className="mt-1 inline-block text-xs font-medium text-amber-700 underline hover:no-underline dark:text-amber-400"
+                      >
+                        {t('billing.viewInvoice')}
+                      </Link>
+                    </div>
+                  </div>
+                ) : patientInvoices.length === 0 ? (
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-1.5">
+                      <Receipt className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
+                      <p className="text-xs text-muted-foreground">{t('billing.billingFollowUp')}</p>
+                    </div>
+                    <Link
+                      href={invoiceCreateHref}
+                      className="text-xs font-medium text-primary hover:underline"
+                    >
+                      {t('billing.createOrCheckInvoice')}
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-green-600 dark:text-green-400" />
+                    <span>{t('billing.billingSettled')}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-4">

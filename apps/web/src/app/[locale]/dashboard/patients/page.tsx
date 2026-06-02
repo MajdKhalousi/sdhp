@@ -18,7 +18,8 @@ function formatDate(iso: string | null, locale = 'en-US'): string {
   });
 }
 
-const PATIENT_MANAGE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
+const PATIENT_EDIT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+const PATIENT_ARCHIVE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
 
 export default function PatientsPage() {
   const t = useTranslations('patient');
@@ -26,7 +27,8 @@ export default function PatientsPage() {
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
   const { user } = useAuthStore();
-  const canManage = user ? PATIENT_MANAGE_ROLES.has(user.role) : false;
+  const canEdit = user ? PATIENT_EDIT_ROLES.has(user.role) : false;
+  const canArchive = user ? PATIENT_ARCHIVE_ROLES.has(user.role) : false;
 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -80,7 +82,7 @@ export default function PatientsPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          {canManage && (
+          {canEdit && (
             <button
               onClick={() => { setIsCreateOpen(true); setCreateError(null); }}
               className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
@@ -219,7 +221,7 @@ export default function PatientsPage() {
                             >
                               {t('list.view')}
                             </Link>
-                            {canManage && (
+                            {canArchive && (
                               archiveConfirmId === patient.id ? (
                                 <span className="flex items-center gap-1.5">
                                   <span className="text-xs text-destructive">{t('list.confirmArchive')}</span>

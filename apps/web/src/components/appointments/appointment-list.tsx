@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ChevronLeft, ChevronRight, CalendarX2 } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
@@ -14,7 +14,10 @@ import { ConfirmButton } from './confirm-button';
 import { CancelAppointmentDialog } from './cancel-appointment-dialog';
 import { RescheduleDialog } from './reschedule-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useInvoices } from '@/hooks/use-invoices';
+import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import type { Appointment, AppointmentStatus } from '@/types/appointment';
+import type { InvoiceStatus } from '@/types/invoice';
 
 const CONFIRM_ELIGIBLE: AppointmentStatus[]    = ['SCHEDULED'];
 const CHECKIN_ELIGIBLE: AppointmentStatus[]    = ['SCHEDULED', 'CONFIRMED'];
@@ -23,11 +26,16 @@ const RESCHEDULE_ELIGIBLE: AppointmentStatus[] = ['SCHEDULED', 'CONFIRMED'];
 const CANCEL_ELIGIBLE: AppointmentStatus[]     = ['SCHEDULED', 'CONFIRMED', 'CHECKED_IN', 'IN_QUEUE', 'IN_PROGRESS'];
 
 const APPOINTMENT_MUTATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+const BILLING_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY', 'ACCOUNTANT']);
 
 const ALL_STATUSES: AppointmentStatus[] = [
   'SCHEDULED', 'CONFIRMED', 'CHECKED_IN', 'IN_QUEUE',
   'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW',
 ];
+
+function todayStr() {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
+}
 
 function formatDateTime(iso: string, locale = 'en-US') {
   return new Date(iso).toLocaleString(locale, {
@@ -47,6 +55,7 @@ export function AppointmentList() {
   const locale = useLocale();
   const { user } = useAuthStore();
   const canMutate = user ? APPOINTMENT_MUTATE_ROLES.has(user.role) : false;
+  const canSeeBilling = user ? BILLING_ROLES.has(user.role) : false;
   const displayLocale = locale === 'ar' ? 'ar-SY' : 'en-US';
 
   const searchParams = useSearchParams();
@@ -68,6 +77,20 @@ export function AppointmentList() {
 
   const { data: doctorsData } = useDoctorsList();
   const { data: visitTypesData } = useVisitTypesList();
+
+  const invoiceFilterDate = date || todayStr();
+  const { data: invoicesData } = useInvoices(
+    { from: invoiceFilterDate, to: invoiceFilterDate, limit: 100 },
+    { enabled: canSeeBilling },
+  );
+  const invoiceByApptId = useMemo(() => {
+    const map = new Map<string, InvoiceStatus>();
+    if (!invoicesData?.data) return map;
+    for (const inv of invoicesData.data) {
+      if (inv.appointmentId) map.set(inv.appointmentId, inv.status);
+    }
+    return map;
+  }, [invoicesData]);
 
   const getVisitTypeName = (visitTypeId?: string | null) => {
     if (!visitTypeId) return t('list.noVisitType' as Parameters<typeof t>[0]);
@@ -148,6 +171,7 @@ export function AppointmentList() {
                   t('list.columns.visitType' as Parameters<typeof t>[0]),
                   t('list.columns.duration'),
                   t('list.columns.status'),
+                  ...(canSeeBilling ? [t('list.columns.invoice' as Parameters<typeof t>[0])] : []),
                   '',
                 ].map((h) => (
                   <th key={h} className="px-4 py-3 text-start font-medium">{h}</th>
@@ -157,7 +181,7 @@ export function AppointmentList() {
             <tbody>
               {Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i} className="border-t border-border">
-                  {Array.from({ length: 7 }).map((__, j) => (
+                  {Array.from({ length: canSeeBilling ? 8 : 7 }).map((__, j) => (
                     <td key={j} className="px-4 py-3">
                       <Skeleton className="h-4 w-full" />
                     </td>
@@ -233,6 +257,9 @@ export function AppointmentList() {
               <th className="px-4 py-3 text-start font-medium">{t('list.columns.visitType' as Parameters<typeof t>[0])}</th>
               <th className="px-4 py-3 text-start font-medium">{t('list.columns.duration')}</th>
               <th className="px-4 py-3 text-start font-medium">{t('list.columns.status')}</th>
+              {canSeeBilling && (
+                <th className="px-4 py-3 text-start font-medium">{t('list.columns.invoice' as Parameters<typeof t>[0])}</th>
+              )}
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -268,6 +295,19 @@ export function AppointmentList() {
                 <td className="px-4 py-3">
                   <AppointmentStatusBadge status={appt.status} />
                 </td>
+                {canSeeBilling && (
+                  <td className="px-4 py-3">
+                    {invoicesData === undefined ? (
+                      <span className="text-xs text-muted-foreground/40">—</span>
+                    ) : invoiceByApptId.has(appt.id) ? (
+                      <InvoiceStatusBadge status={invoiceByApptId.get(appt.id)!} />
+                    ) : (
+                      <span className="text-xs text-muted-foreground/60">
+                        {t('list.invoiceStatus.noInvoice' as Parameters<typeof t>[0])}
+                      </span>
+                    )}
+                  </td>
+                )}
                 <td className="px-4 py-3">
                   <div className="flex flex-col items-end gap-1.5">
                     <div className="flex flex-wrap items-center justify-end gap-1.5">

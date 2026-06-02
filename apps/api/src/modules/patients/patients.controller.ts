@@ -53,7 +53,7 @@ export class PatientsController {
 
   @Post()
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY)
   @ApiOperation({
     summary:
       'Create patient — MRN is auto-generated if not provided. SUPER_ADMIN must supply organizationId.',
@@ -65,10 +65,10 @@ export class PatientsController {
 
   @Patch(':id')
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY)
   @ApiOperation({
     summary:
-      'Update patient — ORG_ADMIN restricted to own org. organizationId and mrn cannot be changed.',
+      'Update patient — ORG_ADMIN/SECRETARY restricted to own org. organizationId and mrn cannot be changed.',
   })
   @ApiNotFoundResponse({ description: 'Patient not found' })
   update(

@@ -23,7 +23,7 @@ interface StatCard {
   value: string | number;
   sub: string;
   icon: LucideIcon;
-  href: string;
+  href?: string;
   urgent?: boolean;
   live?: boolean;
 }
@@ -88,6 +88,7 @@ export default function DashboardPage() {
   const canSeeFollowUps  = FOLLOWUP_ROLES.has(role);
   const canSeeNewPatients = NEW_PATIENT_ROLES.has(role);
   const followUpsHref = role === 'DOCTOR' ? '/dashboard/my-follow-ups' : '/dashboard/follow-ups';
+  const waitingHref   = role === 'DOCTOR' ? '/dashboard/doctor/queue' : '/dashboard/queue';
 
   const { data: overview, isError: overviewError } = useDashboardOverview();
 
@@ -131,7 +132,7 @@ export default function DashboardPage() {
       value: o?.queue.waiting ?? '—',
       sub: t('stats.waitingNow.sub'),
       icon: ListOrdered,
-      href: '/dashboard/queue',
+      href: waitingHref,
       urgent: queueWaiting > 0,
       live: true,
     });
@@ -172,7 +173,7 @@ export default function DashboardPage() {
       value: o?.labOrders.pending ?? '—',
       sub: t('stats.pendingLabs.sub'),
       icon: FlaskConical,
-      href: '/dashboard/technician/labs',
+      href: role === 'NURSE' ? undefined : '/dashboard/technician/labs',
     });
     stats.push({
       key: 'pendingRadiology',
@@ -180,7 +181,7 @@ export default function DashboardPage() {
       value: o?.radiologyOrders.pending ?? '—',
       sub: t('stats.pendingRadiology.sub'),
       icon: ScanLine,
-      href: '/dashboard/technician/radiology',
+      href: role === 'NURSE' ? undefined : '/dashboard/technician/radiology',
     });
   }
 
@@ -221,14 +222,11 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => {
             const Icon = stat.icon;
-            return (
-              <Link
-                key={stat.key}
-                href={stat.href}
-                className={`rounded-xl border bg-card p-6 shadow-sm transition-colors hover:border-primary/40 ${
-                  stat.urgent ? 'border-primary/30' : ''
-                }`}
-              >
+            const cardClass = `rounded-xl border bg-card p-6 shadow-sm transition-colors ${
+              stat.urgent ? 'border-primary/30' : ''
+            }`;
+            const cardBody = (
+              <>
                 <div className="flex items-start justify-between">
                   <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
                   <Icon className={`h-4 w-4 shrink-0 ${stat.urgent ? 'text-primary' : 'text-muted-foreground/50'}`} />
@@ -245,7 +243,23 @@ export default function DashboardPage() {
                     </span>
                   )}
                 </div>
-              </Link>
+              </>
+            );
+            if (stat.href) {
+              return (
+                <Link
+                  key={stat.key}
+                  href={stat.href}
+                  className={`${cardClass} hover:border-primary/40`}
+                >
+                  {cardBody}
+                </Link>
+              );
+            }
+            return (
+              <div key={stat.key} className={cardClass}>
+                {cardBody}
+              </div>
             );
           })}
         </div>

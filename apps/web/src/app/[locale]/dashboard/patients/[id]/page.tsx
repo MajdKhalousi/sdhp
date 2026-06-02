@@ -199,7 +199,8 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
   );
 }
 
-const PATIENT_MANAGE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
+const PATIENT_EDIT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+const PATIENT_ARCHIVE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
 const CLINICAL_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE']);
 const PENDING_LAB_STATUSES = new Set(['ORDERED', 'SAMPLE_COLLECTED', 'IN_PROGRESS']);
 const PENDING_RADIOLOGY_STATUSES = new Set(['ORDERED', 'SCHEDULED', 'IN_PROGRESS']);
@@ -210,7 +211,8 @@ export default function PatientPage({ params }: { params: { id: string } }) {
   const t = useTranslations('patient');
   const tCommon = useTranslations('common');
   const { user } = useAuthStore();
-  const canManage = user ? PATIENT_MANAGE_ROLES.has(user.role) : false;
+  const canEdit = user ? PATIENT_EDIT_ROLES.has(user.role) : false;
+  const canArchive = user ? PATIENT_ARCHIVE_ROLES.has(user.role) : false;
   const hasClinicalRole = user ? CLINICAL_ROLES.has(user.role) : false;
   const [activeTab, setActiveTab] = useState('overview');
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -277,24 +279,9 @@ export default function PatientPage({ params }: { params: { id: string } }) {
       </Link>
       <PatientHeader patient={patient} isLoading={isLoading} />
 
-      {patient && canManage && (
+      {patient && (canEdit || canArchive) && (
         <div className="space-y-3">
-          {!showArchiveConfirm ? (
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => { setIsEditOpen(true); setUpdateError(null); }}
-                className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-              >
-                {t('detail.actions.edit')}
-              </button>
-              <button
-                onClick={() => setShowArchiveConfirm(true)}
-                className="rounded-lg border border-destructive/30 px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
-              >
-                {t('detail.actions.archive')}
-              </button>
-            </div>
-          ) : (
+          {canArchive && showArchiveConfirm ? (
             <div className="flex flex-wrap items-center gap-3 rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-2.5">
               <p className="text-sm text-destructive">{t('detail.confirmArchive')}</p>
               <div className="flex items-center gap-2">
@@ -313,6 +300,25 @@ export default function PatientPage({ params }: { params: { id: string } }) {
                   {tCommon('actions.cancel')}
                 </button>
               </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              {canEdit && (
+                <button
+                  onClick={() => { setIsEditOpen(true); setUpdateError(null); }}
+                  className="rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                >
+                  {t('detail.actions.edit')}
+                </button>
+              )}
+              {canArchive && (
+                <button
+                  onClick={() => setShowArchiveConfirm(true)}
+                  className="rounded-lg border border-destructive/30 px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+                >
+                  {t('detail.actions.archive')}
+                </button>
+              )}
             </div>
           )}
         </div>

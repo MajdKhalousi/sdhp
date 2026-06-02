@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { useCreateAppointment, usePatientsList, useDoctorsList } from '@/hooks/use-appointments';
+import { useCreateAppointment, usePatientsList, useDoctorsList, useVisitTypesList } from '@/hooks/use-appointments';
 import { useCheckIn } from '@/hooks/use-queue';
 
 interface Step1Form {
@@ -11,6 +11,13 @@ interface Step1Form {
   doctorId: string;
   scheduledAt: string;
   durationMin: string;
+  visitTypeId: string;
+}
+
+function nowDateTimeLocal(): string {
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
 }
 
 const INITIAL: Step1Form = {
@@ -18,6 +25,7 @@ const INITIAL: Step1Form = {
   doctorId: '',
   scheduledAt: '',
   durationMin: '15',
+  visitTypeId: '',
 };
 
 export function WalkInWizard() {
@@ -26,7 +34,8 @@ export function WalkInWizard() {
   const router = useRouter();
   const locale = useLocale();
   const [step, setStep] = useState<1 | 2>(1);
-  const [form, setForm] = useState<Step1Form>(INITIAL);
+  const [form, setForm] = useState<Step1Form>(() => ({ ...INITIAL, scheduledAt: nowDateTimeLocal() }));
+  const [patientSearch, setPatientSearch] = useState('');
   const [validationError, setValidationError] = useState('');
   const [createdAppointmentId, setCreatedAppointmentId] = useState('');
 
@@ -35,15 +44,33 @@ export function WalkInWizard() {
   const { mutate: checkIn, isPending: checkingIn, error: checkInError } = useCheckIn();
   const { data: patientsData, isLoading: patientsLoading } = usePatientsList();
   const { data: doctorsData, isLoading: doctorsLoading } = useDoctorsList();
+  const { data: visitTypesData, isLoading: visitTypesLoading } = useVisitTypesList();
 
   const activePatients = (patientsData?.data ?? []).filter((p) => p.isActive);
   const activeDoctors  = (doctorsData?.data  ?? []).filter((d) => d.isActive !== false);
+  const activeVisitTypes = (visitTypesData ?? []).filter((vt) => vt.isActive);
+
+  const searchLower = patientSearch.toLowerCase().trim();
+  const filteredPatients = searchLower
+    ? activePatients.filter(
+        (p) =>
+          `${p.firstName} ${p.lastName}`.toLowerCase().includes(searchLower) ||
+          (p.mrn ?? '').toLowerCase().includes(searchLower) ||
+          (p.phone ?? '').includes(patientSearch.trim()),
+      )
+    : activePatients;
 
   function set(field: keyof Step1Form) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
       setValidationError('');
     };
+  }
+
+  function handlePatientSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setPatientSearch(e.target.value);
+    setForm((prev) => ({ ...prev, patientId: '' }));
+    setValidationError('');
   }
 
   function handleDoctorChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -54,6 +81,11 @@ export function WalkInWizard() {
       doctorId,
       durationMin: doc ? String(doc.consultationMinutes) : prev.durationMin,
     }));
+    setValidationError('');
+  }
+
+  function handleNow() {
+    setForm((prev) => ({ ...prev, scheduledAt: nowDateTimeLocal() }));
     setValidationError('');
   }
 
@@ -71,6 +103,7 @@ export function WalkInWizard() {
         doctorId: form.doctorId,
         scheduledAt: new Date(form.scheduledAt).toISOString(),
         durationMin: duration,
+        ...(form.visitTypeId ? { visitTypeId: form.visitTypeId } : {}),
       },
       {
         onSuccess: (appt) => {
@@ -191,10 +224,19 @@ export function WalkInWizard() {
         </div>
       )}
 
+      {/* Patient search + select */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground" htmlFor="wi-patientId">
           {t('fields.patientLabel')} <span className="text-destructive">*</span>
         </label>
+        <input
+          type="text"
+          value={patientSearch}
+          onChange={handlePatientSearchChange}
+          disabled={creatingAppt || patientsLoading}
+          placeholder={t('fields.patientSearchPlaceholder')}
+          className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
+        />
         <select
           id="wi-patientId"
           value={form.patientId}
@@ -203,7 +245,7 @@ export function WalkInWizard() {
           className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
         >
           <option value="">{patientsLoading ? t('select.loadingPatients') : t('select.selectPatient')}</option>
-          {activePatients.map((p) => (
+          {filteredPatients.map((p) => (
             <option key={p.id} value={p.id}>
               {p.firstName} {p.lastName} — {p.mrn}
             </option>
@@ -211,6 +253,7 @@ export function WalkInWizard() {
         </select>
       </div>
 
+      {/* Doctor */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground" htmlFor="wi-doctorId">
           {t('fields.doctorLabel')} <span className="text-destructive">*</span>
@@ -232,20 +275,63 @@ export function WalkInWizard() {
         </select>
       </div>
 
+      {/* Visit Type (optional) */}
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-foreground" htmlFor="wi-visitTypeId">
+          {t('fields.visitTypeLabel')}{' '}
+          <span className="text-xs text-muted-foreground">{t('fields.visitTypeOptional')}</span>
+        </label>
+        <select
+          id="wi-visitTypeId"
+          value={form.visitTypeId}
+          onChange={set('visitTypeId')}
+          disabled={creatingAppt || visitTypesLoading}
+          className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
+        >
+          <option value="">
+            {visitTypesLoading ? t('select.loadingVisitTypes') : t('select.selectVisitType')}
+          </option>
+          {activeVisitTypes.map((vt) => {
+            const name = locale === 'ar' && vt.nameAr ? vt.nameAr : vt.name;
+            const price = vt.basePrice
+              ? `${parseFloat(vt.basePrice).toLocaleString()} SYP`
+              : null;
+            const label = [name, price, `${vt.durationMinutes} min`].filter(Boolean).join(' — ');
+            return (
+              <option key={vt.id} value={vt.id}>
+                {label}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+
+      {/* Date & Time with Now button */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground" htmlFor="wi-scheduledAt">
           {t('fields.dateTimeLabel')} <span className="text-destructive">*</span>
         </label>
-        <input
-          id="wi-scheduledAt"
-          type="datetime-local"
-          value={form.scheduledAt}
-          onChange={set('scheduledAt')}
-          disabled={creatingAppt}
-          className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
-        />
+        <div className="flex items-center gap-2">
+          <input
+            id="wi-scheduledAt"
+            type="datetime-local"
+            value={form.scheduledAt}
+            onChange={set('scheduledAt')}
+            disabled={creatingAppt}
+            className="h-9 flex-1 rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
+          />
+          <button
+            type="button"
+            onClick={handleNow}
+            disabled={creatingAppt}
+            className="h-9 rounded-md border px-3 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-60"
+          >
+            {t('actions.setNow')}
+          </button>
+        </div>
       </div>
 
+      {/* Duration */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground" htmlFor="wi-durationMin">
           {t('fields.durationLabel')} <span className="text-destructive">*</span>

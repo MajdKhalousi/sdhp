@@ -12,7 +12,7 @@ import type {
 } from '@/types/invoice';
 import type { Service } from '@/types/clinic-settings';
 
-export function useInvoices(query: InvoiceQuery = {}) {
+export function useInvoices(query: InvoiceQuery = {}, options?: { enabled?: boolean }) {
   const { organizationId, branchId, patientId, status, from, to, page, limit } = query;
   return useQuery({
     queryKey: ['invoices', organizationId, branchId, patientId, status, from, to, page, limit],
@@ -28,6 +28,7 @@ export function useInvoices(query: InvoiceQuery = {}) {
         ...(limit !== undefined ? { limit } : {}),
       }),
     staleTime: 30_000,
+    enabled: options?.enabled ?? true,
   });
 }
 

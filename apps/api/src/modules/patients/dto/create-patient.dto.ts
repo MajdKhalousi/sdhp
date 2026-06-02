@@ -32,6 +32,26 @@ export class CreatePatientDto {
   @IsString()
   lastNameAr?: string;
 
+  @ApiPropertyOptional({ example: 'Khalil' })
+  @IsOptional()
+  @IsString()
+  fatherName?: string;
+
+  @ApiPropertyOptional({ example: 'خليل' })
+  @IsOptional()
+  @IsString()
+  fatherNameAr?: string;
+
+  @ApiPropertyOptional({ example: 'Fatima' })
+  @IsOptional()
+  @IsString()
+  motherName?: string;
+
+  @ApiPropertyOptional({ example: 'فاطمة' })
+  @IsOptional()
+  @IsString()
+  motherNameAr?: string;
+
   @ApiPropertyOptional({
     description: 'Medical Record Number. Auto-generated if not provided. Format: MRN-XXXXXX',
     example: 'MRN-000042',

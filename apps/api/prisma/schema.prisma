@@ -300,6 +300,10 @@ model Patient {
   lastName       String
   firstNameAr    String?
   lastNameAr     String?
+  fatherName     String?
+  fatherNameAr   String?
+  motherName     String?
+  motherNameAr   String?
   dateOfBirth    DateTime?
   gender         Gender?
   phone          String?

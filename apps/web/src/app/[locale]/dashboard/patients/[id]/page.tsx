@@ -156,31 +156,44 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
         {patient.city && <InfoRow label={t('detail.overview.fields.city')} value={patient.city} />}
       </div>
 
-      {(patient.fatherName || patient.fatherNameAr || patient.motherName || patient.motherNameAr) && (
-        <div className="rounded-xl border bg-card px-5 py-3 shadow-sm sm:col-span-2">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            {t('detail.overview.family')}
-          </p>
-          {patient.fatherName && <InfoRow label={t('detail.overview.fields.fatherName')} value={patient.fatherName} />}
-          {patient.fatherNameAr && <InfoRow label={t('detail.overview.fields.fatherNameAr')} value={<span dir="rtl">{patient.fatherNameAr}</span>} />}
-          {patient.motherName && <InfoRow label={t('detail.overview.fields.motherName')} value={patient.motherName} />}
-          {patient.motherNameAr && <InfoRow label={t('detail.overview.fields.motherNameAr')} value={<span dir="rtl">{patient.motherNameAr}</span>} />}
-        </div>
-      )}
-
-      <div className="rounded-xl border bg-card px-5 py-3 shadow-sm sm:col-span-2">
-        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {t('detail.overview.emergencyContact')}
-        </p>
-        {(patient.emergencyContactName ?? patient.emergencyName) || (patient.emergencyContactPhone ?? patient.emergencyPhone) ? (
+      {(() => {
+        const hasFamilyInfo = !!(patient.fatherName || patient.fatherNameAr || patient.motherName || patient.motherNameAr);
+        return (
           <>
-            <InfoRow label={t('detail.overview.fields.name')} value={patient.emergencyContactName ?? patient.emergencyName} />
-            <InfoRow label={t('detail.overview.fields.phone')} value={patient.emergencyContactPhone ?? patient.emergencyPhone} />
+            <div className={`rounded-xl border bg-card px-5 py-3 shadow-sm${hasFamilyInfo ? '' : ' sm:col-span-2'}`}>
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {t('detail.overview.emergencyContact')}
+              </p>
+              {(patient.emergencyContactName ?? patient.emergencyName) || (patient.emergencyContactPhone ?? patient.emergencyPhone) ? (
+                <>
+                  <InfoRow label={t('detail.overview.fields.name')} value={patient.emergencyContactName ?? patient.emergencyName} />
+                  <InfoRow label={t('detail.overview.fields.phone')} value={patient.emergencyContactPhone ?? patient.emergencyPhone} />
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">{t('detail.overview.noEmergencyContact')}</p>
+              )}
+            </div>
+
+            {hasFamilyInfo && (
+              <div className="rounded-xl border bg-card px-5 py-3 shadow-sm">
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t('detail.overview.family')}
+                </p>
+                {patient.fatherName && <InfoRow label={t('detail.overview.fields.fatherName')} value={patient.fatherName} />}
+                {patient.fatherNameAr && <InfoRow label={t('detail.overview.fields.fatherNameAr')} value={<span dir="rtl">{patient.fatherNameAr}</span>} />}
+                {patient.motherName && <InfoRow label={t('detail.overview.fields.motherName')} value={patient.motherName} />}
+                {patient.motherNameAr && <InfoRow label={t('detail.overview.fields.motherNameAr')} value={<span dir="rtl">{patient.motherNameAr}</span>} />}
+              </div>
+            )}
           </>
-        ) : (
-          <p className="text-sm text-muted-foreground">{t('detail.overview.noEmergencyContact')}</p>
-        )}
-      </div>
+        );
+      })()}
+
+      <AllergiesCard
+        allergies={allergies}
+        headingLabel={t('detail.allergies.heading')}
+        noneLabel={t('detail.allergies.none')}
+      />
 
       {patient.chronicDiseases && (
         <div className="rounded-xl border bg-card px-5 py-3 shadow-sm sm:col-span-2">
@@ -190,12 +203,6 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
           <p className="text-sm text-foreground">{patient.chronicDiseases}</p>
         </div>
       )}
-
-      <AllergiesCard
-        allergies={allergies}
-        headingLabel={t('detail.allergies.heading')}
-        noneLabel={t('detail.allergies.none')}
-      />
 
       {patient.notes && (
         <div className="rounded-xl border bg-card px-5 py-3 shadow-sm sm:col-span-2">

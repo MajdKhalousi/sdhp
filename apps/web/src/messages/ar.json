@@ -153,7 +153,8 @@
         "doctor": "الطبيب",
         "scheduled": "الموعد",
         "duration": "المدة",
-        "status": "الحالة"
+        "status": "الحالة",
+        "visitType": "نوع الزيارة"
       },
       "filter": {
         "byStatus": "تصفية بالحالة",
@@ -161,6 +162,7 @@
         "byDoctor": "تصفية بالطبيب"
       },
       "durationMinutes": "{count} د",
+      "noVisitType": "—",
       "empty": {
         "heading": "لا توجد مواعيد",
         "withFilters": "جرّب تعديل الفلاتر.",
@@ -269,6 +271,7 @@
         "cancelledAt": "تاريخ الإلغاء",
         "cancelReason": "سبب الإلغاء",
         "status": "الحالة",
+        "visitTypePrice": "سعر الزيارة",
         "none": "—"
       },
       "related": {
@@ -324,7 +327,10 @@
     },
     "ticket": {
       "called": "استُدعي",
-      "inQueue": "في الطابور"
+      "inQueue": "في الطابور",
+      "justNow": "الآن",
+      "scheduled": "موعد: {time}",
+      "visitType": "الزيارة: {name}"
     },
     "walkIn": {
       "title": "تسجيل دون موعد",
@@ -373,7 +379,8 @@
     },
     "advance": {
       "callIn": "استدعِ",
-      "begin": "ابدأ"
+      "begin": "ابدأ",
+      "done": "إنهاء"
     },
     "skip": {
       "trigger": "تجاوز",
@@ -412,21 +419,21 @@
     },
     "page": {
       "title": "الزيارة الحالية",
-      "subtitle": "دوّن المشاهدات السريرية وأغلق الزيارة عند الانتهاء"
+      "subtitle": "دوّن المشاهدات السريرية وأنهِ الزيارة عند الاكتمال"
     },
     "actions": {
       "saveChanges": "حفظ التغييرات",
       "saving": "جاري الحفظ…",
       "savedAt": "حُفظ في {time}",
       "closeVisit": "إنهاء الزيارة",
-      "closing": "جاري الإنهاء…",
+      "closing": "جارٍ إنهاء الزيارة…",
       "unsavedChangesConfirm": "لديك تغييرات غير محفوظة. هل تريد المغادرة دون حفظ؟",
       "unsavedChanges": "توجد تعديلات غير محفوظة",
       "saveBeforeClosing": "احفظ التعديلات قبل إنهاء الزيارة."
     },
     "close": {
-      "confirm": "إنهاء هذه الزيارة؟ سيتم قفل السجل وتحديث الموعد كمكتمل.",
-      "noDiagnosisWarning": "لا يوجد تشخيص لهذه الزيارة. يمكنك إغلاقها، لكن يرجى التأكيد.",
+      "confirm": "إنهاء هذه الزيارة؟ سيتم حفظ الحالة الطبية وتغيير الموعد إلى مكتمل.",
+      "noDiagnosisWarning": "لا يوجد تشخيص لهذه الزيارة. يمكنك إنهاءها، لكن يرجى التأكيد.",
       "alreadyEnded": "الزيارة منتهية بالفعل",
       "failed": "فشل إنهاء الزيارة"
     },
@@ -448,6 +455,9 @@
         "severe": "شديد"
       }
     },
+    "patient": {
+      "inactive": "المريض غير نشط"
+    },
     "timestamps": {
       "started": "بدأت",
       "ended": "انتهت"
@@ -459,7 +469,7 @@
       "ageYears": "سنة"
     },
     "previousVisits": {
-      "heading": "الزيارة السابقة",
+      "heading": "الزيارات السابقة",
       "empty": "لا توجد زيارات سابقة",
       "doctorPrefix": "د.",
       "chiefComplaint": "الشكوى",
@@ -830,7 +840,10 @@
       "hideContent": "إخفاء التقرير",
       "downloadPdf": "تحميل PDF",
       "downloading": "جاري التحميل…",
-      "downloadFailed": "فشل تحميل ملف PDF."
+      "downloadFailed": "فشل تحميل ملف PDF.",
+      "viewEncounter": "عرض الزيارة",
+      "readOnly": "للقراءة فقط",
+      "chiefComplaint": "الشكوى الرئيسية"
     },
     "gender": {
       "male": "ذكر",
@@ -896,6 +909,29 @@
         "saving": "جارٍ الحفظ…",
         "cancel": "إلغاء"
       }
+    },
+    "clinicalSummary": {
+      "heading": "لمحة سريرية",
+      "lastVisit": "آخر زيارة",
+      "lastDiagnosis": "آخر تشخيص",
+      "nextFollowUp": "المراجعة القادمة",
+      "pendingLabs": "تحاليل قيد الانتظار",
+      "pendingRadiology": "أشعة قيد الانتظار",
+      "viewHistory": "عرض السجل الكامل",
+      "noHistory": "لا توجد زيارات مسجلة بعد",
+      "notAvailable": "—",
+      "loadFailed": "تعذر تحميل اللمحة السريرية"
+    },
+    "safety": {
+      "heading": "تنبيهات المريض",
+      "inactivePatient": "المريض غير نشط",
+      "severeAllergy": "حساسية شديدة",
+      "allergy": "حساسية",
+      "chronicDiseases": "أمراض مزمنة",
+      "overdueFollowUp": "المراجعة متأخرة منذ",
+      "pendingLabs": "تحاليل قيد الانتظار",
+      "pendingRadiology": "أشعة قيد الانتظار",
+      "missingEmergencyContact": "جهة اتصال الطوارئ غير مسجلة"
     }
   },
   "doctorWorkspace": {
@@ -924,7 +960,8 @@
         "PRESCRIPTION": "الوصفات",
         "LAB_ORDER": "طلبات المختبر",
         "RADIOLOGY_ORDER": "الأشعة",
-        "MEDICAL_FILE": "الملفات"
+        "MEDICAL_FILE": "الملفات",
+        "CLINICAL_REPORT_CREATED": "التقارير"
       },
       "fromAriaLabel": "من تاريخ",
       "toAriaLabel": "إلى تاريخ"
@@ -970,7 +1007,10 @@
         "minute": "دقيقة",
         "hourShort": "س",
         "minuteShort": "د"
-      }
+      },
+      "viewEncounter": "عرض الزيارة",
+      "downloadReport": "تحميل PDF",
+      "downloading": "جارِ التحميل..."
     },
     "clinicalReport": {
       "draft": "مسوّدة",
@@ -1002,6 +1042,7 @@
       "CONSENT_FORM": "نموذج الموافقة",
       "INSURANCE": "تأمين",
       "CLINICAL_NOTE": "ملاحظة سريرية",
+      "CLINICAL_REPORT": "تقرير سريري",
       "ID_DOCUMENT": "وثيقة هوية",
       "OTHER": "أخرى"
     },
@@ -1864,6 +1905,8 @@
     "deleteFailed": "فشل حذف الملف",
     "downloadFailed": "فشل الحصول على رابط التحميل",
     "emptyState": "لا ملفات طبية مرفوعة لهذا المريض.",
+    "filterEmpty": "لا ملفات في هذه الفئة",
+    "clinicalReportNote": "مصدّر من التقارير",
     "uploadForm": {
       "title": "رفع ملف جديد",
       "filePicker": "اختر ملفاً",

@@ -185,6 +185,12 @@ export default function AppointmentDetailPage() {
             <Field label={t('fields.visitType')}>
               {visitTypeName}
             </Field>
+
+            {visitType?.basePrice && (
+              <Field label={t('fields.visitTypePrice' as Parameters<typeof t>[0])}>
+                {parseFloat(visitType.basePrice).toLocaleString()} SYP
+              </Field>
+            )}
           </div>
 
           {appointment.notes && (
@@ -216,7 +222,7 @@ export default function AppointmentDetailPage() {
           CANCEL_ELIGIBLE.includes(status) ||
           INVOICE_ELIGIBLE.includes(status)) && (
           <div className="flex flex-wrap items-center gap-2">
-            {CHECKIN_ELIGIBLE.includes(status) && (
+            {canMutate && CHECKIN_ELIGIBLE.includes(status) && (
               <CheckInButton appointmentId={appointment.id} />
             )}
             {canMutate && CONFIRM_ELIGIBLE.includes(status) && (

@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { ChevronLeft, ChevronRight, CalendarX2 } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { useAppointments, useDoctorsList } from '@/hooks/use-appointments';
+import { useAppointments, useDoctorsList, useVisitTypesList } from '@/hooks/use-appointments';
 import { useAuthStore } from '@/store/auth';
 import { AppointmentStatusBadge } from './appointment-status-badge';
 import { CheckInButton } from '@/components/queue/check-in-button';
@@ -67,6 +67,15 @@ export function AppointmentList() {
   });
 
   const { data: doctorsData } = useDoctorsList();
+  const { data: visitTypesData } = useVisitTypesList();
+
+  const getVisitTypeName = (visitTypeId?: string | null) => {
+    if (!visitTypeId) return t('list.noVisitType' as Parameters<typeof t>[0]);
+    const vt = visitTypesData?.find((v) => v.id === visitTypeId);
+    return locale === 'ar' && vt?.nameAr
+      ? vt.nameAr
+      : (vt?.name ?? t('list.noVisitType' as Parameters<typeof t>[0]));
+  };
 
   const totalPages = data ? Math.ceil(data.total / LIMIT) : 1;
 
@@ -136,6 +145,7 @@ export function AppointmentList() {
                   t('list.columns.patient'),
                   t('list.columns.doctor'),
                   t('list.columns.scheduled'),
+                  t('list.columns.visitType' as Parameters<typeof t>[0]),
                   t('list.columns.duration'),
                   t('list.columns.status'),
                   '',
@@ -147,7 +157,7 @@ export function AppointmentList() {
             <tbody>
               {Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i} className="border-t border-border">
-                  {Array.from({ length: 6 }).map((__, j) => (
+                  {Array.from({ length: 7 }).map((__, j) => (
                     <td key={j} className="px-4 py-3">
                       <Skeleton className="h-4 w-full" />
                     </td>
@@ -220,6 +230,7 @@ export function AppointmentList() {
               <th className="px-4 py-3 text-start font-medium">{t('list.columns.patient')}</th>
               <th className="px-4 py-3 text-start font-medium">{t('list.columns.doctor')}</th>
               <th className="px-4 py-3 text-start font-medium">{t('list.columns.scheduled')}</th>
+              <th className="px-4 py-3 text-start font-medium">{t('list.columns.visitType' as Parameters<typeof t>[0])}</th>
               <th className="px-4 py-3 text-start font-medium">{t('list.columns.duration')}</th>
               <th className="px-4 py-3 text-start font-medium">{t('list.columns.status')}</th>
               <th className="px-4 py-3" />
@@ -249,6 +260,9 @@ export function AppointmentList() {
                 </td>
                 <td className="px-4 py-3 text-sm whitespace-nowrap" dir="ltr">{formatDateTime(appt.scheduledAt, displayLocale)}</td>
                 <td className="px-4 py-3 text-sm text-muted-foreground">
+                  {getVisitTypeName(appt.visitTypeId)}
+                </td>
+                <td className="px-4 py-3 text-sm text-muted-foreground">
                   {t('list.durationMinutes', { count: appt.durationMin })}
                 </td>
                 <td className="px-4 py-3">
@@ -263,7 +277,7 @@ export function AppointmentList() {
                       >
                         {tCommon('actions.view')}
                       </Link>
-                      {CHECKIN_ELIGIBLE.includes(appt.status) && (
+                      {canMutate && CHECKIN_ELIGIBLE.includes(appt.status) && (
                         <CheckInButton appointmentId={appt.id} />
                       )}
                       {canMutate && CONFIRM_ELIGIBLE.includes(appt.status) && (
@@ -279,7 +293,7 @@ export function AppointmentList() {
                           {t('reschedule.trigger' as Parameters<typeof t>[0])}
                         </button>
                       )}
-                      {NOSHOW_ELIGIBLE.includes(appt.status) && (
+                      {canMutate && NOSHOW_ELIGIBLE.includes(appt.status) && (
                         <NoShowButton appointmentId={appt.id} />
                       )}
                       {canMutate && CANCEL_ELIGIBLE.includes(appt.status) && (

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Download, FolderOpen, Trash2, Upload } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuthStore, type AuthUser } from '@/store/auth';
 import {
   usePatientMedicalFiles,
   useRequestUploadUrl,
@@ -27,15 +28,30 @@ const FILE_CATEGORIES: MedicalFileCategory[] = [
   'OTHER',
 ];
 
+// ── helpers ───────────────────────────────────────────────────────────────────
+
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function canDeleteFile(user: AuthUser | null, file: MedicalFile): boolean {
+  if (!user) return false;
+  if (user.role === 'SUPER_ADMIN' || user.role === 'ORG_ADMIN') return true;
+  if (user.role === 'DOCTOR' && file.uploadedById === user.id) return true;
+  return false;
+}
+
 // ── FileListItem ──────────────────────────────────────────────────────────────
 
-function FileListItem({ file }: { file: MedicalFile }) {
+function FileListItem({
+  file,
+  currentUser,
+}: {
+  file: MedicalFile;
+  currentUser: AuthUser | null;
+}) {
   const t = useTranslations('filesTab');
   const tCats = useTranslations('timeline');
   const locale = useLocale();
@@ -43,6 +59,9 @@ function FileListItem({ file }: { file: MedicalFile }) {
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const { mutate: deleteFile, isPending: isDeleting } = useDeleteMedicalFile();
+
+  const isClinicalReport = file.category === 'CLINICAL_REPORT';
+  const canDelete = canDeleteFile(currentUser, file);
 
   async function handleDownload() {
     setDownloadError(null);
@@ -75,9 +94,18 @@ function FileListItem({ file }: { file: MedicalFile }) {
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-s-4 border-s-slate-400">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <span className="mb-1.5 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-400">
-            {tCats(`fileCategories.${file.category}` as Parameters<typeof tCats>[0])}
-          </span>
+          {/* Category badges */}
+          <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
+            <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-400">
+              {tCats(`fileCategories.${file.category}` as Parameters<typeof tCats>[0])}
+            </span>
+            {isClinicalReport && (
+              <span className="inline-flex items-center rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+                {t('clinicalReportNote')}
+              </span>
+            )}
+          </div>
+
           <p className="font-medium text-sm text-foreground truncate" dir="auto">
             {file.fileName}
           </p>
@@ -100,14 +128,16 @@ function FileListItem({ file }: { file: MedicalFile }) {
             <Download className="h-3 w-3" />
             {t('downloadButton')}
           </button>
-          <button
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="inline-flex items-center gap-1.5 rounded-md border border-destructive/30 bg-background px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Trash2 className="h-3 w-3" />
-            {t('deleteButton')}
-          </button>
+          {canDelete && (
+            <button
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="inline-flex items-center gap-1.5 rounded-md border border-destructive/30 bg-background px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Trash2 className="h-3 w-3" />
+              {t('deleteButton')}
+            </button>
+          )}
         </div>
       </div>
 
@@ -288,11 +318,24 @@ interface FilesTabProps {
 
 export function FilesTab({ patientId }: FilesTabProps) {
   const t = useTranslations('filesTab');
+  const tCats = useTranslations('timeline');
   const tError = useTranslations('patient.detail.error');
   const tCommon = useTranslations('common');
   const [showUpload, setShowUpload] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<MedicalFileCategory | null>(null);
 
+  const { user } = useAuthStore();
   const { data: files = [], isLoading, isError, error, refetch } = usePatientMedicalFiles(patientId);
+
+  const presentCategories = useMemo(() => {
+    const cats = new Set<MedicalFileCategory>();
+    files.forEach((f) => cats.add(f.category));
+    return Array.from(cats);
+  }, [files]);
+
+  const displayedFiles = selectedCategory
+    ? files.filter((f) => f.category === selectedCategory)
+    : files;
 
   if (isLoading) {
     return (
@@ -342,16 +385,49 @@ export function FilesTab({ patientId }: FilesTabProps) {
         <UploadForm patientId={patientId} onDone={() => setShowUpload(false)} />
       )}
 
-      {/* File list or empty state */}
+      {/* Category filter chips — only when files exist */}
+      {files.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          <button
+            type="button"
+            onClick={() => setSelectedCategory(null)}
+            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              selectedCategory === null
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-border bg-transparent text-muted-foreground hover:bg-accent hover:text-foreground'
+            }`}
+          >
+            {tCommon('filter.all')}
+          </button>
+          {presentCategories.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setSelectedCategory(cat)}
+              className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                selectedCategory === cat
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border bg-transparent text-muted-foreground hover:bg-accent hover:text-foreground'
+              }`}
+            >
+              {tCats(`fileCategories.${cat}` as Parameters<typeof tCats>[0])}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* File list, filter-empty, or no-files empty state */}
       {files.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
           <FolderOpen className="h-8 w-8 text-muted-foreground/40" />
           <p className="text-sm text-muted-foreground">{t('emptyState')}</p>
         </div>
+      ) : displayedFiles.length === 0 ? (
+        <p className="py-8 text-center text-sm text-muted-foreground">{t('filterEmpty')}</p>
       ) : (
         <div className="space-y-3">
-          {files.map((file) => (
-            <FileListItem key={file.id} file={file} />
+          {displayedFiles.map((file) => (
+            <FileListItem key={file.id} file={file} currentUser={user} />
           ))}
         </div>
       )}

@@ -22,7 +22,7 @@ export class MedicalTimelineController {
 
   @Get(':patientId/timeline')
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR, UserRole.NURSE)
   @ApiOperation({
     summary:
       'Patient clinical timeline — paginated chronological feed of encounters, prescriptions, lab orders, radiology orders, and medical files. Filter by type, date range, and page.',

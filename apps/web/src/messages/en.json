@@ -153,7 +153,8 @@
         "doctor": "Doctor",
         "scheduled": "Scheduled",
         "duration": "Duration",
-        "status": "Status"
+        "status": "Status",
+        "visitType": "Visit Type"
       },
       "filter": {
         "byStatus": "Filter by status",
@@ -161,6 +162,7 @@
         "byDoctor": "Filter by doctor"
       },
       "durationMinutes": "{count} min",
+      "noVisitType": "—",
       "empty": {
         "heading": "No appointments found",
         "withFilters": "Try adjusting your filters.",
@@ -269,6 +271,7 @@
         "cancelledAt": "Cancelled At",
         "cancelReason": "Cancel Reason",
         "status": "Status",
+        "visitTypePrice": "Visit Price",
         "none": "—"
       },
       "related": {
@@ -324,7 +327,10 @@
     },
     "ticket": {
       "called": "Called",
-      "inQueue": "In queue"
+      "inQueue": "In queue",
+      "justNow": "just now",
+      "scheduled": "Appt: {time}",
+      "visitType": "Visit: {name}"
     },
     "walkIn": {
       "title": "Walk-in Registration",
@@ -373,7 +379,8 @@
     },
     "advance": {
       "callIn": "Call In",
-      "begin": "Begin"
+      "begin": "Begin",
+      "done": "Mark Done"
     },
     "skip": {
       "trigger": "Skip",
@@ -412,21 +419,21 @@
     },
     "page": {
       "title": "Active Visit",
-      "subtitle": "Document clinical findings and close the visit when complete"
+      "subtitle": "Document clinical findings and complete the visit when ready"
     },
     "actions": {
       "saveChanges": "Save Changes",
       "saving": "Saving…",
       "savedAt": "Saved at {time}",
-      "closeVisit": "Close Visit",
-      "closing": "Closing…",
+      "closeVisit": "Complete Visit",
+      "closing": "Completing…",
       "unsavedChangesConfirm": "You have unsaved changes. Leave without saving?",
       "unsavedChanges": "Unsaved changes",
       "saveBeforeClosing": "Save changes before ending the visit."
     },
     "close": {
-      "confirm": "Close this visit? The encounter will be locked and the appointment marked complete.",
-      "noDiagnosisWarning": "This visit has no diagnosis. You can still close it, but please confirm.",
+      "confirm": "Complete this visit? The encounter will be locked and the appointment marked complete.",
+      "noDiagnosisWarning": "This visit has no diagnosis. You can still complete it, but please confirm.",
       "alreadyEnded": "Encounter already ended",
       "failed": "Failed to end encounter"
     },
@@ -448,6 +455,9 @@
         "severe": "Severe"
       }
     },
+    "patient": {
+      "inactive": "Patient is inactive"
+    },
     "timestamps": {
       "started": "Started",
       "ended": "Ended"
@@ -459,7 +469,7 @@
       "ageYears": "yrs"
     },
     "previousVisits": {
-      "heading": "Last Visit",
+      "heading": "Previous Visits",
       "empty": "No previous encounters",
       "doctorPrefix": "Dr.",
       "chiefComplaint": "Complaint",
@@ -830,7 +840,10 @@
       "hideContent": "Hide report",
       "downloadPdf": "Download PDF",
       "downloading": "Downloading…",
-      "downloadFailed": "Failed to download PDF."
+      "downloadFailed": "Failed to download PDF.",
+      "viewEncounter": "View Encounter",
+      "readOnly": "Read-only",
+      "chiefComplaint": "Chief complaint"
     },
     "gender": {
       "male": "Male",
@@ -896,6 +909,29 @@
         "saving": "Saving…",
         "cancel": "Cancel"
       }
+    },
+    "clinicalSummary": {
+      "heading": "Clinical Snapshot",
+      "lastVisit": "Last Visit",
+      "lastDiagnosis": "Last Diagnosis",
+      "nextFollowUp": "Next Follow-up",
+      "pendingLabs": "Pending Labs",
+      "pendingRadiology": "Pending Radiology",
+      "viewHistory": "View Full History",
+      "noHistory": "No visits recorded yet",
+      "notAvailable": "—",
+      "loadFailed": "Failed to load clinical snapshot"
+    },
+    "safety": {
+      "heading": "Safety Alerts",
+      "inactivePatient": "Patient is inactive",
+      "severeAllergy": "Severe allergy",
+      "allergy": "Allergy",
+      "chronicDiseases": "Chronic diseases",
+      "overdueFollowUp": "Follow-up overdue since",
+      "pendingLabs": "pending lab orders",
+      "pendingRadiology": "pending radiology orders",
+      "missingEmergencyContact": "Emergency contact not on file"
     }
   },
   "doctorWorkspace": {
@@ -924,7 +960,8 @@
         "PRESCRIPTION": "Prescriptions",
         "LAB_ORDER": "Lab Orders",
         "RADIOLOGY_ORDER": "Radiology",
-        "MEDICAL_FILE": "Files"
+        "MEDICAL_FILE": "Files",
+        "CLINICAL_REPORT_CREATED": "Reports"
       },
       "fromAriaLabel": "From date",
       "toAriaLabel": "To date"
@@ -970,7 +1007,10 @@
         "minute": "min",
         "hourShort": "h",
         "minuteShort": "m"
-      }
+      },
+      "viewEncounter": "View Encounter",
+      "downloadReport": "Download PDF",
+      "downloading": "Downloading..."
     },
     "clinicalReport": {
       "draft": "Draft",
@@ -1002,6 +1042,7 @@
       "CONSENT_FORM": "Consent Form",
       "INSURANCE": "Insurance",
       "CLINICAL_NOTE": "Clinical Note",
+      "CLINICAL_REPORT": "Clinical Report",
       "ID_DOCUMENT": "ID Document",
       "OTHER": "Other"
     },
@@ -1864,6 +1905,8 @@
     "deleteFailed": "Failed to delete the file",
     "downloadFailed": "Failed to get download link",
     "emptyState": "No medical files uploaded for this patient.",
+    "filterEmpty": "No files in this category",
+    "clinicalReportNote": "Exported from Reports",
     "uploadForm": {
       "title": "Upload New File",
       "filePicker": "Choose File",

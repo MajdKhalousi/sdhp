@@ -286,6 +286,14 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
         </div>
       </div>
 
+      {/* ── Inactive patient banner ─────────────────────────────────────── */}
+      {patient.isActive === false && (
+        <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-900/40 dark:bg-red-950/20">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
+          <p className="text-xs font-semibold text-red-700 dark:text-red-400">{t('patient.inactive')}</p>
+        </div>
+      )}
+
       {/* ── Allergies banner ────────────────────────────────────────────── */}
       {allergies.length > 0 && (
         <div className="flex items-start gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 dark:border-orange-900/40 dark:bg-orange-950/20">
@@ -309,6 +317,21 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
                   </span>
                 );
               })}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Chronic diseases banner ─────────────────────────────────────── */}
+      {patient.chronicDiseases && (
+        <div className="flex items-start gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 dark:border-orange-900/40 dark:bg-orange-950/20">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-orange-600 dark:text-orange-400" />
+          <div>
+            <p className="text-xs font-semibold text-orange-700 dark:text-orange-400">
+              {tPatient('safety.chronicDiseases')}
+            </p>
+            <p className="mt-0.5 text-xs text-orange-700/80 dark:text-orange-400/80" dir="auto">
+              {patient.chronicDiseases}
             </p>
           </div>
         </div>

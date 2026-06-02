@@ -31,6 +31,7 @@ export type MedicalFileCategory =
   | 'CONSENT_FORM'
   | 'INSURANCE'
   | 'CLINICAL_NOTE'
+  | 'CLINICAL_REPORT'
   | 'ID_DOCUMENT'
   | 'OTHER';
 

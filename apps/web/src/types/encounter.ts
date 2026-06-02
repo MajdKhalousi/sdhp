@@ -6,6 +6,8 @@ interface EncounterPatientRef {
   phone: string | null;
   gender: string | null;
   dateOfBirth: string | null;
+  isActive?: boolean;
+  chronicDiseases?: string | null;
 }
 
 interface EncounterDoctorUserRef {

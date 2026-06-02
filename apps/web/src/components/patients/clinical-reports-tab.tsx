@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ClipboardList } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import {
   usePatientClinicalReports,
   useDownloadReportPdf,
@@ -71,6 +72,11 @@ function ReportCard({
               >
                 {isDraft ? t('reports.statusDraft') : t('reports.statusFinalized')}
               </span>
+              {!isDraft && (
+                <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                  {t('reports.readOnly')}
+                </span>
+              )}
             </div>
 
             <p className="text-sm font-semibold text-foreground" dir="auto">
@@ -85,13 +91,28 @@ function ReportCard({
             </p>
 
             {report.encounter && (
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {t('reports.encounter')}: {formatDate(report.encounter.startedAt, displayLocale)}
-              </p>
+              <>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {t('reports.encounter')}: {formatDate(report.encounter.startedAt, displayLocale)}
+                </p>
+                {report.encounter.chiefComplaint && (
+                  <p className="mt-0.5 text-xs text-muted-foreground" dir="auto">
+                    {t('reports.chiefComplaint')}: {report.encounter.chiefComplaint}
+                  </p>
+                )}
+              </>
             )}
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
+            {report.encounterId && (
+              <Link
+                href={`/dashboard/doctor/encounter/${report.encounterId}`}
+                className="inline-flex h-7 items-center rounded-md border border-input bg-background px-2.5 text-xs font-medium transition-colors hover:bg-accent"
+              >
+                {t('reports.viewEncounter')}
+              </Link>
+            )}
             {!isDraft && (
               <button
                 onClick={handleDownload}

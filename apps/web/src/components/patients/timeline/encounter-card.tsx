@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations, useLocale } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { Badge } from '@/components/ui/badge';
 import type { TimelineEvent } from '@/types/timeline';
 import { formatTime } from './format-time';
@@ -74,7 +75,7 @@ export function EncounterCard({ event }: Props) {
             </span>
           )}
         </div>
-        <span className="text-xs text-muted-foreground">{formatTime(event.timestamp)}</span>
+        <span className="text-xs text-muted-foreground">{formatTime(event.timestamp, displayLocale)}</span>
       </div>
 
       {/* Chief complaint */}
@@ -91,7 +92,7 @@ export function EncounterCard({ event }: Props) {
         <span className="opacity-70">
           · {isActive
             ? `${t('ongoing')} · ${encounterDuration(data.startedAt, null, durationUnits)}`
-            : `${encounterDuration(data.startedAt, data.endedAt, durationUnits)} · ${t('ended')} ${formatTime(data.endedAt!)}`}
+            : `${encounterDuration(data.startedAt, data.endedAt, durationUnits)} · ${t('ended')} ${formatTime(data.endedAt!, displayLocale)}`}
         </span>
       </div>
 
@@ -147,6 +148,18 @@ export function EncounterCard({ event }: Props) {
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* View Encounter action */}
+      {event.id && (
+        <div className="mt-3 border-t border-border pt-2.5">
+          <Link
+            href={`/dashboard/doctor/encounter/${event.id}`}
+            className="text-xs font-medium text-primary hover:underline"
+          >
+            {t('viewEncounter')}
+          </Link>
         </div>
       )}
     </div>

@@ -3,8 +3,9 @@
 import { useState, useMemo } from 'react';
 import { RefreshCw, Inbox } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
-import { useQueue } from '@/hooks/use-queue';
-import { useDoctorsList } from '@/hooks/use-appointments';
+import { useQueue, useUpdateQueueEntry } from '@/hooks/use-queue';
+import { useDoctorsList, useVisitTypesList } from '@/hooks/use-appointments';
+import { useAuthStore } from '@/store/auth';
 import { useInvoices } from '@/hooks/use-invoices';
 import { QueueTicket } from './queue-ticket';
 import { AdvanceQueueButton } from './advance-queue-button';
@@ -61,6 +62,17 @@ export function QueueBoard() {
   });
 
   const { data: doctorsData } = useDoctorsList();
+  const { data: visitTypesData } = useVisitTypesList();
+  const { mutate: markDone, isPending: markingDone } = useUpdateQueueEntry();
+  const role = useAuthStore((state) => state.user?.role);
+  const canPatchQueue = ['SUPER_ADMIN', 'ORG_ADMIN'].includes(role ?? '');
+  const activeDoctors = (doctorsData?.data ?? []).filter((d) => d.isActive !== false);
+  const getVisitTypeName = (visitTypeId?: string | null) => {
+    if (!visitTypeId) return undefined;
+    const vt = (visitTypesData ?? []).find((v) => v.id === visitTypeId);
+    if (!vt) return undefined;
+    return locale === 'ar' && vt.nameAr ? vt.nameAr : vt.name;
+  };
 
   const { from, to } = useMemo(() => getTodayRange(), []);
   const { data: invoicesData } = useInvoices({ from, to, limit: 100 });
@@ -97,7 +109,7 @@ export function QueueBoard() {
         aria-label={t('board.filter.byDoctor')}
       >
         <option value="">{tCommon('filter.allDoctors')}</option>
-        {doctorsData?.data.map((d) => (
+        {activeDoctors.map((d) => (
           <option key={d.id} value={d.id}>
             Dr. {d.user.firstName} {d.user.lastName}
           </option>
@@ -213,18 +225,33 @@ export function QueueBoard() {
       <div className="space-y-3">
         {data.data.map((entry) => (
           <div key={entry.id} className="space-y-1">
-            <QueueTicket entry={entry} invoice={invoiceMap.get(entry.appointment.patient.id)} />
+            <QueueTicket
+              entry={entry}
+              invoice={invoiceMap.get(entry.appointment.patient.id)}
+              visitTypeName={getVisitTypeName(entry.appointment.visitTypeId)}
+            />
             {SKIPPABLE.includes(entry.status) && (
               <div className="flex items-center justify-end gap-2 px-1">
                 <AdvanceQueueButton entryId={entry.id} status={entry.status} />
                 <SkipQueueButton entryId={entry.id} />
               </div>
             )}
+            {entry.status === 'IN_PROGRESS' && canPatchQueue && (
+              <div className="flex items-center justify-end gap-2 px-1">
+                <button
+                  onClick={() => markDone({ id: entry.id, dto: { status: 'DONE' } })}
+                  disabled={markingDone}
+                  className="h-6 rounded bg-green-600 px-2 text-xs font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-60"
+                >
+                  {markingDone ? '…' : t('advance.done')}
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
       <p className="text-xs text-muted-foreground">
-        {t('board.activeCount', { count: data.total })}
+        {t('board.filteredCount', { count: data.total })}
       </p>
     </div>
   );

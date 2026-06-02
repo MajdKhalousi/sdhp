@@ -31,6 +31,7 @@ export interface AppointmentRef {
   scheduledAt: string;
   status: string;
   branchId: string | null;
+  visitTypeId: string | null;
   patient: PatientRef;
   doctor: DoctorRef;
 }

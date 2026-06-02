@@ -7,6 +7,9 @@ import { useTranslations, useLocale } from 'next-intl';
 import { usePatient, useUpdatePatient, useDeletePatient } from '@/hooks/use-patient';
 import { useAuthStore } from '@/store/auth';
 import { useAllergies } from '@/hooks/use-allergies';
+import { usePatientLabOrders } from '@/hooks/use-labs';
+import { usePatientRadiologyOrders } from '@/hooks/use-radiology';
+import { usePatientTimeline } from '@/hooks/use-patient-timeline';
 import { PatientHeader } from '@/components/patients/patient-header';
 import { PatientForm } from '@/components/patients/patient-form';
 import { Tabs, TabPanel, type TabItem } from '@/components/ui/tabs';
@@ -17,6 +20,8 @@ import { LabOrdersTab } from '@/components/patients/lab-orders-tab';
 import { RadiologyOrdersTab } from '@/components/patients/radiology-orders-tab';
 import { ClinicalReportsTab } from '@/components/patients/clinical-reports-tab';
 import { InvoicesTab } from '@/components/patients/invoices-tab';
+import { PatientClinicalSummary } from '@/components/patients/patient-clinical-summary';
+import { PatientSafetyAlerts } from '@/components/patients/patient-safety-alerts';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { Patient, CreatePatientInput, UpdatePatientInput } from '@/hooks/use-patient';
@@ -195,6 +200,9 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
 }
 
 const PATIENT_MANAGE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
+const CLINICAL_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE']);
+const PENDING_LAB_STATUSES = new Set(['ORDERED', 'SAMPLE_COLLECTED', 'IN_PROGRESS']);
+const PENDING_RADIOLOGY_STATUSES = new Set(['ORDERED', 'SCHEDULED', 'IN_PROGRESS']);
 
 export default function PatientPage({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -203,6 +211,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
   const tCommon = useTranslations('common');
   const { user } = useAuthStore();
   const canManage = user ? PATIENT_MANAGE_ROLES.has(user.role) : false;
+  const hasClinicalRole = user ? CLINICAL_ROLES.has(user.role) : false;
   const [activeTab, setActiveTab] = useState('overview');
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
@@ -211,8 +220,17 @@ export default function PatientPage({ params }: { params: { id: string } }) {
 
   const { data: patient, isLoading, isError, error } = usePatient(id);
   const { data: allergies = [] } = useAllergies(id);
+  const { data: labsData } = usePatientLabOrders(id);
+  const { data: radData } = usePatientRadiologyOrders(id);
+  const { data: timelineData } = usePatientTimeline(id, { types: ['ENCOUNTER'], limit: 1 });
   const updatePatient = useUpdatePatient();
   const deletePatient = useDeletePatient();
+
+  const pendingLabsCount = (labsData ?? []).filter((l) => PENDING_LAB_STATUSES.has(l.status)).length;
+  const pendingRadiologyCount = (radData ?? []).filter((r) => PENDING_RADIOLOGY_STATUSES.has(r.status)).length;
+  const lastTimelineEvent = timelineData?.data?.[0];
+  const lastEncounterData = lastTimelineEvent?.type === 'ENCOUNTER' ? lastTimelineEvent.data : null;
+  const overdueFollowUpDate = lastEncounterData?.followUpDate ?? null;
 
   if (isError) throw error;
 
@@ -334,15 +352,35 @@ export default function PatientPage({ params }: { params: { id: string } }) {
 
       <div className="pt-2">
         <TabPanel value="overview" activeValue={activeTab}>
-          {patient ? (
-            <OverviewTab patient={patient} allergies={allergies} />
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Skeleton className="h-52 rounded-xl" />
-              <Skeleton className="h-52 rounded-xl" />
-              <Skeleton className="h-24 rounded-xl sm:col-span-2" />
-            </div>
-          )}
+          <div className="space-y-4">
+            <PatientClinicalSummary
+              patientId={id}
+              onViewHistory={() => setActiveTab('timeline')}
+            />
+            {patient && hasClinicalRole && (
+              <PatientSafetyAlerts
+                allergies={allergies}
+                chronicDiseases={patient.chronicDiseases}
+                isActive={patient.isActive}
+                hasEmergencyContact={!!(
+                  (patient.emergencyContactName ?? patient.emergencyName) ||
+                  (patient.emergencyContactPhone ?? patient.emergencyPhone)
+                )}
+                pendingLabsCount={pendingLabsCount}
+                pendingRadiologyCount={pendingRadiologyCount}
+                overdueFollowUpDate={overdueFollowUpDate}
+              />
+            )}
+            {patient ? (
+              <OverviewTab patient={patient} allergies={allergies} />
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Skeleton className="h-52 rounded-xl" />
+                <Skeleton className="h-52 rounded-xl" />
+                <Skeleton className="h-24 rounded-xl sm:col-span-2" />
+              </div>
+            )}
+          </div>
         </TabPanel>
 
         <TabPanel value="timeline" activeValue={activeTab}>

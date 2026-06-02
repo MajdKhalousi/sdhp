@@ -13,6 +13,8 @@ export interface ClinicalReportEncounter {
   organizationId: string;
   patientId: string;
   startedAt: string;
+  endedAt?: string | null;
+  chiefComplaint?: string | null;
 }
 
 export interface ClinicalReportAuthor {

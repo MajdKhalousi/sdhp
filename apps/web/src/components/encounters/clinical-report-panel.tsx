@@ -272,15 +272,18 @@ export function ClinicalReportPanel({
                   </p>
                 </div>
 
-                {/* Action buttons — DRAFT only, not while being edited */}
-                {!readOnly && isDraft && !isBeingEdited && (
+                {/* Action buttons — DRAFT only, not while being edited.
+                    Edit and Delete require active encounter; Finalize is always allowed. */}
+                {isDraft && !isBeingEdited && (
                   <div className="flex shrink-0 items-center gap-1.5">
-                    <button
-                      onClick={() => openEdit(report)}
-                      className="inline-flex h-7 items-center rounded-md border border-input bg-background px-2.5 text-xs font-medium transition-colors hover:bg-accent"
-                    >
-                      {t('editButton')}
-                    </button>
+                    {!readOnly && (
+                      <button
+                        onClick={() => openEdit(report)}
+                        className="inline-flex h-7 items-center rounded-md border border-input bg-background px-2.5 text-xs font-medium transition-colors hover:bg-accent"
+                      >
+                        {t('editButton')}
+                      </button>
+                    )}
                     <button
                       onClick={() => handleFinalize(report.id)}
                       disabled={updating}
@@ -288,13 +291,15 @@ export function ClinicalReportPanel({
                     >
                       {t('finalizeButton')}
                     </button>
-                    <button
-                      onClick={() => handleDelete(report)}
-                      disabled={deleting}
-                      className="inline-flex h-7 items-center rounded-md border border-destructive/30 bg-background px-2.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
-                    >
-                      {t('deleteButton')}
-                    </button>
+                    {!readOnly && (
+                      <button
+                        onClick={() => handleDelete(report)}
+                        disabled={deleting}
+                        className="inline-flex h-7 items-center rounded-md border border-destructive/30 bg-background px-2.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
+                      >
+                        {t('deleteButton')}
+                      </button>
+                    )}
                   </div>
                 )}
               </div>

@@ -23,6 +23,8 @@ const PATIENT_SELECT = {
   phone: true,
   gender: true,
   dateOfBirth: true,
+  isActive: true,
+  chronicDiseases: true,
 } as const;
 
 const DOCTOR_SELECT = {

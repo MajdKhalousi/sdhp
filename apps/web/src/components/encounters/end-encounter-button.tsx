@@ -38,7 +38,7 @@ export function EndEncounterButton({
       <div className="flex flex-col gap-1">
         <button
           disabled
-          className="inline-flex h-9 items-center rounded-md border border-destructive/40 px-4 text-sm font-medium text-destructive opacity-60"
+          className="inline-flex h-9 items-center rounded-md border border-green-600/40 px-4 text-sm font-medium text-green-700 opacity-60 dark:text-green-400"
         >
           {t('actions.closeVisit')}
         </button>
@@ -77,7 +77,7 @@ export function EndEncounterButton({
           <button
             onClick={handleConfirm}
             disabled={isPending}
-            className="inline-flex h-8 items-center gap-1.5 rounded-md bg-destructive px-3 text-xs font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-8 items-center gap-1.5 rounded-md bg-green-600 px-3 text-xs font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isPending ? t('actions.closing') : t('actions.closeVisit')}
           </button>
@@ -97,7 +97,7 @@ export function EndEncounterButton({
     <div className="flex flex-col gap-1">
       <button
         onClick={() => setConfirming(true)}
-        className="inline-flex h-9 items-center rounded-md border border-destructive/40 px-4 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+        className="inline-flex h-9 items-center rounded-md border border-green-600/40 px-4 text-sm font-medium text-green-700 transition-colors hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-950/30"
       >
         {t('actions.closeVisit')}
       </button>

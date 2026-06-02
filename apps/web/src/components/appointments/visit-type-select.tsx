@@ -44,10 +44,16 @@ export function VisitTypeSelect({ value, onChange, disabled }: Props) {
             : t('select.selectVisitType')}
         </option>
         {active.map((vt) => {
-          const name = locale === 'ar' && vt.nameAr ? vt.nameAr : vt.name;
+          const name  = locale === 'ar' && vt.nameAr ? vt.nameAr : vt.name;
+          const price = vt.basePrice
+            ? `${parseFloat(vt.basePrice).toLocaleString()} SYP`
+            : null;
+          const label = [name, price, `${vt.durationMinutes} min`]
+            .filter(Boolean)
+            .join(' — ');
           return (
             <option key={vt.id} value={vt.id}>
-              {name} — {vt.durationMinutes} min
+              {label}
             </option>
           );
         })}

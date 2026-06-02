@@ -36,6 +36,9 @@ export function WalkInWizard() {
   const { data: patientsData, isLoading: patientsLoading } = usePatientsList();
   const { data: doctorsData, isLoading: doctorsLoading } = useDoctorsList();
 
+  const activePatients = (patientsData?.data ?? []).filter((p) => p.isActive);
+  const activeDoctors  = (doctorsData?.data  ?? []).filter((d) => d.isActive !== false);
+
   function set(field: keyof Step1Form) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -200,7 +203,7 @@ export function WalkInWizard() {
           className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
         >
           <option value="">{patientsLoading ? t('select.loadingPatients') : t('select.selectPatient')}</option>
-          {patientsData?.data.map((p) => (
+          {activePatients.map((p) => (
             <option key={p.id} value={p.id}>
               {p.firstName} {p.lastName} — {p.mrn}
             </option>
@@ -220,7 +223,7 @@ export function WalkInWizard() {
           className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
         >
           <option value="">{doctorsLoading ? t('select.loadingDoctors') : t('select.selectDoctor')}</option>
-          {doctorsData?.data.map((d) => (
+          {activeDoctors.map((d) => (
             <option key={d.id} value={d.id}>
               Dr. {d.user.firstName} {d.user.lastName}
               {d.specialization ? ` — ${d.specialization}` : ''}

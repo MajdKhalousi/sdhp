@@ -37,6 +37,8 @@ const ENCOUNTER_SELECT = {
   organizationId: true,
   patientId: true,
   startedAt: true,
+  endedAt: true,
+  chiefComplaint: true,
 } as const;
 
 const REPORT_SELECT = {

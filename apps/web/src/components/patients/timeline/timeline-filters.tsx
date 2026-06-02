@@ -10,6 +10,7 @@ const ALL_TYPES: TimelineEventType[] = [
   'LAB_ORDER',
   'RADIOLOGY_ORDER',
   'MEDICAL_FILE',
+  'CLINICAL_REPORT_CREATED',
 ];
 
 interface Props {

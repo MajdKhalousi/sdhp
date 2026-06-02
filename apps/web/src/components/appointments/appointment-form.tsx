@@ -70,6 +70,18 @@ export function AppointmentForm({
     setSelectedVisitType(vt);
   }, [initialVisitTypeId, visitTypesData]);
 
+  const activePatients = (patientsData?.data ?? [])
+    .filter((p) => p.isActive)
+    .sort(
+      (a, b) =>
+        a.lastName.localeCompare(b.lastName) ||
+        a.firstName.localeCompare(b.firstName),
+    );
+
+  const activeDoctors = (doctorsData?.data ?? []).filter(
+    (d) => d.isActive !== false,
+  );
+
   const selectedDoctor = doctorsData?.data.find((d) => d.id === form.doctorId) ?? null;
   const durationMin =
     selectedVisitType?.durationMinutes ??
@@ -146,7 +158,7 @@ export function AppointmentForm({
           className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
         >
           <option value="">{patientsLoading ? t('select.loadingPatients') : t('select.selectPatient')}</option>
-          {patientsData?.data.map((p) => (
+          {activePatients.map((p) => (
             <option key={p.id} value={p.id}>
               {p.firstName} {p.lastName} — {p.mrn}
             </option>
@@ -167,7 +179,7 @@ export function AppointmentForm({
           className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
         >
           <option value="">{doctorsLoading ? t('select.loadingDoctors') : t('select.selectDoctor')}</option>
-          {doctorsData?.data.map((d) => (
+          {activeDoctors.map((d) => (
             <option key={d.id} value={d.id}>
               Dr. {d.user.firstName} {d.user.lastName}
               {d.specialization ? ` — ${d.specialization}` : ''}

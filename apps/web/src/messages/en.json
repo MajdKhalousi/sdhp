@@ -829,7 +829,10 @@
       },
       "actions": {
         "edit": "Edit Data",
-        "archive": "Archive Patient"
+        "archive": "Archive Patient",
+        "bookAppointment": "Book Appointment",
+        "addToQueue": "Add to Queue",
+        "createInvoice": "Create Invoice"
       },
       "confirmArchive": "Archive this patient?",
       "errors": {

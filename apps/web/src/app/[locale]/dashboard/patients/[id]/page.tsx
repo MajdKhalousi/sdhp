@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, Link } from '@/i18n/navigation';
-import { AlertTriangle, ArrowLeft } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, CalendarClock, UserPlus, Receipt } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { usePatient, useUpdatePatient, useDeletePatient } from '@/hooks/use-patient';
 import { useAuthStore } from '@/store/auth';
@@ -205,9 +205,11 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
   );
 }
 
-const PATIENT_EDIT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+const PATIENT_EDIT_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
 const PATIENT_ARCHIVE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
-const CLINICAL_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE']);
+const CLINICAL_ROLES        = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE']);
+const RECEPTION_ACTION_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+const INVOICE_CREATE_ROLES   = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
 const PENDING_LAB_STATUSES = new Set(['ORDERED', 'SAMPLE_COLLECTED', 'IN_PROGRESS']);
 const PENDING_RADIOLOGY_STATUSES = new Set(['ORDERED', 'SCHEDULED', 'IN_PROGRESS']);
 
@@ -217,9 +219,12 @@ export default function PatientPage({ params }: { params: { id: string } }) {
   const t = useTranslations('patient');
   const tCommon = useTranslations('common');
   const { user } = useAuthStore();
-  const canEdit = user ? PATIENT_EDIT_ROLES.has(user.role) : false;
-  const canArchive = user ? PATIENT_ARCHIVE_ROLES.has(user.role) : false;
-  const hasClinicalRole = user ? CLINICAL_ROLES.has(user.role) : false;
+  const canEdit            = user ? PATIENT_EDIT_ROLES.has(user.role) : false;
+  const canArchive         = user ? PATIENT_ARCHIVE_ROLES.has(user.role) : false;
+  const hasClinicalRole    = user ? CLINICAL_ROLES.has(user.role) : false;
+  const canBookAppointment = user ? RECEPTION_ACTION_ROLES.has(user.role) : false;
+  const canCheckIn         = user ? RECEPTION_ACTION_ROLES.has(user.role) : false;
+  const canCreateInvoice   = user ? INVOICE_CREATE_ROLES.has(user.role) : false;
   const [activeTab, setActiveTab] = useState('overview');
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
@@ -284,6 +289,38 @@ export default function PatientPage({ params }: { params: { id: string } }) {
         <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
       </Link>
       <PatientHeader patient={patient} isLoading={isLoading} />
+
+      {patient && (canBookAppointment || canCheckIn || canCreateInvoice) && (
+        <div className="flex flex-wrap items-center gap-2">
+          {canBookAppointment && (
+            <Link
+              href={`/dashboard/appointments/new?patientId=${id}`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-input bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              <CalendarClock className="h-3.5 w-3.5" />
+              {t('detail.actions.bookAppointment')}
+            </Link>
+          )}
+          {canCheckIn && (
+            <Link
+              href={`/dashboard/queue/check-in?patientId=${id}`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-input bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              <UserPlus className="h-3.5 w-3.5" />
+              {t('detail.actions.addToQueue')}
+            </Link>
+          )}
+          {canCreateInvoice && (
+            <Link
+              href={`/dashboard/invoices/new?patientId=${id}`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-input bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              <Receipt className="h-3.5 w-3.5" />
+              {t('detail.actions.createInvoice')}
+            </Link>
+          )}
+        </div>
+      )}
 
       {patient && (canEdit || canArchive) && (
         <div className="space-y-3">

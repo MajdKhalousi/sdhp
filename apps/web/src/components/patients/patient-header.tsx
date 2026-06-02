@@ -61,9 +61,16 @@ export function PatientHeader({ patient, isLoading }: PatientHeaderProps) {
 
   if (!patient) return null;
 
-  const displayName = locale === 'ar' && patient.firstNameAr
+  const usingArabicPrimary = locale === 'ar' && !!patient.firstNameAr;
+  const displayName = usingArabicPrimary
     ? `${patient.firstNameAr}${patient.lastNameAr ? ` ${patient.lastNameAr}` : ''}`
     : `${patient.firstName} ${patient.lastName}`;
+
+  const secondaryName: string | null = usingArabicPrimary
+    ? `${patient.firstName} ${patient.lastName}`
+    : patient.firstNameAr
+      ? `${patient.firstNameAr}${patient.lastNameAr ? ` ${patient.lastNameAr}` : ''}`
+      : null;
 
   return (
     <div className="rounded-xl border bg-card p-6 shadow-sm">
@@ -87,6 +94,15 @@ export function PatientHeader({ patient, isLoading }: PatientHeaderProps) {
               </Badge>
             )}
           </div>
+
+          {secondaryName && (
+            <p
+              className="mt-0.5 text-sm text-muted-foreground"
+              dir={usingArabicPrimary ? undefined : 'rtl'}
+            >
+              {secondaryName}
+            </p>
+          )}
 
           <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
             <span className="font-mono text-xs" dir="ltr">{patient.mrn}</span>

@@ -829,7 +829,10 @@
       },
       "actions": {
         "edit": "تعديل البيانات",
-        "archive": "أرشفة المريض"
+        "archive": "أرشفة المريض",
+        "bookAppointment": "حجز موعد",
+        "addToQueue": "إضافة للقائمة",
+        "createInvoice": "إنشاء فاتورة"
       },
       "confirmArchive": "هل أنت متأكد من أرشفة هذا المريض؟",
       "errors": {

@@ -10,6 +10,7 @@ import type { CreatePatientInput, UpdatePatientInput, DuplicateCandidate } from 
 import { usePatients, useCreatePatient, useDeletePatient, useCheckDuplicatePatient } from '@/hooks/use-patient';
 import { PatientForm } from '@/components/patients/patient-form';
 import { DuplicateWarning } from '@/components/patients/duplicate-warning';
+import { DiscardConfirm } from '@/components/patients/discard-confirm';
 import { useAuthStore } from '@/store/auth';
 import { formatDateDisplay } from '@/lib/format-date';
 
@@ -33,12 +34,22 @@ export default function PatientsPage() {
   const [archiveConfirmId, setArchiveConfirmId] = useState<string | null>(null);
   const [pendingPayload, setPendingPayload] = useState<CreatePatientInput | null>(null);
   const [duplicateMatches, setDuplicateMatches] = useState<DuplicateCandidate[]>([]);
+  const [isCreateFormDirty, setIsCreateFormDirty] = useState(false);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   // 350 ms debounce — avoids firing on every keystroke
   useEffect(() => {
     const id = setTimeout(() => setDebouncedSearch(search.replace(/\s+/g, ' ').trim()), 350);
     return () => clearTimeout(id);
   }, [search]);
+
+  // Warn browser before unload when the create form has unsaved data
+  useEffect(() => {
+    if (!isCreateOpen || !isCreateFormDirty) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isCreateOpen, isCreateFormDirty]);
 
   const { data, isLoading, isError, error, refetch } = usePatients(debouncedSearch);
   const createPatient = useCreatePatient();
@@ -47,12 +58,27 @@ export default function PatientsPage() {
 
   const patients = data?.data ?? [];
 
+  function closeCreateForm() {
+    setIsCreateOpen(false);
+    setCreateError(null);
+    setDuplicateMatches([]);
+    setPendingPayload(null);
+    setIsCreateFormDirty(false);
+    setShowDiscardConfirm(false);
+  }
+
+  function requestCloseCreateForm() {
+    if (isCreateFormDirty || duplicateMatches.length > 0) {
+      setShowDiscardConfirm(true);
+    } else {
+      closeCreateForm();
+    }
+  }
+
   async function doCreate(payload: CreatePatientInput) {
     try {
       await createPatient.mutateAsync(payload);
-      setIsCreateOpen(false);
-      setPendingPayload(null);
-      setDuplicateMatches([]);
+      closeCreateForm();
     } catch (err) {
       setCreateError(err instanceof Error ? err.message : t('list.errors.createFailed'));
     }
@@ -144,7 +170,13 @@ export default function PatientsPage() {
               {createError}
             </p>
           )}
-          {duplicateMatches.length > 0 && (
+          {showDiscardConfirm && (
+            <DiscardConfirm
+              onStay={() => setShowDiscardConfirm(false)}
+              onDiscard={closeCreateForm}
+            />
+          )}
+          {!showDiscardConfirm && duplicateMatches.length > 0 && (
             <DuplicateWarning
               matches={duplicateMatches}
               onCreateAnyway={handleCreateAnyway}
@@ -155,7 +187,8 @@ export default function PatientsPage() {
           <PatientForm
             mode="create"
             onSubmit={handleCreate}
-            onCancel={() => { setIsCreateOpen(false); setCreateError(null); setDuplicateMatches([]); setPendingPayload(null); }}
+            onCancel={requestCloseCreateForm}
+            onDirtyChange={setIsCreateFormDirty}
             isSubmitting={createPatient.isPending || checkDuplicate.isPending}
           />
         </div>

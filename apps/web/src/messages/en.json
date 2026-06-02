@@ -966,6 +966,14 @@
         "createAnyway": "Create Anyway",
         "viewPatient": "View Patient"
       }
+    },
+    "unsaved": {
+      "heading": "Unsaved patient information",
+      "description": "You have entered patient information that has not been saved. If you leave now, these changes will be lost.",
+      "actions": {
+        "stay": "Stay",
+        "discard": "Leave without saving"
+      }
     }
   },
   "doctorWorkspace": {

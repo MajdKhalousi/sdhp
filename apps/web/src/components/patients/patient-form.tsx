@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import type {
   Patient,
@@ -14,6 +14,7 @@ interface PatientFormProps {
   initialPatient?: Patient;
   onSubmit: (data: CreatePatientInput | UpdatePatientInput) => Promise<void> | void;
   onCancel?: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
   isSubmitting?: boolean;
 }
 
@@ -120,11 +121,24 @@ export function PatientForm({
   initialPatient,
   onSubmit,
   onCancel,
+  onDirtyChange,
   isSubmitting = false,
 }: PatientFormProps) {
   const t = useTranslations('patient.form');
   const [values, setValues] = useState<FormState>(() => initState(mode, initialPatient));
   const [errors, setErrors] = useState<FormErrors>({});
+
+  const initialValuesRef = useRef(initState(mode, initialPatient));
+  const onDirtyChangeRef = useRef(onDirtyChange);
+  onDirtyChangeRef.current = onDirtyChange;
+
+  const isDirty = (Object.keys(values) as (keyof FormState)[]).some(
+    (k) => values[k] !== initialValuesRef.current[k],
+  );
+
+  useEffect(() => {
+    onDirtyChangeRef.current?.(isDirty);
+  }, [isDirty]);
 
   function set(field: keyof FormState, value: string) {
     setValues((prev) => ({ ...prev, [field]: value }));

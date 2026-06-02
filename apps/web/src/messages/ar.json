@@ -197,6 +197,7 @@
       },
       "select": {
         "selectPatient": "اختر مريضاً",
+        "noPatients": "لا يوجد مرضى مطابقون",
         "selectDoctor": "اختر طبيباً",
         "loadingPatients": "تحميل المرضى…",
         "loadingDoctors": "تحميل الأطباء…",
@@ -358,6 +359,7 @@
       },
       "select": {
         "selectPatient": "اختر مريضاً",
+        "noPatients": "لا يوجد مرضى مطابقون",
         "selectDoctor": "اختر طبيباً",
         "loadingPatients": "تحميل المرضى…",
         "loadingDoctors": "تحميل الأطباء…",

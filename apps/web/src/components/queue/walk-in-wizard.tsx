@@ -5,6 +5,7 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useCreateAppointment, usePatientsList, useDoctorsList, useVisitTypesList } from '@/hooks/use-appointments';
 import { useCheckIn } from '@/hooks/use-queue';
+import { PatientCombobox } from '@/components/appointments/patient-combobox';
 
 interface Step1Form {
   patientId: string;
@@ -35,7 +36,6 @@ export function WalkInWizard() {
   const locale = useLocale();
   const [step, setStep] = useState<1 | 2>(1);
   const [form, setForm] = useState<Step1Form>(() => ({ ...INITIAL, scheduledAt: nowDateTimeLocal() }));
-  const [patientSearch, setPatientSearch] = useState('');
   const [validationError, setValidationError] = useState('');
   const [createdAppointmentId, setCreatedAppointmentId] = useState('');
 
@@ -50,31 +50,11 @@ export function WalkInWizard() {
   const activeDoctors  = (doctorsData?.data  ?? []).filter((d) => d.isActive !== false);
   const activeVisitTypes = (visitTypesData ?? []).filter((vt) => vt.isActive);
 
-  const searchNorm = patientSearch.toLowerCase().replace(/\s+/g, ' ').trim();
-  const filteredPatients = searchNorm
-    ? activePatients.filter((p) => {
-        const full = `${p.firstName} ${p.lastName}`.toLowerCase();
-        const rev  = `${p.lastName} ${p.firstName}`.toLowerCase();
-        return (
-          full.includes(searchNorm) ||
-          rev.includes(searchNorm) ||
-          (p.mrn ?? '').toLowerCase().includes(searchNorm) ||
-          (p.phone ?? '').includes(patientSearch.trim())
-        );
-      })
-    : activePatients;
-
   function set(field: keyof Step1Form) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
       setValidationError('');
     };
-  }
-
-  function handlePatientSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setPatientSearch(e.target.value);
-    setForm((prev) => ({ ...prev, patientId: '' }));
-    setValidationError('');
   }
 
   function handleDoctorChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -228,33 +208,20 @@ export function WalkInWizard() {
         </div>
       )}
 
-      {/* Patient search + select */}
+      {/* Patient */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground" htmlFor="wi-patientId">
           {t('fields.patientLabel')} <span className="text-destructive">*</span>
         </label>
-        <input
-          type="text"
-          value={patientSearch}
-          onChange={handlePatientSearchChange}
-          disabled={creatingAppt || patientsLoading}
-          placeholder={t('fields.patientSearchPlaceholder')}
-          className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
-        />
-        <select
+        <PatientCombobox
           id="wi-patientId"
+          patients={activePatients}
           value={form.patientId}
-          onChange={set('patientId')}
+          onChange={(patientId) => { setForm((prev) => ({ ...prev, patientId })); setValidationError(''); }}
           disabled={creatingAppt || patientsLoading}
-          className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
-        >
-          <option value="">{patientsLoading ? t('select.loadingPatients') : t('select.selectPatient')}</option>
-          {filteredPatients.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.firstName} {p.lastName} — {p.mrn}
-            </option>
-          ))}
-        </select>
+          placeholder={patientsLoading ? t('select.loadingPatients') : t('select.selectPatient')}
+          noResultsText={t('select.noPatients')}
+        />
       </div>
 
       {/* Doctor */}

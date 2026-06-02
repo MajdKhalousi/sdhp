@@ -197,6 +197,7 @@
       },
       "select": {
         "selectPatient": "Select a patient",
+        "noPatients": "No patients found",
         "selectDoctor": "Select a doctor",
         "loadingPatients": "Loading patients…",
         "loadingDoctors": "Loading doctors…",
@@ -358,6 +359,7 @@
       },
       "select": {
         "selectPatient": "Select a patient",
+        "noPatients": "No patients found",
         "selectDoctor": "Select a doctor",
         "loadingPatients": "Loading patients…",
         "loadingDoctors": "Loading doctors…",

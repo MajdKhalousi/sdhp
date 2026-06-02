@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useCreateAppointment, usePatientsList, useDoctorsList, useVisitTypesList } from '@/hooks/use-appointments';
 import { VisitTypeSelect } from './visit-type-select';
 import { AvailableSlotsPicker } from './available-slots-picker';
+import { PatientCombobox } from './patient-combobox';
 import type { VisitType } from '@/types/clinic-settings';
 
 interface FormState {
@@ -54,7 +55,6 @@ export function AppointmentForm({
   });
   const [selectedVisitType, setSelectedVisitType] = useState<VisitType | null>(null);
   const [validationError, setValidationError] = useState('');
-  const [patientSearch, setPatientSearch] = useState('');
 
   const { mutate, isPending, error: mutationError } = useCreateAppointment();
   const { data: patientsData, isLoading: patientsLoading } = usePatientsList();
@@ -82,21 +82,6 @@ export function AppointmentForm({
         ),
     [patientsData],
   );
-
-  const searchNorm = patientSearch.toLowerCase().replace(/\s+/g, ' ').trim();
-  const filteredPatients = useMemo(() => {
-    if (!searchNorm) return activePatients;
-    return activePatients.filter((p) => {
-      const full = `${p.firstName} ${p.lastName}`.toLowerCase();
-      const rev  = `${p.lastName} ${p.firstName}`.toLowerCase();
-      return (
-        full.includes(searchNorm) ||
-        rev.includes(searchNorm) ||
-        (p.mrn ?? '').toLowerCase().includes(searchNorm) ||
-        (p.phone ?? '').includes(patientSearch.trim())
-      );
-    });
-  }, [activePatients, searchNorm, patientSearch]);
 
   const activeDoctors = (doctorsData?.data ?? []).filter(
     (d) => d.isActive !== false,
@@ -170,34 +155,15 @@ export function AppointmentForm({
         <label className="text-sm font-medium text-foreground" htmlFor="patientId">
           {t('fields.patientLabel')} <span className="text-destructive">*</span>
         </label>
-        {!initialPatientId && (
-          <input
-            type="text"
-            value={patientSearch}
-            onChange={(e) => {
-              setPatientSearch(e.target.value);
-              setForm((prev) => ({ ...prev, patientId: '' }));
-              setValidationError('');
-            }}
-            disabled={isPending || patientsLoading}
-            placeholder={t('fields.patientSearchPlaceholder')}
-            className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
-          />
-        )}
-        <select
+        <PatientCombobox
           id="patientId"
+          patients={activePatients}
           value={form.patientId}
-          onChange={(e) => { setForm((prev) => ({ ...prev, patientId: e.target.value })); setValidationError(''); }}
+          onChange={(patientId) => { setForm((prev) => ({ ...prev, patientId })); setValidationError(''); }}
           disabled={isPending || patientsLoading || !!initialPatientId}
-          className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
-        >
-          <option value="">{patientsLoading ? t('select.loadingPatients') : t('select.selectPatient')}</option>
-          {filteredPatients.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.firstName} {p.lastName} — {p.mrn}
-            </option>
-          ))}
-        </select>
+          placeholder={patientsLoading ? t('select.loadingPatients') : t('select.selectPatient')}
+          noResultsText={t('select.noPatients')}
+        />
       </div>
 
       {/* Doctor */}

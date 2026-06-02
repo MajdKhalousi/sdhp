@@ -2067,5 +2067,18 @@
       "loadFailed": "Failed to load billing reports"
     },
     "forbidden": "You do not have permission to view billing reports"
+  },
+  "error": {
+    "notFound": {
+      "title": "Page not found",
+      "description": "The page you are looking for does not exist or may have been moved.",
+      "backToDashboard": "Back to Dashboard"
+    },
+    "serverError": {
+      "title": "Something went wrong",
+      "description": "An unexpected error occurred. Please try again or contact support if the problem persists.",
+      "retry": "Try again",
+      "backToDashboard": "Back to Dashboard"
+    }
   }
 }

@@ -440,6 +440,7 @@
     },
     "actions": {
       "saveChanges": "Save Changes",
+      "saveAndComplete": "Save & Complete",
       "saving": "Saving…",
       "savedAt": "Saved at {time}",
       "closeVisit": "Complete Visit",
@@ -500,6 +501,7 @@
       "alreadyBooked": "Follow-up Booked",
       "with": "with",
       "viewAppointments": "View Appointments",
+      "saveToBecomeActive": "Save the encounter to activate follow-up booking.",
       "form": {
         "doctorLabel": "Doctor",
         "dateLabel": "Date",

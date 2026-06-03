@@ -11,6 +11,8 @@ interface EndEncounterButtonProps {
   disabled?: boolean;
   disabledReason?: string;
   hasDiagnosis?: boolean;
+  confirmOpen?: boolean;
+  onConfirmClose?: () => void;
 }
 
 export function EndEncounterButton({
@@ -19,33 +21,16 @@ export function EndEncounterButton({
   disabled = false,
   disabledReason,
   hasDiagnosis = true,
+  confirmOpen,
+  onConfirmClose,
 }: EndEncounterButtonProps) {
   const t = useTranslations('encounter');
   const tCommon = useTranslations('common');
   const router = useRouter();
-  const [confirming, setConfirming] = useState(false);
+  const [internalConfirming, setInternalConfirming] = useState(false);
+  const confirming = !!confirmOpen || internalConfirming;
   const [error, setError] = useState('');
   const { mutate, isPending } = useUpdateEncounter();
-
-  if (alreadyEnded) {
-    return (
-      <span className="text-xs text-muted-foreground">{t('close.alreadyEnded')}</span>
-    );
-  }
-
-  if (disabled) {
-    return (
-      <div className="flex flex-col gap-1">
-        <button
-          disabled
-          className="inline-flex h-9 items-center rounded-md border border-green-600/40 px-4 text-sm font-medium text-green-700 opacity-60 dark:text-green-400"
-        >
-          {t('actions.closeVisit')}
-        </button>
-        {disabledReason && <p className="text-xs text-muted-foreground">{disabledReason}</p>}
-      </div>
-    );
-  }
 
   function handleConfirm() {
     setError('');
@@ -54,13 +39,27 @@ export function EndEncounterButton({
       {
         onSuccess: () => router.push('/dashboard/doctor/queue'),
         onError: (e) => {
-          setConfirming(false);
+          setInternalConfirming(false);
+          onConfirmClose?.();
           setError(e instanceof Error ? e.message : t('close.failed'));
         },
       },
     );
   }
 
+  function handleCancelConfirm() {
+    setInternalConfirming(false);
+    onConfirmClose?.();
+  }
+
+  if (alreadyEnded) {
+    return (
+      <span className="text-xs text-muted-foreground">{t('close.alreadyEnded')}</span>
+    );
+  }
+
+  // confirming check is before disabled so that Save & Complete can reach this
+  // state immediately after save succeeds (at which point disabled becomes false)
   if (confirming) {
     return (
       <div className="flex flex-col gap-2">
@@ -82,7 +81,7 @@ export function EndEncounterButton({
             {isPending ? t('actions.closing') : t('actions.closeVisit')}
           </button>
           <button
-            onClick={() => setConfirming(false)}
+            onClick={handleCancelConfirm}
             disabled={isPending}
             className="h-8 rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-60"
           >
@@ -93,10 +92,24 @@ export function EndEncounterButton({
     );
   }
 
+  if (disabled) {
+    return (
+      <div className="flex flex-col gap-1">
+        <button
+          disabled
+          className="inline-flex h-9 items-center rounded-md border border-green-600/40 px-4 text-sm font-medium text-green-700 opacity-60 dark:text-green-400"
+        >
+          {t('actions.closeVisit')}
+        </button>
+        {disabledReason && <p className="text-xs text-muted-foreground">{disabledReason}</p>}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-1">
       <button
-        onClick={() => setConfirming(true)}
+        onClick={() => setInternalConfirming(true)}
         className="inline-flex h-9 items-center rounded-md border border-green-600/40 px-4 text-sm font-medium text-green-700 transition-colors hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-950/30"
       >
         {t('actions.closeVisit')}

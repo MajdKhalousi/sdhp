@@ -130,6 +130,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [saveError, setSaveError] = useState('');
   const [isDirty, setIsDirty] = useState(false);
+  const [pendingComplete, setPendingComplete] = useState(false);
 
   // isDirtyRef: true when the user has unsaved edits; blocks server re-sync
   // so a background refetch never overwrites in-progress work.
@@ -167,7 +168,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
     setSaveError('');
   }
 
-  function handleSave() {
+  function handleSave(onSaved?: () => void) {
     if (!form || saving) return; // guard against double-submit
     setSaveError('');
 
@@ -189,6 +190,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
           setIsDirty(false);
           onDirtyChange?.(false);
           setSavedAt(formatTimeDisplay(new Date()));
+          onSaved?.();
         },
         onError: (e) => setSaveError(e instanceof Error ? e.message : 'Save failed'),
       },
@@ -499,6 +501,13 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
               disabled={readOnly}
               className="h-9 w-48 rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
+            {form.followUpDate &&
+             form.followUpDate !== (encounter.followUpDate?.slice(0, 10) ?? '') &&
+             !isEnded && (
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                {t('followUpBooking.saveToBecomeActive')}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -641,7 +650,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
             {canEdit && (
               <div className="flex items-center gap-3">
                 <button
-                  onClick={handleSave}
+                  onClick={() => handleSave()}
                   disabled={saving}
                   className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
                 >
@@ -663,13 +672,25 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
               </div>
             )}
 
-            {canEdit && (
+            {canEdit && isDirty && !pendingComplete && (
+              <button
+                onClick={() => handleSave(() => setPendingComplete(true))}
+                disabled={saving}
+                className="inline-flex h-9 items-center gap-2 rounded-md bg-green-600 px-4 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-green-700 dark:hover:bg-green-600"
+              >
+                {saving ? t('actions.saving') : t('actions.saveAndComplete')}
+              </button>
+            )}
+
+            {canEdit && (!isDirty || pendingComplete) && (
               <EndEncounterButton
                 encounterId={encounterId}
                 alreadyEnded={isEnded}
                 disabled={isDirty || saving}
                 disabledReason={isDirty ? t('actions.saveBeforeClosing') : undefined}
                 hasDiagnosis={!!form.diagnosis.trim()}
+                confirmOpen={pendingComplete}
+                onConfirmClose={() => setPendingComplete(false)}
               />
             )}
           </div>

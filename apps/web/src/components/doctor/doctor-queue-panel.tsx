@@ -5,6 +5,7 @@ import { RefreshCw, Stethoscope } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useQueue } from '@/hooks/use-queue';
 import { useInvoices } from '@/hooks/use-invoices';
+import { useVisitTypesList } from '@/hooks/use-appointments';
 import { QueueStatusBadge } from '@/components/queue/queue-status-badge';
 import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import { StartEncounterButton } from './start-encounter-button';
@@ -61,6 +62,7 @@ export function DoctorQueuePanel() {
 
   const { from, to } = useMemo(() => getTodayRange(), []);
   const { data: invoicesData } = useInvoices({ from, to, limit: 50 });
+  const { data: visitTypesData } = useVisitTypesList();
   const invoiceMap = useMemo(() => {
     const map = new Map<string, Invoice>();
     for (const inv of invoicesData?.data ?? []) {
@@ -145,6 +147,12 @@ export function DoctorQueuePanel() {
           const waited = waitMins(entry.createdAt);
           const isLong = waited >= 20;
           const patientInvoice = invoiceMap.get(patient.id);
+          const visitType = appointment.visitTypeId
+            ? (visitTypesData?.find((vt) => vt.id === appointment.visitTypeId) ?? null)
+            : null;
+          const visitTypeName = visitType
+            ? ((locale === 'ar' && visitType.nameAr) || visitType.name)
+            : null;
           return (
             <div key={entry.id} className="rounded-xl border border-border bg-card p-4">
               <div className="flex items-start gap-4">
@@ -164,6 +172,9 @@ export function DoctorQueuePanel() {
                     <span className={isLong ? 'font-medium text-amber-600 dark:text-amber-400' : ''}>
                       {t('card.waited', { duration: relativeWait(entry.createdAt, t('card.justNow')) })}
                     </span>
+                    {visitTypeName && (
+                      <span className="font-medium text-foreground/80">{visitTypeName}</span>
+                    )}
                   </div>
                   <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                     <QueueStatusBadge status={entry.status} />

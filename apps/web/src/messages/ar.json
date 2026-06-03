@@ -440,6 +440,7 @@
     },
     "actions": {
       "saveChanges": "حفظ التغييرات",
+      "saveAndComplete": "حفظ وإنهاء الزيارة",
       "saving": "جاري الحفظ…",
       "savedAt": "حُفظ في {time}",
       "closeVisit": "إنهاء الزيارة",
@@ -500,6 +501,7 @@
       "alreadyBooked": "تم حجز المراجعة",
       "with": "مع",
       "viewAppointments": "عرض المواعيد",
+      "saveToBecomeActive": "احفظ الزيارة لتفعيل حجز المراجعة.",
       "form": {
         "doctorLabel": "الطبيب",
         "dateLabel": "التاريخ",

@@ -1416,7 +1416,8 @@
       "subtitle": "Create a draft invoice for a patient",
       "fields": {
         "patient": "Patient",
-        "patientPlaceholder": "Select a patient",
+        "patientPlaceholder": "Search by name, phone, or MRN",
+        "patientNoResults": "No patients found",
         "dueDate": "Due Date",
         "notes": "Notes",
         "notesPlaceholder": "Optional notes about this invoice"

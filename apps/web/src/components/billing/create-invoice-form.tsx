@@ -5,6 +5,7 @@ import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useCreateInvoice } from '@/hooks/use-invoices';
 import { usePatientsList } from '@/hooks/use-appointments';
+import { PatientCombobox } from '@/components/appointments/patient-combobox';
 import type { CreateInvoiceDto } from '@/types/invoice';
 
 interface Props {
@@ -66,22 +67,17 @@ export function CreateInvoiceForm({ initialPatientId, appointmentId }: Props = {
         <label className="text-xs font-medium text-foreground">
           {t('fields.patient')} <span className="text-destructive">*</span>
         </label>
-        <select
+        <PatientCombobox
+          patients={patients}
           value={patientId}
-          onChange={(e) => {
-            setPatientId(e.target.value);
+          onChange={(id) => {
+            setPatientId(id);
             setValidationError('');
           }}
           disabled={isPending || patientsLoading || !!initialPatientId}
-          className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
-        >
-          <option value="">{t('fields.patientPlaceholder')}</option>
-          {patients.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.firstName} {p.lastName} — {p.mrn}
-            </option>
-          ))}
-        </select>
+          placeholder={t('fields.patientPlaceholder')}
+          noResultsText={t('fields.patientNoResults')}
+        />
       </div>
 
       <div className="space-y-1">

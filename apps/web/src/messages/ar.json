@@ -1416,7 +1416,8 @@
       "subtitle": "إنشاء مسودة فاتورة لمريض",
       "fields": {
         "patient": "المريض",
-        "patientPlaceholder": "اختر مريضاً",
+        "patientPlaceholder": "ابحث بالاسم أو الهاتف أو الرقم الطبي",
+        "patientNoResults": "لا توجد نتائج",
         "dueDate": "تاريخ الاستحقاق",
         "notes": "الملاحظات",
         "notesPlaceholder": "ملاحظات اختيارية حول هذه الفاتورة"

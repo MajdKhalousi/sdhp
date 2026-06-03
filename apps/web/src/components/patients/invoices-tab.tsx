@@ -1,12 +1,15 @@
 'use client';
 
 import { Link } from '@/i18n/navigation';
-import { Receipt } from 'lucide-react';
+import { Plus, Receipt } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { usePatientInvoices } from '@/hooks/use-invoices';
+import { useAuthStore } from '@/store/auth';
 import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateDisplay } from '@/lib/format-date';
+
+const INVOICE_CREATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
 
 function formatAmount(value: string, locale: string): string {
   const num = parseFloat(value);
@@ -26,11 +29,26 @@ interface InvoicesTabProps {
 
 export function InvoicesTab({ patientId }: InvoicesTabProps) {
   const t = useTranslations('invoice.list');
+  const tActions = useTranslations('invoice.actions');
   const tError = useTranslations('patient.detail.error');
   const tCommon = useTranslations('common');
   const locale = useLocale();
+  const { user } = useAuthStore();
+  const canCreate = user ? INVOICE_CREATE_ROLES.has(user.role) : false;
 
   const { data = [], isLoading, isError, error, refetch } = usePatientInvoices(patientId);
+
+  const newInvoiceBtn = canCreate && (
+    <div className="flex justify-end">
+      <Link
+        href={`/dashboard/invoices/new?patientId=${patientId}`}
+        className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+      >
+        <Plus className="h-3.5 w-3.5" />
+        {tActions('newInvoice')}
+      </Link>
+    </div>
+  );
 
   if (isLoading) {
     return (
@@ -61,15 +79,20 @@ export function InvoicesTab({ patientId }: InvoicesTabProps) {
 
   if (data.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
-        <Receipt className="h-8 w-8 text-muted-foreground/50" />
-        <p className="text-sm text-muted-foreground">{t('empty.patientNoData')}</p>
+      <div className="space-y-4">
+        {newInvoiceBtn}
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
+          <Receipt className="h-8 w-8 text-muted-foreground/50" />
+          <p className="text-sm text-muted-foreground">{t('empty.patientNoData')}</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border">
+    <div className="space-y-4">
+      {newInvoiceBtn}
+      <div className="overflow-hidden rounded-xl border border-border">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px]">
           <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
@@ -121,6 +144,7 @@ export function InvoicesTab({ patientId }: InvoicesTabProps) {
           </tbody>
         </table>
       </div>
+    </div>
     </div>
   );
 }

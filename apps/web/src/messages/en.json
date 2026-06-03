@@ -1407,7 +1407,9 @@
       "cancelReason": "Cancel Reason",
       "cancelReasonPlaceholder": "Optional reason for cancellation",
       "cancelConfirm": "Cancel this invoice? This action cannot be undone.",
-      "cancelSubmit": "Confirm Cancellation"
+      "cancelSubmit": "Confirm Cancellation",
+      "openPatient": "Open Patient File",
+      "openAppointment": "Open Appointment"
     },
     "form": {
       "title": "New Invoice",

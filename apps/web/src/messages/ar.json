@@ -1407,7 +1407,9 @@
       "cancelReason": "سبب الإلغاء",
       "cancelReasonPlaceholder": "سبب اختياري للإلغاء",
       "cancelConfirm": "هل تريد إلغاء هذه الفاتورة؟ لا يمكن التراجع عن هذا الإجراء.",
-      "cancelSubmit": "تأكيد الإلغاء"
+      "cancelSubmit": "تأكيد الإلغاء",
+      "openPatient": "فتح ملف المريض",
+      "openAppointment": "فتح الموعد"
     },
     "form": {
       "title": "فاتورة جديدة",

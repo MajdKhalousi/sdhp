@@ -324,6 +324,7 @@ interface InvoiceDetailProps {
 
 export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
   const t = useTranslations('invoice.detail');
+  const tActions = useTranslations('invoice.actions');
   const tCommon = useTranslations('common');
   const locale = useLocale();
 
@@ -391,7 +392,12 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
               <InvoiceStatusBadge status={invoice.status} />
             </div>
             <p className="text-sm text-muted-foreground">
-              {invoice.patient.firstName} {invoice.patient.lastName}
+              <Link
+                href={`/dashboard/patients/${invoice.patientId}`}
+                className="text-primary hover:underline"
+              >
+                {invoice.patient.firstName} {invoice.patient.lastName}
+              </Link>
               <span className="mx-1.5 text-muted-foreground/40">·</span>
               <span dir="ltr">{invoice.patient.mrn}</span>
             </p>
@@ -400,6 +406,14 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
 
         {/* Actions */}
         <div className="flex flex-wrap items-center gap-2">
+          {invoice.appointmentId && (
+            <Link
+              href={`/dashboard/appointments/${invoice.appointmentId}`}
+              className="inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent"
+            >
+              {tActions('openAppointment')}
+            </Link>
+          )}
           {isDraft && <IssueButton invoice={invoice} />}
           {isCancellable && canCancel && <CancelInvoiceDialog invoiceId={invoice.id} />}
         </div>

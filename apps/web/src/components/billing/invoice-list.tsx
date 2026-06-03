@@ -13,7 +13,7 @@ import { formatDateDisplay } from '@/lib/format-date';
 import type { InvoiceStatus } from '@/types/invoice';
 
 const STATUS_TABS = ['', 'DRAFT', 'ISSUED', 'PARTIALLY_PAID', 'PAID', 'CANCELLED'] as const;
-const INVOICE_CREATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
+const INVOICE_CREATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
 type StatusTab = (typeof STATUS_TABS)[number];
 
 function formatAmount(value: string, locale: string): string {

@@ -135,7 +135,7 @@ export function FollowUpList() {
         <option value="">{tCommon('filter.allDoctors')}</option>
         {doctorsData?.data.map((d) => (
           <option key={d.id} value={d.id}>
-            {tCommon('doctorPrefix')} {d.user.firstName} {d.user.lastName}
+            {t('doctorPrefix')} {d.user.firstName} {d.user.lastName}
           </option>
         ))}
       </select>
@@ -287,7 +287,7 @@ export function FollowUpList() {
                         {/* Doctor */}
                         <td className="px-4 py-3">
                           <p className="text-sm">
-                            {tCommon('doctorPrefix')} {item.doctor.firstName} {item.doctor.lastName}
+                            {t('doctorPrefix')} {item.doctor.firstName} {item.doctor.lastName}
                           </p>
                           {item.doctor.specialization && (
                             <p className="text-xs text-muted-foreground">{item.doctor.specialization}</p>
@@ -317,7 +317,7 @@ export function FollowUpList() {
                                 {formatDateTimeDisplay(item.linkedAppointment.scheduledAt)}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                {tCommon('doctorPrefix')} {item.linkedAppointment.doctor.firstName} {item.linkedAppointment.doctor.lastName}
+                                {t('doctorPrefix')} {item.linkedAppointment.doctor.firstName} {item.linkedAppointment.doctor.lastName}
                               </p>
                             </div>
                           ) : (

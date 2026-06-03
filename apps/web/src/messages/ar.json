@@ -2107,7 +2107,8 @@
     },
     "error": {
       "loadFailed": "فشل تحميل المراجعات"
-    }
+    },
+    "doctorPrefix": "د."
   },
   "billingReports": {
     "title": "تقارير الفوترة",

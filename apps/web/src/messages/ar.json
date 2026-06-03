@@ -782,7 +782,11 @@
         "radiology": "الأشعة",
         "files": "الملفات الطبية",
         "reports": "التقارير",
-        "invoices": "الفواتير"
+        "invoices": "الفواتير",
+        "appointments": "المواعيد"
+      },
+      "appointments": {
+        "empty": "لا توجد مواعيد لهذا المريض."
       },
       "overview": {
         "demographics": "البيانات الأساسية",

@@ -782,7 +782,11 @@
         "radiology": "Radiology",
         "files": "Medical Files",
         "reports": "Reports",
-        "invoices": "Invoices"
+        "invoices": "Invoices",
+        "appointments": "Appointments"
+      },
+      "appointments": {
+        "empty": "No appointments found for this patient."
       },
       "overview": {
         "demographics": "Demographics",

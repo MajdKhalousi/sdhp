@@ -20,6 +20,7 @@ import { LabOrdersTab } from '@/components/patients/lab-orders-tab';
 import { RadiologyOrdersTab } from '@/components/patients/radiology-orders-tab';
 import { ClinicalReportsTab } from '@/components/patients/clinical-reports-tab';
 import { InvoicesTab } from '@/components/patients/invoices-tab';
+import { PatientAppointmentsTab } from '@/components/patients/patient-appointments-tab';
 import { PatientClinicalSummary } from '@/components/patients/patient-clinical-summary';
 import { PatientSafetyAlerts } from '@/components/patients/patient-safety-alerts';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -283,6 +284,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
 
   const TABS: TabItem[] = [
     { value: 'overview',      label: t('detail.tabs.overview')      },
+    { value: 'appointments',  label: t('detail.tabs.appointments')  },
     { value: 'timeline',      label: t('detail.tabs.timeline')      },
     { value: 'prescriptions', label: t('detail.tabs.prescriptions') },
     { value: 'labs',          label: t('detail.tabs.labs')          },
@@ -443,6 +445,10 @@ export default function PatientPage({ params }: { params: { id: string } }) {
               </div>
             )}
           </div>
+        </TabPanel>
+
+        <TabPanel value="appointments" activeValue={activeTab}>
+          <PatientAppointmentsTab patientId={id} />
         </TabPanel>
 
         <TabPanel value="timeline" activeValue={activeTab}>

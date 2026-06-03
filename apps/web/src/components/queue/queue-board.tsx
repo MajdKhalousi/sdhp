@@ -17,6 +17,9 @@ import { formatTimeDisplay } from '@/lib/format-date';
 
 const SKIPPABLE: QueueStatus[] = ['WAITING', 'CALLED'];
 
+const QUEUE_OPERATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY']);
+const QUEUE_MARK_DONE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY', 'NURSE']);
+
 function getTodayRange() {
   const now = new Date();
   const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
@@ -66,7 +69,8 @@ export function QueueBoard() {
   const { data: visitTypesData } = useVisitTypesList();
   const { mutate: markDone, isPending: markingDone } = useUpdateQueueEntry();
   const role = useAuthStore((state) => state.user?.role);
-  const canPatchQueue = ['SUPER_ADMIN', 'ORG_ADMIN'].includes(role ?? '');
+  const canOperateQueue = role ? QUEUE_OPERATE_ROLES.has(role) : false;
+  const canMarkDone = role ? QUEUE_MARK_DONE_ROLES.has(role) : false;
   const activeDoctors = (doctorsData?.data ?? []).filter((d) => d.isActive !== false);
   const getVisitTypeName = (visitTypeId?: string | null) => {
     if (!visitTypeId) return undefined;
@@ -231,13 +235,13 @@ export function QueueBoard() {
               invoice={invoiceMap.get(entry.appointment.patient.id)}
               visitTypeName={getVisitTypeName(entry.appointment.visitTypeId)}
             />
-            {SKIPPABLE.includes(entry.status) && (
+            {SKIPPABLE.includes(entry.status) && canOperateQueue && (
               <div className="flex items-center justify-end gap-2 px-1">
                 <AdvanceQueueButton entryId={entry.id} status={entry.status} />
                 <SkipQueueButton entryId={entry.id} />
               </div>
             )}
-            {entry.status === 'IN_PROGRESS' && canPatchQueue && (
+            {entry.status === 'IN_PROGRESS' && canMarkDone && (
               <div className="flex items-center justify-end gap-2 px-1">
                 <button
                   onClick={() => markDone({ id: entry.id, dto: { status: 'DONE' } })}

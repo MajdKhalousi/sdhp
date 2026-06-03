@@ -30,7 +30,7 @@ const APPOINTMENT_MUTATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY
 const BILLING_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY', 'ACCOUNTANT']);
 
 const ALL_STATUSES: AppointmentStatus[] = [
-  'SCHEDULED', 'CONFIRMED', 'CHECKED_IN', 'IN_QUEUE',
+  'SCHEDULED', 'CONFIRMED', 'IN_QUEUE',
   'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW',
 ];
 
@@ -53,7 +53,7 @@ export function AppointmentList() {
   const [status, setStatus] = useState<AppointmentStatus | ''>(
     (searchParams.get('status') ?? '') as AppointmentStatus | '',
   );
-  const [date, setDate] = useState(searchParams.get('date') ?? '');
+  const [date, setDate] = useState(searchParams.get('date') ?? todayStr());
   const [doctorId, setDoctorId] = useState('');
   const [page, setPage] = useState(1);
   const [rescheduleAppt, setRescheduleAppt] = useState<Appointment | null>(null);
@@ -134,9 +134,9 @@ export function AppointmentList() {
         ))}
       </select>
 
-      {(status || date || doctorId) && (
+      {(status || date !== todayStr() || doctorId) && (
         <button
-          onClick={() => { setStatus(''); setDate(''); setDoctorId(''); setPage(1); }}
+          onClick={() => { setStatus(''); setDate(todayStr()); setDoctorId(''); setPage(1); }}
           className="h-8 rounded-md border px-3 text-xs text-muted-foreground transition-colors hover:bg-accent"
         >
           {tCommon('filter.clearFilters')}
@@ -217,7 +217,7 @@ export function AppointmentList() {
           <CalendarX2 className="h-8 w-8 text-muted-foreground/50" />
           <p className="text-sm font-medium">{t('list.empty.heading')}</p>
           <p className="text-xs text-muted-foreground">
-            {status || date || doctorId
+            {status || date !== todayStr() || doctorId
               ? t('list.empty.withFilters')
               : t('list.empty.noData')}
           </p>

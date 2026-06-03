@@ -134,7 +134,7 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
           onClick={onCancel}
           disabled={isSubmitting}
           className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-accent disabled:opacity-50"
-          aria-label="Close"
+          aria-label={t('close')}
         >
           <X className="h-3.5 w-3.5" />
         </button>

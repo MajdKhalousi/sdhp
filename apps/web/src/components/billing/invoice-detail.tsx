@@ -113,6 +113,7 @@ function IssueButton({ invoice }: { invoice: Invoice }) {
 }
 
 const BILLING_WRITE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
+const INVOICE_CREATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
 
 function PaymentsSection({ invoice }: { invoice: Invoice }) {
   const t = useTranslations('invoice.payments');
@@ -120,6 +121,7 @@ function PaymentsSection({ invoice }: { invoice: Invoice }) {
   const locale = useLocale();
   const { user } = useAuthStore();
   const canVoid = BILLING_WRITE_ROLES.has(user?.role ?? '');
+  const canRecord = INVOICE_CREATE_ROLES.has(user?.role ?? '');
 
   const [showForm, setShowForm] = useState(false);
   const [voidingId, setVoidingId] = useState<string | null>(null);
@@ -169,7 +171,7 @@ function PaymentsSection({ invoice }: { invoice: Invoice }) {
     <div className="overflow-hidden rounded-xl border border-border">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <h3 className="text-sm font-semibold">{t('title')}</h3>
-        {isPayable && !showForm && (
+        {isPayable && canRecord && !showForm && (
           <button
             onClick={() => { setShowForm(true); cancelVoid(); }}
             className="inline-flex h-7 items-center gap-1.5 rounded-md border px-2.5 text-xs font-medium transition-colors hover:bg-accent"
@@ -307,7 +309,7 @@ function PaymentsSection({ invoice }: { invoice: Invoice }) {
         <p className="px-4 py-6 text-center text-sm text-muted-foreground">{t('empty')}</p>
       )}
 
-      {isPayable && showForm && (
+      {isPayable && canRecord && showForm && (
         <RecordPaymentForm
           invoiceId={invoice.id}
           remaining={isNaN(remaining) ? 0 : remaining}
@@ -373,6 +375,7 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
   const isDraft = invoice.status === 'DRAFT';
   const isCancellable = invoice.status === 'DRAFT' || invoice.status === 'ISSUED';
   const canCancel = BILLING_WRITE_ROLES.has(user?.role ?? '');
+  const canCreate = INVOICE_CREATE_ROLES.has(user?.role ?? '');
 
   return (
     <div className="space-y-6">
@@ -414,7 +417,7 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
               {tActions('openAppointment')}
             </Link>
           )}
-          {isDraft && <IssueButton invoice={invoice} />}
+          {isDraft && canCreate && <IssueButton invoice={invoice} />}
           {isCancellable && canCancel && <CancelInvoiceDialog invoiceId={invoice.id} />}
         </div>
       </div>

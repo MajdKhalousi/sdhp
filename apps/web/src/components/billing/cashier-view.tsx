@@ -281,7 +281,7 @@ export function CashierView() {
       <button
         onClick={() => switchTab('outstanding')}
         className={cn(
-          'flex-1 items-center justify-center rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
+          'flex flex-1 items-center justify-center rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
           tab === 'outstanding'
             ? 'bg-background text-foreground shadow-sm'
             : 'text-muted-foreground hover:text-foreground',

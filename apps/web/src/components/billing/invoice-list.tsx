@@ -71,6 +71,7 @@ export function InvoiceList() {
     t('list.columns.status'),
     t('list.columns.amount'),
     t('list.columns.paid'),
+    t('list.columns.remaining'),
     t('list.columns.dueDate'),
     t('list.columns.date'),
   ];
@@ -238,6 +239,7 @@ export function InvoiceList() {
                 <th className="px-4 py-3 text-start font-medium">{t('list.columns.status')}</th>
                 <th className="px-4 py-3 text-start font-medium">{t('list.columns.amount')}</th>
                 <th className="px-4 py-3 text-start font-medium">{t('list.columns.paid')}</th>
+                <th className="px-4 py-3 text-start font-medium">{t('list.columns.remaining')}</th>
                 <th className="px-4 py-3 text-start font-medium">{t('list.columns.dueDate')}</th>
                 <th className="px-4 py-3 text-start font-medium">{t('list.columns.date')}</th>
               </tr>
@@ -274,6 +276,9 @@ export function InvoiceList() {
                   <td className="px-4 py-3 text-sm tabular-nums" dir="ltr">
                     {formatAmount(invoice.paidAmount, locale)}
                   </td>
+                  <td className="px-4 py-3 text-sm tabular-nums" dir="ltr">
+                    {formatAmount(String(Math.max(0, parseFloat(invoice.totalAmount) - parseFloat(invoice.paidAmount))), locale)}
+                  </td>
                   <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap" dir="ltr">
                     {formatDateDisplay(invoice.dueDate)}
                   </td>
@@ -294,17 +299,17 @@ export function InvoiceList() {
             disabled={page <= 1}
             className="inline-flex h-8 items-center rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {t('list.pagination.previous')}
+            {tCommon('pagination.previous')}
           </button>
           <span className="text-xs text-muted-foreground">
-            {t('list.pagination.pageOf', { page, total: data.totalPages })}
+            {tCommon('pagination.pageOf', { page, total: data.totalPages })}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
             disabled={page >= data.totalPages}
             className="inline-flex h-8 items-center rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {t('list.pagination.next')}
+            {tCommon('pagination.next')}
           </button>
         </div>
       )}

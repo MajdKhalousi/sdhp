@@ -1293,11 +1293,6 @@
       },
       "error": {
         "loadFailed": "Failed to load invoices"
-      },
-      "pagination": {
-        "previous": "Previous",
-        "next": "Next",
-        "pageOf": "Page {page} of {total}"
       }
     },
     "detail": {
@@ -1414,7 +1409,6 @@
       "cancelReasonPlaceholder": "Optional reason for cancellation",
       "cancelConfirm": "Cancel this invoice? This action cannot be undone.",
       "cancelSubmit": "Confirm Cancellation",
-      "openPatient": "Open Patient File",
       "openAppointment": "Open Appointment"
     },
     "form": {
@@ -2005,7 +1999,7 @@
   },
   "cashier": {
     "title": "Cashier",
-    "subtitle": "Collect payments for today's patients",
+    "subtitle": "Collect payments and manage outstanding invoices.",
     "noInvoices": "No invoices for today",
     "noInvoicesHint": "Invoices are created automatically when patients check in.",
     "tabs": {
@@ -2036,7 +2030,8 @@
       "issueError": "Failed to issue the invoice.",
       "paymentError": "Invoice issued but payment failed. Please record payment manually.",
       "submitButton": "Confirm & Collect",
-      "submitting": "Processing…"
+      "submitting": "Processing…",
+      "close": "Close"
     },
     "todaySummary": {
       "title": "Today Summary",

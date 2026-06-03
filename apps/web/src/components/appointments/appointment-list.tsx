@@ -120,6 +120,22 @@ export function AppointmentList() {
         aria-label={t('list.filter.byDate')}
       />
 
+      {date !== '' ? (
+        <button
+          onClick={() => { setDate(''); setPage(1); }}
+          className="h-8 rounded-md border px-3 text-xs text-muted-foreground transition-colors hover:bg-accent"
+        >
+          {t('list.showAll')}
+        </button>
+      ) : (
+        <button
+          onClick={() => { setDate(todayStr()); setPage(1); }}
+          className="h-8 rounded-md border px-3 text-xs text-muted-foreground transition-colors hover:bg-accent"
+        >
+          {t('list.showToday')}
+        </button>
+      )}
+
       <select
         value={doctorId}
         onChange={(e) => { setDoctorId(e.target.value); handleFilterChange(); }}

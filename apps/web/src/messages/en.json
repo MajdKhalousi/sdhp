@@ -166,6 +166,8 @@
         "byDate": "Filter by date",
         "byDoctor": "Filter by doctor"
       },
+      "showAll": "Show All Appointments",
+      "showToday": "Show Today",
       "durationMinutes": "{count} min",
       "noVisitType": "—",
       "empty": {

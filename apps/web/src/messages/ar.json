@@ -166,6 +166,8 @@
         "byDate": "تصفية بالتاريخ",
         "byDoctor": "تصفية بالطبيب"
       },
+      "showAll": "عرض كل المواعيد",
+      "showToday": "عرض اليوم",
       "durationMinutes": "{count} د",
       "noVisitType": "—",
       "empty": {

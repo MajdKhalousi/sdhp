@@ -2008,6 +2008,17 @@
     "subtitle": "Collect payments for today's patients",
     "noInvoices": "No invoices for today",
     "noInvoicesHint": "Invoices are created automatically when patients check in.",
+    "tabs": {
+      "today": "Today",
+      "outstanding": "Outstanding"
+    },
+    "outstanding": {
+      "description": "Unpaid and partially paid invoices across all dates",
+      "remaining": "Remaining",
+      "paid": "Paid",
+      "empty": "No outstanding invoices",
+      "emptyHint": "All issued invoices have been collected."
+    },
     "groups": {
       "pending": "Pending Payment",
       "partial": "Partially Paid",

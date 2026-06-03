@@ -2,12 +2,15 @@
 
 import { useMemo, useState } from 'react';
 import { CheckCircle2, CreditCard, Receipt } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useInvoices, useBillingReport } from '@/hooks/use-invoices';
 import { useAuthStore } from '@/store/auth';
 import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import { IssueAndPayDialog } from '@/components/billing/issue-and-pay-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import { formatDateDisplay } from '@/lib/format-date';
 import type { Invoice } from '@/types/invoice';
 
 const BILLING_REPORT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
@@ -119,6 +122,87 @@ function InvoiceRow({ invoice, isActive, onAction, onSuccess, onCancel }: RowPro
   );
 }
 
+function OutstandingRow({ invoice, isActive, onAction, onSuccess, onCancel }: RowProps) {
+  const t = useTranslations('cashier');
+  const locale = useLocale();
+
+  const total = parseFloat(invoice.totalAmount);
+  const paid = parseFloat(invoice.paidAmount);
+  const remaining = Math.max(0, total - paid);
+
+  function getActionLabel(): string {
+    if (invoice.status === 'ISSUED') return t('actions.collectPayment');
+    if (invoice.status === 'PARTIALLY_PAID') return t('actions.collectRemaining');
+    return '';
+  }
+
+  return (
+    <div className="border-b border-border last:border-b-0">
+      <div className="flex flex-wrap items-start justify-between gap-3 px-4 py-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium">
+              {invoice.patient.firstName} {invoice.patient.lastName}
+            </span>
+            <span className="text-xs text-muted-foreground" dir="ltr">{invoice.patient.mrn}</span>
+            <InvoiceStatusBadge status={invoice.status} />
+          </div>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <Link
+              href={`/dashboard/invoices/${invoice.id}`}
+              className="tabular-nums hover:underline"
+              dir="ltr"
+            >
+              {invoice.invoiceNumber}
+            </Link>
+            <span aria-hidden>·</span>
+            <span dir="ltr">{formatDateDisplay(invoice.issuedAt ?? invoice.createdAt)}</span>
+            <span aria-hidden>·</span>
+            <span dir="ltr">{formatAmount(String(total), locale)}</span>
+            {paid > 0 && (
+              <>
+                <span aria-hidden>·</span>
+                <span dir="ltr">
+                  {t('outstanding.paid')}: {formatAmount(String(paid), locale)}
+                </span>
+              </>
+            )}
+            {remaining > 0 && (
+              <>
+                <span aria-hidden>·</span>
+                <span dir="ltr" className="font-medium text-amber-600 dark:text-amber-400">
+                  {t('outstanding.remaining')}: {formatAmount(String(remaining), locale)}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="shrink-0">
+          <button
+            onClick={onAction}
+            disabled={isActive}
+            className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+          >
+            <CreditCard className="h-3 w-3" />
+            {getActionLabel()}
+          </button>
+        </div>
+      </div>
+
+      {isActive && (
+        <div className="border-t border-border">
+          <IssueAndPayDialog
+            invoice={invoice}
+            onSuccess={onSuccess}
+            onCancel={onCancel}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface GroupProps {
   title: string;
   invoices: Invoice[];
@@ -154,11 +238,163 @@ export function CashierView() {
   const locale = useLocale();
   const user = useAuthStore((s) => s.user);
   const canSeeBillingReport = BILLING_REPORT_ROLES.has(user?.role ?? '');
+
+  const [tab, setTab] = useState<'today' | 'outstanding'>('today');
   const [activeId, setActiveId] = useState<string | null>(null);
   const { from, to } = useMemo(() => getTodayRange(), []);
 
+  // Today data — always enabled
   const { data, isLoading, isError, error, refetch } = useInvoices({ from, to, limit: 50 });
   const { data: billingReport } = useBillingReport({ from, to }, canSeeBillingReport);
+
+  // Outstanding data — two queries, enabled when tab is 'outstanding'
+  const outstandingEnabled = tab === 'outstanding';
+  const issuedQuery = useInvoices({ status: 'ISSUED', limit: 100 }, { enabled: outstandingEnabled });
+  const partialQuery = useInvoices({ status: 'PARTIALLY_PAID', limit: 100 }, { enabled: outstandingEnabled });
+
+  const outstandingInvoices = useMemo(() => {
+    const issued = issuedQuery.data?.data ?? [];
+    const partial = partialQuery.data?.data ?? [];
+    return [...issued, ...partial].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+  }, [issuedQuery.data, partialQuery.data]);
+
+  function switchTab(next: 'today' | 'outstanding') {
+    setTab(next);
+    setActiveId(null);
+  }
+
+  const tabToggle = (
+    <div className="flex gap-1 rounded-lg border border-border bg-muted/30 p-0.5">
+      <button
+        onClick={() => switchTab('today')}
+        className={cn(
+          'flex-1 rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
+          tab === 'today'
+            ? 'bg-background text-foreground shadow-sm'
+            : 'text-muted-foreground hover:text-foreground',
+        )}
+      >
+        {t('tabs.today')}
+      </button>
+      <button
+        onClick={() => switchTab('outstanding')}
+        className={cn(
+          'flex-1 items-center justify-center rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
+          tab === 'outstanding'
+            ? 'bg-background text-foreground shadow-sm'
+            : 'text-muted-foreground hover:text-foreground',
+        )}
+      >
+        {t('tabs.outstanding')}
+        {outstandingInvoices.length > 0 && (
+          <span className="ms-1.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
+            {outstandingInvoices.length}
+          </span>
+        )}
+      </button>
+    </div>
+  );
+
+  // ── Outstanding tab ────────────────────────────────────────────────────────
+
+  if (tab === 'outstanding') {
+    const outLoading = issuedQuery.isLoading || partialQuery.isLoading;
+    const outError = issuedQuery.isError || partialQuery.isError;
+
+    if (outLoading) {
+      return (
+        <div className="space-y-4">
+          {tabToggle}
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 rounded-xl" />)}
+          </div>
+        </div>
+      );
+    }
+
+    if (outError) {
+      return (
+        <div className="space-y-4">
+          {tabToggle}
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-12 text-center">
+            <p className="text-sm font-medium text-destructive">{tCommon('states.error')}</p>
+            <button
+              onClick={() => { issuedQuery.refetch(); partialQuery.refetch(); }}
+              className="h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
+            >
+              {tCommon('actions.tryAgain')}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (outstandingInvoices.length === 0) {
+      return (
+        <div className="space-y-4">
+          {tabToggle}
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
+            <Receipt className="h-8 w-8 text-muted-foreground/50" />
+            <p className="text-sm font-medium">{t('outstanding.empty')}</p>
+            <p className="text-xs text-muted-foreground">{t('outstanding.emptyHint')}</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {tabToggle}
+        <p className="text-sm text-muted-foreground">{t('outstanding.description')}</p>
+        <div className="overflow-hidden rounded-xl border border-border">
+          {outstandingInvoices.map((inv) => (
+            <OutstandingRow
+              key={inv.id}
+              invoice={inv}
+              isActive={activeId === inv.id}
+              onAction={() => setActiveId(inv.id)}
+              onSuccess={() => setActiveId(null)}
+              onCancel={() => setActiveId(null)}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Today tab ──────────────────────────────────────────────────────────────
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        {tabToggle}
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 rounded-xl" />)}
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="space-y-4">
+        {tabToggle}
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-12 text-center">
+          <p className="text-sm font-medium text-destructive">
+            {error instanceof Error ? error.message : tCommon('states.error')}
+          </p>
+          <button
+            onClick={() => refetch()}
+            className="h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
+          >
+            {tCommon('actions.tryAgain')}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const invoices = (data?.data ?? []).filter((inv) => inv.status !== 'CANCELLED');
   const pending = invoices.filter((inv) => (inv.status === 'DRAFT' && parseFloat(inv.totalAmount) > 0) || inv.status === 'ISSUED');
@@ -171,42 +407,23 @@ export function CashierView() {
     return sum + Math.max(0, total - paid);
   }, 0);
 
-  if (isLoading) {
-    return (
-      <div className="space-y-3">
-        {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 rounded-xl" />)}
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-12 text-center">
-        <p className="text-sm font-medium text-destructive">
-          {error instanceof Error ? error.message : tCommon('states.error')}
-        </p>
-        <button
-          onClick={() => refetch()}
-          className="h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
-        >
-          {tCommon('actions.tryAgain')}
-        </button>
-      </div>
-    );
-  }
-
   if (invoices.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
-        <Receipt className="h-8 w-8 text-muted-foreground/50" />
-        <p className="text-sm font-medium">{t('noInvoices')}</p>
-        <p className="text-xs text-muted-foreground">{t('noInvoicesHint')}</p>
+      <div className="space-y-4">
+        {tabToggle}
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
+          <Receipt className="h-8 w-8 text-muted-foreground/50" />
+          <p className="text-sm font-medium">{t('noInvoices')}</p>
+          <p className="text-xs text-muted-foreground">{t('noInvoicesHint')}</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
+      {tabToggle}
+
       {/* Today summary bar */}
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border border-border bg-muted/40 px-4 py-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">

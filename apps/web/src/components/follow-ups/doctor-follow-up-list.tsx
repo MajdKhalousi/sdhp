@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, Clock, AlertTriangle, XCircle, Hourglass, CalendarClock } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
@@ -8,7 +9,10 @@ import { useFollowUps } from '@/hooks/use-follow-ups';
 import { Tabs } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FollowUpStatusBadge } from './follow-up-status-badge';
+import { AppointmentStatusBadge } from '@/components/appointments/appointment-status-badge';
+import { FollowUpBookingPanel } from '@/components/encounters/follow-up-booking-panel';
 import type { FollowUpStatus } from '@/types/follow-up';
+import type { AppointmentStatus } from '@/types/appointment';
 import { formatDateDisplay, formatDateTimeDisplay } from '@/lib/format-date';
 
 const LIMIT = 20;
@@ -48,7 +52,10 @@ export function DoctorFollowUpList() {
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
 
+  const queryClient = useQueryClient();
+
   const [activeTab, setActiveTab] = useState<FollowUpStatus>('DUE_TODAY');
+  const [expandedEncounterId, setExpandedEncounterId] = useState<string | null>(null);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [page, setPage] = useState(1);
@@ -71,10 +78,12 @@ export function DoctorFollowUpList() {
   function handleTabChange(tab: string) {
     setActiveTab(tab as FollowUpStatus);
     setPage(1);
+    setExpandedEncounterId(null);
   }
 
   function handleFilterChange() {
     setPage(1);
+    setExpandedEncounterId(null);
   }
 
   function formatDaysDelta(delta: number | null): string {
@@ -216,67 +225,100 @@ export function DoctorFollowUpList() {
                 </thead>
                 <tbody>
                   {data.data.map((item) => (
-                    <tr key={item.encounterId} className="border-t border-border transition-colors hover:bg-muted/20">
-                      {/* Patient */}
-                      <td className="px-4 py-3">
-                        <p className="text-sm font-medium">
-                          {item.patient.firstName} {item.patient.lastName}
-                        </p>
-                        <p className="text-xs text-muted-foreground" dir="ltr">{item.patient.mrn}</p>
-                        {item.patient.phone && (
-                          <p className="text-xs text-muted-foreground" dir="ltr">{item.patient.phone}</p>
-                        )}
-                      </td>
+                    <Fragment key={item.encounterId}>
+                      <tr className="border-t border-border transition-colors hover:bg-muted/20">
+                        {/* Patient */}
+                        <td className="px-4 py-3">
+                          <p className="text-sm font-medium">
+                            {item.patient.firstName} {item.patient.lastName}
+                          </p>
+                          <p className="text-xs text-muted-foreground" dir="ltr">{item.patient.mrn}</p>
+                          {item.patient.phone && (
+                            <p className="text-xs text-muted-foreground" dir="ltr">{item.patient.phone}</p>
+                          )}
+                        </td>
 
-                      {/* Recommended Date */}
-                      <td className="px-4 py-3 text-sm whitespace-nowrap" dir="ltr">
-                        {formatDateDisplay(item.followUpDate)}
-                      </td>
+                        {/* Recommended Date */}
+                        <td className="px-4 py-3 text-sm whitespace-nowrap" dir="ltr">
+                          {formatDateDisplay(item.followUpDate)}
+                        </td>
 
-                      {/* Status */}
-                      <td className="px-4 py-3">
-                        <FollowUpStatusBadge status={item.followUpStatus} />
-                      </td>
+                        {/* Status */}
+                        <td className="px-4 py-3">
+                          <FollowUpStatusBadge status={item.followUpStatus} />
+                        </td>
 
-                      {/* Days Delta */}
-                      <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap">
-                        {formatDaysDelta(item.daysDelta)}
-                      </td>
+                        {/* Days Delta */}
+                        <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap">
+                          {formatDaysDelta(item.daysDelta)}
+                        </td>
 
-                      {/* Linked Appointment */}
-                      <td className="px-4 py-3">
-                        {item.linkedAppointment ? (
-                          <div>
-                            <p className="text-sm whitespace-nowrap" dir="ltr">
-                              {formatDateTimeDisplay(item.linkedAppointment.scheduledAt)}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {item.linkedAppointment.status}
-                            </p>
+                        {/* Linked Appointment */}
+                        <td className="px-4 py-3">
+                          {item.linkedAppointment ? (
+                            <div>
+                              <p className="text-sm whitespace-nowrap" dir="ltr">
+                                {formatDateTimeDisplay(item.linkedAppointment.scheduledAt)}
+                              </p>
+                              <AppointmentStatusBadge status={item.linkedAppointment.status as AppointmentStatus} />
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </td>
+
+                        {/* Actions */}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {!item.linkedAppointment && (
+                              <button
+                                onClick={() =>
+                                  setExpandedEncounterId(
+                                    expandedEncounterId === item.encounterId ? null : item.encounterId,
+                                  )
+                                }
+                                className="h-7 rounded-md border border-primary/40 px-2 text-xs font-medium text-primary transition-colors hover:bg-primary/5 inline-flex items-center"
+                              >
+                                {t('actions.bookNow')}
+                              </button>
+                            )}
+                            <Link
+                              href={`/dashboard/doctor/encounter/${item.encounterId}`}
+                              className="h-7 rounded-md bg-primary px-2 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 inline-flex items-center"
+                            >
+                              {t('actions.openEncounter')}
+                            </Link>
+                            <Link
+                              href={`/dashboard/patients/${item.patient.id}`}
+                              className="h-7 rounded-md border px-2 text-xs text-muted-foreground transition-colors hover:bg-accent inline-flex items-center"
+                            >
+                              {t('actions.viewPatient')}
+                            </Link>
                           </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
-                        )}
-                      </td>
+                        </td>
+                      </tr>
 
-                      {/* Actions */}
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Link
-                            href={`/dashboard/doctor/encounter/${item.encounterId}`}
-                            className="h-7 rounded-md bg-primary px-2 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 inline-flex items-center"
-                          >
-                            {t('actions.openEncounter')}
-                          </Link>
-                          <Link
-                            href={`/dashboard/patients/${item.patient.id}`}
-                            className="h-7 rounded-md border px-2 text-xs text-muted-foreground transition-colors hover:bg-accent inline-flex items-center"
-                          >
-                            {t('actions.viewPatient')}
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
+                      {/* Inline booking panel */}
+                      {expandedEncounterId === item.encounterId && (
+                        <tr className="border-t border-border">
+                          <td colSpan={6} className="p-0">
+                            <div className="bg-muted/20 px-4 py-4">
+                              <FollowUpBookingPanel
+                                encounterId={item.encounterId}
+                                patientId={item.patient.id}
+                                defaultDoctorId={item.doctor.id}
+                                followUpDate={item.followUpDate}
+                                initialShowForm={true}
+                                onSuccess={() => {
+                                  setExpandedEncounterId(null);
+                                  void queryClient.invalidateQueries({ queryKey: ['follow-ups'] });
+                                }}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
                   ))}
                 </tbody>
               </table>

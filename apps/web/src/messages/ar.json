@@ -1269,6 +1269,12 @@
       "filter": {
         "all": "الكل"
       },
+      "filters": {
+        "searchPlaceholder": "ابحث برقم الفاتورة أو اسم المريض أو الهاتف أو رقم الملف",
+        "fromDate": "من",
+        "toDate": "إلى",
+        "clearFilters": "مسح الفلاتر"
+      },
       "columns": {
         "invoiceNumber": "رقم الفاتورة",
         "patient": "المريض",

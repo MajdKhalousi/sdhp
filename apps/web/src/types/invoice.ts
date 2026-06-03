@@ -85,6 +85,7 @@ export interface InvoiceQuery {
   status?: InvoiceStatus;
   from?: string;
   to?: string;
+  search?: string;
   page?: number;
   limit?: number;
 }

@@ -33,4 +33,9 @@ export class BillingQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsDateString()
   to?: string;
+
+  @ApiPropertyOptional({ description: 'Text search — invoice number, patient name, MRN, or phone' })
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

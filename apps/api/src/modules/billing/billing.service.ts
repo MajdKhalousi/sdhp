@@ -244,6 +244,17 @@ export class BillingService {
       ...(query.status ? { status: query.status } : {}),
       deletedAt: null as null,
       ...this.createdAtFilter(query.from, query.to),
+      ...(query.search
+        ? {
+            OR: [
+              { invoiceNumber: { contains: query.search, mode: 'insensitive' as const } },
+              { patient: { firstName: { contains: query.search, mode: 'insensitive' as const } } },
+              { patient: { lastName: { contains: query.search, mode: 'insensitive' as const } } },
+              { patient: { mrn: { contains: query.search, mode: 'insensitive' as const } } },
+              { patient: { phone: { contains: query.search } } },
+            ],
+          }
+        : {}),
     };
 
     const [data, total] = await Promise.all([

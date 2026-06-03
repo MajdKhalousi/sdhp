@@ -13,9 +13,9 @@ import type {
 import type { Service } from '@/types/clinic-settings';
 
 export function useInvoices(query: InvoiceQuery = {}, options?: { enabled?: boolean }) {
-  const { organizationId, branchId, patientId, status, from, to, page, limit } = query;
+  const { organizationId, branchId, patientId, status, from, to, search, page, limit } = query;
   return useQuery({
-    queryKey: ['invoices', organizationId, branchId, patientId, status, from, to, page, limit],
+    queryKey: ['invoices', organizationId, branchId, patientId, status, from, to, search, page, limit],
     queryFn: () =>
       api.get<PaginatedInvoicesResponse>('/v1/invoices', {
         ...(organizationId ? { organizationId } : {}),
@@ -24,6 +24,7 @@ export function useInvoices(query: InvoiceQuery = {}, options?: { enabled?: bool
         ...(status ? { status } : {}),
         ...(from ? { from } : {}),
         ...(to ? { to } : {}),
+        ...(search ? { search } : {}),
         ...(page !== undefined ? { page } : {}),
         ...(limit !== undefined ? { limit } : {}),
       }),

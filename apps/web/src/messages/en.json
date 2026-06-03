@@ -1269,6 +1269,12 @@
       "filter": {
         "all": "All"
       },
+      "filters": {
+        "searchPlaceholder": "Search by invoice number, patient name, phone, or MRN",
+        "fromDate": "From",
+        "toDate": "To",
+        "clearFilters": "Clear filters"
+      },
       "columns": {
         "invoiceNumber": "Invoice #",
         "patient": "Patient",

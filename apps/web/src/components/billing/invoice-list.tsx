@@ -36,15 +36,31 @@ export function InvoiceList() {
   const canCreate = user ? INVOICE_CREATE_ROLES.has(user.role) : false;
 
   const [statusFilter, setStatusFilter] = useState<StatusTab>('');
+  const [search, setSearch] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [page, setPage] = useState(1);
+
+  const hasFilters = !!search || !!fromDate || !!toDate || statusFilter !== '';
 
   function handleStatusChange(tab: StatusTab) {
     setStatusFilter(tab);
     setPage(1);
   }
 
+  function clearFilters() {
+    setSearch('');
+    setFromDate('');
+    setToDate('');
+    setStatusFilter('');
+    setPage(1);
+  }
+
   const { data, isLoading, isError, error, refetch } = useInvoices({
     ...(statusFilter ? { status: statusFilter as InvoiceStatus } : {}),
+    ...(search.trim() ? { search: search.trim() } : {}),
+    ...(fromDate ? { from: fromDate } : {}),
+    ...(toDate ? { to: toDate } : {}),
     page,
     limit: 20,
   });
@@ -58,6 +74,50 @@ export function InvoiceList() {
     t('list.columns.dueDate'),
     t('list.columns.date'),
   ];
+
+  const filtersRow = (
+    <div className="flex flex-wrap items-center gap-2">
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+        placeholder={t('list.filters.searchPlaceholder')}
+        className="h-8 min-w-[200px] flex-1 rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring"
+      />
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs text-muted-foreground whitespace-nowrap">
+          {t('list.filters.fromDate')}
+        </span>
+        <input
+          type="date"
+          value={fromDate}
+          onChange={(e) => { setFromDate(e.target.value); setPage(1); }}
+          dir="ltr"
+          className="h-8 w-36 rounded-md border bg-background px-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring"
+        />
+      </div>
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs text-muted-foreground whitespace-nowrap">
+          {t('list.filters.toDate')}
+        </span>
+        <input
+          type="date"
+          value={toDate}
+          onChange={(e) => { setToDate(e.target.value); setPage(1); }}
+          dir="ltr"
+          className="h-8 w-36 rounded-md border bg-background px-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring"
+        />
+      </div>
+      {hasFilters && (
+        <button
+          onClick={clearFilters}
+          className="h-8 rounded-md border px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          {t('list.filters.clearFilters')}
+        </button>
+      )}
+    </div>
+  );
 
   const statusTabs = (
     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -93,7 +153,8 @@ export function InvoiceList() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
+        {filtersRow}
         {statusTabs}
         <div className="overflow-hidden rounded-xl border border-border">
           <div className="overflow-x-auto">
@@ -125,7 +186,8 @@ export function InvoiceList() {
 
   if (isError) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
+        {filtersRow}
         {statusTabs}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-16 text-center">
           <p className="text-sm font-medium text-destructive">
@@ -147,13 +209,14 @@ export function InvoiceList() {
 
   if (!data || data.data.length === 0) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
+        {filtersRow}
         {statusTabs}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
           <Receipt className="h-8 w-8 text-muted-foreground/50" />
           <p className="text-sm font-medium">{t('list.empty.heading')}</p>
           <p className="text-xs text-muted-foreground">
-            {statusFilter ? t('list.empty.withFilters') : t('list.empty.noData')}
+            {hasFilters ? t('list.empty.withFilters') : t('list.empty.noData')}
           </p>
         </div>
       </div>
@@ -161,7 +224,8 @@ export function InvoiceList() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
+      {filtersRow}
       {statusTabs}
 
       <div className="overflow-hidden rounded-xl border border-border">

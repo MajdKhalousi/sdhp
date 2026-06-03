@@ -1,7 +1,8 @@
 'use client';
 
 import { Fragment, useState } from 'react';
-import { ChevronLeft, ChevronRight, CalendarX2, AlertTriangle, Clock } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { ChevronLeft, ChevronRight, CalendarX2, AlertTriangle, Clock, UserX } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useFollowUps } from '@/hooks/use-follow-ups';
@@ -17,12 +18,14 @@ import { formatDateDisplay, formatDateTimeDisplay } from '@/lib/format-date';
 
 const LIMIT = 20;
 
-const TAB_ORDER: FollowUpStatus[] = ['DUE_TODAY', 'OVERDUE', 'UPCOMING'];
+const TAB_ORDER: FollowUpStatus[] = ['DUE_TODAY', 'OVERDUE', 'PENDING', 'UPCOMING', 'MISSED'];
 
 const EMPTY_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
   DUE_TODAY: Clock,
   OVERDUE:   AlertTriangle,
+  PENDING:   Clock,
   UPCOMING:  CalendarX2,
+  MISSED:    UserX,
 };
 
 export function FollowUpList() {
@@ -33,8 +36,10 @@ export function FollowUpList() {
 
   const { toast } = useToast();
   const createReminder = useCreateReminder();
+  const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<FollowUpStatus>('DUE_TODAY');
+  const [pendingReminderIds, setPendingReminderIds] = useState<Set<string>>(new Set());
   const [doctorId, setDoctorId] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
@@ -42,13 +47,17 @@ export function FollowUpList() {
   const [expandedEncounterId, setExpandedEncounterId] = useState<string | null>(null);
 
   function handleSendReminder(encounterId: string) {
+    setPendingReminderIds((prev) => new Set(prev).add(encounterId));
     createReminder.mutate(
       { encounterId, body: { channel: 'IN_APP' } },
       {
-        onSuccess: () => toast({ title: t('reminder.queued'), variant: 'success' }),
+        onSuccess: () => {
+          setPendingReminderIds((prev) => { const next = new Set(prev); next.delete(encounterId); return next; });
+          toast({ title: t('reminder.queued'), variant: 'success' });
+        },
         onError: (err: unknown) => {
-          const isDuplicate =
-            err instanceof Error && err.name === 'ConflictError';
+          setPendingReminderIds((prev) => { const next = new Set(prev); next.delete(encounterId); return next; });
+          const isDuplicate = err instanceof Error && err.name === 'ConflictError';
           toast({
             title: isDuplicate ? t('reminder.alreadyQueued') : t('reminder.failed'),
             variant: isDuplicate ? 'default' : 'error',
@@ -74,7 +83,15 @@ export function FollowUpList() {
 
   const tabs = TAB_ORDER.map((s) => ({
     value: s,
-    label: t(`tabs.${s === 'DUE_TODAY' ? 'dueToday' : s === 'OVERDUE' ? 'overdue' : 'upcoming'}` as Parameters<typeof t>[0]),
+    label: t(
+      `tabs.${
+        s === 'DUE_TODAY' ? 'dueToday' :
+        s === 'OVERDUE'   ? 'overdue'  :
+        s === 'PENDING'   ? 'pending'  :
+        s === 'MISSED'    ? 'missed'   :
+        'upcoming'
+      }` as Parameters<typeof t>[0]
+    ),
   }));
 
   function handleTabChange(tab: string) {
@@ -118,7 +135,7 @@ export function FollowUpList() {
         <option value="">{tCommon('filter.allDoctors')}</option>
         {doctorsData?.data.map((d) => (
           <option key={d.id} value={d.id}>
-            Dr. {d.user.firstName} {d.user.lastName}
+            {tCommon('doctorPrefix')} {d.user.firstName} {d.user.lastName}
           </option>
         ))}
       </select>
@@ -156,7 +173,12 @@ export function FollowUpList() {
 
   const EmptyIcon = EMPTY_ICON[activeTab] ?? CalendarX2;
 
-  const emptyKey = activeTab === 'DUE_TODAY' ? 'empty.dueToday' : activeTab === 'OVERDUE' ? 'empty.overdue' : 'empty.upcoming';
+  const emptyKey =
+    activeTab === 'DUE_TODAY' ? 'empty.dueToday' :
+    activeTab === 'OVERDUE'   ? 'empty.overdue'  :
+    activeTab === 'PENDING'   ? 'empty.pending'  :
+    activeTab === 'MISSED'    ? 'empty.missed'   :
+    'empty.upcoming';
 
   return (
     <div className="space-y-4">
@@ -265,7 +287,7 @@ export function FollowUpList() {
                         {/* Doctor */}
                         <td className="px-4 py-3">
                           <p className="text-sm">
-                            Dr. {item.doctor.firstName} {item.doctor.lastName}
+                            {tCommon('doctorPrefix')} {item.doctor.firstName} {item.doctor.lastName}
                           </p>
                           {item.doctor.specialization && (
                             <p className="text-xs text-muted-foreground">{item.doctor.specialization}</p>
@@ -295,7 +317,7 @@ export function FollowUpList() {
                                 {formatDateTimeDisplay(item.linkedAppointment.scheduledAt)}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                Dr. {item.linkedAppointment.doctor.firstName} {item.linkedAppointment.doctor.lastName}
+                                {tCommon('doctorPrefix')} {item.linkedAppointment.doctor.firstName} {item.linkedAppointment.doctor.lastName}
                               </p>
                             </div>
                           ) : (
@@ -328,7 +350,7 @@ export function FollowUpList() {
                             {showReminderButton && (
                               <button
                                 onClick={() => handleSendReminder(item.encounterId)}
-                                disabled={createReminder.isPending}
+                                disabled={pendingReminderIds.has(item.encounterId)}
                                 className="h-7 rounded-md border px-2 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-40"
                               >
                                 {t('actions.sendReminder')}
@@ -349,7 +371,10 @@ export function FollowUpList() {
                                 defaultDoctorId={item.doctor.id}
                                 followUpDate={item.followUpDate}
                                 initialShowForm={true}
-                                onSuccess={() => setExpandedEncounterId(null)}
+                                onSuccess={() => {
+                                  setExpandedEncounterId(null);
+                                  void queryClient.invalidateQueries({ queryKey: ['follow-ups'] });
+                                }}
                               />
                             </div>
                           </td>

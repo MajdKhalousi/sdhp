@@ -466,6 +466,7 @@
     },
     "allergies": {
       "heading": "الحساسيات المعروفة",
+      "severeHeading": "حساسية شديدة",
       "severity": {
         "mild": "خفيف",
         "moderate": "معتدل",
@@ -491,7 +492,8 @@
       "doctorPrefix": "د.",
       "chiefComplaint": "الشكوى",
       "diagnosis": "التشخيص",
-      "followUp": "المراجعة"
+      "followUp": "المراجعة",
+      "viewEncounter": "عرض الزيارة"
     },
     "followUpBooking": {
       "bookButton": "حجز موعد مراجعة",
@@ -595,7 +597,8 @@
       },
       "pendingReview": {
         "heading": "بانتظار المراجعة",
-        "ordered": "طُلب"
+        "ordered": "طُلب",
+        "fromPreviousVisits": "من زيارات سابقة"
       },
       "error": {
         "addFailed": "فشل إضافة طلب المختبر",

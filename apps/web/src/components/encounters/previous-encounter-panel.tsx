@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { History, ChevronDown } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useEncounters } from '@/hooks/use-encounters';
+import { Link } from '@/i18n/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateDisplay } from '@/lib/format-date';
 
@@ -21,7 +22,7 @@ export function PreviousEncounterPanel({ patientId, currentEncounterId }: Props)
 
   const { data, isLoading } = useEncounters(
     { patientId, limit: 4 },
-    { enabled: !!patientId },
+    { enabled: !!patientId && open },
   );
 
   const previous = (data?.data ?? [])
@@ -99,6 +100,14 @@ export function PreviousEncounterPanel({ patientId, currentEncounterId }: Props)
                       {t('followUp')}: {formatDateDisplay(enc.followUpDate)}
                     </p>
                   )}
+                  <div className="pt-0.5">
+                    <Link
+                      href={`/dashboard/doctor/encounter/${enc.id}`}
+                      className="text-xs font-medium text-primary hover:underline"
+                    >
+                      {t('viewEncounter')}
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>

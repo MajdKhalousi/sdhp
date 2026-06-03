@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import type { VitalsPayload, UpdateEncounterPayload } from '@/types/encounter';
 import type { InvoiceStatus } from '@/types/invoice';
 import { formatDateDisplay, formatDateTimeDisplay, formatTimeDisplay } from '@/lib/format-date';
+import { useAuthStore } from '@/store/auth';
 
 interface WorkspaceForm {
   chiefComplaint: string;
@@ -97,6 +98,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const tPatient = useTranslations('patient');
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
+  const { user } = useAuthStore();
 
   function localizeGender(gender: string | null | undefined): string | null {
     if (!gender) return null;
@@ -227,7 +229,9 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
 
   const { patient, doctor } = encounter;
   const isEnded = !!encounter.endedAt;
-  const readOnly = isEnded || saving;
+  const ENCOUNTER_EDIT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR']);
+  const canEdit = ENCOUNTER_EDIT_ROLES.has(user?.role ?? '');
+  const readOnly = isEnded || saving || !canEdit;
   const patientAge = computeAge(patient.dateOfBirth);
   const visitTypeName = appointmentVisitType
     ? ((locale === 'ar' && appointmentVisitType.nameAr) || appointmentVisitType.name)
@@ -235,6 +239,8 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const invoiceCreateHref = encounter.appointmentId
     ? `/dashboard/invoices/new?appointmentId=${encounter.appointmentId}&patientId=${patient.id}`
     : `/dashboard/invoices`;
+  const severeAllergies = allergies.filter((a) => a.severity === 'SEVERE');
+  const otherAllergies = allergies.filter((a) => a.severity !== 'SEVERE');
 
   return (
     <div className="space-y-6">
@@ -285,18 +291,33 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
         </div>
       )}
 
-      {/* ── Allergies banner ────────────────────────────────────────────── */}
-      {allergies.length > 0 && (
+      {/* ── Allergies banners ───────────────────────────────────────────── */}
+      {severeAllergies.length > 0 && (
+        <div className="flex items-start gap-2 rounded-xl border border-red-300 bg-red-50 px-4 py-3 dark:border-red-800/50 dark:bg-red-950/30">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-red-700 dark:text-red-400">{t('allergies.severeHeading')}</p>
+            <p className="mt-0.5 text-xs text-red-700/80 dark:text-red-400/80">
+              {severeAllergies.map((a, i) => (
+                <span key={a.id}>
+                  {i > 0 && <span className="mx-1.5">·</span>}
+                  {a.substance}
+                </span>
+              ))}
+            </p>
+          </div>
+        </div>
+      )}
+      {otherAllergies.length > 0 && (
         <div className="flex items-start gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 dark:border-orange-900/40 dark:bg-orange-950/20">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-orange-600 dark:text-orange-400" />
           <div>
             <p className="text-xs font-semibold text-orange-700 dark:text-orange-400">{t('allergies.heading')}</p>
             <p className="mt-0.5 text-xs text-orange-700/80 dark:text-orange-400/80">
-              {allergies.map((a, i) => {
+              {otherAllergies.map((a, i) => {
                 const sev =
                   a.severity === 'MILD'     ? t('allergies.severity.mild')
                   : a.severity === 'MODERATE' ? t('allergies.severity.moderate')
-                  : a.severity === 'SEVERE'   ? t('allergies.severity.severe')
                   : null;
                 return (
                   <span key={a.id}>
@@ -617,36 +638,40 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
           </div>
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {saving ? t('actions.saving') : t('actions.saveChanges')}
-              </button>
-              {isDirty && (
-                <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
-                  {t('actions.unsavedChanges')}
-                </span>
-              )}
-              {!isDirty && savedAt && (
-                <span className="text-xs text-muted-foreground">
-                  {t('actions.savedAt', { time: savedAt })}
-                </span>
-              )}
-              {saveError && (
-                <span className="text-xs text-destructive">{saveError}</span>
-              )}
-            </div>
+            {canEdit && (
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {saving ? t('actions.saving') : t('actions.saveChanges')}
+                </button>
+                {isDirty && (
+                  <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                    {t('actions.unsavedChanges')}
+                  </span>
+                )}
+                {!isDirty && savedAt && (
+                  <span className="text-xs text-muted-foreground">
+                    {t('actions.savedAt', { time: savedAt })}
+                  </span>
+                )}
+                {saveError && (
+                  <span className="text-xs text-destructive">{saveError}</span>
+                )}
+              </div>
+            )}
 
-            <EndEncounterButton
-              encounterId={encounterId}
-              alreadyEnded={isEnded}
-              disabled={isDirty || saving}
-              disabledReason={isDirty ? t('actions.saveBeforeClosing') : undefined}
-              hasDiagnosis={!!form.diagnosis.trim()}
-            />
+            {canEdit && (
+              <EndEncounterButton
+                encounterId={encounterId}
+                alreadyEnded={isEnded}
+                disabled={isDirty || saving}
+                disabledReason={isDirty ? t('actions.saveBeforeClosing') : undefined}
+                hasDiagnosis={!!form.diagnosis.trim()}
+              />
+            )}
           </div>
         )}
       </div>

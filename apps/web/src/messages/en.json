@@ -466,6 +466,7 @@
     },
     "allergies": {
       "heading": "Known Allergies",
+      "severeHeading": "SEVERE ALLERGY",
       "severity": {
         "mild": "Mild",
         "moderate": "Moderate",
@@ -491,7 +492,8 @@
       "doctorPrefix": "Dr.",
       "chiefComplaint": "Complaint",
       "diagnosis": "Diagnosis",
-      "followUp": "Follow-up"
+      "followUp": "Follow-up",
+      "viewEncounter": "View Encounter"
     },
     "followUpBooking": {
       "bookButton": "Book Follow-up Appointment",
@@ -595,7 +597,8 @@
       },
       "pendingReview": {
         "heading": "Pending Review",
-        "ordered": "Ordered"
+        "ordered": "Ordered",
+        "fromPreviousVisits": "From previous visits"
       },
       "error": {
         "addFailed": "Failed to add lab order",

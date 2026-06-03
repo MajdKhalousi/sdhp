@@ -30,6 +30,7 @@ interface Props {
 export function FollowUpBookingPanel({ encounterId, patientId, defaultDoctorId, followUpDate, initialShowForm, onSuccess }: Props) {
   const t = useTranslations('encounter.followUpBooking');
   const tCommon = useTranslations('common');
+  const tHeader = useTranslations('encounter.header');
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
 
@@ -109,7 +110,7 @@ export function FollowUpBookingPanel({ encounterId, patientId, defaultDoctorId, 
           {t('alreadyBooked')}
         </Badge>
         <span className="text-sm text-muted-foreground">
-          {t('with')} Dr. {dr.user.firstName} {dr.user.lastName}
+          {t('with')} {tHeader('doctorPrefix')} {dr.user.firstName} {dr.user.lastName}
           {' · '}
           {formatDateDisplay(bookedAppointment.scheduledAt)}
         </span>
@@ -150,7 +151,7 @@ export function FollowUpBookingPanel({ encounterId, patientId, defaultDoctorId, 
           >
             {doctorsData?.data.map((d) => (
               <option key={d.id} value={d.id}>
-                Dr. {d.user.firstName} {d.user.lastName}
+                {tHeader('doctorPrefix')} {d.user.firstName} {d.user.lastName}
                 {d.specialization ? ` — ${d.specialization}` : ''}
               </option>
             ))}

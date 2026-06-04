@@ -18,11 +18,14 @@ export interface DashboardOverview {
     labOrders: { pending: number };
     radiologyOrders: { pending: number };
     newPatients: number;
+    activeEncounters: number;
+    followUpsOverdue: number;
   };
   billing: {
     collectedToday: number;
     outstandingAllTime: number;
     collectionRateToday: number;
+    unpaidInvoiceCount: number;
   } | null;
 }
 

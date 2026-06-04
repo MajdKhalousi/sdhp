@@ -76,6 +76,8 @@ export class DashboardService {
       newPatients,
       billingPeriodGroups,
       billingOutstandingAgg,
+      activeEncounters,
+      followUpsOverdue,
     ] = await Promise.all([
       // 1. Today's appointments grouped by status
       this.prisma.appointment.groupBy({
@@ -173,7 +175,7 @@ export class DashboardService {
           })
         : Promise.resolve(null),
 
-      // 8. All-time outstanding balance (billing roles only)
+      // 8. All-time outstanding balance + count (billing roles only)
       isBillingRole
         ? this.prisma.invoice.aggregate({
             where: {
@@ -184,8 +186,35 @@ export class DashboardService {
               status: { in: [InvoiceStatus.ISSUED, InvoiceStatus.PARTIALLY_PAID] },
             },
             _sum: { totalAmount: true, paidAmount: true },
+            _count: { _all: true },
           })
         : Promise.resolve(null),
+
+      // 9. Active encounters today — started today, not yet ended
+      this.prisma.encounter.count({
+        where: {
+          ...orgFilter,
+          ...doctorFilter,
+          deletedAt: null,
+          endedAt: null,
+          startedAt: { gte: todayStart, lt: todayEnd },
+        },
+      }),
+
+      // 10. Overdue follow-ups — followUpDate before today, no completed follow-up appointment
+      this.prisma.encounter.count({
+        where: {
+          ...orgFilter,
+          ...doctorFilter,
+          deletedAt: null,
+          followUpDate: { lt: todayStart },
+          NOT: {
+            followUpAppointments: {
+              some: { deletedAt: null, status: AppointmentStatus.COMPLETED },
+            },
+          },
+        },
+      }),
     ]);
 
     // Appointments
@@ -200,6 +229,7 @@ export class DashboardService {
       collectedToday: number;
       outstandingAllTime: number;
       collectionRateToday: number;
+      unpaidInvoiceCount: number;
     } | null = null;
 
     if (isBillingRole && billingPeriodGroups !== null && billingOutstandingAgg !== null) {
@@ -226,6 +256,7 @@ export class DashboardService {
           totalInvoicedToday === 0
             ? 0
             : Math.round((collectedToday / totalInvoicedToday) * 10000) / 100,
+        unpaidInvoiceCount: billingOutstandingAgg._count._all ?? 0,
       };
     }
 
@@ -246,6 +277,8 @@ export class DashboardService {
         labOrders: { pending: pendingLabs },
         radiologyOrders: { pending: pendingRadiology },
         newPatients,
+        activeEncounters,
+        followUpsOverdue,
       },
       billing,
     };
@@ -260,6 +293,8 @@ export class DashboardService {
         labOrders: { pending: 0 },
         radiologyOrders: { pending: 0 },
         newPatients: 0,
+        activeEncounters: 0,
+        followUpsOverdue: 0,
       },
       billing: null,
     };

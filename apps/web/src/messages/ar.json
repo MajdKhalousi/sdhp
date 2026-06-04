@@ -1048,6 +1048,18 @@
       "pendingRadiology": "أشعة قيد الانتظار",
       "missingEmergencyContact": "جهة اتصال الطوارئ غير مسجلة"
     },
+    "visitStatus": {
+      "heading": "حالة الزيارة",
+      "activeVisit": "زيارة جارية",
+      "nextAppointment": "الموعد القادم",
+      "noUpcomingAppointment": "لا توجد مواعيد قادمة",
+      "viewEncounter": "عرض الزيارة",
+      "bookAppointment": "حجز موعد",
+      "startedAt": "بدأت",
+      "scheduledAt": "مجدول",
+      "doctor": "د.",
+      "visitType": "نوع الزيارة"
+    },
     "duplicate": {
       "heading": "قد يكون المريض مسجلًا مسبقًا",
       "description": "قد يكون أحد المرضى التاليين مسجلًا مسبقًا. يرجى المراجعة قبل إنشاء ملف جديد.",

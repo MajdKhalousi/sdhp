@@ -24,6 +24,7 @@ import { InvoicesTab } from '@/components/patients/invoices-tab';
 import { PatientAppointmentsTab } from '@/components/patients/patient-appointments-tab';
 import { PatientClinicalSummary } from '@/components/patients/patient-clinical-summary';
 import { PatientSafetyAlerts } from '@/components/patients/patient-safety-alerts';
+import { PatientVisitStatus } from '@/components/patients/patient-visit-status';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { Patient, CreatePatientInput, UpdatePatientInput } from '@/hooks/use-patient';
@@ -241,6 +242,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
   const canBookAppointment = user ? RECEPTION_ACTION_ROLES.has(user.role) : false;
   const canCheckIn         = user ? RECEPTION_ACTION_ROLES.has(user.role) : false;
   const canCreateInvoice   = user ? INVOICE_CREATE_ROLES.has(user.role) : false;
+  const canSeeVisitStatus  = user ? SAFETY_ALERT_ROLES.has(user.role) : false;
   const [activeTab, setActiveTab] = useState(() => {
     const tab = searchParams.get('tab');
     return tab === 'timeline' || tab === 'medical-history' ? 'timeline' : 'overview';
@@ -270,6 +272,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
   const pendingRadiologyCount = (radData ?? []).filter((r) => PENDING_RADIOLOGY_STATUSES.has(r.status)).length;
   const lastTimelineEvent = timelineData?.data?.[0];
   const lastEncounterData = lastTimelineEvent?.type === 'ENCOUNTER' ? lastTimelineEvent.data : null;
+  const lastEncounterEvent = lastTimelineEvent?.type === 'ENCOUNTER' ? lastTimelineEvent : null;
   const overdueFollowUpDate = lastEncounterData?.followUpDate ?? null;
 
   if (isError) throw error;
@@ -430,6 +433,12 @@ export default function PatientPage({ params }: { params: { id: string } }) {
       <div className="pt-2">
         <TabPanel value="overview" activeValue={activeTab}>
           <div className="space-y-4">
+            {patient && canSeeVisitStatus && (
+              <PatientVisitStatus
+                patientId={id}
+                lastEncounterEvent={lastEncounterEvent}
+              />
+            )}
             <PatientClinicalSummary
               patientId={id}
               onViewHistory={() => handleTabChange('timeline')}

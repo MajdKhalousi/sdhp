@@ -1048,6 +1048,18 @@
       "pendingRadiology": "pending radiology orders",
       "missingEmergencyContact": "Emergency contact not on file"
     },
+    "visitStatus": {
+      "heading": "Visit Status",
+      "activeVisit": "Active visit",
+      "nextAppointment": "Next appointment",
+      "noUpcomingAppointment": "No upcoming appointments",
+      "viewEncounter": "View encounter",
+      "bookAppointment": "Book appointment",
+      "startedAt": "Started",
+      "scheduledAt": "Scheduled",
+      "doctor": "Dr.",
+      "visitType": "Visit type"
+    },
     "duplicate": {
       "heading": "Possible duplicate patient",
       "description": "The following patient(s) may already be registered. Review before creating a new file.",

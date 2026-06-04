@@ -183,8 +183,8 @@ export function buildClinicalReportHtml(data: ClinicalReportPdfData): string {
 </div>
 
 <div class="footer">
-  <span>Generated: ${formatTechnicalDate(data.generatedAt)}</span>
-  <span>Report ID: ${escapeHtml(data.report.id)}</span>
+  <span>تاريخ الإصدار: ${formatTechnicalDate(data.generatedAt)}</span>
+  <span>رقم التقرير: ${escapeHtml(data.report.id)}</span>
 </div>
 
 </body>

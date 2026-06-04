@@ -1,4 +1,4 @@
-import { ClinicalReportStatus, LabOrderStatus, MedicalFileCategory, RadiologyOrderStatus, UserRole } from '@prisma/client';
+import { ClinicalReportStatus, LabOrderStatus, MedicalFileCategory, Prisma, RadiologyOrderStatus, UserRole } from '@prisma/client';
 
 export enum TimelineEventType {
   ENCOUNTER               = 'ENCOUNTER',
@@ -18,11 +18,14 @@ export interface EncounterEventData {
   startedAt: Date;
   endedAt: Date | null;
   chiefComplaint: string | null;
+  historyOfPresentIllness: string | null;
   diagnosisCode: string | null;
   hasDiagnosis: boolean;
   notes: string | null;
   treatmentPlan: string | null;
+  patientInstructions: string | null;
   followUpDate: Date | null;
+  vitals: Prisma.JsonValue | null;
   updatedAt: Date;
   doctor: { id: string; firstName: string; lastName: string; specialization: string | null };
 }

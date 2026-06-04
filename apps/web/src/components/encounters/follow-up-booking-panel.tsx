@@ -32,7 +32,6 @@ export function FollowUpBookingPanel({ encounterId, patientId, defaultDoctorId, 
   const tCommon = useTranslations('common');
   const tHeader = useTranslations('encounter.header');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
 
   const [showForm, setShowForm] = useState(initialShowForm ?? false);
   const [doctorId, setDoctorId] = useState(defaultDoctorId);

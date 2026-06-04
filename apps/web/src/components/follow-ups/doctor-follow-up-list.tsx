@@ -17,7 +17,7 @@ import { formatDateDisplay, formatDateTimeDisplay } from '@/lib/format-date';
 
 const LIMIT = 20;
 
-const TAB_ORDER: FollowUpStatus[] = ['DUE_TODAY', 'MISSED', 'OVERDUE', 'PENDING', 'UPCOMING'];
+const TAB_ORDER: FollowUpStatus[] = ['DUE_TODAY', 'OVERDUE', 'PENDING', 'UPCOMING', 'MISSED'];
 
 const TAB_LABEL_KEY: Record<FollowUpStatus, string> = {
   DUE_TODAY: 'tabs.dueToday',

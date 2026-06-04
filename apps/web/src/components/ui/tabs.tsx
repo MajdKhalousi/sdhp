@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 export interface TabItem {
   value: string;
   label: string;
+  badge?: number;
   disabled?: boolean;
 }
 
@@ -93,6 +94,11 @@ export function Tabs({
             )}
           >
             {tab.label}
+            {tab.badge != null && tab.badge > 0 && (
+              <span className="ms-1.5 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-muted px-1 text-[10px] font-medium tabular-nums text-muted-foreground">
+                {tab.badge > 99 ? '99+' : tab.badge}
+              </span>
+            )}
           </button>
         );
       })}

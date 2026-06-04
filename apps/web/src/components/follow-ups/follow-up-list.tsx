@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, CalendarX2, AlertTriangle, Clock, UserX } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
-import { useFollowUps } from '@/hooks/use-follow-ups';
+import { useFollowUps, useFollowUpSummary } from '@/hooks/use-follow-ups';
 import { useDoctorsList } from '@/hooks/use-appointments';
 import {
   useCreateReminder,
@@ -283,7 +283,21 @@ export function FollowUpList() {
   });
 
   const { data: doctorsData } = useDoctorsList();
+  const { data: summary } = useFollowUpSummary({
+    ...(doctorId ? { doctorId } : {}),
+    ...(dateFrom ? { dateFrom } : {}),
+    ...(dateTo   ? { dateTo }   : {}),
+  });
   const totalPages = data ? Math.ceil(data.total / LIMIT) : 1;
+
+  const SUMMARY_BADGE: Record<FollowUpStatus, number> = {
+    DUE_TODAY: summary?.dueToday ?? 0,
+    OVERDUE:   summary?.overdue  ?? 0,
+    PENDING:   summary?.pending  ?? 0,
+    UPCOMING:  summary?.upcoming ?? 0,
+    MISSED:    summary?.missed   ?? 0,
+    COMPLETED: 0,
+  };
 
   const tabs = TAB_ORDER.map((s) => ({
     value: s,
@@ -296,6 +310,7 @@ export function FollowUpList() {
         'upcoming'
       }` as Parameters<typeof t>[0]
     ),
+    badge: SUMMARY_BADGE[s] > 0 ? SUMMARY_BADGE[s] : undefined,
   }));
 
   function handleTabChange(tab: string) {

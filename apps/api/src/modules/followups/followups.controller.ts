@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { FollowupsService } from './followups.service';
 import { FollowUpQueryDto } from './dto/follow-up-query.dto';
+import { FollowUpSummaryQueryDto } from './dto/follow-up-summary-query.dto';
 import { CreateReminderDto } from './dto/create-reminder.dto';
 import { UpdateReminderDto } from './dto/update-reminder.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -31,6 +32,23 @@ export class FollowupsController {
   })
   findAll(@Query() query: FollowUpQueryDto, @CurrentUser() user: JwtPayload) {
     return this.service.findAll(query, user);
+  }
+
+  @Get('summary')
+  @Version('1')
+  @Roles(
+    UserRole.SUPER_ADMIN,
+    UserRole.ORG_ADMIN,
+    UserRole.BRANCH_ADMIN,
+    UserRole.DOCTOR,
+    UserRole.NURSE,
+    UserRole.SECRETARY,
+  )
+  @ApiOperation({
+    summary: 'Count follow-ups per status bucket — DOCTOR: own patients only | Others: org-scoped with optional filters',
+  })
+  getSummary(@Query() query: FollowUpSummaryQueryDto, @CurrentUser() user: JwtPayload) {
+    return this.service.getSummary(query, user);
   }
 
   @Post(':encounterId/reminders')

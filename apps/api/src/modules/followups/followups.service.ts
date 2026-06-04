@@ -4,9 +4,10 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { FollowUpQueryDto } from './dto/follow-up-query.dto';
+import { FollowUpSummaryQueryDto } from './dto/follow-up-summary-query.dto';
 import { CreateReminderDto } from './dto/create-reminder.dto';
 import { UpdateReminderDto } from './dto/update-reminder.dto';
-import { FollowUpItem, FollowUpStatus } from './followups.types';
+import { FollowUpItem, FollowUpStatus, FollowUpSummary } from './followups.types';
 
 // Damascus is permanently UTC+3 (no DST since 2022).
 const DAMASCUS_OFFSET_MS = 3 * 60 * 60 * 1000;
@@ -103,28 +104,8 @@ export class FollowupsService {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
 
-    // DOCTOR role: always scope to their own profile; query.doctorId is ignored for security.
-    let doctorId: string | undefined = query.doctorId;
-    if (caller.role === UserRole.DOCTOR) {
-      const profile = await this.prisma.doctor.findFirst({
-        where: { userId: caller.sub, deletedAt: null },
-        select: { id: true },
-      });
-      if (!profile) return { data: [], total: 0, page, limit };
-      doctorId = profile.id;
-    }
-
-    const followUpDateFilter: Prisma.DateTimeNullableFilter<'Encounter'> = { not: null };
-    if (query.dateFrom) followUpDateFilter.gte = damascusStartOfDay(query.dateFrom);
-    if (query.dateTo)   followUpDateFilter.lte = damascusEndOfDay(query.dateTo);
-
-    const where: Prisma.EncounterWhereInput = {
-      organizationId: caller.organizationId,
-      deletedAt: null,
-      followUpDate: followUpDateFilter,
-      ...(doctorId        ? { doctorId }              : {}),
-      ...(query.branchId  ? { branchId: query.branchId } : {}),
-    };
+    const where = await this.buildEncounterWhere(query, caller);
+    if (!where) return { data: [], total: 0, page, limit };
 
     const rows = await this.prisma.encounter.findMany({
       where,
@@ -143,6 +124,64 @@ export class FollowupsService {
       total: filtered.length,
       page,
       limit,
+    };
+  }
+
+  async getSummary(
+    query: FollowUpSummaryQueryDto,
+    caller: JwtPayload,
+  ): Promise<FollowUpSummary> {
+    const now = new Date();
+    const { start: todayStart, end: todayEnd } = getDamascusDayBoundaries(now);
+
+    const where = await this.buildEncounterWhere(query, caller);
+    if (!where) return { dueToday: 0, overdue: 0, pending: 0, upcoming: 0, missed: 0 };
+
+    const rows = await this.prisma.encounter.findMany({
+      where,
+      select: ENCOUNTER_SELECT,
+      orderBy: { followUpDate: 'asc' },
+    });
+
+    const summary: FollowUpSummary = { dueToday: 0, overdue: 0, pending: 0, upcoming: 0, missed: 0 };
+    for (const e of rows) {
+      switch (this.toItem(e, todayStart, todayEnd).followUpStatus) {
+        case FollowUpStatus.DUE_TODAY: summary.dueToday++; break;
+        case FollowUpStatus.OVERDUE:   summary.overdue++;  break;
+        case FollowUpStatus.PENDING:   summary.pending++;  break;
+        case FollowUpStatus.UPCOMING:  summary.upcoming++; break;
+        case FollowUpStatus.MISSED:    summary.missed++;   break;
+        // COMPLETED excluded — not a summary tab
+      }
+    }
+    return summary;
+  }
+
+  private async buildEncounterWhere(
+    query: { doctorId?: string; branchId?: string; dateFrom?: string; dateTo?: string },
+    caller: JwtPayload,
+  ): Promise<Prisma.EncounterWhereInput | null> {
+    // DOCTOR: always scope to own profile; caller-supplied doctorId is ignored for security.
+    let doctorId: string | undefined = query.doctorId;
+    if (caller.role === UserRole.DOCTOR) {
+      const profile = await this.prisma.doctor.findFirst({
+        where: { userId: caller.sub, deletedAt: null },
+        select: { id: true },
+      });
+      if (!profile) return null;
+      doctorId = profile.id;
+    }
+
+    const followUpDateFilter: Prisma.DateTimeNullableFilter<'Encounter'> = { not: null };
+    if (query.dateFrom) followUpDateFilter.gte = damascusStartOfDay(query.dateFrom);
+    if (query.dateTo)   followUpDateFilter.lte = damascusEndOfDay(query.dateTo);
+
+    return {
+      organizationId: caller.organizationId,
+      deletedAt: null,
+      followUpDate: followUpDateFilter,
+      ...(doctorId       ? { doctorId }               : {}),
+      ...(query.branchId ? { branchId: query.branchId } : {}),
     };
   }
 

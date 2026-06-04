@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, Clock, AlertTriangle, XCircle, Hourglass, CalendarClock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
-import { useFollowUps } from '@/hooks/use-follow-ups';
+import { useFollowUps, useFollowUpSummary } from '@/hooks/use-follow-ups';
 import { Tabs } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FollowUpStatusBadge } from './follow-up-status-badge';
@@ -65,12 +65,26 @@ export function DoctorFollowUpList() {
     limit: LIMIT,
   });
 
+  const { data: summary } = useFollowUpSummary();
   const totalPages = data ? Math.ceil(data.total / LIMIT) : 1;
 
-  const tabs = TAB_ORDER.map((s) => ({
-    value: s,
-    label: t(TAB_LABEL_KEY[s] as Parameters<typeof t>[0]),
-  }));
+  const SUMMARY_KEY: Partial<Record<FollowUpStatus, keyof NonNullable<typeof summary>>> = {
+    DUE_TODAY: 'dueToday',
+    OVERDUE:   'overdue',
+    PENDING:   'pending',
+    UPCOMING:  'upcoming',
+    MISSED:    'missed',
+  };
+
+  const tabs = TAB_ORDER.map((s) => {
+    const key = SUMMARY_KEY[s];
+    const count = key && summary ? (summary[key] ?? 0) : 0;
+    return {
+      value: s,
+      label: t(TAB_LABEL_KEY[s] as Parameters<typeof t>[0]),
+      badge: count > 0 ? count : undefined,
+    };
+  });
 
   function handleTabChange(tab: string) {
     setActiveTab(tab as FollowUpStatus);

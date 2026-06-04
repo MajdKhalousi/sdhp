@@ -54,3 +54,18 @@ export interface FollowUpQuery {
   page?: number;
   limit?: number;
 }
+
+export interface FollowUpSummary {
+  dueToday: number;
+  overdue: number;
+  pending: number;
+  upcoming: number;
+  missed: number;
+}
+
+export interface FollowUpSummaryQuery {
+  doctorId?: string;
+  branchId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}

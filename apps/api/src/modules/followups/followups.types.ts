@@ -24,6 +24,14 @@ export interface FollowUpLinkedAppointment {
   doctor: FollowUpDoctor;
 }
 
+export interface FollowUpSummary {
+  dueToday: number;
+  overdue: number;
+  pending: number;
+  upcoming: number;
+  missed: number;
+}
+
 export interface FollowUpItem {
   encounterId: string;
   followUpDate: string;

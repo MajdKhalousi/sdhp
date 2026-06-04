@@ -4,15 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePatientOutstandingBalance } from '@/hooks/use-invoices';
 import { formatDateDisplay } from '@/lib/format-date';
-
-function formatAmount(value: number, locale: string): string {
-  return (
-    new Intl.NumberFormat(locale === 'ar' ? 'ar-u-nu-latn' : 'en-US', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    }).format(value) + ' SYP'
-  );
-}
+import { formatAmount } from '@/lib/format-currency';
 
 interface Props {
   patientId: string;

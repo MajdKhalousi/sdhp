@@ -1070,7 +1070,6 @@
       "amount": "الرصيد",
       "invoiceCount": "عدد الفواتير",
       "oldestUnpaid": "أقدم فاتورة غير مدفوعة",
-      "allPaid": "جميع الفواتير مدفوعة",
       "viewInvoices": "عرض الفواتير"
     },
     "duplicate": {

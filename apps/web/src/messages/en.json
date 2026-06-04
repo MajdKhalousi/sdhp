@@ -1070,7 +1070,6 @@
       "amount": "Balance",
       "invoiceCount": "Invoices",
       "oldestUnpaid": "Oldest unpaid",
-      "allPaid": "All invoices paid",
       "viewInvoices": "View invoices"
     },
     "duplicate": {

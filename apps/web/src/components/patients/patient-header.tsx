@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import type { Patient } from '@/hooks/use-patient';
 import { usePatientOutstandingBalance } from '@/hooks/use-invoices';
 import { formatDateDisplay } from '@/lib/format-date';
+import { formatAmount } from '@/lib/format-currency';
 
 interface PatientHeaderProps {
   patient?: Patient;
@@ -15,15 +16,6 @@ interface PatientHeaderProps {
 function formatBloodType(raw: string | null): string {
   if (!raw) return '—';
   return raw.replace('_POS', '+').replace('_NEG', '−');
-}
-
-function formatAmount(value: number, locale: string): string {
-  return (
-    new Intl.NumberFormat(locale === 'ar' ? 'ar-u-nu-latn' : 'en-US', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    }).format(value) + ' SYP'
-  );
 }
 
 function Initials({ name }: { name: string }) {

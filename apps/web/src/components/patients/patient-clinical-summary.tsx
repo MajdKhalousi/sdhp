@@ -106,53 +106,73 @@ export function PatientClinicalSummary({ patientId, onViewHistory }: Props) {
       {!hasAnyData ? (
         <p className="text-sm text-muted-foreground">{t('noHistory')}</p>
       ) : (
-        <div className="grid gap-x-6 gap-y-3 sm:grid-cols-3">
-          {/* Last Visit */}
-          <SnapshotRow
-            label={t('lastVisit')}
-            value={
-              enc ? (
-                <span>
-                  {formatDateDisplay(enc.startedAt)}
-                  {enc.chiefComplaint && (
-                    <span className="block text-xs font-normal text-muted-foreground line-clamp-1">
-                      {enc.chiefComplaint}
-                    </span>
-                  )}
-                  {enc.doctor && (
-                    <span className="block text-xs font-normal text-muted-foreground">
-                      {`${enc.doctor.firstName} ${enc.doctor.lastName}`}
-                    </span>
-                  )}
-                </span>
-              ) : na
-            }
-          />
+        <>
+          <div className="grid gap-x-6 gap-y-3 sm:grid-cols-3">
+            {/* Last Visit */}
+            <SnapshotRow
+              label={t('lastVisit')}
+              value={
+                enc ? (
+                  <span>
+                    {formatDateDisplay(enc.startedAt)}
+                    {enc.doctor && (
+                      <span className="block text-xs font-normal text-muted-foreground">
+                        {`${enc.doctor.firstName} ${enc.doctor.lastName}`}
+                      </span>
+                    )}
+                  </span>
+                ) : na
+              }
+            />
 
-          {/* Last Diagnosis */}
-          <SnapshotRow
-            label={t('lastDiagnosis')}
-            value={enc?.diagnosisCode ?? (enc?.hasDiagnosis ? t('notAvailable') : na)}
-          />
+            {/* Last Diagnosis */}
+            <SnapshotRow
+              label={t('lastDiagnosis')}
+              value={enc?.diagnosisCode ?? (enc?.hasDiagnosis ? t('notAvailable') : na)}
+            />
 
-          {/* Next Follow-up */}
-          <SnapshotRow
-            label={t('nextFollowUp')}
-            value={enc?.followUpDate ? formatDateDisplay(enc.followUpDate) : na}
-          />
+            {/* Next Follow-up */}
+            <SnapshotRow
+              label={t('nextFollowUp')}
+              value={enc?.followUpDate ? formatDateDisplay(enc.followUpDate) : na}
+            />
 
-          {/* Pending Labs */}
-          <SnapshotRow
-            label={t('pendingLabs')}
-            value={labsError ? na : String(pendingLabs)}
-          />
+            {/* Pending Labs */}
+            <SnapshotRow
+              label={t('pendingLabs')}
+              value={labsError ? na : String(pendingLabs)}
+            />
 
-          {/* Pending Radiology */}
-          <SnapshotRow
-            label={t('pendingRadiology')}
-            value={radError ? na : String(pendingRad)}
-          />
-        </div>
+            {/* Pending Radiology */}
+            <SnapshotRow
+              label={t('pendingRadiology')}
+              value={radError ? na : String(pendingRad)}
+            />
+          </div>
+
+          {(enc?.chiefComplaint || enc?.historyOfPresentIllness || enc?.treatmentPlan) && (
+            <div className="mt-3 space-y-2 border-t pt-3">
+              {enc.chiefComplaint && (
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs text-muted-foreground">{t('lastChiefComplaint')}</span>
+                  <span className="text-sm text-foreground line-clamp-2">{enc.chiefComplaint}</span>
+                </div>
+              )}
+              {enc.historyOfPresentIllness && (
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs text-muted-foreground">{t('lastHpi')}</span>
+                  <span className="text-sm text-foreground line-clamp-2">{enc.historyOfPresentIllness}</span>
+                </div>
+              )}
+              {enc.treatmentPlan && (
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs text-muted-foreground">{t('lastTreatmentPlan')}</span>
+                  <span className="text-sm text-foreground line-clamp-2">{enc.treatmentPlan}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

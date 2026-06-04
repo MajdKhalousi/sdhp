@@ -2085,12 +2085,19 @@
       "viewAppointment": "View",
       "openEncounter": "Open Encounter",
       "viewPatient": "Patient",
-      "sendReminder": "Remind"
+      "sendReminder": "Remind",
+      "markContacted": "Mark as Contacted",
+      "contacting": "Updating..."
     },
     "reminder": {
       "queued": "Reminder queued",
       "alreadyQueued": "Reminder already queued",
       "failed": "Failed to queue reminder"
+    },
+    "reminders": {
+      "sent": "Contacted",
+      "pending": "Reminder queued",
+      "failed": "Contact failed"
     },
     "filter": {
       "byDoctor": "Filter by doctor",

@@ -5,6 +5,7 @@ import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { FollowUpQueryDto } from './dto/follow-up-query.dto';
 import { CreateReminderDto } from './dto/create-reminder.dto';
+import { UpdateReminderDto } from './dto/update-reminder.dto';
 import { FollowUpItem, FollowUpStatus } from './followups.types';
 
 // Damascus is permanently UTC+3 (no DST since 2022).
@@ -203,6 +204,76 @@ export class FollowupsService {
         scheduledFor: true,
         status: true,
         createdAt: true,
+      },
+    });
+  }
+
+  async findReminders(encounterId: string, caller: JwtPayload) {
+    const encounter = await this.prisma.encounter.findFirst({
+      where: { id: encounterId, organizationId: caller.organizationId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!encounter) throw new NotFoundException('Encounter not found');
+
+    return this.prisma.followUpReminder.findMany({
+      where: { encounterId, organizationId: caller.organizationId },
+      select: {
+        id: true,
+        encounterId: true,
+        patientId: true,
+        channel: true,
+        scheduledFor: true,
+        status: true,
+        sentAt: true,
+        failureReason: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async updateReminder(
+    encounterId: string,
+    reminderId: string,
+    dto: UpdateReminderDto,
+    caller: JwtPayload,
+  ) {
+    const encounter = await this.prisma.encounter.findFirst({
+      where: { id: encounterId, organizationId: caller.organizationId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!encounter) throw new NotFoundException('Encounter not found');
+
+    const reminder = await this.prisma.followUpReminder.findFirst({
+      where: { id: reminderId, encounterId, organizationId: caller.organizationId },
+      select: { id: true, status: true },
+    });
+    if (!reminder) throw new NotFoundException('Reminder not found');
+
+    if (reminder.status !== ReminderStatus.PENDING) {
+      throw new BadRequestException('Only PENDING reminders can be updated');
+    }
+
+    return this.prisma.followUpReminder.update({
+      where: { id: reminderId },
+      data: {
+        status: dto.status,
+        ...(dto.status === ReminderStatus.SENT
+          ? { sentAt: new Date(), failureReason: null }
+          : { failureReason: dto.failureReason ?? 'Contact failed' }),
+      },
+      select: {
+        id: true,
+        encounterId: true,
+        patientId: true,
+        channel: true,
+        scheduledFor: true,
+        status: true,
+        sentAt: true,
+        failureReason: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   }

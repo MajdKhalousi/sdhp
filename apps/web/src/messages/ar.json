@@ -2085,12 +2085,19 @@
       "viewAppointment": "عرض",
       "openEncounter": "فتح الزيارة",
       "viewPatient": "المريض",
-      "sendReminder": "تذكير"
+      "sendReminder": "تذكير",
+      "markContacted": "تم التواصل",
+      "contacting": "جارٍ التحديث..."
     },
     "reminder": {
       "queued": "تم جدولة التذكير",
       "alreadyQueued": "التذكير مجدول مسبقاً",
       "failed": "فشل جدولة التذكير"
+    },
+    "reminders": {
+      "sent": "تم التواصل",
+      "pending": "تم تسجيل التذكير",
+      "failed": "فشل التواصل"
     },
     "filter": {
       "byDoctor": "تصفية حسب الطبيب",

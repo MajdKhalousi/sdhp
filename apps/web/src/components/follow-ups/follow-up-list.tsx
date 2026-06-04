@@ -7,7 +7,8 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useFollowUps } from '@/hooks/use-follow-ups';
 import { useDoctorsList } from '@/hooks/use-appointments';
-import { useCreateReminder } from '@/hooks/use-follow-up-reminders';
+import { useCreateReminder, useUpdateFollowUpReminder } from '@/hooks/use-follow-up-reminders';
+import type { ReminderItem } from '@/hooks/use-follow-up-reminders';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -36,10 +37,13 @@ export function FollowUpList() {
 
   const { toast } = useToast();
   const createReminder = useCreateReminder();
+  const updateReminder = useUpdateFollowUpReminder();
   const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<FollowUpStatus>('DUE_TODAY');
   const [pendingReminderIds, setPendingReminderIds] = useState<Set<string>>(new Set());
+  const [pendingContactIds, setPendingContactIds] = useState<Set<string>>(new Set());
+  const [reminderStates, setReminderStates] = useState<Record<string, { reminderId: string; status: 'PENDING' | 'SENT' | 'FAILED' }>>({});
   const [doctorId, setDoctorId] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
@@ -51,8 +55,9 @@ export function FollowUpList() {
     createReminder.mutate(
       { encounterId, body: { channel: 'IN_APP' } },
       {
-        onSuccess: () => {
+        onSuccess: (result: ReminderItem) => {
           setPendingReminderIds((prev) => { const next = new Set(prev); next.delete(encounterId); return next; });
+          setReminderStates((prev) => ({ ...prev, [encounterId]: { reminderId: result.id, status: 'PENDING' } }));
           toast({ title: t('reminder.queued'), variant: 'success' });
         },
         onError: (err: unknown) => {
@@ -62,6 +67,24 @@ export function FollowUpList() {
             title: isDuplicate ? t('reminder.alreadyQueued') : t('reminder.failed'),
             variant: isDuplicate ? 'default' : 'error',
           });
+        },
+      },
+    );
+  }
+
+  function handleMarkContacted(encounterId: string, reminderId: string) {
+    setPendingContactIds((prev) => new Set(prev).add(encounterId));
+    updateReminder.mutate(
+      { encounterId, reminderId, body: { status: 'SENT' } },
+      {
+        onSuccess: () => {
+          setPendingContactIds((prev) => { const next = new Set(prev); next.delete(encounterId); return next; });
+          setReminderStates((prev) => ({ ...prev, [encounterId]: { ...prev[encounterId], status: 'SENT' } }));
+          toast({ title: t('reminders.sent'), variant: 'success' });
+        },
+        onError: () => {
+          setPendingContactIds((prev) => { const next = new Set(prev); next.delete(encounterId); return next; });
+          toast({ title: t('reminder.failed'), variant: 'error' });
         },
       },
     );
@@ -355,6 +378,21 @@ export function FollowUpList() {
                               >
                                 {t('actions.sendReminder')}
                               </button>
+                            )}
+                            {reminderStates[item.encounterId] && (
+                              reminderStates[item.encounterId].status === 'PENDING' ? (
+                                <button
+                                  onClick={() => handleMarkContacted(item.encounterId, reminderStates[item.encounterId].reminderId)}
+                                  disabled={pendingContactIds.has(item.encounterId)}
+                                  className="h-7 rounded-md border border-green-600/40 px-2 text-xs font-medium text-green-700 transition-colors hover:bg-green-50 disabled:opacity-40 dark:text-green-400 dark:hover:bg-green-950/20"
+                                >
+                                  {pendingContactIds.has(item.encounterId) ? t('actions.contacting') : t('actions.markContacted')}
+                                </button>
+                              ) : (
+                                <span className="text-xs font-medium text-green-700 dark:text-green-400">
+                                  {t('reminders.sent')}
+                                </span>
+                              )
                             )}
                           </div>
                         </td>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { AlertCircle, Plus } from 'lucide-react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import type { BadgeProps } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,8 +33,6 @@ const FIELD_CLASS =
 
 function ResultSection({ result }: { result: LabResult }) {
   const tLab = useTranslations('encounter');
-  const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const reviewer = result.reviewedBy
     ? `${result.reviewedBy.user.firstName} ${result.reviewedBy.user.lastName}`
     : null;
@@ -124,7 +122,9 @@ function OrderCard({ order, readOnly }: OrderCardProps) {
           </p>
         )}
         {order.clinicalInfo && (
-          <p className="mt-0.5 text-xs italic text-muted-foreground">{order.clinicalInfo}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            <span className="font-medium">{tLab('labOrders.fields.clinicalInfoLabel')}:</span> {order.clinicalInfo}
+          </p>
         )}
         {order.notes && (
           <p className="mt-0.5 text-xs italic text-muted-foreground">{order.notes}</p>

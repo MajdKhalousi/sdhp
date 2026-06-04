@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Scan } from 'lucide-react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import type { BadgeProps } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -32,8 +32,6 @@ const PRIORITY_OPTIONS = ['ROUTINE', 'URGENT', 'STAT'] as const;
 
 function ReportSection({ report }: { report: RadiologyReport }) {
   const tRad = useTranslations('encounter');
-  const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const reportedBy = report.reportedBy
     ? `${report.reportedBy.user.firstName} ${report.reportedBy.user.lastName}`
     : null;
@@ -87,8 +85,6 @@ function RadiologyOrderItem({ order }: { order: RadiologyOrder }) {
   const t = useTranslations('timeline');
   const tRad = useTranslations('encounter');
   const tPatient = useTranslations('patient');
-  const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const { user } = useAuthStore();
   const { mutate: review, isPending: reviewing } = useReviewRadiologyReport();
   const [reviewError, setReviewError] = useState('');

@@ -23,6 +23,7 @@ const STATUS_VARIANT: Record<PendingStatus, BadgeVariant> = {
   IN_PROGRESS: 'default',
 };
 
+const MODALITY_OPTIONS = ['X-RAY', 'CT', 'MRI', 'ULTRASOUND', 'ECHO'] as const;
 const PRIORITY_OPTIONS = ['ROUTINE', 'URGENT', 'STAT'] as const;
 const PRIORITY_VARIANT: Record<string, BadgeVariant> = {
   STAT:    'danger',
@@ -201,7 +202,9 @@ function RadiologyOrderCard({ order }: { order: RadiologyOrder }) {
 
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">
-            {order.modality}
+            {(MODALITY_OPTIONS as ReadonlyArray<string>).includes(order.modality)
+              ? t(`modality.${order.modality}` as Parameters<typeof t>[0])
+              : order.modality}
             {order.bodyPart && (
               <span className="ms-1.5 text-xs font-normal text-muted-foreground">
                 — {order.bodyPart}

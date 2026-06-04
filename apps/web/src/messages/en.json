@@ -658,7 +658,8 @@
       },
       "pendingReview": {
         "heading": "Pending Review",
-        "ordered": "Ordered"
+        "ordered": "Ordered",
+        "fromPreviousVisits": "From previous visits"
       },
       "error": {
         "addFailed": "Failed to add radiology order",
@@ -1243,6 +1244,13 @@
     "card": {
       "orderedAt": "Ordered {date}",
       "clinicalInfo": "Clinical info"
+    },
+    "modality": {
+      "X-RAY": "X-Ray",
+      "CT": "CT Scan",
+      "MRI": "MRI",
+      "ULTRASOUND": "Ultrasound",
+      "ECHO": "Echo"
     },
     "priority": {
       "ROUTINE": "Routine",

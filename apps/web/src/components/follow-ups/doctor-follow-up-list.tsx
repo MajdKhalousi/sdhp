@@ -3,7 +3,7 @@
 import { Fragment, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, Clock, AlertTriangle, XCircle, Hourglass, CalendarClock } from 'lucide-react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useFollowUps } from '@/hooks/use-follow-ups';
 import { Tabs } from '@/components/ui/tabs';
@@ -49,9 +49,6 @@ const EMPTY_KEY: Record<FollowUpStatus, string> = {
 export function DoctorFollowUpList() {
   const t = useTranslations('followups');
   const tCommon = useTranslations('common');
-  const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
-
   const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<FollowUpStatus>('DUE_TODAY');

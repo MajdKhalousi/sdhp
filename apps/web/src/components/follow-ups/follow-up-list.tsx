@@ -3,7 +3,7 @@
 import { Fragment, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, CalendarX2, AlertTriangle, Clock, UserX } from 'lucide-react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useFollowUps } from '@/hooks/use-follow-ups';
 import { useDoctorsList } from '@/hooks/use-appointments';
@@ -32,9 +32,6 @@ const EMPTY_ICON: Record<string, React.ComponentType<{ className?: string }>> = 
 export function FollowUpList() {
   const t = useTranslations('followups');
   const tCommon = useTranslations('common');
-  const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
-
   const { toast } = useToast();
   const createReminder = useCreateReminder();
   const updateReminder = useUpdateFollowUpReminder();

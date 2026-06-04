@@ -658,7 +658,8 @@
       },
       "pendingReview": {
         "heading": "بانتظار المراجعة",
-        "ordered": "طُلب"
+        "ordered": "طُلب",
+        "fromPreviousVisits": "من زيارات سابقة"
       },
       "error": {
         "addFailed": "فشل إضافة الطلب الشعاعي",
@@ -1243,6 +1244,13 @@
     "card": {
       "orderedAt": "طُلب {date}",
       "clinicalInfo": "المعلومات السريرية"
+    },
+    "modality": {
+      "X-RAY": "أشعة سينية",
+      "CT": "أشعة مقطعية",
+      "MRI": "رنين مغناطيسي",
+      "ULTRASOUND": "موجات فوق صوتية",
+      "ECHO": "إيكو"
     },
     "priority": {
       "ROUTINE": "روتيني",

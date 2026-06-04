@@ -553,6 +553,12 @@
       "viewEncounter": "عرض الزيارة",
       "viewFullHistory": "عرض السجل الكامل"
     },
+    "quickFill": {
+      "label": "الزيارة السابقة:",
+      "use": "استخدام",
+      "lastVitals": "آخر القياسات:",
+      "copyAll": "نسخ الكل"
+    },
     "followUpBooking": {
       "bookButton": "حجز موعد مراجعة",
       "alreadyBooked": "تم حجز المراجعة",

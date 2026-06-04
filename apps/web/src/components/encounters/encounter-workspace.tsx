@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { AlertTriangle, Activity, FileText, Stethoscope, Pill, CheckCircle2, FlaskConical, Scan, ClipboardList, CalendarClock, Receipt } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
-import { useEncounter, useUpdateEncounter } from '@/hooks/use-encounters';
+import { useEncounter, useUpdateEncounter, useEncounters } from '@/hooks/use-encounters';
 import { useAppointment, useVisitTypesList } from '@/hooks/use-appointments';
 import { useAllergies } from '@/hooks/use-allergies';
 import { usePatientInvoices } from '@/hooks/use-invoices';
@@ -55,6 +55,44 @@ function fmtAmount(value: string, locale: string): string {
   if (isNaN(num)) return '—';
   return (
     new Intl.NumberFormat(locale, { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(num) + ' SYP'
+  );
+}
+
+function formatVitalsSummary(vitals: VitalsPayload): string {
+  const parts: string[] = [];
+  if (vitals.bloodPressure)    parts.push(`BP ${vitals.bloodPressure}`);
+  if (vitals.heartRate)        parts.push(`HR ${vitals.heartRate}`);
+  if (vitals.temperature)      parts.push(`T ${vitals.temperature}`);
+  if (vitals.oxygenSaturation) parts.push(`SpO2 ${vitals.oxygenSaturation}`);
+  if (vitals.respiratoryRate)  parts.push(`RR ${vitals.respiratoryRate}`);
+  if (vitals.weight)           parts.push(`Wt ${vitals.weight}`);
+  if (vitals.height)           parts.push(`Ht ${vitals.height}`);
+  return parts.join(' · ');
+}
+
+function QuickFillHint({
+  previous,
+  onUse,
+}: {
+  previous: string | null | undefined;
+  onUse: () => void;
+}) {
+  const t = useTranslations('encounter');
+  if (!previous?.trim()) return null;
+  return (
+    <div className="mt-1 flex items-center gap-2">
+      <span className="shrink-0 text-xs text-muted-foreground">{t('quickFill.label')}</span>
+      <span className="line-clamp-1 min-w-0 flex-1 text-xs text-muted-foreground" dir="auto">
+        {previous}
+      </span>
+      <button
+        type="button"
+        onClick={onUse}
+        className="shrink-0 text-xs font-medium text-primary hover:underline"
+      >
+        {t('quickFill.use')}
+      </button>
+    </div>
   );
 }
 
@@ -128,6 +166,10 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const { data: appointment } = useAppointment(encounter?.appointmentId ?? '');
   const appointmentVisitType = visitTypes?.find((vt) => vt.id === appointment?.visitTypeId) ?? null;
   const { data: patientInvoices } = usePatientInvoices(encounter?.patient.id ?? '');
+  const { data: prevList } = useEncounters(
+    { patientId: encounter?.patient.id ?? '', limit: 2 },
+    { enabled: !!encounter?.patient.id },
+  );
   const unpaidInvoice = useMemo(() => {
     if (!patientInvoices) return null;
     return (
@@ -252,6 +294,12 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const ENCOUNTER_EDIT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR']);
   const canEdit = ENCOUNTER_EDIT_ROLES.has(user?.role ?? '');
   const readOnly = isEnded || saving || !canEdit;
+  const previousEncounter = prevList?.data.find((e) => e.id !== encounterId) ?? null;
+  const previousVitals = previousEncounter
+    ? toVitals(previousEncounter.vitals as Record<string, unknown> | null)
+    : null;
+  const prevHasVitals = !!previousVitals && Object.values(previousVitals).some(Boolean);
+  const currentVitalsEmpty = Object.values(form.vitals).every((v) => !v);
   const patientAge = computeAge(patient.dateOfBirth);
   const visitTypeName = appointmentVisitType
     ? ((locale === 'ar' && appointmentVisitType.nameAr) || appointmentVisitType.name)
@@ -427,6 +475,12 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
               disabled={readOnly}
               className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
+            {!readOnly && !form.chiefComplaint && (
+              <QuickFillHint
+                previous={previousEncounter?.chiefComplaint}
+                onUse={() => { const v = previousEncounter?.chiefComplaint; if (v) setField('chiefComplaint', v); }}
+              />
+            )}
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium" htmlFor="historyOfPresentIllness">
@@ -442,6 +496,12 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
               disabled={readOnly}
               className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
+            {!readOnly && !form.historyOfPresentIllness && (
+              <QuickFillHint
+                previous={previousEncounter?.historyOfPresentIllness}
+                onUse={() => { const v = previousEncounter?.historyOfPresentIllness; if (v) setField('historyOfPresentIllness', v); }}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -450,6 +510,27 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
       <SoapSection letter="O" label={t('soap.objective')} />
       <div className="rounded-xl border border-border bg-card p-5">
         <SectionHeading icon={Activity}>{t('sections.vitals')}</SectionHeading>
+        {!readOnly && currentVitalsEmpty && prevHasVitals && previousVitals && (
+          <div className="mb-4 flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-2">
+            <span className="shrink-0 text-xs text-muted-foreground">{t('quickFill.lastVitals')}</span>
+            <span className="flex-1 truncate text-xs text-muted-foreground" dir="ltr">
+              {formatVitalsSummary(previousVitals)}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                const merged: VitalsPayload = { ...form.vitals };
+                (Object.keys(previousVitals) as (keyof VitalsPayload)[]).forEach((k) => {
+                  if (previousVitals[k] && !merged[k]) merged[k] = previousVitals[k];
+                });
+                setField('vitals', merged);
+              }}
+              className="shrink-0 text-xs font-medium text-primary hover:underline"
+            >
+              {t('quickFill.copyAll')}
+            </button>
+          </div>
+        )}
         <VitalsForm
           vitals={form.vitals}
           onChange={(v) => setField('vitals', v)}
@@ -489,6 +570,12 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
               disabled={readOnly}
               className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
+            {!readOnly && !form.diagnosis && (
+              <QuickFillHint
+                previous={previousEncounter?.diagnosis}
+                onUse={() => { const v = previousEncounter?.diagnosis; if (v) setField('diagnosis', v); }}
+              />
+            )}
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium" htmlFor="diagnosisCode">
@@ -527,6 +614,12 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
               disabled={readOnly}
               className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
+            {!readOnly && !form.treatmentPlan && (
+              <QuickFillHint
+                previous={previousEncounter?.treatmentPlan}
+                onUse={() => { const v = previousEncounter?.treatmentPlan; if (v) setField('treatmentPlan', v); }}
+              />
+            )}
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium" htmlFor="patientInstructions">

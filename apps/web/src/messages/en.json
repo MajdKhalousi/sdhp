@@ -553,6 +553,12 @@
       "viewEncounter": "View Encounter",
       "viewFullHistory": "View full history"
     },
+    "quickFill": {
+      "label": "Last visit:",
+      "use": "Use",
+      "lastVitals": "Last vitals:",
+      "copyAll": "Copy all"
+    },
     "followUpBooking": {
       "bookButton": "Book Follow-up Appointment",
       "alreadyBooked": "Follow-up Booked",

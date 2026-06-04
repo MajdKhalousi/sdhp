@@ -567,11 +567,13 @@
         "testNameLabel": "Test Name *",
         "testCodeLabel": "Test Code",
         "priorityLabel": "Priority",
+        "clinicalInfoLabel": "Clinical Information",
         "notesLabel": "Notes"
       },
       "placeholders": {
         "testName": "e.g. Complete Blood Count",
         "testCode": "CBC",
+        "clinicalInfo": "e.g. Suspected anemia, pre-op screen",
         "notes": "Additional notes",
         "selectPriority": "— Select —"
       },
@@ -856,6 +858,7 @@
     "labOrders": {
       "orderedBy": "Ordered by",
       "collectedAt": "Sample collected",
+      "clinicalInfo": "Clinical information",
       "notes": "Notes",
       "cancelReason": "Cancel reason"
     },
@@ -1180,7 +1183,13 @@
       "occurred": "An unexpected error occurred."
     },
     "card": {
-      "orderedAt": "Ordered {date}"
+      "orderedAt": "Ordered {date}",
+      "clinicalInfo": "Clinical info"
+    },
+    "priority": {
+      "ROUTINE": "Routine",
+      "URGENT": "Urgent",
+      "STAT": "STAT"
     },
     "status": {
       "ORDERED": "Ordered",
@@ -1232,7 +1241,13 @@
       "occurred": "An unexpected error occurred."
     },
     "card": {
-      "orderedAt": "Ordered {date}"
+      "orderedAt": "Ordered {date}",
+      "clinicalInfo": "Clinical info"
+    },
+    "priority": {
+      "ROUTINE": "Routine",
+      "URGENT": "Urgent",
+      "STAT": "STAT"
     },
     "status": {
       "ORDERED": "Ordered",

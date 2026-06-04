@@ -567,11 +567,13 @@
         "testNameLabel": "اسم الفحص *",
         "testCodeLabel": "رمز الفحص",
         "priorityLabel": "الأولوية",
+        "clinicalInfoLabel": "المعلومات السريرية",
         "notesLabel": "ملاحظات"
       },
       "placeholders": {
         "testName": "مثال: صورة دم كاملة",
         "testCode": "CBC",
+        "clinicalInfo": "مثال: اشتباه فقر دم، فحص قبل العملية",
         "notes": "ملاحظات إضافية",
         "selectPriority": "— اختر —"
       },
@@ -856,6 +858,7 @@
     "labOrders": {
       "orderedBy": "الطبيب",
       "collectedAt": "تاريخ أخذ العينة",
+      "clinicalInfo": "المعلومات السريرية",
       "notes": "ملاحظات",
       "cancelReason": "سبب الإلغاء"
     },
@@ -1180,7 +1183,13 @@
       "occurred": "حدث خطأ غير متوقع."
     },
     "card": {
-      "orderedAt": "طُلب {date}"
+      "orderedAt": "طُلب {date}",
+      "clinicalInfo": "المعلومات السريرية"
+    },
+    "priority": {
+      "ROUTINE": "روتيني",
+      "URGENT": "عاجل",
+      "STAT": "فوري"
     },
     "status": {
       "ORDERED": "مُطلوب",
@@ -1232,7 +1241,13 @@
       "occurred": "حدث خطأ غير متوقع."
     },
     "card": {
-      "orderedAt": "طُلب {date}"
+      "orderedAt": "طُلب {date}",
+      "clinicalInfo": "المعلومات السريرية"
+    },
+    "priority": {
+      "ROUTINE": "روتيني",
+      "URGENT": "عاجل",
+      "STAT": "فوري"
     },
     "status": {
       "ORDERED": "مُطلوب",

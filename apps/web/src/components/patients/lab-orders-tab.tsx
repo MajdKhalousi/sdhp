@@ -1,7 +1,7 @@
 'use client';
 
 import { FolderOpen } from 'lucide-react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import type { BadgeProps } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -22,8 +22,6 @@ const PRIORITY_OPTIONS = ['ROUTINE', 'URGENT', 'STAT'] as const;
 
 function ResultSection({ result }: { result: LabResult }) {
   const tLab = useTranslations('encounter');
-  const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const reviewer = result.reviewedBy
     ? `${result.reviewedBy.user.firstName} ${result.reviewedBy.user.lastName}`
     : null;
@@ -74,8 +72,6 @@ function LabOrderItem({ order }: { order: LabOrder }) {
   const t = useTranslations('timeline');
   const tLab = useTranslations('encounter');
   const tPatient = useTranslations('patient');
-  const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const doctor = `${order.orderedBy.user.firstName} ${order.orderedBy.user.lastName}`;
 
   return (
@@ -113,6 +109,9 @@ function LabOrderItem({ order }: { order: LabOrder }) {
         <p>{tPatient('labOrders.orderedBy')}: {doctor}</p>
         {order.collectedAt && (
           <p>{tPatient('labOrders.collectedAt')}: {formatDateDisplay(order.collectedAt)}</p>
+        )}
+        {order.clinicalInfo && (
+          <p>{tPatient('labOrders.clinicalInfo')}: {order.clinicalInfo}</p>
         )}
         {order.notes && (
           <p>{tPatient('labOrders.notes')}: {order.notes}</p>

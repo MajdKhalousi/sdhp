@@ -532,6 +532,7 @@ model LabOrder {
   orderedById    String
   testName       String
   testCode       String?
+  clinicalInfo   String?
   status         LabOrderStatus @default(ORDERED)
   priority       String?
   notes          String?

@@ -52,6 +52,7 @@ export interface LabOrder {
   orderedById: string;
   testName: string;
   testCode: string | null;
+  clinicalInfo: string | null;
   status: LabOrderStatus;
   priority: string | null;
   notes: string | null;
@@ -70,6 +71,7 @@ export interface CreateLabOrderPayload {
   encounterId?: string;
   testName: string;
   testCode?: string;
+  clinicalInfo?: string;
   priority?: string;
   notes?: string;
 }

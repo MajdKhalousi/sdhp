@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { RefreshCw, ScanLine } from 'lucide-react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import {
   useRadiologyOrdersWorklist,
   useUpdateRadiologyOrderStatus,
@@ -16,11 +16,18 @@ import { formatDateDisplay } from '@/lib/format-date';
 const PENDING_STATUSES = ['ORDERED', 'SCHEDULED', 'IN_PROGRESS'] as const;
 type PendingStatus = typeof PENDING_STATUSES[number];
 
-type BadgeVariant = 'default' | 'warning' | 'outline';
+type BadgeVariant = 'default' | 'warning' | 'outline' | 'danger';
 const STATUS_VARIANT: Record<PendingStatus, BadgeVariant> = {
   ORDERED:     'outline',
   SCHEDULED:   'warning',
   IN_PROGRESS: 'default',
+};
+
+const PRIORITY_OPTIONS = ['ROUTINE', 'URGENT', 'STAT'] as const;
+const PRIORITY_VARIANT: Record<string, BadgeVariant> = {
+  STAT:    'danger',
+  URGENT:  'warning',
+  ROUTINE: 'outline',
 };
 
 // ── Radiology status badge ────────────────────────────────────────────────────
@@ -183,7 +190,6 @@ function RadiologyReportForm({ order }: { order: RadiologyOrder }) {
 
 function RadiologyOrderCard({ order }: { order: RadiologyOrder }) {
   const t = useTranslations('technicianRadiology');
-  const locale = useLocale();
   const isInProgress = order.status === 'IN_PROGRESS';
 
   return (
@@ -211,12 +217,24 @@ function RadiologyOrderCard({ order }: { order: RadiologyOrder }) {
             </span>
             <span>{t('card.orderedAt', { date: formatDateDisplay(order.createdAt) })}</span>
           </div>
-          <div className="mt-1.5">
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             <RadiologyStatusBadge
               status={order.status}
               label={t(`status.${order.status}` as Parameters<typeof t>[0])}
             />
+            {order.priority && (
+              <Badge variant={PRIORITY_VARIANT[order.priority] ?? 'outline'}>
+                {(PRIORITY_OPTIONS as ReadonlyArray<string>).includes(order.priority)
+                  ? t(`priority.${order.priority}` as Parameters<typeof t>[0])
+                  : order.priority}
+              </Badge>
+            )}
           </div>
+          {order.clinicalInfo && (
+            <p className="mt-1 text-xs italic text-muted-foreground">
+              {t('card.clinicalInfo')}: {order.clinicalInfo}
+            </p>
+          )}
         </div>
 
         {!isInProgress && <StatusActionButton order={order} />}

@@ -123,6 +123,9 @@ function OrderCard({ order, readOnly }: OrderCardProps) {
               : order.priority}
           </p>
         )}
+        {order.clinicalInfo && (
+          <p className="mt-0.5 text-xs italic text-muted-foreground">{order.clinicalInfo}</p>
+        )}
         {order.notes && (
           <p className="mt-0.5 text-xs italic text-muted-foreground">{order.notes}</p>
         )}
@@ -153,11 +156,12 @@ function OrderCard({ order, readOnly }: OrderCardProps) {
 interface Form {
   testName: string;
   testCode: string;
+  clinicalInfo: string;
   priority: string;
   notes: string;
 }
 
-const EMPTY_FORM: Form = { testName: '', testCode: '', priority: '', notes: '' };
+const EMPTY_FORM: Form = { testName: '', testCode: '', clinicalInfo: '', priority: '', notes: '' };
 
 interface Props {
   patientId: string;
@@ -168,8 +172,6 @@ interface Props {
 export function LabOrderPanel({ patientId, encounterId, readOnly }: Props) {
   const tLab = useTranslations('encounter');
   const tCommon = useTranslations('common');
-  const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<Form>(EMPTY_FORM);
   const [formError, setFormError] = useState('');
@@ -201,6 +203,7 @@ export function LabOrderPanel({ patientId, encounterId, readOnly }: Props) {
       encounterId,
       testName: form.testName.trim(),
       testCode: form.testCode.trim() || undefined,
+      clinicalInfo: form.clinicalInfo.trim() || undefined,
       priority: form.priority || undefined,
       notes: form.notes.trim() || undefined,
     };
@@ -312,6 +315,19 @@ export function LabOrderPanel({ patientId, encounterId, readOnly }: Props) {
                     </option>
                   ))}
                 </select>
+              </div>
+              <div className="space-y-1 sm:col-span-2">
+                <label className="text-xs font-medium text-muted-foreground">
+                  {tLab('labOrders.fields.clinicalInfoLabel')}
+                </label>
+                <input
+                  type="text"
+                  dir="auto"
+                  value={form.clinicalInfo}
+                  onChange={(e) => setField('clinicalInfo', e.target.value)}
+                  placeholder={tLab('labOrders.placeholders.clinicalInfo')}
+                  className={FIELD_CLASS}
+                />
               </div>
               <div className="space-y-1 sm:col-span-2">
                 <label className="text-xs font-medium text-muted-foreground">

@@ -46,5 +46,10 @@ export class CreateLabOrderDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  clinicalInfo?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   notes?: string;
 }

@@ -483,6 +483,30 @@
       "alreadyEnded": "الزيارة منتهية بالفعل",
       "failed": "فشل إنهاء الزيارة"
     },
+    "completion": {
+      "modalHeading": "إنهاء الزيارة — مراجعة قبل التأكيد",
+      "sectionClinical": "السريري",
+      "sectionOrders": "الطلبات",
+      "sectionBilling": "الفاتورة",
+      "looksComplete": "الزيارة تبدو مكتملة",
+      "reviewFirst": "مراجعة أولاً",
+      "completeVisit": "إنهاء الزيارة",
+      "checks": {
+        "chiefComplaintMissing": "لم تُدخل الشكوى الرئيسية",
+        "diagnosisMissing": "لم يُدخل أي تشخيص",
+        "vitalsMissing": "لم تُسجَّل العلامات الحيوية",
+        "hpiMissing": "لا توجد تاريخ المرض الحالي",
+        "notesMissing": "لا توجد ملاحظات الفحص",
+        "treatmentPlanMissing": "لا توجد خطة علاجية",
+        "patientInstructionsMissing": "لا توجد تعليمات للمريض",
+        "followUpMissing": "لم يُحدَّد موعد مراجعة",
+        "prescriptionsMissing": "لم تُكتب أي وصفة طبية",
+        "labsPending": "{count} طلب مختبر لا يزال قيد الانتظار",
+        "radiologyPending": "{count} طلب أشعة لا يزال قيد الانتظار",
+        "reportMissing": "لا يوجد تقرير طبي مُختتم",
+        "unpaidInvoice": "توجد فاتورة غير مسددة"
+      }
+    },
     "complete": {
       "heading": "الزيارة مكتملة",
       "diagnosisLabel": "التشخيص",

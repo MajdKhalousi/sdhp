@@ -483,6 +483,30 @@
       "alreadyEnded": "Encounter already ended",
       "failed": "Failed to end encounter"
     },
+    "completion": {
+      "modalHeading": "Complete Visit — Review Before Closing",
+      "sectionClinical": "Clinical",
+      "sectionOrders": "Orders",
+      "sectionBilling": "Billing",
+      "looksComplete": "Encounter looks complete",
+      "reviewFirst": "Review First",
+      "completeVisit": "Complete Visit",
+      "checks": {
+        "chiefComplaintMissing": "No chief complaint entered",
+        "diagnosisMissing": "No diagnosis entered",
+        "vitalsMissing": "No vitals recorded",
+        "hpiMissing": "No history of present illness",
+        "notesMissing": "No examination notes",
+        "treatmentPlanMissing": "No treatment plan",
+        "patientInstructionsMissing": "No patient instructions",
+        "followUpMissing": "No follow-up date scheduled",
+        "prescriptionsMissing": "No prescriptions created",
+        "labsPending": "{count} lab order(s) still pending",
+        "radiologyPending": "{count} radiology order(s) still pending",
+        "reportMissing": "No finalized clinical report",
+        "unpaidInvoice": "Outstanding invoice balance"
+      }
+    },
     "complete": {
       "heading": "Encounter Complete",
       "diagnosisLabel": "Diagnosis",

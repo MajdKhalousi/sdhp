@@ -742,10 +742,21 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
             {canEdit && (!isDirty || pendingComplete) && (
               <EndEncounterButton
                 encounterId={encounterId}
+                patientId={encounter.patient.id}
                 alreadyEnded={isEnded}
                 disabled={isDirty || saving}
                 disabledReason={isDirty ? t('actions.saveBeforeClosing') : undefined}
-                hasDiagnosis={!!form.diagnosis.trim()}
+                completionContext={{
+                  chiefComplaint:          form.chiefComplaint,
+                  historyOfPresentIllness: form.historyOfPresentIllness,
+                  notes:                   form.notes,
+                  diagnosis:               form.diagnosis,
+                  treatmentPlan:           form.treatmentPlan,
+                  patientInstructions:     form.patientInstructions,
+                  followUpDate:            form.followUpDate,
+                  vitalsEmpty:             Object.values(form.vitals).every((v) => !v),
+                  hasUnpaidInvoice:        !!unpaidInvoice,
+                }}
                 confirmOpen={pendingComplete}
                 onConfirmClose={() => setPendingComplete(false)}
               />

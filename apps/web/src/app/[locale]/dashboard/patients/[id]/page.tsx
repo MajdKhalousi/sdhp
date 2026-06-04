@@ -439,6 +439,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
                 patientId={id}
                 lastEncounterEvent={lastEncounterEvent}
                 canViewEncounter={hasClinicalRole}
+                onViewAppointments={() => handleTabChange('appointments')}
               />
             )}
             {hasClinicalRole && (

@@ -12,9 +12,10 @@ interface Props {
   patientId: string;
   lastEncounterEvent: Extract<TimelineEvent, { type: 'ENCOUNTER' }> | null;
   canViewEncounter?: boolean;
+  onViewAppointments?: () => void;
 }
 
-export function PatientVisitStatus({ patientId, lastEncounterEvent, canViewEncounter }: Props) {
+export function PatientVisitStatus({ patientId, lastEncounterEvent, canViewEncounter, onViewAppointments }: Props) {
   const t = useTranslations('patient.visitStatus');
 
   const { data: appointmentsData, isLoading: apptLoading } = useAppointments({
@@ -84,6 +85,15 @@ export function PatientVisitStatus({ patientId, lastEncounterEvent, canViewEncou
               {nextAppointment.doctor.specialization && ` · ${nextAppointment.doctor.specialization}`}
             </span>
           </div>
+          {onViewAppointments && (
+            <button
+              type="button"
+              onClick={onViewAppointments}
+              className="shrink-0 text-xs font-medium text-primary hover:underline"
+            >
+              {t('viewAppointments')} →
+            </button>
+          )}
         </div>
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-3">

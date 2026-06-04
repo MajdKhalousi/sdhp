@@ -83,6 +83,13 @@ export function PreviousEncounterPanel({ patientId, currentEncounterId }: Props)
                     </p>
                   )}
 
+                  {enc.historyOfPresentIllness && (
+                    <p className="text-sm line-clamp-2" dir="auto">
+                      <span className="text-xs text-muted-foreground">{t('hpi')}: </span>
+                      {enc.historyOfPresentIllness}
+                    </p>
+                  )}
+
                   {enc.diagnosis && (
                     <p className="text-sm" dir="auto">
                       <span className="text-xs font-medium text-muted-foreground">{t('diagnosis')}: </span>

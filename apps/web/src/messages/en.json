@@ -427,18 +427,29 @@
       "completed": "Completed"
     },
     "sections": {
-      "clinicalNotes": "Chief Complaint & Clinical Notes",
+      "clinicalNotes": "Chief Complaint & History",
+      "examination": "Examination & Findings",
       "vitals": "Vitals & Measurements",
       "diagnosisAndTreatment": "Diagnosis & Treatment Plan",
+      "assessment": "Assessment",
+      "plan": "Treatment Plan",
       "followUpBooking": "Follow-up Appointment",
       "prescriptions": "Prescriptions",
       "labOrders": "Lab Orders",
       "radiology": "Radiology Orders",
       "clinicalReport": "Clinical Report"
     },
+    "soap": {
+      "subjective": "Subjective",
+      "objective": "Objective",
+      "assessment": "Assessment",
+      "plan": "Plan"
+    },
     "fields": {
       "chiefComplaintLabel": "Chief Complaint",
       "chiefComplaintPlaceholder": "e.g. Persistent headache for 3 days, worsening at night",
+      "hpiLabel": "History of Present Illness",
+      "hpiPlaceholder": "e.g. 3-day history of worsening headache. Onset gradual. Worse at night. No fever.",
       "examinationLabel": "Examination & Findings",
       "examinationPlaceholder": "e.g. BP 138/88, HR 76 bpm. Throat mildly inflamed. No fever. Lungs clear.",
       "diagnosisLabel": "Diagnosis",
@@ -447,6 +458,8 @@
       "icdCodePlaceholder": "e.g. I20.9",
       "treatmentPlanLabel": "Treatment Plan",
       "treatmentPlanPlaceholder": "e.g. Ibuprofen 400mg TID × 7 days. ENT referral if no improvement in 1 week.",
+      "patientInstructionsLabel": "Patient Instructions",
+      "patientInstructionsPlaceholder": "e.g. Rest for 2 days, increase fluid intake, return if fever exceeds 39°C.",
       "followUpDateLabel": "Follow-up Date"
     },
     "page": {
@@ -507,6 +520,7 @@
       "empty": "No previous encounters",
       "doctorPrefix": "Dr.",
       "chiefComplaint": "Complaint",
+      "hpi": "History",
       "diagnosis": "Diagnosis",
       "followUp": "Follow-up",
       "viewEncounter": "View Encounter"
@@ -732,9 +746,11 @@
       "confirmDelete": "Delete this draft report? This action cannot be undone.",
       "prefill": {
         "chiefComplaint": "Chief Complaint",
+        "hpi": "History of Present Illness",
         "examination": "Examination & Findings",
         "diagnosis": "Diagnosis",
         "treatmentPlan": "Treatment Plan",
+        "patientInstructions": "Patient Instructions",
         "followUp": "Follow-up Date"
       },
       "validation": {

@@ -26,10 +26,12 @@ import { useAuthStore } from '@/store/auth';
 
 interface WorkspaceForm {
   chiefComplaint: string;
+  historyOfPresentIllness: string;
   notes: string;
   diagnosis: string;
   diagnosisCode: string;
   treatmentPlan: string;
+  patientInstructions: string;
   followUpDate: string;
   vitals: VitalsPayload;
 }
@@ -87,6 +89,18 @@ function SectionHeading({
   );
 }
 
+function SoapSection({ letter, label }: { letter: string; label: string }) {
+  return (
+    <div className="flex items-center gap-2.5 pt-1">
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+        {letter}
+      </span>
+      <span className="text-sm font-semibold text-muted-foreground">{label}</span>
+      <div className="h-px flex-1 bg-border" />
+    </div>
+  );
+}
+
 interface Props {
   encounterId: string;
   onDirtyChange?: (dirty: boolean) => void;
@@ -139,13 +153,15 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   useEffect(() => {
     if (!encounter || isDirtyRef.current) return;
     setForm({
-      chiefComplaint: encounter.chiefComplaint ?? '',
-      notes:          encounter.notes ?? '',
-      diagnosis:      encounter.diagnosis ?? '',
-      diagnosisCode:  encounter.diagnosisCode ?? '',
-      treatmentPlan:  encounter.treatmentPlan ?? '',
-      followUpDate:   encounter.followUpDate ? encounter.followUpDate.slice(0, 10) : '',
-      vitals:         toVitals(encounter.vitals as Record<string, unknown> | null),
+      chiefComplaint:           encounter.chiefComplaint ?? '',
+      historyOfPresentIllness:  encounter.historyOfPresentIllness ?? '',
+      notes:                    encounter.notes ?? '',
+      diagnosis:                encounter.diagnosis ?? '',
+      diagnosisCode:            encounter.diagnosisCode ?? '',
+      treatmentPlan:            encounter.treatmentPlan ?? '',
+      patientInstructions:      encounter.patientInstructions ?? '',
+      followUpDate:             encounter.followUpDate ? encounter.followUpDate.slice(0, 10) : '',
+      vitals:                   toVitals(encounter.vitals as Record<string, unknown> | null),
     });
   }, [encounter]);
 
@@ -173,13 +189,15 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
     setSaveError('');
 
     const payload: UpdateEncounterPayload = {
-      chiefComplaint: form.chiefComplaint.trim(),
-      notes:          form.notes.trim(),
-      diagnosis:      form.diagnosis.trim(),
-      diagnosisCode:  form.diagnosisCode.trim(),
-      treatmentPlan:  form.treatmentPlan.trim(),
-      followUpDate:   form.followUpDate || undefined,
-      vitals:         Object.values(form.vitals).some(Boolean) ? form.vitals : {},
+      chiefComplaint:          form.chiefComplaint.trim(),
+      historyOfPresentIllness: form.historyOfPresentIllness.trim(),
+      notes:                   form.notes.trim(),
+      diagnosis:               form.diagnosis.trim(),
+      diagnosisCode:           form.diagnosisCode.trim(),
+      treatmentPlan:           form.treatmentPlan.trim(),
+      patientInstructions:     form.patientInstructions.trim(),
+      followUpDate:            form.followUpDate || undefined,
+      vitals:                  Object.values(form.vitals).some(Boolean) ? form.vitals : {},
     };
 
     update(
@@ -390,7 +408,8 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
         currentEncounterId={encounterId}
       />
 
-      {/* ── Clinical ────────────────────────────────────────────────────── */}
+      {/* ── S — Subjective ──────────────────────────────────────────────── */}
+      <SoapSection letter="S" label={t('soap.subjective')} />
       <div className="rounded-xl border border-border bg-card p-5">
         <SectionHeading icon={FileText}>{t('sections.clinicalNotes')}</SectionHeading>
         <div className="space-y-4">
@@ -410,16 +429,16 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium" htmlFor="notes">
-              {t('fields.examinationLabel')}
+            <label className="text-sm font-medium" htmlFor="historyOfPresentIllness">
+              {t('fields.hpiLabel')}
             </label>
             <textarea
-              id="notes"
-              rows={4}
+              id="historyOfPresentIllness"
+              rows={3}
               dir="auto"
-              value={form.notes}
-              onChange={(e) => setField('notes', e.target.value)}
-              placeholder={t('fields.examinationPlaceholder')}
+              value={form.historyOfPresentIllness}
+              onChange={(e) => setField('historyOfPresentIllness', e.target.value)}
+              placeholder={t('fields.hpiPlaceholder')}
               disabled={readOnly}
               className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
@@ -427,7 +446,8 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
         </div>
       </div>
 
-      {/* ── Vitals ──────────────────────────────────────────────────────── */}
+      {/* ── O — Objective ───────────────────────────────────────────────── */}
+      <SoapSection letter="O" label={t('soap.objective')} />
       <div className="rounded-xl border border-border bg-card p-5">
         <SectionHeading icon={Activity}>{t('sections.vitals')}</SectionHeading>
         <VitalsForm
@@ -436,43 +456,63 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
           disabled={readOnly}
         />
       </div>
-
-      {/* ── Diagnosis & Treatment ────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card p-5">
-        <SectionHeading icon={Stethoscope}>{t('sections.diagnosisAndTreatment')}</SectionHeading>
-        <div className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium" htmlFor="diagnosis">
-                {t('fields.diagnosisLabel')}
-              </label>
-              <input
-                id="diagnosis"
-                type="text"
-                dir="auto"
-                value={form.diagnosis}
-                onChange={(e) => setField('diagnosis', e.target.value)}
-                placeholder={t('fields.diagnosisPlaceholder')}
-                disabled={readOnly}
-                className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium" htmlFor="diagnosisCode">
-                {t('fields.icdCodeLabel')}
-              </label>
-              <input
-                id="diagnosisCode"
-                type="text"
-                dir="ltr"
-                value={form.diagnosisCode}
-                onChange={(e) => setField('diagnosisCode', e.target.value)}
-                placeholder={t('fields.icdCodePlaceholder')}
-                disabled={readOnly}
-                className="h-9 w-full rounded-md border bg-background px-3 text-sm font-mono outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
-              />
-            </div>
+        <SectionHeading icon={FileText}>{t('sections.examination')}</SectionHeading>
+        <textarea
+          id="notes"
+          rows={4}
+          dir="auto"
+          value={form.notes}
+          onChange={(e) => setField('notes', e.target.value)}
+          placeholder={t('fields.examinationPlaceholder')}
+          disabled={readOnly}
+          className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
+        />
+      </div>
+
+      {/* ── A — Assessment ──────────────────────────────────────────────── */}
+      <SoapSection letter="A" label={t('soap.assessment')} />
+      <div className="rounded-xl border border-border bg-card p-5">
+        <SectionHeading icon={Stethoscope}>{t('sections.assessment')}</SectionHeading>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" htmlFor="diagnosis">
+              {t('fields.diagnosisLabel')}
+            </label>
+            <input
+              id="diagnosis"
+              type="text"
+              dir="auto"
+              value={form.diagnosis}
+              onChange={(e) => setField('diagnosis', e.target.value)}
+              placeholder={t('fields.diagnosisPlaceholder')}
+              disabled={readOnly}
+              className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
+            />
           </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" htmlFor="diagnosisCode">
+              {t('fields.icdCodeLabel')}
+            </label>
+            <input
+              id="diagnosisCode"
+              type="text"
+              dir="ltr"
+              value={form.diagnosisCode}
+              onChange={(e) => setField('diagnosisCode', e.target.value)}
+              placeholder={t('fields.icdCodePlaceholder')}
+              disabled={readOnly}
+              className="h-9 w-full rounded-md border bg-background px-3 text-sm font-mono outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ── P — Plan ────────────────────────────────────────────────────── */}
+      <SoapSection letter="P" label={t('soap.plan')} />
+      <div className="rounded-xl border border-border bg-card p-5">
+        <SectionHeading icon={ClipboardList}>{t('sections.plan')}</SectionHeading>
+        <div className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-sm font-medium" htmlFor="treatmentPlan">
               {t('fields.treatmentPlanLabel')}
@@ -484,6 +524,21 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
               value={form.treatmentPlan}
               onChange={(e) => setField('treatmentPlan', e.target.value)}
               placeholder={t('fields.treatmentPlanPlaceholder')}
+              disabled={readOnly}
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" htmlFor="patientInstructions">
+              {t('fields.patientInstructionsLabel')}
+            </label>
+            <textarea
+              id="patientInstructions"
+              rows={3}
+              dir="auto"
+              value={form.patientInstructions}
+              onChange={(e) => setField('patientInstructions', e.target.value)}
+              placeholder={t('fields.patientInstructionsPlaceholder')}
               disabled={readOnly}
               className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
@@ -553,15 +608,17 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
 
       {/* ── Clinical Report ─────────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card p-5">
-        <SectionHeading icon={ClipboardList}>{t('sections.clinicalReport')}</SectionHeading>
+        <SectionHeading icon={FileText}>{t('sections.clinicalReport')}</SectionHeading>
         <ClinicalReportPanel
           encounterId={encounterId}
           patientId={encounter.patient.id}
           encounterData={{
             chiefComplaint: form.chiefComplaint,
+            historyOfPresentIllness: form.historyOfPresentIllness,
             notes: form.notes,
             diagnosis: form.diagnosis,
             treatmentPlan: form.treatmentPlan,
+            patientInstructions: form.patientInstructions,
             followUpDate: form.followUpDate,
           }}
           readOnly={readOnly}

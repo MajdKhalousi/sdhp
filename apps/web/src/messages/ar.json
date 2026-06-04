@@ -427,18 +427,29 @@
       "completed": "مكتملة"
     },
     "sections": {
-      "clinicalNotes": "الشكوى الرئيسية والملاحظات السريرية",
+      "clinicalNotes": "الشكوى الرئيسية والتاريخ المرضي",
+      "examination": "الفحص والمشاهدات",
       "vitals": "العلامات الحيوية والقياسات",
       "diagnosisAndTreatment": "التشخيص وخطة العلاج",
+      "assessment": "التقييم",
+      "plan": "خطة العلاج",
       "followUpBooking": "موعد المراجعة",
       "prescriptions": "الوصفات الطبية",
       "labOrders": "طلبات المختبر",
       "radiology": "الطلبات الشعاعية",
       "clinicalReport": "التقرير السريري"
     },
+    "soap": {
+      "subjective": "الذاتي",
+      "objective": "الموضوعي",
+      "assessment": "التقييم",
+      "plan": "الخطة"
+    },
     "fields": {
       "chiefComplaintLabel": "الشكوى الرئيسية",
       "chiefComplaintPlaceholder": "مثال: صداع مستمر منذ 3 أيام، يزداد ليلاً",
+      "hpiLabel": "تاريخ المرض الحالي",
+      "hpiPlaceholder": "مثال: صداع متصاعد منذ 3 أيام. تدريجي البداية. يشتد ليلاً. لا حرارة.",
       "examinationLabel": "الفحص والمشاهدات",
       "examinationPlaceholder": "مثال: ضغط الدم 138/88، النبض 76. التهاب خفيف في الحلق. لا حرارة. الرئتان سليمتان.",
       "diagnosisLabel": "التشخيص",
@@ -447,6 +458,8 @@
       "icdCodePlaceholder": "مثال: I20.9",
       "treatmentPlanLabel": "خطة العلاج",
       "treatmentPlanPlaceholder": "مثال: إيبوبروفين 400mg ثلاث مرات يومياً لمدة 7 أيام.",
+      "patientInstructionsLabel": "تعليمات المريض",
+      "patientInstructionsPlaceholder": "مثال: الراحة يومين، زيادة السوائل، العودة عند ارتفاع الحرارة فوق 39°C.",
       "followUpDateLabel": "تاريخ المراجعة"
     },
     "page": {
@@ -507,6 +520,7 @@
       "empty": "لا توجد زيارات سابقة",
       "doctorPrefix": "د.",
       "chiefComplaint": "الشكوى",
+      "hpi": "التاريخ",
       "diagnosis": "التشخيص",
       "followUp": "المراجعة",
       "viewEncounter": "عرض الزيارة"
@@ -732,9 +746,11 @@
       "confirmDelete": "حذف مسودة التقرير؟ لا يمكن التراجع عن هذا الإجراء.",
       "prefill": {
         "chiefComplaint": "الشكوى الرئيسية",
+        "hpi": "تاريخ المرض الحالي",
         "examination": "الفحص والمشاهدات",
         "diagnosis": "التشخيص",
         "treatmentPlan": "خطة العلاج",
+        "patientInstructions": "تعليمات المريض",
         "followUp": "تاريخ المراجعة"
       },
       "validation": {

@@ -20,9 +20,11 @@ import { formatDateDisplay } from '@/lib/format-date';
 
 interface EncounterData {
   chiefComplaint?: string | null;
+  historyOfPresentIllness?: string | null;
   notes?: string | null;
   diagnosis?: string | null;
   treatmentPlan?: string | null;
+  patientInstructions?: string | null;
   followUpDate?: string | null;
 }
 
@@ -96,12 +98,16 @@ export function ClinicalReportPanel({
     const lines: string[] = [];
     if (encounterData.chiefComplaint?.trim())
       lines.push(`${t('prefill.chiefComplaint')}:\n${encounterData.chiefComplaint.trim()}`);
+    if (encounterData.historyOfPresentIllness?.trim())
+      lines.push(`${t('prefill.hpi')}:\n${encounterData.historyOfPresentIllness.trim()}`);
     if (encounterData.notes?.trim())
       lines.push(`${t('prefill.examination')}:\n${encounterData.notes.trim()}`);
     if (encounterData.diagnosis?.trim())
       lines.push(`${t('prefill.diagnosis')}:\n${encounterData.diagnosis.trim()}`);
     if (encounterData.treatmentPlan?.trim())
       lines.push(`${t('prefill.treatmentPlan')}:\n${encounterData.treatmentPlan.trim()}`);
+    if (encounterData.patientInstructions?.trim())
+      lines.push(`${t('prefill.patientInstructions')}:\n${encounterData.patientInstructions.trim()}`);
     if (encounterData.followUpDate?.trim())
       lines.push(`${t('prefill.followUp')}:\n${encounterData.followUpDate.slice(0, 10)}`);
     return lines.join('\n\n');

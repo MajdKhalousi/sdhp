@@ -343,6 +343,19 @@ export class RadiologyService {
       }),
     ]);
     await this.auditWriter.log({ caller, action: 'REPORT_REVIEWED', resource: 'radiology_order', resourceId: id });
+    await this.timelineWriter.log({
+      organizationId: order.organizationId,
+      patientId: order.patientId,
+      eventType: MedicalTimelineEventType.RADIOLOGY_REPORT_REVIEWED,
+      createdById: caller.sub,
+      metadata: {
+        radiologyOrderId: id,
+        modality: order.modality,
+        ...(order.bodyPart ? { bodyPart: order.bodyPart } : {}),
+        encounterId: order.encounterId ?? null,
+        ...(reviewedById ? { reviewedById } : {}),
+      },
+    });
     return updatedOrder;
   }
 

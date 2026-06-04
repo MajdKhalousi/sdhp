@@ -332,6 +332,19 @@ export class LabsService {
       }),
     ]);
     await this.auditWriter.log({ caller, action: 'RESULT_REVIEWED', resource: 'lab_order', resourceId: id });
+    await this.timelineWriter.log({
+      organizationId: order.organizationId,
+      patientId: order.patientId,
+      eventType: MedicalTimelineEventType.LAB_RESULT_REVIEWED,
+      createdById: caller.sub,
+      metadata: {
+        labOrderId: id,
+        testName: order.testName,
+        ...(order.testCode ? { testCode: order.testCode } : {}),
+        encounterId: order.encounterId ?? null,
+        ...(reviewedById ? { reviewedById } : {}),
+      },
+    });
     return updatedOrder;
   }
 

@@ -1038,7 +1038,8 @@
       "loadFailed": "تعذر تحميل اللمحة السريرية",
       "lastChiefComplaint": "آخر شكوى رئيسية",
       "lastHpi": "آخر تاريخ مرض حالي",
-      "lastTreatmentPlan": "آخر خطة علاج"
+      "lastTreatmentPlan": "آخر خطة علاج",
+      "fromPreviousVisit": "من زيارة سابقة:"
     },
     "safety": {
       "heading": "تنبيهات المريض",

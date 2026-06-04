@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { usePatientTimeline } from '@/hooks/use-patient-timeline';
 import { usePatientLabOrders } from '@/hooks/use-labs';
@@ -34,8 +34,6 @@ interface Props {
 
 export function PatientClinicalSummary({ patientId, onViewHistory }: Props) {
   const t = useTranslations('patient.clinicalSummary');
-  const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
 
   const { user } = useAuthStore();
   const hasClinicalRole = !!user && CLINICAL_ROLES.has(user.role);
@@ -44,7 +42,7 @@ export function PatientClinicalSummary({ patientId, onViewHistory }: Props) {
     data: timeline,
     isLoading: timelineLoading,
     isError: timelineError,
-  } = usePatientTimeline(patientId, { types: ['ENCOUNTER'], limit: 1 });
+  } = usePatientTimeline(patientId, { types: ['ENCOUNTER'], limit: 5 });
 
   const {
     data: labs,
@@ -78,6 +76,21 @@ export function PatientClinicalSummary({ patientId, onViewHistory }: Props) {
   const lastEncounterEvent = timeline?.data?.[0];
   const enc = lastEncounterEvent?.type === 'ENCOUNTER' ? lastEncounterEvent.data : null;
 
+  const clinicalEvent = (timeline?.data ?? []).find(
+    (e) =>
+      e.type === 'ENCOUNTER' &&
+      !!(
+        e.data.chiefComplaint ||
+        e.data.historyOfPresentIllness ||
+        e.data.treatmentPlan ||
+        e.data.diagnosisCode ||
+        e.data.hasDiagnosis ||
+        e.data.followUpDate
+      ),
+  );
+  const cEnc = clinicalEvent?.type === 'ENCOUNTER' ? clinicalEvent.data : null;
+  const isFromPriorVisit = clinicalEvent !== undefined && clinicalEvent !== lastEncounterEvent;
+
   const pendingLabs = (labs ?? []).filter((l) => PENDING_LAB_STATUSES.has(l.status)).length;
   const pendingRad = (radOrders ?? []).filter((r) => PENDING_RADIOLOGY_STATUSES.has(r.status)).length;
 
@@ -87,7 +100,6 @@ export function PatientClinicalSummary({ patientId, onViewHistory }: Props) {
 
   return (
     <div className="rounded-xl border bg-card px-5 py-3 shadow-sm">
-      {/* Header */}
       <div className="mb-3 flex items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {t('heading')}
@@ -108,7 +120,6 @@ export function PatientClinicalSummary({ patientId, onViewHistory }: Props) {
       ) : (
         <>
           <div className="grid gap-x-6 gap-y-3 sm:grid-cols-3">
-            {/* Last Visit */}
             <SnapshotRow
               label={t('lastVisit')}
               value={
@@ -125,49 +136,51 @@ export function PatientClinicalSummary({ patientId, onViewHistory }: Props) {
               }
             />
 
-            {/* Last Diagnosis */}
             <SnapshotRow
               label={t('lastDiagnosis')}
               value={enc?.diagnosisCode ?? (enc?.hasDiagnosis ? t('notAvailable') : na)}
             />
 
-            {/* Next Follow-up */}
             <SnapshotRow
               label={t('nextFollowUp')}
               value={enc?.followUpDate ? formatDateDisplay(enc.followUpDate) : na}
             />
 
-            {/* Pending Labs */}
             <SnapshotRow
               label={t('pendingLabs')}
               value={labsError ? na : String(pendingLabs)}
             />
 
-            {/* Pending Radiology */}
             <SnapshotRow
               label={t('pendingRadiology')}
               value={radError ? na : String(pendingRad)}
             />
           </div>
 
-          {(enc?.chiefComplaint || enc?.historyOfPresentIllness || enc?.treatmentPlan) && (
+          {(cEnc?.chiefComplaint || cEnc?.historyOfPresentIllness || cEnc?.treatmentPlan) && (
             <div className="mt-3 space-y-2 border-t pt-3">
-              {enc.chiefComplaint && (
+              {isFromPriorVisit && (
+                <p className="text-xs text-muted-foreground">
+                  <span>{t('fromPreviousVisit')}</span>{' '}
+                  <span dir="ltr">{formatDateDisplay(cEnc.startedAt)}</span>
+                </p>
+              )}
+              {cEnc.chiefComplaint && (
                 <div className="flex flex-col gap-0.5">
                   <span className="text-xs text-muted-foreground">{t('lastChiefComplaint')}</span>
-                  <span className="text-sm text-foreground line-clamp-2">{enc.chiefComplaint}</span>
+                  <span className="text-sm text-foreground line-clamp-2">{cEnc.chiefComplaint}</span>
                 </div>
               )}
-              {enc.historyOfPresentIllness && (
+              {cEnc.historyOfPresentIllness && (
                 <div className="flex flex-col gap-0.5">
                   <span className="text-xs text-muted-foreground">{t('lastHpi')}</span>
-                  <span className="text-sm text-foreground line-clamp-2">{enc.historyOfPresentIllness}</span>
+                  <span className="text-sm text-foreground line-clamp-2">{cEnc.historyOfPresentIllness}</span>
                 </div>
               )}
-              {enc.treatmentPlan && (
+              {cEnc.treatmentPlan && (
                 <div className="flex flex-col gap-0.5">
                   <span className="text-xs text-muted-foreground">{t('lastTreatmentPlan')}</span>
-                  <span className="text-sm text-foreground line-clamp-2">{enc.treatmentPlan}</span>
+                  <span className="text-sm text-foreground line-clamp-2">{cEnc.treatmentPlan}</span>
                 </div>
               )}
             </div>

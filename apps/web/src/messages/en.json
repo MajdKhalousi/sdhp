@@ -1038,7 +1038,8 @@
       "loadFailed": "Failed to load clinical snapshot",
       "lastChiefComplaint": "Last Chief Complaint",
       "lastHpi": "Last HPI",
-      "lastTreatmentPlan": "Last Treatment Plan"
+      "lastTreatmentPlan": "Last Treatment Plan",
+      "fromPreviousVisit": "From previous visit:"
     },
     "safety": {
       "heading": "Safety Alerts",

@@ -248,6 +248,7 @@ function FollowUpRow({
                 onSuccess={() => {
                   setExpandedEncounterId(null);
                   void queryClient.invalidateQueries({ queryKey: ['follow-ups'] });
+                  void queryClient.invalidateQueries({ queryKey: ['follow-ups-summary'] });
                 }}
               />
             </div>

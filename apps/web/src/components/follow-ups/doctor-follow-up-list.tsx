@@ -65,7 +65,10 @@ export function DoctorFollowUpList() {
     limit: LIMIT,
   });
 
-  const { data: summary } = useFollowUpSummary();
+  const { data: summary } = useFollowUpSummary({
+    ...(dateFrom ? { dateFrom } : {}),
+    ...(dateTo   ? { dateTo }   : {}),
+  });
   const totalPages = data ? Math.ceil(data.total / LIMIT) : 1;
 
   const SUMMARY_KEY: Partial<Record<FollowUpStatus, keyof NonNullable<typeof summary>>> = {
@@ -323,6 +326,7 @@ export function DoctorFollowUpList() {
                                 onSuccess={() => {
                                   setExpandedEncounterId(null);
                                   void queryClient.invalidateQueries({ queryKey: ['follow-ups'] });
+                                  void queryClient.invalidateQueries({ queryKey: ['follow-ups-summary'] });
                                 }}
                               />
                             </div>

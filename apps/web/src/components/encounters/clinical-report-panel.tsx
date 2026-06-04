@@ -68,19 +68,15 @@ export function ClinicalReportPanel({
   const { mutate: create, isPending: creating } = useCreateClinicalReport();
   const { mutate: update, isPending: updating } = useUpdateClinicalReport();
   const { mutate: deleteMutate, isPending: deleting } = useDeleteClinicalReport();
-  const { download: downloadPdf, downloadingId } = useDownloadReportPdf();
+  const { download: downloadPdf, downloadingId, downloadError: pdfDownloadError } = useDownloadReportPdf();
   const { mutate: saveAsFile, isPending: savingFile } = useSaveReportAsFile();
 
   const [saveFileMsg, setSaveFileMsg] = useState<{ id: string; msg: string; ok: boolean } | null>(null);
 
   const saving = creating || updating;
 
-  async function handleDownloadPdf(id: string) {
-    try {
-      await downloadPdf(id);
-    } catch {
-      setMutationError(t('error.downloadFailed'));
-    }
+  function handleDownloadPdf(id: string) {
+    void downloadPdf(id);
   }
 
   function handleSaveAsFile(id: string) {
@@ -356,6 +352,9 @@ export function ClinicalReportPanel({
       {/* ── Mutation error (finalize / delete) ─────────────────────────────── */}
       {mutationError && !showForm && (
         <p className="text-xs text-destructive">{mutationError}</p>
+      )}
+      {pdfDownloadError && (
+        <p className="text-xs text-destructive">{t('error.downloadFailed')}</p>
       )}
 
       {/* ── Create / Edit form ──────────────────────────────────────────────── */}

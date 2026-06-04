@@ -28,16 +28,10 @@ function ReportCard({
   const t = useTranslations('patient');
   const isDraft = report.status === 'DRAFT';
 
-  const { download: downloadPdf, downloadingId } = useDownloadReportPdf();
-  const [downloadError, setDownloadError] = useState('');
+  const { download: downloadPdf, downloadingId, downloadError } = useDownloadReportPdf();
 
-  async function handleDownload() {
-    setDownloadError('');
-    try {
-      await downloadPdf(report.id);
-    } catch {
-      setDownloadError(t('reports.downloadFailed'));
-    }
+  function handleDownload() {
+    void downloadPdf(report.id);
   }
 
   const author = report.createdBy
@@ -125,7 +119,7 @@ function ReportCard({
         </div>
 
         {downloadError && (
-          <p className="mt-1 text-xs text-destructive">{downloadError}</p>
+          <p className="mt-1 text-xs text-destructive">{t('reports.downloadFailed')}</p>
         )}
 
         {!expanded && (

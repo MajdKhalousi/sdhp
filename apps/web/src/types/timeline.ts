@@ -58,11 +58,14 @@ export interface EncounterEventData {
   startedAt: string;
   endedAt: string | null;
   chiefComplaint: string | null;
+  historyOfPresentIllness?: string | null;
   diagnosisCode: string | null;
   hasDiagnosis: boolean;
   notes: string | null;
   treatmentPlan: string | null;
+  patientInstructions?: string | null;
   followUpDate: string | null;
+  vitals?: Record<string, unknown> | null;
   updatedAt: string;
   doctor: DoctorRef;
 }

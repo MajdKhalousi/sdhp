@@ -1144,6 +1144,14 @@
         "hourShort": "س",
         "minuteShort": "د"
       },
+      "hpi": "تاريخ المرض",
+      "vitals": "العلامات الحيوية",
+      "patientInstructions": "تعليمات المريض",
+      "prescriptionsCount": "وصفات",
+      "labsCount": "تحاليل",
+      "radiologyCount": "أشعة",
+      "filesCount": "ملفات",
+      "reportsCount": "تقارير",
       "viewEncounter": "عرض الزيارة",
       "downloadReport": "تحميل PDF",
       "downloading": "جارِ التحميل..."

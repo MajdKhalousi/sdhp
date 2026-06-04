@@ -5,6 +5,8 @@ import { useTranslations, useLocale } from 'next-intl';
 import { formatDateDisplay } from '@/lib/format-date';
 import type { TimelineEvent } from '@/types/timeline';
 import { TimelineEventCard } from './timeline-event-card';
+import { EncounterCard } from './encounter-card';
+import type { OutputCounts } from './encounter-card';
 
 interface DateGroup {
   key: string;
@@ -38,6 +40,20 @@ function yesterdayKey() {
   const d = new Date();
   d.setDate(d.getDate() - 1);
   return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+}
+
+function computeOutputCounts(encounterId: string, allEvents: TimelineEvent[]): OutputCounts {
+  let prescriptions = 0, labs = 0, radiology = 0, files = 0, reports = 0;
+  for (const e of allEvents) {
+    switch (e.type) {
+      case 'PRESCRIPTION':            if (e.data.encounterId === encounterId) prescriptions++; break;
+      case 'LAB_ORDER':               if (e.data.encounterId === encounterId) labs++;          break;
+      case 'RADIOLOGY_ORDER':         if (e.data.encounterId === encounterId) radiology++;     break;
+      case 'MEDICAL_FILE':            if (e.data.encounterId === encounterId) files++;         break;
+      case 'CLINICAL_REPORT_CREATED': if (e.data.encounterId === encounterId) reports++;       break;
+    }
+  }
+  return { prescriptions, labs, radiology, files, reports };
 }
 
 interface Props {
@@ -74,9 +90,18 @@ export const TimelineEventList = memo(function TimelineEventList({ events }: Pro
               )}
             </div>
             <div className="space-y-3">
-              {group.events.map((event) => (
-                <TimelineEventCard key={event.id} event={event} />
-              ))}
+              {group.events.map((event) => {
+                if (event.type === 'ENCOUNTER') {
+                  return (
+                    <EncounterCard
+                      key={event.id}
+                      event={event}
+                      outputCounts={computeOutputCounts(event.id, events)}
+                    />
+                  );
+                }
+                return <TimelineEventCard key={event.id} event={event} />;
+              })}
             </div>
           </div>
         );

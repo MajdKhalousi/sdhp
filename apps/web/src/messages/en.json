@@ -1144,6 +1144,14 @@
         "hourShort": "h",
         "minuteShort": "m"
       },
+      "hpi": "History",
+      "vitals": "Vitals",
+      "patientInstructions": "Instructions",
+      "prescriptionsCount": "prescriptions",
+      "labsCount": "labs",
+      "radiologyCount": "radiology",
+      "filesCount": "files",
+      "reportsCount": "reports",
       "viewEncounter": "View Encounter",
       "downloadReport": "Download PDF",
       "downloading": "Downloading..."

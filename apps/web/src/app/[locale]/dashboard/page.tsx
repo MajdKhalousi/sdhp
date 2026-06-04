@@ -5,7 +5,7 @@ import { Link } from '@/i18n/navigation';
 import {
   Calendar, ListOrdered, CheckCircle2, Clock,
   Banknote, Wallet, Activity, CalendarClock,
-  FlaskConical, ScanLine, UserPlus, AlertCircle,
+  FlaskConical, ScanLine, UserPlus, AlertCircle, Stethoscope,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
@@ -27,6 +27,8 @@ interface StatCard {
   href?: string;
   urgent?: boolean;
   live?: boolean;
+  annotation?: string;
+  annotationUrgent?: boolean;
 }
 
 const BILLING_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
@@ -81,7 +83,8 @@ export default function DashboardPage() {
   const canSeeFollowUps  = FOLLOWUP_ROLES.has(role);
   const canSeeNewPatients = NEW_PATIENT_ROLES.has(role);
   const followUpsHref = role === 'DOCTOR' ? '/dashboard/my-follow-ups' : '/dashboard/follow-ups';
-  const waitingHref   = role === 'DOCTOR' ? '/dashboard/doctor/queue' : '/dashboard/queue';
+  const waitingHref          = role === 'DOCTOR' ? '/dashboard/doctor/queue' : '/dashboard/queue';
+  const activeEncountersHref = role === 'DOCTOR' ? '/dashboard/doctor' : '/dashboard/queue';
 
   const { data: overview, isError: overviewError } = useDashboardOverview();
 
@@ -118,6 +121,13 @@ export default function DashboardPage() {
       sub: t('stats.todayAppointments.sub'),
       icon: Calendar,
       href: '/dashboard/appointments',
+      annotation:
+        (o?.appointments.cancelled ?? 0) > 0 || (o?.appointments.noShow ?? 0) > 0
+          ? t('stats.todayAppointments.annotation', {
+              cancelled: o?.appointments.cancelled ?? 0,
+              noShow: o?.appointments.noShow ?? 0,
+            })
+          : undefined,
     });
     stats.push({
       key: 'waiting',
@@ -128,6 +138,10 @@ export default function DashboardPage() {
       href: waitingHref,
       urgent: queueWaiting > 0,
       live: true,
+      annotation:
+        (o?.queue.done ?? 0) > 0
+          ? t('stats.waitingNow.annotation', { done: o?.queue.done ?? 0 })
+          : undefined,
     });
     stats.push({
       key: 'inProgress',
@@ -136,6 +150,14 @@ export default function DashboardPage() {
       sub: t('stats.visitsInProgress.sub'),
       icon: Activity,
       href: '/dashboard/queue',
+    });
+    stats.push({
+      key: 'activeEncounters',
+      label: t('stats.activeEncounters.label'),
+      value: o?.activeEncounters ?? '—',
+      sub: t('stats.activeEncounters.sub'),
+      icon: Stethoscope,
+      href: activeEncountersHref,
     });
     if (canSeeCompleted) {
       stats.push({
@@ -155,6 +177,11 @@ export default function DashboardPage() {
         sub: t('stats.followUpsDue.sub'),
         icon: CalendarClock,
         href: followUpsHref,
+        annotation:
+          (o?.followUpsOverdue ?? 0) > 0
+            ? t('stats.followUpsDue.overdue', { count: o?.followUpsOverdue ?? 0 })
+            : undefined,
+        annotationUrgent: (o?.followUpsOverdue ?? 0) > 0,
       });
     }
   }
@@ -236,6 +263,11 @@ export default function DashboardPage() {
                     </span>
                   )}
                 </div>
+                {stat.annotation && (
+                  <p className={`mt-0.5 text-xs ${stat.annotationUrgent ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`}>
+                    {stat.annotation}
+                  </p>
+                )}
               </>
             );
             if (stat.href) {
@@ -273,6 +305,11 @@ export default function DashboardPage() {
               {overview?.billing ? formatAmount(overview.billing.collectedToday, locale) : '—'}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">{t('stats.collectedToday.sub')}</p>
+            {overview?.billing && (
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {t('stats.collectedToday.annotation', { rate: overview.billing.collectionRateToday })}
+              </p>
+            )}
           </Link>
           <Link
             href="/dashboard/reports/billing"
@@ -286,6 +323,11 @@ export default function DashboardPage() {
               {overview?.billing ? formatAmount(overview.billing.outstandingAllTime, locale) : '—'}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">{t('stats.outstandingBalance.sub')}</p>
+            {overview?.billing && overview.billing.unpaidInvoiceCount > 0 && (
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {t('stats.outstandingBalance.annotation', { count: overview.billing.unpaidInvoiceCount })}
+              </p>
+            )}
           </Link>
         </div>
       )}

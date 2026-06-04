@@ -73,11 +73,13 @@
     "stats": {
       "todayAppointments": {
         "label": "Today's Appointments",
-        "sub": "scheduled today"
+        "sub": "scheduled today",
+        "annotation": "{cancelled} cancelled · {noShow} no-show"
       },
       "waitingNow": {
         "label": "Waiting Now",
-        "sub": "patients in queue"
+        "sub": "patients in queue",
+        "annotation": "{done} completed via queue today"
       },
       "totalPatients": {
         "label": "Total Patients",
@@ -89,11 +91,13 @@
       },
       "collectedToday": {
         "label": "Collected Today",
-        "sub": "Payments received today"
+        "sub": "Payments received today",
+        "annotation": "{rate}% collection rate today"
       },
       "outstandingBalance": {
         "label": "Outstanding Balance",
-        "sub": "Unpaid invoices"
+        "sub": "Unpaid invoices",
+        "annotation": "{count} unpaid invoices"
       },
       "visitsInProgress": {
         "label": "Visits In Progress",
@@ -101,7 +105,8 @@
       },
       "followUpsDue": {
         "label": "Follow-ups Due",
-        "sub": "Scheduled for today"
+        "sub": "Scheduled for today",
+        "overdue": "{count} overdue"
       },
       "pendingLabs": {
         "label": "Pending Labs",
@@ -114,6 +119,10 @@
       "newPatients": {
         "label": "New Patients Today",
         "sub": "Registered today"
+      },
+      "activeEncounters": {
+        "label": "Active Encounters",
+        "sub": "Patients currently being seen"
       }
     },
     "errors": {

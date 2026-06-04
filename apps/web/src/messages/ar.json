@@ -73,11 +73,13 @@
     "stats": {
       "todayAppointments": {
         "label": "مواعيد اليوم",
-        "sub": "مجدول اليوم"
+        "sub": "مجدول اليوم",
+        "annotation": "{cancelled} ملغاة · {noShow} لم يحضر"
       },
       "waitingNow": {
         "label": "في الانتظار",
-        "sub": "مريض في الطابور"
+        "sub": "مريض في الطابور",
+        "annotation": "{done} مكتملة عبر الطابور اليوم"
       },
       "totalPatients": {
         "label": "إجمالي المرضى",
@@ -89,11 +91,13 @@
       },
       "collectedToday": {
         "label": "محصل اليوم",
-        "sub": "المدفوعات المستلمة اليوم"
+        "sub": "المدفوعات المستلمة اليوم",
+        "annotation": "نسبة التحصيل اليوم {rate}%"
       },
       "outstandingBalance": {
         "label": "المستحقات",
-        "sub": "فواتير غير مدفوعة"
+        "sub": "فواتير غير مدفوعة",
+        "annotation": "{count} فواتير غير مدفوعة"
       },
       "visitsInProgress": {
         "label": "زيارات قيد المعاينة",
@@ -101,7 +105,8 @@
       },
       "followUpsDue": {
         "label": "مراجعات مستحقة",
-        "sub": "مجدولة لهذا اليوم"
+        "sub": "مجدولة لهذا اليوم",
+        "overdue": "{count} متأخرة"
       },
       "pendingLabs": {
         "label": "تحاليل بانتظار المعالجة",
@@ -114,6 +119,10 @@
       "newPatients": {
         "label": "مرضى جدد اليوم",
         "sub": "تم تسجيلهم اليوم"
+      },
+      "activeEncounters": {
+        "label": "الزيارات النشطة",
+        "sub": "مرضى قيد المعاينة حاليًا"
       }
     },
     "errors": {

@@ -167,7 +167,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const appointmentVisitType = visitTypes?.find((vt) => vt.id === appointment?.visitTypeId) ?? null;
   const { data: patientInvoices } = usePatientInvoices(encounter?.patient.id ?? '');
   const { data: prevList } = useEncounters(
-    { patientId: encounter?.patient.id ?? '', limit: 2 },
+    { patientId: encounter?.patient.id ?? '', limit: 7 },
     { enabled: !!encounter?.patient.id },
   );
   const unpaidInvoice = useMemo(() => {
@@ -294,12 +294,28 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const ENCOUNTER_EDIT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR']);
   const canEdit = ENCOUNTER_EDIT_ROLES.has(user?.role ?? '');
   const readOnly = isEnded || saving || !canEdit;
-  const previousEncounter = prevList?.data.find((e) => e.id !== encounterId) ?? null;
-  const previousVitals = previousEncounter
-    ? toVitals(previousEncounter.vitals as Record<string, unknown> | null)
+  const prevEncounters = (prevList?.data ?? []).filter((e) => e.id !== encounterId);
+  const findPreviousTextValue = (
+    key: 'chiefComplaint' | 'historyOfPresentIllness' | 'diagnosis' | 'treatmentPlan',
+  ): string | null => {
+    for (const e of prevEncounters) {
+      const v = e[key];
+      if (v?.trim()) return v;
+    }
+    return null;
+  };
+  const prevVitalsSource = prevEncounters.find((e) =>
+    Object.values(toVitals(e.vitals as Record<string, unknown> | null)).some(Boolean),
+  ) ?? null;
+  const previousVitals = prevVitalsSource
+    ? toVitals(prevVitalsSource.vitals as Record<string, unknown> | null)
     : null;
   const prevHasVitals = !!previousVitals && Object.values(previousVitals).some(Boolean);
   const currentVitalsEmpty = Object.values(form.vitals).every((v) => !v);
+  const prevCC            = !readOnly ? findPreviousTextValue('chiefComplaint') : null;
+  const prevHPI           = !readOnly ? findPreviousTextValue('historyOfPresentIllness') : null;
+  const prevDiagnosis     = !readOnly ? findPreviousTextValue('diagnosis') : null;
+  const prevTreatmentPlan = !readOnly ? findPreviousTextValue('treatmentPlan') : null;
   const patientAge = computeAge(patient.dateOfBirth);
   const visitTypeName = appointmentVisitType
     ? ((locale === 'ar' && appointmentVisitType.nameAr) || appointmentVisitType.name)
@@ -477,8 +493,8 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
             />
             {!readOnly && !form.chiefComplaint && (
               <QuickFillHint
-                previous={previousEncounter?.chiefComplaint}
-                onUse={() => { const v = previousEncounter?.chiefComplaint; if (v) setField('chiefComplaint', v); }}
+                previous={prevCC}
+                onUse={() => { if (prevCC) setField('chiefComplaint', prevCC); }}
               />
             )}
           </div>
@@ -498,8 +514,8 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
             />
             {!readOnly && !form.historyOfPresentIllness && (
               <QuickFillHint
-                previous={previousEncounter?.historyOfPresentIllness}
-                onUse={() => { const v = previousEncounter?.historyOfPresentIllness; if (v) setField('historyOfPresentIllness', v); }}
+                previous={prevHPI}
+                onUse={() => { if (prevHPI) setField('historyOfPresentIllness', prevHPI); }}
               />
             )}
           </div>
@@ -572,8 +588,8 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
             />
             {!readOnly && !form.diagnosis && (
               <QuickFillHint
-                previous={previousEncounter?.diagnosis}
-                onUse={() => { const v = previousEncounter?.diagnosis; if (v) setField('diagnosis', v); }}
+                previous={prevDiagnosis}
+                onUse={() => { if (prevDiagnosis) setField('diagnosis', prevDiagnosis); }}
               />
             )}
           </div>
@@ -616,8 +632,8 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
             />
             {!readOnly && !form.treatmentPlan && (
               <QuickFillHint
-                previous={previousEncounter?.treatmentPlan}
-                onUse={() => { const v = previousEncounter?.treatmentPlan; if (v) setField('treatmentPlan', v); }}
+                previous={prevTreatmentPlan}
+                onUse={() => { if (prevTreatmentPlan) setField('treatmentPlan', prevTreatmentPlan); }}
               />
             )}
           </div>

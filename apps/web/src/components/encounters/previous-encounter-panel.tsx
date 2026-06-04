@@ -8,6 +8,30 @@ import { Link } from '@/i18n/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateDisplay } from '@/lib/format-date';
 
+const VITAL_KEYS: Array<{ keys: string[]; abbr: string }> = [
+  { keys: ['bloodPressure', 'bp'],      abbr: 'BP' },
+  { keys: ['heartRate', 'pulse'],        abbr: 'HR' },
+  { keys: ['temperature', 'temp'],       abbr: 'T' },
+  { keys: ['oxygenSaturation', 'spo2'],  abbr: 'SpO₂' },
+  { keys: ['respiratoryRate'],           abbr: 'RR' },
+  { keys: ['weight'],                    abbr: 'W' },
+];
+
+function formatVitals(v: Record<string, unknown> | null | undefined): string | null {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return null;
+  const parts: string[] = [];
+  for (const { keys, abbr } of VITAL_KEYS) {
+    for (const key of keys) {
+      const val = v[key];
+      if (val !== null && val !== undefined && val !== '') {
+        parts.push(`${abbr} ${val}`);
+        break;
+      }
+    }
+  }
+  return parts.length > 0 ? parts.join(' · ') : null;
+}
+
 interface Props {
   patientId: string;
   currentEncounterId: string;
@@ -21,13 +45,13 @@ export function PreviousEncounterPanel({ patientId, currentEncounterId }: Props)
   const [open, setOpen] = useState(false);
 
   const { data, isLoading } = useEncounters(
-    { patientId, limit: 4 },
+    { patientId, limit: 7 },
     { enabled: !!patientId && open },
   );
 
   const previous = (data?.data ?? [])
     .filter((e) => e.id !== currentEncounterId)
-    .slice(0, 3);
+    .slice(0, 6);
 
   return (
     <div className="rounded-xl border border-border bg-card p-5">
@@ -61,62 +85,99 @@ export function PreviousEncounterPanel({ patientId, currentEncounterId }: Props)
             <p className="text-sm text-muted-foreground">{t('empty')}</p>
           ) : (
             <div className="space-y-3">
-              {previous.map((enc) => (
-                <div
-                  key={enc.id}
-                  className="rounded-lg border border-border bg-background p-3 space-y-1.5"
+              {previous.map((enc) => {
+                const vitalsLine = formatVitals(enc.vitals);
+                const hpi = enc.historyOfPresentIllness?.trim();
+                const plan = enc.treatmentPlan?.trim();
+                const instructions = enc.patientInstructions?.trim();
+                return (
+                  <div
+                    key={enc.id}
+                    className="rounded-lg border border-border bg-background p-3 space-y-1.5"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-xs font-semibold text-muted-foreground">
+                        {formatDateDisplay(enc.startedAt ?? enc.createdAt)}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {t('doctorPrefix')} {enc.doctor.user.firstName} {enc.doctor.user.lastName}
+                        {enc.doctor.specialization && ` · ${enc.doctor.specialization}`}
+                      </span>
+                    </div>
+
+                    {enc.chiefComplaint && (
+                      <p className="text-sm" dir="auto">
+                        <span className="text-xs text-muted-foreground">{t('chiefComplaint')}: </span>
+                        {enc.chiefComplaint}
+                      </p>
+                    )}
+
+                    {hpi && (
+                      <p className="text-sm line-clamp-2" dir="auto">
+                        <span className="text-xs text-muted-foreground">{t('hpi')}: </span>
+                        {hpi}
+                      </p>
+                    )}
+
+                    {vitalsLine && (
+                      <div className="flex flex-wrap items-baseline gap-1.5">
+                        <span className="text-xs text-muted-foreground">{t('vitals')}:</span>
+                        <span className="text-xs font-mono text-foreground" dir="ltr">{vitalsLine}</span>
+                      </div>
+                    )}
+
+                    {enc.diagnosis && (
+                      <p className="text-sm" dir="auto">
+                        <span className="text-xs font-medium text-muted-foreground">{t('diagnosis')}: </span>
+                        <span className="font-medium">{enc.diagnosis}</span>
+                        {enc.diagnosisCode && (
+                          <span className="ms-1 font-mono text-xs text-muted-foreground" dir="ltr">
+                            ({enc.diagnosisCode})
+                          </span>
+                        )}
+                      </p>
+                    )}
+
+                    {plan && (
+                      <p className="text-sm line-clamp-2" dir="auto">
+                        <span className="text-xs text-muted-foreground">{t('plan')}: </span>
+                        {plan}
+                      </p>
+                    )}
+
+                    {instructions && (
+                      <p className="text-sm line-clamp-2" dir="auto">
+                        <span className="text-xs text-muted-foreground">{t('patientInstructions')}: </span>
+                        {instructions}
+                      </p>
+                    )}
+
+                    {enc.followUpDate && (
+                      <p className="text-xs text-muted-foreground">
+                        {t('followUp')}: {formatDateDisplay(enc.followUpDate)}
+                      </p>
+                    )}
+
+                    <div className="pt-0.5">
+                      <Link
+                        href={`/dashboard/doctor/encounter/${enc.id}`}
+                        className="text-xs font-medium text-primary hover:underline"
+                      >
+                        {t('viewEncounter')}
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+
+              <div className="pt-1 text-end">
+                <Link
+                  href={`/dashboard/patients/${patientId}`}
+                  className="text-xs font-medium text-primary hover:underline"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-xs font-semibold text-muted-foreground">
-                      {formatDateDisplay(enc.startedAt ?? enc.createdAt)}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {t('doctorPrefix')} {enc.doctor.user.firstName} {enc.doctor.user.lastName}
-                      {enc.doctor.specialization && ` · ${enc.doctor.specialization}`}
-                    </span>
-                  </div>
-
-                  {enc.chiefComplaint && (
-                    <p className="text-sm" dir="auto">
-                      <span className="text-xs text-muted-foreground">{t('chiefComplaint')}: </span>
-                      {enc.chiefComplaint}
-                    </p>
-                  )}
-
-                  {enc.historyOfPresentIllness && (
-                    <p className="text-sm line-clamp-2" dir="auto">
-                      <span className="text-xs text-muted-foreground">{t('hpi')}: </span>
-                      {enc.historyOfPresentIllness}
-                    </p>
-                  )}
-
-                  {enc.diagnosis && (
-                    <p className="text-sm" dir="auto">
-                      <span className="text-xs font-medium text-muted-foreground">{t('diagnosis')}: </span>
-                      <span className="font-medium">{enc.diagnosis}</span>
-                      {enc.diagnosisCode && (
-                        <span className="ms-1 font-mono text-xs text-muted-foreground" dir="ltr">
-                          ({enc.diagnosisCode})
-                        </span>
-                      )}
-                    </p>
-                  )}
-
-                  {enc.followUpDate && (
-                    <p className="text-xs text-muted-foreground">
-                      {t('followUp')}: {formatDateDisplay(enc.followUpDate)}
-                    </p>
-                  )}
-                  <div className="pt-0.5">
-                    <Link
-                      href={`/dashboard/doctor/encounter/${enc.id}`}
-                      className="text-xs font-medium text-primary hover:underline"
-                    >
-                      {t('viewEncounter')}
-                    </Link>
-                  </div>
-                </div>
-              ))}
+                  {t('viewFullHistory')}
+                </Link>
+              </div>
             </div>
           )}
         </div>

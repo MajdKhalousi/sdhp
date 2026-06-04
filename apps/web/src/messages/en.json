@@ -547,7 +547,11 @@
       "hpi": "History",
       "diagnosis": "Diagnosis",
       "followUp": "Follow-up",
-      "viewEncounter": "View Encounter"
+      "vitals": "Vitals",
+      "plan": "Plan",
+      "patientInstructions": "Instructions",
+      "viewEncounter": "View Encounter",
+      "viewFullHistory": "View full history"
     },
     "followUpBooking": {
       "bookButton": "Book Follow-up Appointment",

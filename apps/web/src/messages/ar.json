@@ -547,7 +547,11 @@
       "hpi": "التاريخ",
       "diagnosis": "التشخيص",
       "followUp": "المراجعة",
-      "viewEncounter": "عرض الزيارة"
+      "vitals": "العلامات الحيوية",
+      "plan": "خطة العلاج",
+      "patientInstructions": "تعليمات المريض",
+      "viewEncounter": "عرض الزيارة",
+      "viewFullHistory": "عرض السجل الكامل"
     },
     "followUpBooking": {
       "bookButton": "حجز موعد مراجعة",

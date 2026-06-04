@@ -25,6 +25,7 @@ import { PatientAppointmentsTab } from '@/components/patients/patient-appointmen
 import { PatientClinicalSummary } from '@/components/patients/patient-clinical-summary';
 import { PatientSafetyAlerts } from '@/components/patients/patient-safety-alerts';
 import { PatientVisitStatus } from '@/components/patients/patient-visit-status';
+import { PatientOutstandingBalance } from '@/components/patients/patient-outstanding-balance';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { Patient, CreatePatientInput, UpdatePatientInput } from '@/hooks/use-patient';
@@ -455,6 +456,12 @@ export default function PatientPage({ params }: { params: { id: string } }) {
                 pendingLabsCount={pendingLabsCount}
                 pendingRadiologyCount={pendingRadiologyCount}
                 overdueFollowUpDate={overdueFollowUpDate}
+              />
+            )}
+            {patient && canCreateInvoice && (
+              <PatientOutstandingBalance
+                patientId={id}
+                onViewInvoices={() => handleTabChange('invoices')}
               />
             )}
             {patient ? (

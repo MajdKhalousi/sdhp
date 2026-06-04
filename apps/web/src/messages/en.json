@@ -1063,6 +1063,14 @@
       "doctor": "Dr.",
       "visitType": "Visit type"
     },
+    "outstandingBalance": {
+      "heading": "Outstanding Balance",
+      "amount": "Balance",
+      "invoiceCount": "Invoices",
+      "oldestUnpaid": "Oldest unpaid",
+      "allPaid": "All invoices paid",
+      "viewInvoices": "View invoices"
+    },
     "duplicate": {
       "heading": "Possible duplicate patient",
       "description": "The following patient(s) may already be registered. Review before creating a new file.",

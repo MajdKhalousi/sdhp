@@ -75,7 +75,6 @@ export default function DashboardPage() {
   const tQueue = useTranslations('doctorQueue.card');
   const tDuration = useTranslations('timeline.cards.duration');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const user = useAuthStore((s) => s.user);
   const role = user?.role ?? '';
   const today = todayStr();
@@ -229,7 +228,7 @@ export default function DashboardPage() {
       alerts.push({
         key: 'overdueFollowUps',
         text: t('alerts.overdueFollowUps', { count: o?.followUpsOverdue ?? 0 }),
-        href: '/dashboard/follow-ups',
+        href: followUpsHref,
       });
     }
     if (canSeeLabs && role !== 'NURSE' && (o?.labOrders.pending ?? 0) > ALERT_LABS_THRESHOLD) {

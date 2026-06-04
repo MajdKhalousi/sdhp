@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useRouter, Link } from '@/i18n/navigation';
 import { AlertTriangle, ArrowLeft, CalendarClock, UserPlus, Receipt } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
@@ -229,6 +230,7 @@ const PENDING_RADIOLOGY_STATUSES = new Set(['ORDERED', 'SCHEDULED', 'IN_PROGRESS
 export default function PatientPage({ params }: { params: { id: string } }) {
   const { id } = params;
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations('patient');
   const tCommon = useTranslations('common');
   const { user } = useAuthStore();
@@ -239,11 +241,22 @@ export default function PatientPage({ params }: { params: { id: string } }) {
   const canBookAppointment = user ? RECEPTION_ACTION_ROLES.has(user.role) : false;
   const canCheckIn         = user ? RECEPTION_ACTION_ROLES.has(user.role) : false;
   const canCreateInvoice   = user ? INVOICE_CREATE_ROLES.has(user.role) : false;
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(() => {
+    const tab = searchParams.get('tab');
+    return tab === 'timeline' || tab === 'medical-history' ? 'timeline' : 'overview';
+  });
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  function handleTabChange(tab: string) {
+    setActiveTab(tab);
+    const href = tab === 'overview'
+      ? `/dashboard/patients/${id}`
+      : `/dashboard/patients/${id}?tab=${tab}`;
+    router.replace(href);
+  }
 
   const { data: patient, isLoading, isError, error } = usePatient(id);
   const { data: allergies = [] } = useAllergies(id);
@@ -409,7 +422,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
         <Tabs
           tabs={TABS}
           value={activeTab}
-          onChange={setActiveTab}
+          onChange={handleTabChange}
           aria-label="Patient sections"
         />
       </div>
@@ -419,7 +432,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
           <div className="space-y-4">
             <PatientClinicalSummary
               patientId={id}
-              onViewHistory={() => setActiveTab('timeline')}
+              onViewHistory={() => handleTabChange('timeline')}
             />
             {patient && canSeeSafetyAlerts && (
               <PatientSafetyAlerts

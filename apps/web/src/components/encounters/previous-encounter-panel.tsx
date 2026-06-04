@@ -172,7 +172,7 @@ export function PreviousEncounterPanel({ patientId, currentEncounterId }: Props)
 
               <div className="pt-1 text-end">
                 <Link
-                  href={`/dashboard/patients/${patientId}`}
+                  href={`/dashboard/patients/${patientId}?tab=timeline`}
                   className="text-xs font-medium text-primary hover:underline"
                 >
                   {t('viewFullHistory')}

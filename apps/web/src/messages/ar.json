@@ -141,7 +141,13 @@
       "noAppointmentsToday": "لا مواعيد مجدولة اليوم",
       "queueClear": "الطابور فارغ"
     },
-    "doctorPrefix": "د."
+    "doctorPrefix": "د.",
+    "alerts": {
+      "overdueFollowUps": "{count} مراجعات متأخرة تحتاج متابعة",
+      "pendingLabs": "{count} طلبات مخبر ما زالت قيد الانتظار",
+      "pendingRadiology": "{count} طلبات أشعة ما زالت قيد الانتظار",
+      "unpaidInvoices": "{count} فواتير غير مدفوعة"
+    }
   },
   "appointment": {
     "status": {

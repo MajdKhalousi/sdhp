@@ -141,7 +141,13 @@
       "noAppointmentsToday": "No appointments scheduled for today",
       "queueClear": "Queue is clear"
     },
-    "doctorPrefix": "Dr."
+    "doctorPrefix": "Dr.",
+    "alerts": {
+      "overdueFollowUps": "{count} overdue follow-ups need attention",
+      "pendingLabs": "{count} lab orders still pending",
+      "pendingRadiology": "{count} radiology orders still pending",
+      "unpaidInvoices": "{count} unpaid invoices"
+    }
   },
   "appointment": {
     "status": {

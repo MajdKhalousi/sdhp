@@ -38,6 +38,10 @@ const COMPLETED_ROLES   = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
 const FOLLOWUP_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY', 'DOCTOR', 'NURSE']);
 const NEW_PATIENT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
 
+const ALERT_LABS_THRESHOLD      = 10;
+const ALERT_RADIOLOGY_THRESHOLD = 10;
+const ALERT_INVOICES_THRESHOLD  = 20;
+
 function todayStr() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
 }
@@ -219,6 +223,38 @@ export default function DashboardPage() {
   const appointments = canSeeOps ? (todayAppts?.data ?? []) : [];
   const activeQueue  = canSeeOps ? (liveQueue?.data ?? []) : [];
 
+  const alerts: Array<{ key: string; text: string; href: string }> = [];
+  if (!overviewError && overview) {
+    if (canSeeFollowUps && (o?.followUpsOverdue ?? 0) > 0) {
+      alerts.push({
+        key: 'overdueFollowUps',
+        text: t('alerts.overdueFollowUps', { count: o?.followUpsOverdue ?? 0 }),
+        href: '/dashboard/follow-ups',
+      });
+    }
+    if (canSeeLabs && role !== 'NURSE' && (o?.labOrders.pending ?? 0) > ALERT_LABS_THRESHOLD) {
+      alerts.push({
+        key: 'pendingLabs',
+        text: t('alerts.pendingLabs', { count: o?.labOrders.pending ?? 0 }),
+        href: '/dashboard/technician/labs',
+      });
+    }
+    if (canSeeLabs && role !== 'NURSE' && (o?.radiologyOrders.pending ?? 0) > ALERT_RADIOLOGY_THRESHOLD) {
+      alerts.push({
+        key: 'pendingRadiology',
+        text: t('alerts.pendingRadiology', { count: o?.radiologyOrders.pending ?? 0 }),
+        href: '/dashboard/technician/radiology',
+      });
+    }
+    if (canSeeBilling && overview.billing && overview.billing.unpaidInvoiceCount > ALERT_INVOICES_THRESHOLD) {
+      alerts.push({
+        key: 'unpaidInvoices',
+        text: t('alerts.unpaidInvoices', { count: overview.billing.unpaidInvoiceCount }),
+        href: '/dashboard/invoices',
+      });
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -287,6 +323,22 @@ export default function DashboardPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* ── Alerts strip ─────────────────────────────────────────────────── */}
+      {alerts.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {alerts.map((alert) => (
+            <Link
+              key={alert.key}
+              href={alert.href}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 transition-colors hover:border-amber-300 hover:bg-amber-100 dark:border-amber-800/50 dark:bg-amber-950/30 dark:text-amber-400 dark:hover:bg-amber-950/50"
+            >
+              <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+              {alert.text}
+            </Link>
+          ))}
         </div>
       )}
 

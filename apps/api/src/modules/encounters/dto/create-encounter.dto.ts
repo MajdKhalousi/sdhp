@@ -28,6 +28,11 @@ export class CreateEncounterDto {
   @IsString()
   chiefComplaint?: string;
 
+  @ApiPropertyOptional({ example: '3-day history of worsening headache. Onset gradual. Worse at night. No fever.' })
+  @IsOptional()
+  @IsString()
+  historyOfPresentIllness?: string;
+
   @ApiPropertyOptional({ example: 'Patient appears comfortable at rest' })
   @IsOptional()
   @IsString()
@@ -47,6 +52,11 @@ export class CreateEncounterDto {
   @IsOptional()
   @IsString()
   treatmentPlan?: string;
+
+  @ApiPropertyOptional({ example: 'Rest for 2 days, increase fluid intake, return if fever exceeds 39°C.' })
+  @IsOptional()
+  @IsString()
+  patientInstructions?: string;
 
   @ApiPropertyOptional({ example: '2026-07-15T09:00:00.000Z' })
   @IsOptional()

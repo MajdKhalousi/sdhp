@@ -462,12 +462,14 @@ model Encounter {
   patientId      String
   doctorId       String
   appointmentId  String?   @unique
-  chiefComplaint String?
-  notes          String?
-  diagnosis      String?
+  chiefComplaint              String?
+  historyOfPresentIllness     String?
+  notes                       String?
+  diagnosis                   String?
   diagnosisCode  String?
-  treatmentPlan  String?
-  followUpDate   DateTime?
+  treatmentPlan               String?
+  patientInstructions         String?
+  followUpDate                DateTime?
   vitals         Json?
   startedAt      DateTime  @default(now())
   endedAt        DateTime?

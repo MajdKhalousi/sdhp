@@ -34,10 +34,12 @@ export interface Encounter {
   doctorId: string;
   appointmentId: string | null;
   chiefComplaint: string | null;
+  historyOfPresentIllness: string | null;
   notes: string | null;
   diagnosis: string | null;
   diagnosisCode: string | null;
   treatmentPlan: string | null;
+  patientInstructions: string | null;
   followUpDate: string | null;
   vitals: Record<string, unknown> | null;
   startedAt: string | null;
@@ -66,10 +68,12 @@ export interface VitalsPayload {
 
 export interface UpdateEncounterPayload {
   chiefComplaint?: string;
+  historyOfPresentIllness?: string;
   notes?: string;
   diagnosis?: string;
   diagnosisCode?: string;
   treatmentPlan?: string;
+  patientInstructions?: string;
   followUpDate?: string;
   vitals?: VitalsPayload;
   endedAt?: string;

@@ -140,8 +140,13 @@ export function useDownloadReportPdf() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const blob = await res.blob();
       const objectUrl = URL.createObjectURL(blob);
-      window.open(objectUrl, '_blank');
-      setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+      const a = document.createElement('a');
+      a.href = objectUrl;
+      a.download = `clinical-report-${id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 100);
     } catch {
       setDownloadError('downloadFailed');
     } finally {
@@ -152,9 +157,19 @@ export function useDownloadReportPdf() {
   return { download, downloadingId, downloadError };
 }
 
+interface SaveAsFileVars {
+  id: string;
+  patientId: string;
+}
+
 export function useSaveReportAsFile() {
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
+    mutationFn: ({ id }: SaveAsFileVars) =>
       api.post<SaveAsFileResult>(`/v1/clinical-reports/${id}/save-as-file`, {}),
+    onSuccess: (_, { patientId }) => {
+      qc.invalidateQueries({ queryKey: ['patient-files', patientId] });
+      qc.invalidateQueries({ queryKey: ['patient-timeline'] });
+    },
   });
 }

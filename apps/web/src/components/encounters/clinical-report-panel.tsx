@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import {
   useClinicalReports,
   useCreateClinicalReport,
@@ -53,8 +53,6 @@ export function ClinicalReportPanel({
 }: Props) {
   const t = useTranslations('encounter.clinicalReport');
   const tCommon = useTranslations('common');
-  const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -87,7 +85,7 @@ export function ClinicalReportPanel({
 
   function handleSaveAsFile(id: string) {
     setSaveFileMsg(null);
-    saveAsFile(id, {
+    saveAsFile({ id, patientId }, {
       onSuccess: () => setSaveFileMsg({ id, msg: t('saveAsFileSuccess'), ok: true }),
       onError: (e) => {
         const msg =
@@ -281,13 +279,15 @@ export function ClinicalReportPanel({
                         {t('editButton')}
                       </button>
                     )}
-                    <button
-                      onClick={() => handleFinalize(report.id)}
-                      disabled={updating}
-                      className="inline-flex h-7 items-center rounded-md bg-green-600 px-2.5 text-xs font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-60"
-                    >
-                      {t('finalizeButton')}
-                    </button>
+                    {!readOnly && (
+                      <button
+                        onClick={() => handleFinalize(report.id)}
+                        disabled={updating}
+                        className="inline-flex h-7 items-center rounded-md bg-green-600 px-2.5 text-xs font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-60"
+                      >
+                        {t('finalizeButton')}
+                      </button>
+                    )}
                     {!readOnly && (
                       <button
                         onClick={() => handleDelete(report)}

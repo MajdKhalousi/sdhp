@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ClipboardList } from 'lucide-react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import {
   usePatientClinicalReports,
@@ -26,8 +26,6 @@ function ReportCard({
   onToggle: () => void;
 }) {
   const t = useTranslations('patient');
-  const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const isDraft = report.status === 'DRAFT';
 
   const { download: downloadPdf, downloadingId } = useDownloadReportPdf();

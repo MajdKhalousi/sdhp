@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Scan } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
@@ -7,11 +8,15 @@ import type { BadgeProps } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   usePatientRadiologyOrders,
+  useReviewRadiologyReport,
   type RadiologyOrder,
   type RadiologyReport,
 } from '@/hooks/use-radiology';
+import { useAuthStore } from '@/store/auth';
 import type { RadiologyOrderStatus } from '@/types/timeline';
 import { formatDateDisplay } from '@/lib/format-date';
+
+const REVIEW_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR']);
 
 const STATUS_VARIANT: Record<RadiologyOrderStatus, BadgeProps['variant']> = {
   ORDERED:     'default',
@@ -84,7 +89,20 @@ function RadiologyOrderItem({ order }: { order: RadiologyOrder }) {
   const tPatient = useTranslations('patient');
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
+  const { user } = useAuthStore();
+  const { mutate: review, isPending: reviewing } = useReviewRadiologyReport();
+  const [reviewError, setReviewError] = useState('');
   const doctor = `${order.orderedBy.user.firstName} ${order.orderedBy.user.lastName}`;
+
+  const canReview = !!user && REVIEW_ROLES.has(user.role) && order.status === 'RESULTED' && order.report !== null;
+
+  function handleReview() {
+    setReviewError('');
+    review(
+      { radiologyOrderId: order.id, patientId: order.patientId },
+      { onError: (e) => setReviewError(e instanceof Error ? e.message : tRad('radiologyOrders.error.reviewFailed')) },
+    );
+  }
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-s-4 border-s-blue-400">
@@ -134,6 +152,21 @@ function RadiologyOrderItem({ order }: { order: RadiologyOrder }) {
       </div>
 
       {order.report && <ReportSection report={order.report} />}
+
+      {canReview && (
+        <div className="mt-3">
+          <button
+            onClick={handleReview}
+            disabled={reviewing}
+            className="inline-flex h-7 items-center gap-1.5 rounded-md border border-blue-400 px-3 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-950/30"
+          >
+            {reviewing ? tRad('radiologyOrders.actions.reviewing') : tRad('radiologyOrders.actions.review')}
+          </button>
+        </div>
+      )}
+      {reviewError && (
+        <p className="mt-1.5 text-xs text-destructive">{reviewError}</p>
+      )}
     </div>
   );
 }

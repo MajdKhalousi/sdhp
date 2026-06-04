@@ -1,13 +1,17 @@
 'use client';
 
+import { useState } from 'react';
 import { FolderOpen } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import type { BadgeProps } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { usePatientLabOrders, type LabOrder, type LabResult } from '@/hooks/use-labs';
+import { usePatientLabOrders, useReviewLabResult, type LabOrder, type LabResult } from '@/hooks/use-labs';
+import { useAuthStore } from '@/store/auth';
 import type { LabOrderStatus } from '@/types/timeline';
 import { formatDateDisplay } from '@/lib/format-date';
+
+const REVIEW_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR']);
 
 const STATUS_VARIANT: Record<LabOrderStatus, BadgeProps['variant']> = {
   ORDERED:          'default',
@@ -72,7 +76,20 @@ function LabOrderItem({ order }: { order: LabOrder }) {
   const t = useTranslations('timeline');
   const tLab = useTranslations('encounter');
   const tPatient = useTranslations('patient');
+  const { user } = useAuthStore();
+  const { mutate: review, isPending: reviewing } = useReviewLabResult();
+  const [reviewError, setReviewError] = useState('');
   const doctor = `${order.orderedBy.user.firstName} ${order.orderedBy.user.lastName}`;
+
+  const canReview = !!user && REVIEW_ROLES.has(user.role) && order.status === 'RESULTED' && order.result !== null;
+
+  function handleReview() {
+    setReviewError('');
+    review(
+      { labOrderId: order.id, patientId: order.patientId },
+      { onError: (e) => setReviewError(e instanceof Error ? e.message : tLab('labOrders.error.reviewFailed')) },
+    );
+  }
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-s-4 border-s-amber-400">
@@ -122,6 +139,21 @@ function LabOrderItem({ order }: { order: LabOrder }) {
       </div>
 
       {order.result && <ResultSection result={order.result} />}
+
+      {canReview && (
+        <div className="mt-3">
+          <button
+            onClick={handleReview}
+            disabled={reviewing}
+            className="inline-flex h-7 items-center gap-1.5 rounded-md border border-green-400 px-3 text-xs font-medium text-green-700 transition-colors hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-950/30"
+          >
+            {reviewing ? tLab('labOrders.actions.reviewing') : tLab('labOrders.actions.review')}
+          </button>
+        </div>
+      )}
+      {reviewError && (
+        <p className="mt-1.5 text-xs text-destructive">{reviewError}</p>
+      )}
     </div>
   );
 }

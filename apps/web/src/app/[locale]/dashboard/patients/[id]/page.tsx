@@ -438,12 +438,15 @@ export default function PatientPage({ params }: { params: { id: string } }) {
               <PatientVisitStatus
                 patientId={id}
                 lastEncounterEvent={lastEncounterEvent}
+                canViewEncounter={hasClinicalRole}
               />
             )}
-            <PatientClinicalSummary
-              patientId={id}
-              onViewHistory={() => handleTabChange('timeline')}
-            />
+            {hasClinicalRole && (
+              <PatientClinicalSummary
+                patientId={id}
+                onViewHistory={() => handleTabChange('timeline')}
+              />
+            )}
             {patient && canSeeSafetyAlerts && (
               <PatientSafetyAlerts
                 allergies={allergies}

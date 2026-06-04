@@ -11,9 +11,10 @@ import type { TimelineEvent } from '@/types/timeline';
 interface Props {
   patientId: string;
   lastEncounterEvent: Extract<TimelineEvent, { type: 'ENCOUNTER' }> | null;
+  canViewEncounter?: boolean;
 }
 
-export function PatientVisitStatus({ patientId, lastEncounterEvent }: Props) {
+export function PatientVisitStatus({ patientId, lastEncounterEvent, canViewEncounter }: Props) {
   const t = useTranslations('patient.visitStatus');
 
   const { data: appointmentsData, isLoading: apptLoading } = useAppointments({
@@ -62,12 +63,14 @@ export function PatientVisitStatus({ patientId, lastEncounterEvent }: Props) {
               </span>
             </div>
           </div>
-          <Link
-            href={`/dashboard/doctor/encounter/${lastEncounterEvent.id}`}
-            className="shrink-0 text-xs font-medium text-primary hover:underline"
-          >
-            {t('viewEncounter')}
-          </Link>
+          {canViewEncounter && (
+            <Link
+              href={`/dashboard/doctor/encounter/${lastEncounterEvent.id}`}
+              className="shrink-0 text-xs font-medium text-primary hover:underline"
+            >
+              {t('viewEncounter')}
+            </Link>
+          )}
         </div>
       ) : nextAppointment ? (
         <div className="flex flex-wrap items-start justify-between gap-3">

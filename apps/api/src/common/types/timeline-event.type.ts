@@ -28,6 +28,11 @@ export interface EncounterEventData {
   vitals: Prisma.JsonValue | null;
   updatedAt: Date;
   doctor: { id: string; firstName: string; lastName: string; specialization: string | null };
+  prescriptionsCount: number;
+  labOrdersCount: number;
+  radiologyOrdersCount: number;
+  medicalFilesCount: number;
+  clinicalReportsCount: number;
 }
 
 export interface PrescriptionEventData {

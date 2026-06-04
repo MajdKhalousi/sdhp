@@ -68,6 +68,11 @@ export interface EncounterEventData {
   vitals?: Record<string, unknown> | null;
   updatedAt: string;
   doctor: DoctorRef;
+  prescriptionsCount?: number;
+  labOrdersCount?: number;
+  radiologyOrdersCount?: number;
+  medicalFilesCount?: number;
+  clinicalReportsCount?: number;
 }
 
 export interface PrescriptionEventData {

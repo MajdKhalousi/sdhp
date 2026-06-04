@@ -92,11 +92,18 @@ export const TimelineEventList = memo(function TimelineEventList({ events }: Pro
             <div className="space-y-3">
               {group.events.map((event) => {
                 if (event.type === 'ENCOUNTER') {
+                  const fallbackCounts = computeOutputCounts(event.id, events);
                   return (
                     <EncounterCard
                       key={event.id}
                       event={event}
-                      outputCounts={computeOutputCounts(event.id, events)}
+                      outputCounts={{
+                        prescriptions: event.data.prescriptionsCount   ?? fallbackCounts.prescriptions,
+                        labs:          event.data.labOrdersCount        ?? fallbackCounts.labs,
+                        radiology:     event.data.radiologyOrdersCount  ?? fallbackCounts.radiology,
+                        files:         event.data.medicalFilesCount      ?? fallbackCounts.files,
+                        reports:       event.data.clinicalReportsCount   ?? fallbackCounts.reports,
+                      }}
                     />
                   );
                 }

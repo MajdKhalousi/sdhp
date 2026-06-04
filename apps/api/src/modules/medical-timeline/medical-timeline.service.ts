@@ -190,6 +190,44 @@ export class MedicalTimelineService {
       select: ENCOUNTER_TIMELINE_SELECT,
     });
 
+    if (rows.length === 0) return [];
+
+    const encounterIds = rows.map((e) => e.id);
+
+    const [prescGroups, labGroups, radGroups, fileGroups, repGroups] = await Promise.all([
+      this.prisma.prescription.groupBy({
+        by: ['encounterId'],
+        where: { encounterId: { in: encounterIds }, deletedAt: null },
+        _count: { _all: true },
+      }),
+      this.prisma.labOrder.groupBy({
+        by: ['encounterId'],
+        where: { encounterId: { in: encounterIds }, deletedAt: null },
+        _count: { _all: true },
+      }),
+      this.prisma.radiologyOrder.groupBy({
+        by: ['encounterId'],
+        where: { encounterId: { in: encounterIds }, deletedAt: null },
+        _count: { _all: true },
+      }),
+      this.prisma.medicalFile.groupBy({
+        by: ['encounterId'],
+        where: { encounterId: { in: encounterIds }, deletedAt: null },
+        _count: { _all: true },
+      }),
+      this.prisma.clinicalReport.groupBy({
+        by: ['encounterId'],
+        where: { encounterId: { in: encounterIds }, deletedAt: null },
+        _count: { _all: true },
+      }),
+    ]);
+
+    const prescMap = new Map(prescGroups.map((g) => [g.encounterId, g._count._all]));
+    const labMap   = new Map(labGroups.filter((g) => g.encounterId !== null).map((g) => [g.encounterId!, g._count._all]));
+    const radMap   = new Map(radGroups.filter((g) => g.encounterId !== null).map((g) => [g.encounterId!, g._count._all]));
+    const fileMap  = new Map(fileGroups.filter((g) => g.encounterId !== null).map((g) => [g.encounterId!, g._count._all]));
+    const repMap   = new Map(repGroups.filter((g) => g.encounterId !== null).map((g) => [g.encounterId!, g._count._all]));
+
     return rows.map((e): TimelineEvent => ({
       type: TimelineEventType.ENCOUNTER,
       id: e.id,
@@ -214,6 +252,11 @@ export class MedicalTimelineService {
           lastName: e.doctor.user.lastName,
           specialization: e.doctor.specialization,
         },
+        prescriptionsCount:   prescMap.get(e.id) ?? 0,
+        labOrdersCount:       labMap.get(e.id)   ?? 0,
+        radiologyOrdersCount: radMap.get(e.id)   ?? 0,
+        medicalFilesCount:    fileMap.get(e.id)  ?? 0,
+        clinicalReportsCount: repMap.get(e.id)   ?? 0,
       } satisfies EncounterEventData,
     }));
   }

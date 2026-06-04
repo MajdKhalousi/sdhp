@@ -222,6 +222,17 @@ export class MedicalFilesService {
     };
   }
 
+  async downloadFile(id: string, caller: JwtPayload): Promise<{ buffer: Buffer; fileName: string; mimeType: string }> {
+    const file = await this.fetchFile(id);
+    this.assertOrgAccess(file, caller);
+    const buffer = await this.storage.getObject(file.storageKey);
+    return {
+      buffer,
+      fileName: file.fileName,
+      mimeType: file.mimeType || 'application/octet-stream',
+    };
+  }
+
   async findByPatient(patientId: string, query: MedicalFileQueryDto, caller: JwtPayload) {
     const patient = await this.prisma.patient.findFirst({
       where: { id: patientId, deletedAt: null },

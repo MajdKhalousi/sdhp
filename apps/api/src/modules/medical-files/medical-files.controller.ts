@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  StreamableFile,
   Version,
 } from '@nestjs/common';
 import {
@@ -104,6 +105,29 @@ export class MedicalFilesController {
   @ApiForbiddenResponse({ description: 'Cross-org access denied' })
   getDownloadUrl(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.service.getDownloadUrl(id, user);
+  }
+
+  @Get(':id/download')
+  @Version('1')
+  @Roles(
+    UserRole.SUPER_ADMIN,
+    UserRole.ORG_ADMIN,
+    UserRole.DOCTOR,
+    UserRole.NURSE,
+    UserRole.SECRETARY,
+    UserRole.TECHNICIAN,
+  )
+  @ApiOperation({ summary: 'Stream file content directly. Requires JWT. Returns file with Content-Disposition: attachment.' })
+  @ApiOkResponse({ description: 'File content streamed' })
+  @ApiNotFoundResponse({ description: 'File not found' })
+  @ApiForbiddenResponse({ description: 'Cross-org access denied' })
+  async download(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    const { buffer, fileName, mimeType } = await this.service.downloadFile(id, user);
+    return new StreamableFile(buffer, {
+      type: mimeType,
+      disposition: `attachment; filename="${fileName.replace(/"/g, "'")}"`,
+      length: buffer.length,
+    });
   }
 
   @Get(':id')

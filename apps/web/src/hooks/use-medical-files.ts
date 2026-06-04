@@ -1,6 +1,10 @@
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/store/auth';
 import type { MedicalFileCategory } from '@/types/timeline';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
 
 export interface MedicalFile {
   id: string;
@@ -90,6 +94,38 @@ export function useRegisterMedicalFile() {
 
 export function getMedicalFileDownloadUrl(fileId: string): Promise<DownloadUrlResponse> {
   return api.get<DownloadUrlResponse>(`/v1/medical-files/${fileId}/download-url`);
+}
+
+export function useDownloadMedicalFile() {
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
+  async function download({ id, fileName }: { id: string; fileName: string }): Promise<void> {
+    setDownloadingId(id);
+    setDownloadError(null);
+    try {
+      const { token } = useAuthStore.getState();
+      const res = await fetch(`${API_BASE}/v1/medical-files/${id}/download`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objectUrl;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 100);
+    } catch {
+      setDownloadError('downloadFailed');
+    } finally {
+      setDownloadingId(null);
+    }
+  }
+
+  return { download, downloadingId, downloadError };
 }
 
 export function useDeleteMedicalFile() {

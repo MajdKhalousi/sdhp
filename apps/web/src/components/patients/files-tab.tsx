@@ -11,7 +11,7 @@ import {
   useRequestUploadUrl,
   useRegisterMedicalFile,
   useDeleteMedicalFile,
-  getMedicalFileDownloadUrl,
+  useDownloadMedicalFile,
   type MedicalFile,
 } from '@/hooks/use-medical-files';
 import type { MedicalFileCategory } from '@/types/timeline';
@@ -56,22 +56,16 @@ function FileListItem({
   const t = useTranslations('filesTab');
   const tCats = useTranslations('timeline');
   const locale = useLocale();
-  const [downloadError, setDownloadError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  const { download: downloadFile, downloadingId, downloadError } = useDownloadMedicalFile();
   const { mutate: deleteFile, isPending: isDeleting } = useDeleteMedicalFile();
 
   const isClinicalReport = file.category === 'CLINICAL_REPORT';
   const canDelete = canDeleteFile(currentUser, file);
 
-  async function handleDownload() {
-    setDownloadError(null);
-    try {
-      const { downloadUrl } = await getMedicalFileDownloadUrl(file.id);
-      window.open(downloadUrl, '_blank', 'noopener,noreferrer');
-    } catch {
-      setDownloadError(t('downloadFailed'));
-    }
+  function handleDownload() {
+    void downloadFile({ id: file.id, fileName: file.fileName });
   }
 
   function handleDelete() {
@@ -121,10 +115,11 @@ function FileListItem({
         <div className="flex shrink-0 items-center gap-1.5">
           <button
             onClick={handleDownload}
-            className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+            disabled={!!downloadingId}
+            className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Download className="h-3 w-3" />
-            {t('downloadButton')}
+            {downloadingId ? t('downloading') : t('downloadButton')}
           </button>
           {canDelete && (
             <button
@@ -140,7 +135,7 @@ function FileListItem({
       </div>
 
       {downloadError && (
-        <p className="mt-1.5 text-xs text-destructive">{downloadError}</p>
+        <p className="mt-1.5 text-xs text-destructive">{t('downloadFailed')}</p>
       )}
       {deleteError && (
         <p className="mt-1.5 text-xs text-destructive">{deleteError}</p>

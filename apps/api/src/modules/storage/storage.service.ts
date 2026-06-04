@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { Readable } from 'stream';
 import { randomUUID } from 'crypto';
 import * as path from 'path';
 
@@ -55,6 +56,13 @@ export class StorageService {
     return this.rewriteUrl(url);
   }
 
+  async getObject(objectKey: string): Promise<Buffer> {
+    const command = new GetObjectCommand({ Bucket: this.bucket, Key: objectKey });
+    const response = await this.client.send(command);
+    if (!response.Body) throw new NotFoundException(`Storage object not found: ${objectKey}`);
+    return this.streamToBuffer(response.Body as Readable);
+  }
+
   async putObject(objectKey: string, body: Buffer, contentType: string): Promise<void> {
     await this.client.send(
       new PutObjectCommand({
@@ -64,6 +72,15 @@ export class StorageService {
         ContentType: contentType,
       }),
     );
+  }
+
+  private streamToBuffer(stream: Readable): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+      stream.on('end', () => resolve(Buffer.concat(chunks)));
+      stream.on('error', reject);
+    });
   }
 
   // Replaces the internal MinIO origin with the browser-reachable public endpoint.

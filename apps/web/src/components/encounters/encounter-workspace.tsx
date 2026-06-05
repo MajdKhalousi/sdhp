@@ -16,6 +16,7 @@ import { RadiologyOrderPanel } from './radiology-order-panel';
 import { ClinicalReportPanel } from './clinical-report-panel';
 import { PreviousEncounterPanel } from './previous-encounter-panel';
 import { IcdCodeCombobox } from './icd-code-combobox';
+import { ICD_CODES } from '@/lib/icd-codes';
 import { FollowUpBookingPanel } from './follow-up-booking-panel';
 import { EndEncounterButton } from './end-encounter-button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -335,6 +336,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
     : `/dashboard/invoices`;
   const severeAllergies = allergies.filter((a) => a.severity === 'SEVERE');
   const otherAllergies = allergies.filter((a) => a.severity !== 'SEVERE');
+  const selectedIcdEntry = ICD_CODES.find((e) => e.code === form.diagnosisCode.trim()) ?? null;
 
   return (
     <div className="space-y-6">
@@ -605,6 +607,20 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
                 previous={prevDiagnosis}
                 onUse={() => { if (prevDiagnosis) setField('diagnosis', prevDiagnosis); }}
               />
+            )}
+            {!readOnly && !form.diagnosis && selectedIcdEntry && (
+              <div className="mt-1 flex items-center gap-2">
+                <span className="line-clamp-1 min-w-0 flex-1 text-xs text-muted-foreground" dir="ltr">
+                  {selectedIcdEntry.description}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setField('diagnosis', selectedIcdEntry.description)}
+                  className="shrink-0 text-xs font-medium text-primary hover:underline"
+                >
+                  {t('icdLookup.useAsDiagnosis')}
+                </button>
+              </div>
             )}
           </div>
           <div className="space-y-1.5">

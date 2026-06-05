@@ -559,6 +559,12 @@
       "lastVitals": "Last vitals:",
       "copyAll": "Copy all"
     },
+    "liveStatus": {
+      "itemsToDocument": "{count} items to document",
+      "chiefComplaint": "Chief complaint",
+      "diagnosis": "Diagnosis",
+      "vitals": "Vitals"
+    },
     "followUpBooking": {
       "bookButton": "Book Follow-up Appointment",
       "alreadyBooked": "Follow-up Booked",

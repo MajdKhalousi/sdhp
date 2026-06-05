@@ -312,6 +312,11 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
     : null;
   const prevHasVitals = !!previousVitals && Object.values(previousVitals).some(Boolean);
   const currentVitalsEmpty = Object.values(form.vitals).every((v) => !v);
+  const warnItems: string[] = [];
+  if (!form.chiefComplaint.trim()) warnItems.push(t('liveStatus.chiefComplaint'));
+  if (!form.diagnosis.trim())      warnItems.push(t('liveStatus.diagnosis'));
+  if (currentVitalsEmpty)          warnItems.push(t('liveStatus.vitals'));
+  const openWarnCount = warnItems.length;
   const prevCC            = !readOnly ? findPreviousTextValue('chiefComplaint') : null;
   const prevHPI           = !readOnly ? findPreviousTextValue('historyOfPresentIllness') : null;
   const prevDiagnosis     = !readOnly ? findPreviousTextValue('diagnosis') : null;
@@ -835,6 +840,16 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
                 {saveError && (
                   <span className="text-xs text-destructive">{saveError}</span>
                 )}
+              </div>
+            )}
+
+            {canEdit && openWarnCount > 0 && (
+              <div
+                className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400"
+                title={warnItems.join('\n')}
+              >
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                <span>{t('liveStatus.itemsToDocument', { count: openWarnCount })}</span>
               </div>
             )}
 

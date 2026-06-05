@@ -559,6 +559,12 @@
       "lastVitals": "آخر القياسات:",
       "copyAll": "نسخ الكل"
     },
+    "liveStatus": {
+      "itemsToDocument": "{count} بنود للتوثيق",
+      "chiefComplaint": "الشكوى الرئيسية",
+      "diagnosis": "التشخيص",
+      "vitals": "العلامات الحيوية"
+    },
     "followUpBooking": {
       "bookButton": "حجز موعد مراجعة",
       "alreadyBooked": "تم حجز المراجعة",

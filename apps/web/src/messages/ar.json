@@ -1657,6 +1657,24 @@
         "amountExceedsRemaining": "المبلغ يتجاوز الرصيد المتبقي.",
         "methodRequired": "طريقة الدفع مطلوبة."
       }
+    },
+    "print": {
+      "invoice": "فاتورة",
+      "receipt": "إيصال",
+      "paidReceipt": "إيصال دفع",
+      "loading": "جاري تحميل الفاتورة…",
+      "error": "فشل تحميل الفاتورة",
+      "printDate": "تاريخ الطباعة",
+      "paymentHistory": "سجل المدفوعات",
+      "noPayments": "لا توجد مدفوعات على هذه الفاتورة",
+      "balanceDue": "الرصيد المستحق",
+      "generatedBy": "تم الإنشاء بواسطة Elaji Health",
+      "printInvoice": "طباعة الفاتورة",
+      "printReceipt": "طباعة الإيصال",
+      "actions": {
+        "back": "إغلاق",
+        "print": "طباعة"
+      }
     }
   },
   "settings": {

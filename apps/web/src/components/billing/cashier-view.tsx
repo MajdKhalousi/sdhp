@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { CheckCircle2, CreditCard, Receipt } from 'lucide-react';
+import { CheckCircle2, CreditCard, Printer, Receipt } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useInvoices, useBillingReport } from '@/hooks/use-invoices';
@@ -46,6 +46,7 @@ interface RowProps {
 
 function InvoiceRow({ invoice, isActive, onAction, onSuccess, onCancel }: RowProps) {
   const t = useTranslations('cashier');
+  const tInvoicePrint = useTranslations('invoice.print');
   const locale = useLocale();
 
   const total = parseFloat(invoice.totalAmount);
@@ -92,9 +93,20 @@ function InvoiceRow({ invoice, isActive, onAction, onSuccess, onCancel }: RowPro
         {/* Action */}
         <div className="shrink-0">
           {isPaid ? (
-            <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              {t('actions.paid')}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                {t('actions.paid')}
+              </div>
+              <a
+                href={`/${locale}/invoice/${invoice.id}/print`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-7 items-center gap-1.5 rounded-md border px-2.5 text-xs font-medium transition-colors hover:bg-accent"
+              >
+                <Printer className="h-3 w-3" />
+                {tInvoicePrint('printReceipt')}
+              </a>
             </div>
           ) : (
             <button

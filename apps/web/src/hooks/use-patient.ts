@@ -95,12 +95,14 @@ export interface CreatePatientInput {
 
 export type UpdatePatientInput = Partial<CreatePatientInput>;
 
-export function usePatients(search?: string) {
+export function usePatients(params?: { search?: string; page?: number; limit?: number }) {
+  const { search, page = 1, limit = 25 } = params ?? {};
   return useQuery({
-    queryKey: ['patients', 'list', search ?? ''],
+    queryKey: ['patients', 'list', search ?? '', page, limit],
     queryFn: () =>
       api.get<PatientsResponse>('/v1/patients', {
-        limit: 100,
+        page,
+        limit,
         ...(search ? { search } : {}),
       }),
     staleTime: 60_000,

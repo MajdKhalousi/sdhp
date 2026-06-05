@@ -329,6 +329,7 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
   const t = useTranslations('invoice.detail');
   const tActions = useTranslations('invoice.actions');
   const tInvoice = useTranslations('invoice');
+  const tPrint = useTranslations('invoice.print');
   const tCommon = useTranslations('common');
   const locale = useLocale();
 
@@ -421,6 +422,14 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
           )}
           {isDraft && canCreate && <IssueButton invoice={invoice} />}
           {isCancellable && canCancel && <CancelInvoiceDialog invoiceId={invoice.id} />}
+          <a
+            href={`/${locale}/invoice/${invoice.id}/print`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent"
+          >
+            {tPrint('printInvoice')}
+          </a>
         </div>
       </div>
 

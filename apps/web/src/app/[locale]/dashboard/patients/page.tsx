@@ -15,6 +15,8 @@ import { useAuthStore } from '@/store/auth';
 import { useUnsavedGuardStore } from '@/store/unsaved-guard';
 import { formatDateDisplay } from '@/lib/format-date';
 
+const PAGE_LIMIT = 25;
+
 const PATIENT_EDIT_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
 const PATIENT_ARCHIVE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
 const PATIENT_BOOK_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
@@ -56,6 +58,7 @@ export default function PatientsPage() {
 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -70,6 +73,10 @@ export default function PatientsPage() {
     return () => clearTimeout(id);
   }, [search]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
   // Warn browser before unload when the create form has unsaved data
   useEffect(() => {
     if (!isCreateOpen || !isCreateFormDirty) return;
@@ -78,7 +85,7 @@ export default function PatientsPage() {
     return () => window.removeEventListener('beforeunload', handler);
   }, [isCreateOpen, isCreateFormDirty]);
 
-  const { data, isLoading, isError, error, refetch } = usePatients(debouncedSearch);
+  const { data, isLoading, isError, error, refetch } = usePatients({ search: debouncedSearch, page, limit: PAGE_LIMIT });
   const createPatient = useCreatePatient();
   const deletePatient = useDeletePatient();
   const checkDuplicate = useCheckDuplicatePatient();
@@ -86,6 +93,7 @@ export default function PatientsPage() {
   const router = useRouter();
 
   const patients = data?.data ?? [];
+  const totalPages = data ? Math.ceil(data.total / PAGE_LIMIT) : 1;
 
   // Sync guard enabled state with form open+dirty status
   useEffect(() => {
@@ -450,10 +458,26 @@ export default function PatientsPage() {
             </div>
           )}
 
-          {debouncedSearch && data.total > patients.length && (
-            <p className="text-xs text-muted-foreground">
-              {t('list.showingOf', { shown: patients.length, total: data.total })}
-            </p>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between gap-4 pt-1 text-sm">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="inline-flex h-8 items-center rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {tCommon('pagination.previous')}
+              </button>
+              <span className="text-xs text-muted-foreground">
+                {tCommon('pagination.pageOf', { page, total: totalPages })}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+                className="inline-flex h-8 items-center rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {tCommon('pagination.next')}
+              </button>
+            </div>
           )}
         </>
       )}

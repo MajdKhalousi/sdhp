@@ -565,6 +565,9 @@
       "diagnosis": "التشخيص",
       "vitals": "العلامات الحيوية"
     },
+    "followUpContext": {
+      "ccHint": "توثيق الشكوى الرئيسية يساعد في متابعة تاريخ الزيارات."
+    },
     "followUpBooking": {
       "bookButton": "حجز موعد مراجعة",
       "alreadyBooked": "تم حجز المراجعة",

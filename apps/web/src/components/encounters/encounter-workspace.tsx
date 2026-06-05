@@ -325,6 +325,9 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const visitTypeName = appointmentVisitType
     ? ((locale === 'ar' && appointmentVisitType.nameAr) || appointmentVisitType.name)
     : null;
+  const isFollowUpVisit =
+    /follow[- ]?up|followup|recheck|review/i.test(appointmentVisitType?.name ?? '') ||
+    /مراجعة|متابعة/.test(appointmentVisitType?.nameAr ?? '');
   const invoiceCreateHref = encounter.appointmentId
     ? `/dashboard/invoices/new?appointmentId=${encounter.appointmentId}&patientId=${patient.id}`
     : `/dashboard/invoices`;
@@ -475,6 +478,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
       <PreviousEncounterPanel
         patientId={patient.id}
         currentEncounterId={encounterId}
+        defaultOpen={isFollowUpVisit}
       />
 
       {/* ── S — Subjective ──────────────────────────────────────────────── */}
@@ -486,6 +490,9 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
             <label className="text-sm font-medium" htmlFor="chiefComplaint">
               {t('fields.chiefComplaintLabel')}
             </label>
+            {!readOnly && (
+              <p className="text-xs text-muted-foreground">{t('followUpContext.ccHint')}</p>
+            )}
             <input
               id="chiefComplaint"
               type="text"

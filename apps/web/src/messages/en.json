@@ -565,6 +565,9 @@
       "diagnosis": "Diagnosis",
       "vitals": "Vitals"
     },
+    "followUpContext": {
+      "ccHint": "Documenting the chief complaint helps track visit history."
+    },
     "followUpBooking": {
       "bookButton": "Book Follow-up Appointment",
       "alreadyBooked": "Follow-up Booked",

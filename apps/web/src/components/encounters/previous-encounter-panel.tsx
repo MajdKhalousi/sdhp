@@ -35,14 +35,15 @@ function formatVitals(v: Record<string, unknown> | null | undefined): string | n
 interface Props {
   patientId: string;
   currentEncounterId: string;
+  defaultOpen?: boolean;
 }
 
-export function PreviousEncounterPanel({ patientId, currentEncounterId }: Props) {
+export function PreviousEncounterPanel({ patientId, currentEncounterId, defaultOpen }: Props) {
   const t = useTranslations('encounter.previousVisits');
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen ?? false);
 
   const { data, isLoading } = useEncounters(
     { patientId, limit: 7 },

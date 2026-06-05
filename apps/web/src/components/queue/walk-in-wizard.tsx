@@ -19,10 +19,10 @@ interface Step1Form {
   visitTypeId: string;
 }
 
-function nowDateTimeLocal(): string {
-  const now = new Date();
+function nowDamascusDateTimeLocal(): string {
+  const d = new Date(Date.now() + 3 * 60 * 60 * 1000);
   const pad = (n: number) => String(n).padStart(2, '0');
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
 }
 
 const INITIAL: Step1Form = {
@@ -41,7 +41,7 @@ export function WalkInWizard({ initialPatientId }: WalkInWizardProps = {}) {
   const [step, setStep] = useState<1 | 2>(1);
   const [form, setForm] = useState<Step1Form>(() => ({
     ...INITIAL,
-    scheduledAt: nowDateTimeLocal(),
+    scheduledAt: nowDamascusDateTimeLocal(),
     patientId: initialPatientId ?? '',
   }));
   const [validationError, setValidationError] = useState('');
@@ -89,7 +89,7 @@ export function WalkInWizard({ initialPatientId }: WalkInWizardProps = {}) {
   }
 
   function handleNow() {
-    setForm((prev) => ({ ...prev, scheduledAt: nowDateTimeLocal() }));
+    setForm((prev) => ({ ...prev, scheduledAt: nowDamascusDateTimeLocal() }));
     setValidationError('');
   }
 
@@ -105,7 +105,7 @@ export function WalkInWizard({ initialPatientId }: WalkInWizardProps = {}) {
       {
         patientId: form.patientId,
         doctorId: form.doctorId,
-        scheduledAt: new Date(form.scheduledAt).toISOString(),
+        scheduledAt: new Date(`${form.scheduledAt}:00+03:00`).toISOString(),
         durationMin: duration,
         ...(form.visitTypeId ? { visitTypeId: form.visitTypeId } : {}),
       },

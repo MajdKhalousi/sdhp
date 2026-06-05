@@ -8,6 +8,7 @@ import { useEncounter, useUpdateEncounter, useEncounters } from '@/hooks/use-enc
 import { useAppointment, useVisitTypesList } from '@/hooks/use-appointments';
 import { useAllergies } from '@/hooks/use-allergies';
 import { usePatientInvoices } from '@/hooks/use-invoices';
+import { useBillingPolicy } from '@/hooks/use-billing-policy';
 import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import { VitalsForm } from './vitals-form';
 import { PrescriptionPanel } from './prescription-panel';
@@ -24,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import type { VitalsPayload, UpdateEncounterPayload } from '@/types/encounter';
 import type { InvoiceStatus } from '@/types/invoice';
 import { formatDateDisplay, formatDateTimeDisplay, formatTimeDisplay } from '@/lib/format-date';
+import { formatAmount } from '@/lib/format-currency';
 import { useAuthStore } from '@/store/auth';
 
 interface WorkspaceForm {
@@ -52,13 +54,6 @@ function toVitals(raw: Record<string, unknown> | null): VitalsPayload {
   };
 }
 
-function fmtAmount(value: string, locale: string): string {
-  const num = parseFloat(value);
-  if (isNaN(num)) return '—';
-  return (
-    new Intl.NumberFormat(locale, { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(num) + ' SYP'
-  );
-}
 
 function formatVitalsSummary(vitals: VitalsPayload): string {
   const parts: string[] = [];
@@ -151,7 +146,6 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const tCommon = useTranslations('common');
   const tPatient = useTranslations('patient');
   const locale = useLocale();
-  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const { user } = useAuthStore();
 
   function localizeGender(gender: string | null | undefined): string | null {
@@ -168,6 +162,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const { data: appointment } = useAppointment(encounter?.appointmentId ?? '');
   const appointmentVisitType = visitTypes?.find((vt) => vt.id === appointment?.visitTypeId) ?? null;
   const { data: patientInvoices } = usePatientInvoices(encounter?.patient.id ?? '');
+  const { data: policy } = useBillingPolicy();
   const { data: prevList } = useEncounters(
     { patientId: encounter?.patient.id ?? '', limit: 7 },
     { enabled: !!encounter?.patient.id },
@@ -451,24 +446,42 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
           0,
           parseFloat(unpaidInvoice.totalAmount) - parseFloat(unpaidInvoice.paidAmount),
         );
+        const requiresPayment = policy?.requirePaymentBeforeEncounter === true;
+        const containerCls = requiresPayment
+          ? 'border-destructive/30 bg-destructive/5'
+          : 'border-amber-200 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-950/20';
+        const textCls = requiresPayment
+          ? 'text-destructive'
+          : 'text-amber-700 dark:text-amber-400';
+        const subTextCls = requiresPayment
+          ? 'text-destructive/80'
+          : 'text-amber-700/80 dark:text-amber-400/80';
         return (
-          <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/40 dark:bg-amber-950/20">
-            <Receipt className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+          <div className={`flex items-start gap-2 rounded-xl border px-4 py-3 ${containerCls}`}>
+            {requiresPayment
+              ? <AlertTriangle className={`mt-0.5 h-4 w-4 shrink-0 ${textCls}`} />
+              : <Receipt className={`mt-0.5 h-4 w-4 shrink-0 ${textCls}`} />
+            }
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
+              <p className={`text-xs font-semibold ${textCls}`}>
                 {t('billing.unpaidWarningTitle')}
               </p>
-              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-amber-700/80 dark:text-amber-400/80">
+              {requiresPayment && (
+                <p className={`mt-0.5 text-xs ${subTextCls}`}>
+                  {t('billing.paymentRequiredPolicy')}
+                </p>
+              )}
+              <div className={`mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs ${subTextCls}`}>
                 <span>{t('billing.invoiceNumber')} <span dir="ltr" className="font-mono">{unpaidInvoice.invoiceNumber}</span></span>
                 <InvoiceStatusBadge status={unpaidInvoice.status} />
-                <span>{t('billing.total')} {fmtAmount(unpaidInvoice.totalAmount, displayLocale)}</span>
-                <span>{t('billing.paid')} {fmtAmount(unpaidInvoice.paidAmount, displayLocale)}</span>
-                <span>{t('billing.remaining')} {fmtAmount(String(remaining), displayLocale)}</span>
+                <span>{t('billing.total')} {formatAmount(parseFloat(unpaidInvoice.totalAmount), locale)}</span>
+                <span>{t('billing.paid')} {formatAmount(parseFloat(unpaidInvoice.paidAmount), locale)}</span>
+                <span>{t('billing.remaining')} {formatAmount(remaining, locale)}</span>
               </div>
               <div className="mt-1.5">
                 <Link
                   href={`/dashboard/invoices/${unpaidInvoice.id}`}
-                  className="text-xs font-medium text-amber-700 underline hover:no-underline dark:text-amber-400"
+                  className={`text-xs font-medium underline hover:no-underline ${textCls}`}
                 >
                   {t('billing.viewInvoice')}
                 </Link>

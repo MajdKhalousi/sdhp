@@ -8,7 +8,8 @@
       "back": "رجوع",
       "viewAll": "عرض الكل",
       "manage": "إدارة",
-      "view": "عرض"
+      "view": "عرض",
+      "print": "طباعة"
     },
     "pagination": {
       "previous": "السابق",
@@ -227,6 +228,7 @@
       "slots": {
         "loading": "تحميل الأوقات المتاحة…",
         "noSlots": "لا توجد أوقات متاحة في هذا التاريخ",
+        "noSlotsHint": "لا توجد أوقات متاحة. تحقق من جدول الطبيب وساعات عمل العيادة.",
         "selectSlot": "اختر وقتاً",
         "unavailable": "غير متاح"
       },
@@ -604,6 +606,7 @@
       "paid": "المدفوع",
       "remaining": "المتبقي",
       "viewInvoice": "عرض الفاتورة",
+      "paymentRequiredPolicy": "يُشترط سداد الفاتورة قبل بدء الزيارة وفق سياسة العيادة.",
       "billingFollowUp": "متابعة الفوترة",
       "createOrCheckInvoice": "إنشاء أو مراجعة الفاتورة",
       "viewInvoices": "عرض الفواتير",
@@ -820,6 +823,59 @@
         "downloadFailed": "فشل تحميل ملف PDF.",
         "saveAsFileFailed": "فشل حفظ التقرير كملف طبي."
       }
+    },
+    "print": {
+      "title": "ملخص الزيارة",
+      "patientHeader": "بيانات المريض",
+      "encounterHeader": "تفاصيل الزيارة",
+      "sections": {
+        "subjectiveCC": "الشكوى الرئيسية",
+        "subjectiveHPI": "تاريخ المرض الحالي",
+        "vitals": "العلامات الحيوية",
+        "examination": "الفحص والنتائج",
+        "assessment": "التشخيص",
+        "plan": "خطة العلاج",
+        "patientInstructions": "تعليمات للمريض",
+        "followUp": "موعد المتابعة",
+        "prescriptions": "الوصفات الطبية",
+        "labOrders": "طلبات المختبر",
+        "radiologyOrders": "طلبات الأشعة"
+      },
+      "patient": {
+        "mrn": "رقم المريض",
+        "dob": "تاريخ الميلاد",
+        "gender": "الجنس",
+        "chronicDiseases": "الأمراض المزمنة"
+      },
+      "encounter": {
+        "doctor": "الطبيب المعالج",
+        "specialization": "التخصص",
+        "date": "تاريخ الزيارة",
+        "status": "الحالة"
+      },
+      "actions": {
+        "print": "طباعة",
+        "back": "إغلاق"
+      },
+      "prescription": {
+        "dosage": "الجرعة",
+        "frequency": "التكرار",
+        "duration": "المدة",
+        "quantity": "الكمية"
+      },
+      "labOrder": {
+        "testCode": "الرمز",
+        "result": "النتيجة",
+        "referenceRange": "النطاق المرجعي",
+        "interpretation": "التفسير",
+        "notes": "ملاحظات"
+      },
+      "radiologyOrder": {
+        "findings": "النتائج",
+        "impression": "الانطباع"
+      },
+      "loading": "جارٍ تحضير الوثيقة…",
+      "error": "تعذّر تحميل بيانات الزيارة"
     }
   },
   "patient": {
@@ -847,6 +903,12 @@
         "actions": "الإجراءات"
       },
       "view": "عرض",
+      "book": "حجز",
+      "invoice": "فاتورة",
+      "ageYears": "سنة",
+      "lastSeen": "آخر زيارة",
+      "nextAppt": "القادم",
+      "balance": "رصيد",
       "addPatient": "إضافة مريض",
       "archive": "أرشفة",
       "confirmArchive": "هل أنت متأكد من أرشفة هذا المريض؟",
@@ -1396,6 +1458,7 @@
     }
   },
   "invoice": {
+    "overdue": "متأخرة",
     "status": {
       "DRAFT": "مسودة",
       "ISSUED": "مُصدرة",
@@ -1632,7 +1695,8 @@
           "5": "الجمعة",
           "6": "السبت"
         },
-        "closed": "مغلق"
+        "closed": "مغلق",
+        "saveGeneralFirst": "احفظ الإعدادات العامة أعلاه قبل ضبط ساعات العمل."
       },
       "actions": {
         "save": "حفظ الإعدادات",

@@ -52,6 +52,7 @@ export default function ClinicSettingsPage() {
       <WorkingDaysGrid
         workingDays={settings?.workingDays ?? []}
         upsert={upsertWorkingDays}
+        settingsRequired={!settings}
       />
     </div>
   );

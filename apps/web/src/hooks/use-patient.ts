@@ -59,6 +59,9 @@ export interface Patient {
   deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  lastVisitAt?: string | null;
+  nextAppointmentAt?: string | null;
+  hasOutstanding?: boolean;
 }
 
 export interface PatientsResponse {

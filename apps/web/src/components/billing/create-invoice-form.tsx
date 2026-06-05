@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useCreateInvoice } from '@/hooks/use-invoices';
 import { usePatientsList } from '@/hooks/use-appointments';
+import { useBillingPolicy } from '@/hooks/use-billing-policy';
 import { PatientCombobox } from '@/components/appointments/patient-combobox';
 import type { CreateInvoiceDto } from '@/types/invoice';
 
@@ -22,6 +23,21 @@ export function CreateInvoiceForm({ initialPatientId, appointmentId }: Props = {
   const [dueDate, setDueDate] = useState('');
   const [notes, setNotes] = useState('');
   const [validationError, setValidationError] = useState('');
+
+  const { data: policy } = useBillingPolicy();
+  const policyApplied = useRef(false);
+
+  useEffect(() => {
+    if (policyApplied.current) return;
+    const days = policy?.defaultDueDateDays;
+    if (!days || days <= 0) return;
+    policyApplied.current = true;
+    const base = new Date(Date.now() + 3 * 60 * 60 * 1000);
+    base.setUTCDate(base.getUTCDate() + days);
+    const m = String(base.getUTCMonth() + 1).padStart(2, '0');
+    const d = String(base.getUTCDate()).padStart(2, '0');
+    setDueDate(`${base.getUTCFullYear()}-${m}-${d}`);
+  }, [policy]);
 
   const { data: patientsData, isLoading: patientsLoading } = usePatientsList();
   const patients = patientsData?.data ?? [];

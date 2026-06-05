@@ -124,7 +124,7 @@ export function AppointmentForm({
     if (!form.date)         { setValidationError(t('validation.dateTimeRequired')); return; }
     if (!form.selectedSlot) { setValidationError(t('validation.slotRequired'));     return; }
 
-    const scheduledAt = new Date(`${form.date}T${form.selectedSlot}:00`).toISOString();
+    const scheduledAt = new Date(`${form.date}T${form.selectedSlot}:00+03:00`).toISOString();
 
     mutate(
       {

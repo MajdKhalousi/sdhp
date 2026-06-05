@@ -8,7 +8,8 @@
       "back": "Back",
       "viewAll": "View all",
       "manage": "Manage",
-      "view": "View"
+      "view": "View",
+      "print": "Print"
     },
     "pagination": {
       "previous": "Previous",
@@ -227,6 +228,7 @@
       "slots": {
         "loading": "Loading available slots…",
         "noSlots": "No available slots on this date",
+        "noSlotsHint": "No available slots. Check doctor schedule and clinic working hours.",
         "selectSlot": "Select a time slot",
         "unavailable": "Unavailable"
       },
@@ -604,6 +606,7 @@
       "paid": "Paid",
       "remaining": "Remaining",
       "viewInvoice": "View invoice",
+      "paymentRequiredPolicy": "Payment is required before this encounter per clinic billing policy.",
       "billingFollowUp": "Billing follow-up",
       "createOrCheckInvoice": "Create or check invoice",
       "viewInvoices": "View invoices",
@@ -820,6 +823,59 @@
         "downloadFailed": "Failed to download PDF.",
         "saveAsFileFailed": "Failed to save report as medical file."
       }
+    },
+    "print": {
+      "title": "Encounter Summary",
+      "patientHeader": "Patient Information",
+      "encounterHeader": "Encounter Details",
+      "sections": {
+        "subjectiveCC": "Chief Complaint",
+        "subjectiveHPI": "History of Present Illness",
+        "vitals": "Vitals",
+        "examination": "Examination & Findings",
+        "assessment": "Diagnosis",
+        "plan": "Treatment Plan",
+        "patientInstructions": "Patient Instructions",
+        "followUp": "Follow-up Date",
+        "prescriptions": "Prescriptions",
+        "labOrders": "Lab Orders",
+        "radiologyOrders": "Radiology Orders"
+      },
+      "patient": {
+        "mrn": "MRN",
+        "dob": "Date of Birth",
+        "gender": "Gender",
+        "chronicDiseases": "Chronic Conditions"
+      },
+      "encounter": {
+        "doctor": "Attending Physician",
+        "specialization": "Specialization",
+        "date": "Encounter Date",
+        "status": "Status"
+      },
+      "actions": {
+        "print": "Print",
+        "back": "Close"
+      },
+      "prescription": {
+        "dosage": "Dosage",
+        "frequency": "Frequency",
+        "duration": "Duration",
+        "quantity": "Qty"
+      },
+      "labOrder": {
+        "testCode": "Code",
+        "result": "Result",
+        "referenceRange": "Reference Range",
+        "interpretation": "Interpretation",
+        "notes": "Notes"
+      },
+      "radiologyOrder": {
+        "findings": "Findings",
+        "impression": "Impression"
+      },
+      "loading": "Preparing document…",
+      "error": "Failed to load encounter"
     }
   },
   "patient": {
@@ -847,6 +903,12 @@
         "actions": "Actions"
       },
       "view": "View",
+      "book": "Book",
+      "invoice": "Invoice",
+      "ageYears": "yr",
+      "lastSeen": "Last seen",
+      "nextAppt": "Next",
+      "balance": "Balance",
       "addPatient": "Add Patient",
       "archive": "Archive",
       "confirmArchive": "Archive this patient?",
@@ -1396,6 +1458,7 @@
     }
   },
   "invoice": {
+    "overdue": "Overdue",
     "status": {
       "DRAFT": "Draft",
       "ISSUED": "Issued",
@@ -1632,7 +1695,8 @@
           "5": "Friday",
           "6": "Saturday"
         },
-        "closed": "Closed"
+        "closed": "Closed",
+        "saveGeneralFirst": "Save general settings above before configuring working hours."
       },
       "actions": {
         "save": "Save Settings",

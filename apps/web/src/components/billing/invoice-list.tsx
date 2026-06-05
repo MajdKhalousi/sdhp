@@ -10,6 +10,7 @@ import { InvoiceStatusBadge } from './invoice-status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { formatDateDisplay } from '@/lib/format-date';
+import { isOverdue } from '@/lib/billing-utils';
 import type { InvoiceStatus } from '@/types/invoice';
 
 const STATUS_TABS = ['', 'DRAFT', 'ISSUED', 'PARTIALLY_PAID', 'PAID', 'CANCELLED'] as const;
@@ -279,8 +280,17 @@ export function InvoiceList() {
                   <td className="px-4 py-3 text-sm tabular-nums" dir="ltr">
                     {formatAmount(String(Math.max(0, parseFloat(invoice.totalAmount) - parseFloat(invoice.paidAmount))), locale)}
                   </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap" dir="ltr">
-                    {formatDateDisplay(invoice.dueDate)}
+                  <td className="px-4 py-3 text-sm whitespace-nowrap" dir="ltr">
+                    {invoice.dueDate && isOverdue(invoice) ? (
+                      <span className="font-medium text-destructive">
+                        {formatDateDisplay(invoice.dueDate)}{' '}
+                        <span className="ms-0.5 rounded-full bg-destructive/10 px-1.5 py-0.5 text-xs">
+                          {t('overdue')}
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">{formatDateDisplay(invoice.dueDate)}</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap" dir="ltr">
                     {formatDateDisplay(invoice.issuedAt ?? invoice.createdAt)}

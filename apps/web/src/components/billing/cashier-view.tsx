@@ -11,6 +11,7 @@ import { IssueAndPayDialog } from '@/components/billing/issue-and-pay-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { formatDateDisplay } from '@/lib/format-date';
+import { isOverdue } from '@/lib/billing-utils';
 import type { Invoice } from '@/types/invoice';
 
 const BILLING_REPORT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
@@ -124,6 +125,7 @@ function InvoiceRow({ invoice, isActive, onAction, onSuccess, onCancel }: RowPro
 
 function OutstandingRow({ invoice, isActive, onAction, onSuccess, onCancel }: RowProps) {
   const t = useTranslations('cashier');
+  const tInvoice = useTranslations('invoice');
   const locale = useLocale();
 
   const total = parseFloat(invoice.totalAmount);
@@ -172,6 +174,14 @@ function OutstandingRow({ invoice, isActive, onAction, onSuccess, onCancel }: Ro
                 <span aria-hidden>·</span>
                 <span dir="ltr" className="font-medium text-amber-600 dark:text-amber-400">
                   {t('outstanding.remaining')}: {formatAmount(String(remaining), locale)}
+                </span>
+              </>
+            )}
+            {isOverdue(invoice) && (
+              <>
+                <span aria-hidden>·</span>
+                <span className="font-medium text-destructive">
+                  {tInvoice('overdue')}
                 </span>
               </>
             )}

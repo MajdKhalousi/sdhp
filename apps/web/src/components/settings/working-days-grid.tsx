@@ -43,9 +43,10 @@ function initRows(workingDays: ClinicWorkingDay[]): DayRow[] {
 interface Props {
   workingDays: ClinicWorkingDay[];
   upsert: UseMutationResult<ClinicSettings, Error, UpsertWorkingDaysDto>;
+  settingsRequired?: boolean;
 }
 
-export function WorkingDaysGrid({ workingDays, upsert }: Props) {
+export function WorkingDaysGrid({ workingDays, upsert, settingsRequired }: Props) {
   const t = useTranslations('settings.clinic');
 
   const [rows, setRows]           = useState<DayRow[]>(() => initRows(workingDays));
@@ -104,6 +105,12 @@ export function WorkingDaysGrid({ workingDays, upsert }: Props) {
     <form onSubmit={handleSubmit} noValidate>
       <div className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
         <h2 className="text-sm font-semibold text-muted-foreground">{t('workingDays.heading')}</h2>
+
+        {settingsRequired && (
+          <p className="text-sm text-amber-600 dark:text-amber-400">
+            {t('workingDays.saveGeneralFirst')}
+          </p>
+        )}
 
         {/* Column headers */}
         <div className="grid grid-cols-[minmax(100px,1fr)_44px_1fr_1fr] gap-3 border-b pb-2">
@@ -179,7 +186,7 @@ export function WorkingDaysGrid({ workingDays, upsert }: Props) {
         <div className="flex justify-end">
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isPending || settingsRequired}
             className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
           >
             {isPending ? t('actions.saving') : t('actions.save')}

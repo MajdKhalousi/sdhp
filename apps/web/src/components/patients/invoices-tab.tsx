@@ -8,6 +8,7 @@ import { useAuthStore } from '@/store/auth';
 import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateDisplay } from '@/lib/format-date';
+import { isOverdue } from '@/lib/billing-utils';
 
 const INVOICE_CREATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
 
@@ -30,6 +31,7 @@ interface InvoicesTabProps {
 export function InvoicesTab({ patientId }: InvoicesTabProps) {
   const t = useTranslations('invoice.list');
   const tActions = useTranslations('invoice.actions');
+  const tInvoice = useTranslations('invoice');
   const tError = useTranslations('patient.detail.error');
   const tCommon = useTranslations('common');
   const locale = useLocale();
@@ -132,8 +134,17 @@ export function InvoicesTab({ patientId }: InvoicesTabProps) {
                   <td className="px-4 py-3 text-end text-sm tabular-nums" dir="ltr">
                     {!isNaN(rem) ? formatAmount(String(rem), locale) : '—'}
                   </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap" dir="ltr">
-                    {formatDateDisplay(invoice.dueDate)}
+                  <td className="px-4 py-3 text-sm whitespace-nowrap" dir="ltr">
+                    {invoice.dueDate && isOverdue(invoice) ? (
+                      <span className="font-medium text-destructive">
+                        {formatDateDisplay(invoice.dueDate)}{' '}
+                        <span className="ms-0.5 rounded-full bg-destructive/10 px-1.5 py-0.5 text-xs">
+                          {tInvoice('overdue')}
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">{formatDateDisplay(invoice.dueDate)}</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap" dir="ltr">
                     {formatDateDisplay(invoice.issuedAt ?? invoice.createdAt)}

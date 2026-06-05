@@ -41,7 +41,7 @@ export function AvailableSlotsPicker({
     }
     const { slots } = data;
     if (slots.length === 0) {
-      return <Hint>{t('slots.noSlots')}</Hint>;
+      return <Hint>{t('slots.noSlotsHint')}</Hint>;
     }
     return (
       <div className="flex flex-wrap gap-2" dir="ltr">

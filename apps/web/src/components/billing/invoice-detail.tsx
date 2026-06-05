@@ -12,6 +12,7 @@ import { CancelInvoiceDialog } from './cancel-invoice-dialog';
 import { RecordPaymentForm } from './record-payment-form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateDisplay } from '@/lib/format-date';
+import { isOverdue } from '@/lib/billing-utils';
 import type { Invoice } from '@/types/invoice';
 
 function formatAmount(value: string, locale: string): string {
@@ -327,6 +328,7 @@ interface InvoiceDetailProps {
 export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
   const t = useTranslations('invoice.detail');
   const tActions = useTranslations('invoice.actions');
+  const tInvoice = useTranslations('invoice');
   const tCommon = useTranslations('common');
   const locale = useLocale();
 
@@ -444,7 +446,14 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
           <InfoRow label={t('fields.date')}>{formatDateDisplay(invoice.issuedAt ?? invoice.createdAt)}</InfoRow>
           {invoice.dueDate && (
             <InfoRow label={t('fields.dueDate')}>
-              <span dir="ltr">{formatDateDisplay(invoice.dueDate)}</span>
+              <span dir="ltr" className={isOverdue(invoice) ? 'text-destructive' : ''}>
+                {formatDateDisplay(invoice.dueDate)}
+              </span>
+              {isOverdue(invoice) && (
+                <span className="ms-2 rounded-full bg-destructive/10 px-1.5 py-0.5 text-xs font-medium text-destructive">
+                  {tInvoice('overdue')}
+                </span>
+              )}
             </InfoRow>
           )}
           {invoice.issuedAt && (

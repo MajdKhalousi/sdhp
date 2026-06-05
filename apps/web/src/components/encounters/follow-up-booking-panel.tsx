@@ -71,7 +71,7 @@ export function FollowUpBookingPanel({ encounterId, patientId, defaultDoctorId, 
       return;
     }
     setBookError('');
-    const scheduledAt = new Date(`${date}T${selectedSlot}:00`).toISOString();
+    const scheduledAt = new Date(`${date}T${selectedSlot}:00+03:00`).toISOString();
     book(
       {
         patientId,

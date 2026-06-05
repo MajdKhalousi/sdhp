@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, UserRole } from '@prisma/client';
+import { AppointmentStatus, InvoiceStatus, Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { PaginatedResponse } from '../../common/types/paginated-response.type';
@@ -47,6 +47,12 @@ const SELECT = {
 
 type PatientRecord = Prisma.PatientGetPayload<{ select: typeof SELECT }>;
 
+type PatientSummary = PatientRecord & {
+  lastVisitAt: Date | null;
+  nextAppointmentAt: Date | null;
+  hasOutstanding: boolean;
+};
+
 @Injectable()
 export class PatientsService {
   constructor(
@@ -55,7 +61,7 @@ export class PatientsService {
     private timelineWriter: MedicalTimelineWriterService,
   ) {}
 
-  async findAll(query: PatientQueryDto, caller: JwtPayload): Promise<PaginatedResponse<PatientRecord>> {
+  async findAll(query: PatientQueryDto, caller: JwtPayload): Promise<PaginatedResponse<PatientSummary>> {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
     const skip = (page - 1) * limit;
@@ -91,7 +97,50 @@ export class PatientsService {
       this.prisma.patient.count({ where }),
     ]);
 
-    return { data, total, page, limit };
+    if (data.length === 0) {
+      return { data: [], total, page, limit };
+    }
+
+    const patientIds = data.map((p) => p.id);
+    const now = new Date();
+
+    const [visitSummaries, apptSummaries, outstandingPatients] = await Promise.all([
+      this.prisma.encounter.groupBy({
+        by: ['patientId'],
+        where: { patientId: { in: patientIds }, deletedAt: null },
+        _max: { createdAt: true },
+      }),
+      this.prisma.appointment.groupBy({
+        by: ['patientId'],
+        where: {
+          patientId: { in: patientIds },
+          scheduledAt: { gt: now },
+          status: { in: [AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED] },
+        },
+        _min: { scheduledAt: true },
+      }),
+      this.prisma.invoice.findMany({
+        where: {
+          patientId: { in: patientIds },
+          status: { in: [InvoiceStatus.ISSUED, InvoiceStatus.PARTIALLY_PAID] },
+        },
+        select: { patientId: true },
+        distinct: ['patientId'],
+      }),
+    ]);
+
+    const lastVisitMap  = new Map(visitSummaries.map((v) => [v.patientId, v._max.createdAt]));
+    const nextApptMap   = new Map(apptSummaries.map((a) => [a.patientId, a._min.scheduledAt]));
+    const outstandingSet = new Set(outstandingPatients.map((o) => o.patientId));
+
+    const enrichedData: PatientSummary[] = data.map((patient) => ({
+      ...patient,
+      lastVisitAt:       lastVisitMap.get(patient.id)  ?? null,
+      nextAppointmentAt: nextApptMap.get(patient.id)   ?? null,
+      hasOutstanding:    outstandingSet.has(patient.id),
+    }));
+
+    return { data: enrichedData, total, page, limit };
   }
 
   async findOne(id: string, caller: JwtPayload) {

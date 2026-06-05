@@ -15,8 +15,33 @@ import { useAuthStore } from '@/store/auth';
 import { useUnsavedGuardStore } from '@/store/unsaved-guard';
 import { formatDateDisplay } from '@/lib/format-date';
 
-const PATIENT_EDIT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+const PATIENT_EDIT_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
 const PATIENT_ARCHIVE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
+const PATIENT_BOOK_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+const PATIENT_INVOICE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
+
+function computeAge(dob: string | null | undefined): number | null {
+  if (!dob) return null;
+  const birth = new Date(dob);
+  if (isNaN(birth.getTime())) return null;
+  const now = new Date();
+  let age = now.getFullYear() - birth.getFullYear();
+  const m = now.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+  return age >= 0 ? age : null;
+}
+
+function formatShortDate(iso: string | null | undefined, locale: string): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return null;
+  const now = new Date();
+  const opts: Intl.DateTimeFormatOptions =
+    d.getFullYear() === now.getFullYear()
+      ? { month: 'short', day: 'numeric' }
+      : { month: 'short', day: 'numeric', year: 'numeric' };
+  return new Intl.DateTimeFormat(locale, opts).format(d);
+}
 
 export default function PatientsPage() {
   const t = useTranslations('patient');
@@ -24,8 +49,10 @@ export default function PatientsPage() {
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const { user } = useAuthStore();
-  const canEdit = user ? PATIENT_EDIT_ROLES.has(user.role) : false;
+  const canEdit    = user ? PATIENT_EDIT_ROLES.has(user.role)    : false;
   const canArchive = user ? PATIENT_ARCHIVE_ROLES.has(user.role) : false;
+  const canBook    = user ? PATIENT_BOOK_ROLES.has(user.role)    : false;
+  const canInvoice = user ? PATIENT_INVOICE_ROLES.has(user.role) : false;
 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -263,32 +290,63 @@ export default function PatientsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {patients.map((patient) => (
+                    {patients.map((patient) => {
+                      const age          = computeAge(patient.dateOfBirth);
+                      const chronicText  = patient.chronicDiseases?.trim() || null;
+                      const lastVisitText = formatShortDate(patient.lastVisitAt, displayLocale);
+                      const nextApptText  = formatShortDate(patient.nextAppointmentAt, displayLocale);
+                      return (
                       <tr
                         key={patient.id}
                         className="transition-colors hover:bg-muted/30"
                       >
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <Link
-                            href={`/dashboard/patients/${patient.id}`}
-                            onClick={(e) => {
-                              if (guard.enabled) {
-                                e.preventDefault();
-                                guard.requestNavigate(() => router.push(`/dashboard/patients/${patient.id}`));
-                              }
-                            }}
-                            className="font-medium text-foreground transition-colors hover:text-primary"
-                          >
-                            {locale === 'ar' && patient.firstNameAr
-                              ? `${patient.firstNameAr}${patient.lastNameAr ? ` ${patient.lastNameAr}` : ''}`
-                              : `${patient.firstName} ${patient.lastName}`}
-                          </Link>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col gap-0.5">
+                            <Link
+                              href={`/dashboard/patients/${patient.id}`}
+                              onClick={(e) => {
+                                if (guard.enabled) {
+                                  e.preventDefault();
+                                  guard.requestNavigate(() => router.push(`/dashboard/patients/${patient.id}`));
+                                }
+                              }}
+                              className="font-medium text-foreground transition-colors hover:text-primary"
+                            >
+                              {locale === 'ar' && patient.firstNameAr
+                                ? `${patient.firstNameAr}${patient.lastNameAr ? ` ${patient.lastNameAr}` : ''}`
+                                : `${patient.firstName} ${patient.lastName}`}
+                            </Link>
+                            {chronicText && (
+                              <span
+                                className="block max-w-[220px] truncate rounded bg-orange-50 px-1.5 py-0.5 text-xs text-orange-700 dark:bg-orange-950/30 dark:text-orange-400"
+                                title={chronicText}
+                                dir="auto"
+                              >
+                                {chronicText}
+                              </span>
+                            )}
+                            {(lastVisitText || nextApptText) && (
+                              <span className="mt-0.5 flex flex-wrap items-center gap-x-3 text-xs text-muted-foreground">
+                                {lastVisitText && (
+                                  <span>{t('list.lastSeen')}: {lastVisitText}</span>
+                                )}
+                                {nextApptText && (
+                                  <span>{t('list.nextAppt')}: {nextApptText}</span>
+                                )}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-3 font-mono text-xs text-muted-foreground" dir="ltr">
                           {patient.mrn}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                           {formatDateDisplay(patient.dateOfBirth)}
+                          {age !== null && (
+                            <span className="ms-1.5 text-xs opacity-60">
+                              {age} {t('list.ageYears')}
+                            </span>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">
                           {patient.gender
@@ -299,12 +357,47 @@ export default function PatientsPage() {
                           {patient.phone ?? '—'}
                         </td>
                         <td className="px-4 py-3">
-                          <Badge variant={patient.isActive ? 'success' : 'outline'}>
-                            {patient.isActive ? t('status.active') : t('status.inactive')}
-                          </Badge>
+                          <div className="flex flex-col items-start gap-1">
+                            <Badge variant={patient.isActive ? 'success' : 'outline'}>
+                              {patient.isActive ? t('status.active') : t('status.inactive')}
+                            </Badge>
+                            {canInvoice && patient.hasOutstanding && (
+                              <Badge variant="warning">
+                                {t('list.balance')}
+                              </Badge>
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            {canBook && (
+                              <Link
+                                href={`/dashboard/appointments/new?patientId=${patient.id}`}
+                                onClick={(e) => {
+                                  if (guard.enabled) {
+                                    e.preventDefault();
+                                    guard.requestNavigate(() => router.push(`/dashboard/appointments/new?patientId=${patient.id}`));
+                                  }
+                                }}
+                                className="rounded-md border px-2.5 py-1 text-xs font-medium transition-colors hover:bg-accent"
+                              >
+                                {t('list.book')}
+                              </Link>
+                            )}
+                            {canInvoice && (
+                              <Link
+                                href={`/dashboard/invoices/new?patientId=${patient.id}`}
+                                onClick={(e) => {
+                                  if (guard.enabled) {
+                                    e.preventDefault();
+                                    guard.requestNavigate(() => router.push(`/dashboard/invoices/new?patientId=${patient.id}`));
+                                  }
+                                }}
+                                className="rounded-md border px-2.5 py-1 text-xs font-medium transition-colors hover:bg-accent"
+                              >
+                                {t('list.invoice')}
+                              </Link>
+                            )}
                             <Link
                               href={`/dashboard/patients/${patient.id}`}
                               onClick={(e) => {
@@ -349,7 +442,8 @@ export default function PatientsPage() {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

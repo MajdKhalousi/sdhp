@@ -99,6 +99,8 @@ const UNPAID_PRIORITY: Partial<Record<InvoiceStatus, number>> = {
   PARTIALLY_PAID: 2,
 };
 
+const BILLING_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
+
 function computeAge(dob: string | null): number | null {
   if (!dob) return null;
   const birth = new Date(dob);
@@ -147,6 +149,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const tPatient = useTranslations('patient');
   const locale = useLocale();
   const { user } = useAuthStore();
+  const canSeeBilling = user ? BILLING_ROLES.has(user.role) : false;
 
   function localizeGender(gender: string | null | undefined): string | null {
     if (!gender) return null;
@@ -161,8 +164,8 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const { data: visitTypes } = useVisitTypesList();
   const { data: appointment } = useAppointment(encounter?.appointmentId ?? '');
   const appointmentVisitType = visitTypes?.find((vt) => vt.id === appointment?.visitTypeId) ?? null;
-  const { data: patientInvoices } = usePatientInvoices(encounter?.patient.id ?? '');
-  const { data: policy } = useBillingPolicy();
+  const { data: patientInvoices } = usePatientInvoices(canSeeBilling ? (encounter?.patient.id ?? '') : '');
+  const { data: policy } = useBillingPolicy({ enabled: canSeeBilling });
   const { data: prevList } = useEncounters(
     { patientId: encounter?.patient.id ?? '', limit: 7 },
     { enabled: !!encounter?.patient.id },
@@ -441,7 +444,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
       )}
 
       {/* ── Unpaid invoice banner ────────────────────────────────────────── */}
-      {unpaidInvoice && (() => {
+      {canSeeBilling && unpaidInvoice && (() => {
         const remaining = Math.max(
           0,
           parseFloat(unpaidInvoice.totalAmount) - parseFloat(unpaidInvoice.paidAmount),
@@ -808,7 +811,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
             <p className="text-xs text-muted-foreground">{t('complete.readOnly')}</p>
 
             {/* ── Billing follow-up ──────────────────────────────────────── */}
-            {patientInvoices !== undefined && (
+            {canSeeBilling && patientInvoices !== undefined && (
               <div className="border-t border-border pt-3">
                 {unpaidInvoice ? (
                   <div className="flex items-start gap-2">

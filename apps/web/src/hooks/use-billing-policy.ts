@@ -2,11 +2,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import type { BillingPolicy, UpdateBillingPolicyDto } from '@/types/billing-policy';
 
-export function useBillingPolicy() {
+export function useBillingPolicy(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['billing-policy'],
     queryFn: () => api.get<BillingPolicy>('/v1/billing/policy'),
     staleTime: 60_000,
+    enabled: options?.enabled ?? true,
   });
 }
 

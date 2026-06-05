@@ -5,8 +5,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { Patient } from '@/hooks/use-patient';
 import { usePatientOutstandingBalance } from '@/hooks/use-invoices';
+import { useAuthStore } from '@/store/auth';
 import { formatDateDisplay } from '@/lib/format-date';
 import { formatAmount } from '@/lib/format-currency';
+
+const BILLING_DISPLAY_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
 
 interface PatientHeaderProps {
   patient?: Patient;
@@ -34,7 +37,9 @@ export function PatientHeader({ patient, isLoading }: PatientHeaderProps) {
   const t = useTranslations('patient');
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
-  const { data: outstandingBalance } = usePatientOutstandingBalance(patient?.id);
+  const { user } = useAuthStore();
+  const canSeeBilling = user ? BILLING_DISPLAY_ROLES.has(user.role) : false;
+  const { data: outstandingBalance } = usePatientOutstandingBalance(canSeeBilling ? patient?.id : undefined);
 
   if (isLoading) {
     return (

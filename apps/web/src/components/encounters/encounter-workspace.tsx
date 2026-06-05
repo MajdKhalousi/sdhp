@@ -326,7 +326,8 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
     ? ((locale === 'ar' && appointmentVisitType.nameAr) || appointmentVisitType.name)
     : null;
   const isFollowUpVisit =
-    /follow[- ]?up|followup|recheck|review/i.test(appointmentVisitType?.name ?? '') ||
+    appointmentVisitType?.code === 'FOLLOW_UP' ||
+    /follow[- ]?up|followup|recheck/i.test(appointmentVisitType?.name ?? '') ||
     /مراجعة|متابعة/.test(appointmentVisitType?.nameAr ?? '');
   const invoiceCreateHref = encounter.appointmentId
     ? `/dashboard/invoices/new?appointmentId=${encounter.appointmentId}&patientId=${patient.id}`

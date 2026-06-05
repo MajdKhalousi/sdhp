@@ -465,7 +465,8 @@
     "icdLookup": {
       "placeholder": "ابحث بالرمز أو الحالة…",
       "noResults": "لا توجد رموز مطابقة. اكتب الرمز مباشرةً.",
-      "useAsDiagnosis": "استخدمه كتشخيص"
+      "useAsDiagnosis": "استخدمه كتشخيص",
+      "replaceDiagnosis": "استبدل التشخيص"
     },
     "page": {
       "title": "الزيارة الحالية",

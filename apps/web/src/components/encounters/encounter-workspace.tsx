@@ -608,7 +608,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
                 onUse={() => { if (prevDiagnosis) setField('diagnosis', prevDiagnosis); }}
               />
             )}
-            {!readOnly && !form.diagnosis && selectedIcdEntry && (
+            {!readOnly && selectedIcdEntry && form.diagnosis.trim() !== selectedIcdEntry.description && (
               <div className="mt-1 flex items-center gap-2">
                 <span className="line-clamp-1 min-w-0 flex-1 text-xs text-muted-foreground" dir="ltr">
                   {selectedIcdEntry.description}
@@ -618,7 +618,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
                   onClick={() => setField('diagnosis', selectedIcdEntry.description)}
                   className="shrink-0 text-xs font-medium text-primary hover:underline"
                 >
-                  {t('icdLookup.useAsDiagnosis')}
+                  {form.diagnosis.trim() ? t('icdLookup.replaceDiagnosis') : t('icdLookup.useAsDiagnosis')}
                 </button>
               </div>
             )}

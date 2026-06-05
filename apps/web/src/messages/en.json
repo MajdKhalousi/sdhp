@@ -465,7 +465,8 @@
     "icdLookup": {
       "placeholder": "Search by code or condition…",
       "noResults": "No matching codes. Type a code to use it directly.",
-      "useAsDiagnosis": "Use as diagnosis"
+      "useAsDiagnosis": "Use as diagnosis",
+      "replaceDiagnosis": "Replace diagnosis"
     },
     "page": {
       "title": "Active Visit",

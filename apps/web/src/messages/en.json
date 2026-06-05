@@ -462,6 +462,10 @@
       "patientInstructionsPlaceholder": "e.g. Rest for 2 days, increase fluid intake, return if fever exceeds 39°C.",
       "followUpDateLabel": "Follow-up Date"
     },
+    "icdLookup": {
+      "placeholder": "Search by code or condition…",
+      "noResults": "No matching codes. Type a code to use it directly."
+    },
     "page": {
       "title": "Active Visit",
       "subtitle": "Document clinical findings and complete the visit when ready"

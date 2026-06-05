@@ -15,6 +15,7 @@ import { LabOrderPanel } from './lab-order-panel';
 import { RadiologyOrderPanel } from './radiology-order-panel';
 import { ClinicalReportPanel } from './clinical-report-panel';
 import { PreviousEncounterPanel } from './previous-encounter-panel';
+import { IcdCodeCombobox } from './icd-code-combobox';
 import { FollowUpBookingPanel } from './follow-up-booking-panel';
 import { EndEncounterButton } from './end-encounter-button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -610,15 +611,12 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
             <label className="text-sm font-medium" htmlFor="diagnosisCode">
               {t('fields.icdCodeLabel')}
             </label>
-            <input
+            <IcdCodeCombobox
               id="diagnosisCode"
-              type="text"
-              dir="ltr"
               value={form.diagnosisCode}
-              onChange={(e) => setField('diagnosisCode', e.target.value)}
-              placeholder={t('fields.icdCodePlaceholder')}
-              disabled={readOnly}
-              className="h-9 w-full rounded-md border bg-background px-3 text-sm font-mono outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
+              onChange={(v) => setField('diagnosisCode', v)}
+              readOnly={readOnly}
+              placeholder={t('icdLookup.placeholder')}
             />
           </div>
         </div>

@@ -266,14 +266,14 @@ function UnbilledRow({ appointment }: { appointment: Appointment }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-medium">
-              {appointment.patient.firstName} {appointment.patient.lastName}
+              {appointment.patient?.firstName ?? ''} {appointment.patient?.lastName ?? ''}
             </span>
             <span className="text-xs text-muted-foreground" dir="ltr">
-              {appointment.patient.mrn}
+              {appointment.patient?.mrn ?? ''}
             </span>
           </div>
           <div className="mt-1 text-xs text-muted-foreground">
-            {'Dr. '}{appointment.doctor.user.firstName}{' '}{appointment.doctor.user.lastName}
+            {'Dr. '}{appointment.doctor?.user?.firstName ?? ''}{' '}{appointment.doctor?.user?.lastName ?? ''}
             {' · '}
             <span dir="ltr">{formatDateTimeDisplay(appointment.scheduledAt)}</span>
           </div>
@@ -329,13 +329,16 @@ export function CashierView() {
   const todayInvoicesUnbilledQuery = useInvoices({ from, to, limit: 200 }, { enabled: unbilledEnabled });
 
   const unbilledAppointments = useMemo(() => {
-    if (!todayApptsQuery.data || !todayInvoicesUnbilledQuery.data) return [];
+    const appts = todayApptsQuery.data?.data ?? [];
+    const invs = todayInvoicesUnbilledQuery.data?.data ?? [];
     const billedIds = new Set(
-      todayInvoicesUnbilledQuery.data.data
+      invs
         .filter((inv) => inv.status !== 'CANCELLED' && inv.appointmentId)
         .map((inv) => inv.appointmentId!),
     );
-    return todayApptsQuery.data.data.filter((appt) => !billedIds.has(appt.id));
+    return appts.filter(
+      (appt) => !billedIds.has(appt.id) && appt.patient != null && appt.doctor?.user != null,
+    );
   }, [todayApptsQuery.data, todayInvoicesUnbilledQuery.data]);
 
   function switchTab(next: 'today' | 'outstanding' | 'unbilled') {

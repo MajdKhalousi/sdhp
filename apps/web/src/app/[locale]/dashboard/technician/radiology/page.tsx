@@ -8,14 +8,13 @@ const TECHNICIAN_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'TECHNICIAN
 
 export default function TechnicianRadiologyPage() {
   const t = useTranslations('technicianRadiology');
-  const tBilling = useTranslations('billingReports');
   const { user } = useAuthStore();
   const canView = user ? TECHNICIAN_ACCESS_ROLES.has(user.role) : false;
 
   if (!canView) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
-        <p className="text-sm text-muted-foreground">{tBilling('forbidden')}</p>
+        <p className="text-sm text-muted-foreground">{t('forbidden')}</p>
       </div>
     );
   }

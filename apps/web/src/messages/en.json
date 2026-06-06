@@ -1362,13 +1362,21 @@
   "technicianLabs": {
     "pageTitle": "Lab Worklist",
     "pageSubtitle": "Process pending lab orders",
-    "panelTitle": "Pending Lab Orders",
+    "forbidden": "You do not have access to the lab worklist",
+    "panelTitle": "Lab Orders",
     "autoRefresh": "Auto-refreshes every 30s",
     "refreshLabel": "Refresh worklist",
     "counter": "{count, plural, one {# pending order} other {# pending orders}}",
+    "counterCompleted": "{count, plural, one {# completed order} other {# completed orders}}",
     "empty": {
-      "title": "No pending lab orders",
-      "subtitle": "All lab orders are up to date."
+      "title": "No lab orders for today",
+      "subtitle": "No lab orders found for the selected date range.",
+      "withSearch": "No orders match your search",
+      "withSearchSub": "Try a different name or MRN.",
+      "noPending": "No pending orders",
+      "noPendingSub": "All orders are completed.",
+      "noCompleted": "No completed orders",
+      "noCompletedSub": "No orders completed in this date range."
     },
     "error": {
       "loadFailed": "Failed to load lab orders",
@@ -1386,7 +1394,16 @@
     "status": {
       "ORDERED": "Ordered",
       "SAMPLE_COLLECTED": "Sample Collected",
-      "IN_PROGRESS": "In Progress"
+      "IN_PROGRESS": "In Progress",
+      "RESULTED": "Resulted",
+      "REVIEWED": "Reviewed"
+    },
+    "statusCounts": {
+      "ordered": "{count} Ordered",
+      "sampled": "{count} Collected",
+      "inProgress": "{count} In Progress",
+      "resulted": "{count} Resulted",
+      "reviewed": "{count} Reviewed"
     },
     "actions": {
       "collectSample": "Collect Sample",
@@ -1401,6 +1418,7 @@
     },
     "result": {
       "formTitle": "Enter Result",
+      "resultLabel": "Result",
       "resultValueLabel": "Result Value *",
       "unitLabel": "Unit",
       "referenceRangeLabel": "Reference Range",
@@ -1419,19 +1437,31 @@
     "filter": {
       "from": "From",
       "to": "To",
-      "clear": "Clear"
+      "clear": "Clear",
+      "today": "Today",
+      "pending": "Pending",
+      "completedToday": "Completed Today",
+      "searchPlaceholder": "Search patient name or MRN…"
     }
   },
   "technicianRadiology": {
     "pageTitle": "Radiology Worklist",
     "pageSubtitle": "Process pending radiology orders",
-    "panelTitle": "Pending Radiology Orders",
+    "forbidden": "You do not have access to the radiology worklist",
+    "panelTitle": "Radiology Orders",
     "autoRefresh": "Auto-refreshes every 30s",
     "refreshLabel": "Refresh worklist",
     "counter": "{count, plural, one {# pending order} other {# pending orders}}",
+    "counterCompleted": "{count, plural, one {# completed order} other {# completed orders}}",
     "empty": {
-      "title": "No pending radiology orders",
-      "subtitle": "All radiology orders are up to date."
+      "title": "No radiology orders for today",
+      "subtitle": "No radiology orders found for the selected date range.",
+      "withSearch": "No orders match your search",
+      "withSearchSub": "Try a different name or MRN.",
+      "noPending": "No pending orders",
+      "noPendingSub": "All orders are completed.",
+      "noCompleted": "No completed orders",
+      "noCompletedSub": "No orders completed in this date range."
     },
     "error": {
       "loadFailed": "Failed to load radiology orders",
@@ -1456,7 +1486,16 @@
     "status": {
       "ORDERED": "Ordered",
       "SCHEDULED": "Scheduled",
-      "IN_PROGRESS": "In Progress"
+      "IN_PROGRESS": "In Progress",
+      "RESULTED": "Resulted",
+      "REVIEWED": "Reviewed"
+    },
+    "statusCounts": {
+      "ordered": "{count} Ordered",
+      "scheduled": "{count} Scheduled",
+      "inProgress": "{count} In Progress",
+      "resulted": "{count} Resulted",
+      "reviewed": "{count} Reviewed"
     },
     "actions": {
       "schedule": "Schedule",
@@ -1472,7 +1511,9 @@
     "report": {
       "formTitle": "Enter Report",
       "findingsLabel": "Findings *",
-      "impressionLabel": "Impression *"
+      "impressionLabel": "Impression *",
+      "findingsDisplayLabel": "Findings",
+      "impressionDisplayLabel": "Impression"
     },
     "validation": {
       "findingsRequired": "Findings are required.",
@@ -1481,7 +1522,11 @@
     "filter": {
       "from": "From",
       "to": "To",
-      "clear": "Clear"
+      "clear": "Clear",
+      "today": "Today",
+      "pending": "Pending",
+      "completedToday": "Completed Today",
+      "searchPlaceholder": "Search patient name or MRN…"
     }
   },
   "invoice": {

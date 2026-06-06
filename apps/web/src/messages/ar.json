@@ -1362,13 +1362,21 @@
   "technicianLabs": {
     "pageTitle": "قائمة طلبات المختبر",
     "pageSubtitle": "معالجة طلبات المختبر المعلّقة",
-    "panelTitle": "الطلبات المعلّقة",
+    "forbidden": "ليس لديك صلاحية الوصول إلى قائمة مهام المختبر",
+    "panelTitle": "طلبات المختبر",
     "autoRefresh": "يتحدث تلقائياً كل 30 ثانية",
     "refreshLabel": "تحديث القائمة",
     "counter": "{count, plural, zero {لا طلبات معلّقة} one {طلب واحد معلّق} two {طلبان معلّقان} few {# طلبات معلّقة} many {# طلباً معلّقاً} other {# طلب معلّق}}",
+    "counterCompleted": "{count, plural, zero {لا طلبات مكتملة} one {طلب واحد مكتمل} two {طلبان مكتملان} few {# طلبات مكتملة} many {# طلباً مكتملاً} other {# طلب مكتمل}}",
     "empty": {
-      "title": "لا طلبات مختبر معلّقة",
-      "subtitle": "جميع طلبات المختبر محدّثة."
+      "title": "لا طلبات مختبر لليوم",
+      "subtitle": "لم يتم العثور على طلبات مختبر في النطاق الزمني المحدد.",
+      "withSearch": "لا توجد طلبات تطابق بحثك",
+      "withSearchSub": "جرب اسماً أو رقم سجل مختلفاً.",
+      "noPending": "لا طلبات معلّقة",
+      "noPendingSub": "جميع الطلبات مكتملة.",
+      "noCompleted": "لا طلبات مكتملة",
+      "noCompletedSub": "لم تكتمل أي طلبات في هذا النطاق الزمني."
     },
     "error": {
       "loadFailed": "فشل تحميل طلبات المختبر",
@@ -1386,7 +1394,16 @@
     "status": {
       "ORDERED": "مُطلوب",
       "SAMPLE_COLLECTED": "تم أخذ العينة",
-      "IN_PROGRESS": "قيد التنفيذ"
+      "IN_PROGRESS": "قيد التنفيذ",
+      "RESULTED": "تم التحليل",
+      "REVIEWED": "تمت المراجعة"
+    },
+    "statusCounts": {
+      "ordered": "{count} مُطلوب",
+      "sampled": "{count} جُمعت",
+      "inProgress": "{count} قيد التنفيذ",
+      "resulted": "{count} تم التحليل",
+      "reviewed": "{count} تمت المراجعة"
     },
     "actions": {
       "collectSample": "أخذ العينة",
@@ -1401,6 +1418,7 @@
     },
     "result": {
       "formTitle": "إدخال النتيجة",
+      "resultLabel": "النتيجة",
       "resultValueLabel": "قيمة النتيجة *",
       "unitLabel": "الوحدة",
       "referenceRangeLabel": "النطاق المرجعي",
@@ -1419,19 +1437,31 @@
     "filter": {
       "from": "من",
       "to": "إلى",
-      "clear": "مسح"
+      "clear": "مسح",
+      "today": "اليوم",
+      "pending": "قيد الانتظار",
+      "completedToday": "مكتمل اليوم",
+      "searchPlaceholder": "ابحث باسم المريض أو رقم السجل…"
     }
   },
   "technicianRadiology": {
     "pageTitle": "قائمة طلبات الأشعة",
     "pageSubtitle": "معالجة طلبات الأشعة المعلّقة",
-    "panelTitle": "طلبات الأشعة المعلّقة",
+    "forbidden": "ليس لديك صلاحية الوصول إلى قائمة مهام الأشعة",
+    "panelTitle": "طلبات الأشعة",
     "autoRefresh": "يتحدث تلقائياً كل 30 ثانية",
     "refreshLabel": "تحديث القائمة",
     "counter": "{count, plural, zero {لا طلبات معلّقة} one {طلب واحد معلّق} two {طلبان معلّقان} few {# طلبات معلّقة} many {# طلباً معلّقاً} other {# طلب معلّق}}",
+    "counterCompleted": "{count, plural, zero {لا طلبات مكتملة} one {طلب واحد مكتمل} two {طلبان مكتملان} few {# طلبات مكتملة} many {# طلباً مكتملاً} other {# طلب مكتمل}}",
     "empty": {
-      "title": "لا طلبات أشعة معلّقة",
-      "subtitle": "جميع طلبات الأشعة محدّثة."
+      "title": "لا طلبات أشعة لليوم",
+      "subtitle": "لم يتم العثور على طلبات أشعة في النطاق الزمني المحدد.",
+      "withSearch": "لا توجد طلبات تطابق بحثك",
+      "withSearchSub": "جرب اسماً أو رقم سجل مختلفاً.",
+      "noPending": "لا طلبات معلّقة",
+      "noPendingSub": "جميع الطلبات مكتملة.",
+      "noCompleted": "لا طلبات مكتملة",
+      "noCompletedSub": "لم تكتمل أي طلبات في هذا النطاق الزمني."
     },
     "error": {
       "loadFailed": "فشل تحميل طلبات الأشعة",
@@ -1456,7 +1486,16 @@
     "status": {
       "ORDERED": "مُطلوب",
       "SCHEDULED": "مجدول",
-      "IN_PROGRESS": "قيد التنفيذ"
+      "IN_PROGRESS": "قيد التنفيذ",
+      "RESULTED": "تم التصوير",
+      "REVIEWED": "تمت المراجعة"
+    },
+    "statusCounts": {
+      "ordered": "{count} مُطلوب",
+      "scheduled": "{count} مجدول",
+      "inProgress": "{count} قيد التنفيذ",
+      "resulted": "{count} تم التصوير",
+      "reviewed": "{count} تمت المراجعة"
     },
     "actions": {
       "schedule": "جدولة",
@@ -1472,7 +1511,9 @@
     "report": {
       "formTitle": "إدخال التقرير",
       "findingsLabel": "النتائج *",
-      "impressionLabel": "الانطباع *"
+      "impressionLabel": "الانطباع *",
+      "findingsDisplayLabel": "الموجودات",
+      "impressionDisplayLabel": "الخلاصة"
     },
     "validation": {
       "findingsRequired": "النتائج مطلوبة.",
@@ -1481,7 +1522,11 @@
     "filter": {
       "from": "من",
       "to": "إلى",
-      "clear": "مسح"
+      "clear": "مسح",
+      "today": "اليوم",
+      "pending": "قيد الانتظار",
+      "completedToday": "مكتمل اليوم",
+      "searchPlaceholder": "ابحث باسم المريض أو رقم السجل…"
     }
   },
   "invoice": {

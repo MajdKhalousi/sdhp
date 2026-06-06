@@ -125,6 +125,22 @@
       "activeEncounters": {
         "label": "الزيارات النشطة",
         "sub": "مرضى قيد المعاينة حاليًا"
+      },
+      "noShowsToday": {
+        "label": "لم يحضروا اليوم",
+        "sub": "لم يحضر"
+      },
+      "invoicedToday": {
+        "label": "فواتير اليوم",
+        "sub": "إجمالي الفواتير اليوم"
+      },
+      "labsCompletedToday": {
+        "label": "مختبر مكتمل",
+        "sub": "نتائج أو مراجعات اليوم"
+      },
+      "radiologyCompletedToday": {
+        "label": "أشعة مكتملة",
+        "sub": "نتائج أو مراجعات اليوم"
       }
     },
     "errors": {

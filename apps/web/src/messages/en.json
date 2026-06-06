@@ -125,6 +125,22 @@
       "activeEncounters": {
         "label": "Active Encounters",
         "sub": "Patients currently being seen"
+      },
+      "noShowsToday": {
+        "label": "No-Shows Today",
+        "sub": "Did not attend"
+      },
+      "invoicedToday": {
+        "label": "Invoiced Today",
+        "sub": "Total billed today"
+      },
+      "labsCompletedToday": {
+        "label": "Labs Completed",
+        "sub": "Resulted or reviewed today"
+      },
+      "radiologyCompletedToday": {
+        "label": "Radiology Completed",
+        "sub": "Resulted or reviewed today"
       }
     },
     "errors": {

@@ -6,6 +6,7 @@ import {
   Calendar, ListOrdered, CheckCircle2, Clock,
   Banknote, Wallet, Activity, CalendarClock,
   FlaskConical, ScanLine, UserPlus, AlertCircle, Stethoscope,
+  UserX, Receipt,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
@@ -31,9 +32,10 @@ interface StatCard {
   annotationUrgent?: boolean;
 }
 
-const BILLING_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
-const OPS_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY', 'DOCTOR', 'NURSE']);
-const LAB_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'TECHNICIAN']);
+const BILLING_ROLES  = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
+const OPS_ROLES      = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY', 'DOCTOR', 'NURSE']);
+const LAB_ROLES      = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'TECHNICIAN']);
+const WORKLOAD_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'TECHNICIAN']);
 const COMPLETED_ROLES   = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
 const FOLLOWUP_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY', 'DOCTOR', 'NURSE']);
 const NEW_PATIENT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
@@ -82,6 +84,7 @@ export default function DashboardPage() {
   const canSeeBilling    = BILLING_ROLES.has(role);
   const canSeeOps        = OPS_ROLES.has(role);
   const canSeeLabs       = LAB_ROLES.has(role);
+  const canSeeWorkload   = WORKLOAD_ROLES.has(role);
   const canSeeCompleted  = COMPLETED_ROLES.has(role);
   const canSeeFollowUps  = FOLLOWUP_ROLES.has(role);
   const canSeeNewPatients = NEW_PATIENT_ROLES.has(role);
@@ -162,6 +165,13 @@ export default function DashboardPage() {
       icon: Stethoscope,
       href: activeEncountersHref,
     });
+    stats.push({
+      key: 'noShowsToday',
+      label: t('stats.noShowsToday.label'),
+      value: o?.appointments.noShow ?? '—',
+      sub: t('stats.noShowsToday.sub'),
+      icon: UserX,
+    });
     if (canSeeCompleted) {
       stats.push({
         key: 'completed',
@@ -205,6 +215,23 @@ export default function DashboardPage() {
       sub: t('stats.pendingRadiology.sub'),
       icon: ScanLine,
       href: role === 'NURSE' ? undefined : '/dashboard/technician/radiology',
+    });
+  }
+
+  if (canSeeWorkload) {
+    stats.push({
+      key: 'labsCompletedToday',
+      label: t('stats.labsCompletedToday.label'),
+      value: o?.labOrders.completedToday ?? '—',
+      sub: t('stats.labsCompletedToday.sub'),
+      icon: FlaskConical,
+    });
+    stats.push({
+      key: 'radiologyCompletedToday',
+      label: t('stats.radiologyCompletedToday.label'),
+      value: o?.radiologyOrders.completedToday ?? '—',
+      sub: t('stats.radiologyCompletedToday.sub'),
+      icon: ScanLine,
     });
   }
 
@@ -343,7 +370,7 @@ export default function DashboardPage() {
 
       {/* ── Billing cards (SA / ORG_ADMIN / ACCOUNTANT only) ─────────────── */}
       {canSeeBilling && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Link
             href="/dashboard/reports/billing"
             className="rounded-xl border bg-card p-6 shadow-sm transition-colors hover:border-primary/40"
@@ -361,6 +388,19 @@ export default function DashboardPage() {
                 {t('stats.collectedToday.annotation', { rate: overview.billing.collectionRateToday })}
               </p>
             )}
+          </Link>
+          <Link
+            href="/dashboard/reports/billing"
+            className="rounded-xl border bg-card p-6 shadow-sm transition-colors hover:border-primary/40"
+          >
+            <div className="flex items-start justify-between">
+              <p className="text-sm font-medium text-muted-foreground">{t('stats.invoicedToday.label')}</p>
+              <Receipt className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+            </div>
+            <p className="mt-2 text-2xl font-bold tabular-nums text-blue-600 dark:text-blue-400">
+              {overview?.billing ? formatAmount(overview.billing.invoicedToday ?? 0, locale) : '—'}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{t('stats.invoicedToday.sub')}</p>
           </Link>
           <Link
             href="/dashboard/reports/billing"

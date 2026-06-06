@@ -15,14 +15,15 @@ export interface DashboardOverview {
       done: number;
     };
     followUpsDue: number;
-    labOrders: { pending: number };
-    radiologyOrders: { pending: number };
+    labOrders: { pending: number; completedToday?: number };
+    radiologyOrders: { pending: number; completedToday?: number };
     newPatients: number;
     activeEncounters: number;
     followUpsOverdue: number;
   };
   billing: {
     collectedToday: number;
+    invoicedToday?: number;
     outstandingAllTime: number;
     collectionRateToday: number;
     unpaidInvoiceCount: number;

@@ -78,6 +78,8 @@ export class DashboardService {
       billingOutstandingAgg,
       activeEncounters,
       followUpsOverdue,
+      completedLabsToday,
+      completedRadiologyToday,
     ] = await Promise.all([
       // 1. Today's appointments grouped by status
       this.prisma.appointment.groupBy({
@@ -215,6 +217,30 @@ export class DashboardService {
           },
         },
       }),
+
+      // 11. Lab orders completed today — LabOrder has no completedAt/resultedAt; updatedAt is the proxy
+      this.prisma.labOrder.count({
+        where: {
+          ...orgFilter,
+          ...branchFilter,
+          ...(doctorId ? { orderedById: doctorId } : {}),
+          deletedAt: null,
+          status: { in: [LabOrderStatus.RESULTED, LabOrderStatus.REVIEWED] },
+          updatedAt: { gte: todayStart, lt: todayEnd },
+        },
+      }),
+
+      // 12. Radiology orders completed today — RadiologyOrder has no completedAt/resultedAt; updatedAt is the proxy
+      this.prisma.radiologyOrder.count({
+        where: {
+          ...orgFilter,
+          ...branchFilter,
+          ...(doctorId ? { orderedById: doctorId } : {}),
+          deletedAt: null,
+          status: { in: [RadiologyOrderStatus.RESULTED, RadiologyOrderStatus.REVIEWED] },
+          updatedAt: { gte: todayStart, lt: todayEnd },
+        },
+      }),
     ]);
 
     // Appointments
@@ -227,6 +253,7 @@ export class DashboardService {
     // Billing
     let billing: {
       collectedToday: number;
+      invoicedToday: number;
       outstandingAllTime: number;
       collectionRateToday: number;
       unpaidInvoiceCount: number;
@@ -251,6 +278,7 @@ export class DashboardService {
       const outstandingPaid = billingOutstandingAgg._sum.paidAmount?.toNumber() ?? 0;
       billing = {
         collectedToday,
+        invoicedToday: totalInvoicedToday,
         outstandingAllTime: Math.max(0, outstandingTotal - outstandingPaid),
         collectionRateToday:
           totalInvoicedToday === 0
@@ -274,8 +302,8 @@ export class DashboardService {
           done: byQueue.get(QueueStatus.DONE) ?? 0,
         },
         followUpsDue,
-        labOrders: { pending: pendingLabs },
-        radiologyOrders: { pending: pendingRadiology },
+        labOrders: { pending: pendingLabs, completedToday: completedLabsToday },
+        radiologyOrders: { pending: pendingRadiology, completedToday: completedRadiologyToday },
         newPatients,
         activeEncounters,
         followUpsOverdue,
@@ -290,8 +318,8 @@ export class DashboardService {
         appointments: { total: 0, completed: 0, cancelled: 0, noShow: 0 },
         queue: { waiting: 0, inProgress: 0, done: 0 },
         followUpsDue: 0,
-        labOrders: { pending: 0 },
-        radiologyOrders: { pending: 0 },
+        labOrders: { pending: 0, completedToday: 0 },
+        radiologyOrders: { pending: 0, completedToday: 0 },
         newPatients: 0,
         activeEncounters: 0,
         followUpsOverdue: 0,

@@ -25,7 +25,7 @@ interface DoctorsResponse {
   limit: number;
 }
 
-export function useAppointments(query: AppointmentQuery = {}) {
+export function useAppointments(query: AppointmentQuery = {}, options?: { enabled?: boolean }) {
   const { status, doctorId, patientId, date, branchId, organizationId, sourceEncounterId, page, limit } = query;
   return useQuery({
     queryKey: ['appointments', status, doctorId, patientId, date, branchId, organizationId, sourceEncounterId, page, limit],
@@ -42,6 +42,7 @@ export function useAppointments(query: AppointmentQuery = {}) {
         ...(limit ? { limit } : {}),
       }),
     staleTime: 30_000,
+    enabled: options?.enabled ?? true,
   });
 }
 

@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from '@/i18n/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useCreateInvoice } from '@/hooks/use-invoices';
-import { usePatientsList } from '@/hooks/use-appointments';
+import { usePatientsList, useAppointment, useVisitTypesList } from '@/hooks/use-appointments';
 import { useBillingPolicy } from '@/hooks/use-billing-policy';
 import { PatientCombobox } from '@/components/appointments/patient-combobox';
 import type { CreateInvoiceDto } from '@/types/invoice';
@@ -42,6 +42,16 @@ export function CreateInvoiceForm({ initialPatientId, appointmentId }: Props = {
   const { data: patientsData, isLoading: patientsLoading } = usePatientsList();
   const patients = patientsData?.data ?? [];
 
+  const locale = useLocale();
+  const { data: appointmentData } = useAppointment(appointmentId ?? '');
+  const { data: visitTypes } = useVisitTypesList();
+  const apptVisitType = appointmentId && appointmentData?.visitTypeId
+    ? (visitTypes?.find((vt) => vt.id === appointmentData.visitTypeId) ?? null)
+    : null;
+  const apptVisitTypeName = apptVisitType
+    ? (locale === 'ar' && apptVisitType.nameAr ? apptVisitType.nameAr : apptVisitType.name)
+    : null;
+
   const { mutate, isPending, error: mutationError } = useCreateInvoice();
 
   function handleSubmit(e: React.FormEvent) {
@@ -76,6 +86,26 @@ export function CreateInvoiceForm({ initialPatientId, appointmentId }: Props = {
       {displayError && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {displayError}
+        </div>
+      )}
+
+      {appointmentId && appointmentData && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 dark:border-blue-900/40 dark:bg-blue-950/30">
+          <p className="text-xs font-semibold text-blue-800 dark:text-blue-300">
+            {t('appointmentContext.title')}
+          </p>
+          <p className="mt-0.5 text-xs text-blue-700 dark:text-blue-400">
+            {'Dr. '}{appointmentData.doctor.user.firstName}{' '}{appointmentData.doctor.user.lastName}
+          </p>
+          {apptVisitType?.basePrice ? (
+            <p className="mt-0.5 text-xs text-blue-700 dark:text-blue-400">
+              {apptVisitTypeName}{' — '}{parseFloat(apptVisitType.basePrice).toLocaleString()}{' SYP · '}{t('appointmentContext.visitTypeFeeAutoFill')}
+            </p>
+          ) : (
+            <p className="mt-0.5 text-xs text-blue-700 dark:text-blue-400">
+              {t('appointmentContext.noVisitTypeFee')}
+            </p>
+          )}
         </div>
       )}
 

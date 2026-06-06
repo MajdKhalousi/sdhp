@@ -27,6 +27,7 @@ const CANCEL_ELIGIBLE: AppointmentStatus[]     = ['SCHEDULED', 'CONFIRMED', 'CHE
 const INVOICE_ELIGIBLE: AppointmentStatus[]    = ['COMPLETED', 'IN_PROGRESS'];
 
 const APPOINTMENT_MUTATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+const INVOICE_CREATE_ROLES     = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY', 'ACCOUNTANT']);
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -45,6 +46,7 @@ export default function AppointmentDetailPage() {
   const locale = useLocale();
   const { user } = useAuthStore();
   const canMutate = user ? APPOINTMENT_MUTATE_ROLES.has(user.role) : false;
+  const canCreateInvoice = user ? INVOICE_CREATE_ROLES.has(user.role) : false;
   const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
 
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
@@ -234,7 +236,7 @@ export default function AppointmentDetailPage() {
             {canMutate && CANCEL_ELIGIBLE.includes(status) && (
               <CancelAppointmentDialog appointmentId={appointment.id} />
             )}
-            {INVOICE_ELIGIBLE.includes(status) && !linkedInvoice && (
+            {canCreateInvoice && INVOICE_ELIGIBLE.includes(status) && !linkedInvoice && (
               <Link
                 href={`/dashboard/invoices/new?appointmentId=${appointment.id}&patientId=${appointment.patientId}`}
                 className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"

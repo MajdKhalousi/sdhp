@@ -5,14 +5,16 @@ import { CheckCircle2, CreditCard, Printer, Receipt } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useInvoices, useBillingReport } from '@/hooks/use-invoices';
+import { useAppointments } from '@/hooks/use-appointments';
 import { useAuthStore } from '@/store/auth';
 import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import { IssueAndPayDialog } from '@/components/billing/issue-and-pay-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { formatDateDisplay } from '@/lib/format-date';
+import { formatDateDisplay, formatDateTimeDisplay } from '@/lib/format-date';
 import { isOverdue } from '@/lib/billing-utils';
 import type { Invoice } from '@/types/invoice';
+import type { Appointment } from '@/types/appointment';
 
 const BILLING_REPORT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
 
@@ -33,6 +35,7 @@ function getTodayRange() {
   return {
     from: new Date(y, m, d, 0, 0, 0, 0).toISOString(),
     to: new Date(y, m, d, 23, 59, 59, 999).toISOString(),
+    dateStr: `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
   };
 }
 
@@ -254,6 +257,41 @@ function InvoiceGroup({ title, invoices, activeId, setActiveId, onSuccess }: Gro
   );
 }
 
+function UnbilledRow({ appointment }: { appointment: Appointment }) {
+  const t = useTranslations('cashier');
+
+  return (
+    <div className="border-b border-border last:border-b-0">
+      <div className="flex flex-wrap items-start justify-between gap-3 px-4 py-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium">
+              {appointment.patient.firstName} {appointment.patient.lastName}
+            </span>
+            <span className="text-xs text-muted-foreground" dir="ltr">
+              {appointment.patient.mrn}
+            </span>
+          </div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            {'Dr. '}{appointment.doctor.user.firstName}{' '}{appointment.doctor.user.lastName}
+            {' · '}
+            <span dir="ltr">{formatDateTimeDisplay(appointment.scheduledAt)}</span>
+          </div>
+        </div>
+        <div className="shrink-0">
+          <Link
+            href={`/dashboard/invoices/new?appointmentId=${appointment.id}&patientId=${appointment.patientId}`}
+            className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <Receipt className="h-3 w-3" />
+            {t('unbilled.createInvoice')}
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function CashierView() {
   const t = useTranslations('cashier');
   const tCommon = useTranslations('common');
@@ -261,9 +299,9 @@ export function CashierView() {
   const user = useAuthStore((s) => s.user);
   const canSeeBillingReport = BILLING_REPORT_ROLES.has(user?.role ?? '');
 
-  const [tab, setTab] = useState<'today' | 'outstanding'>('today');
+  const [tab, setTab] = useState<'today' | 'outstanding' | 'unbilled'>('today');
   const [activeId, setActiveId] = useState<string | null>(null);
-  const { from, to } = useMemo(() => getTodayRange(), []);
+  const { from, to, dateStr } = useMemo(() => getTodayRange(), []);
 
   // Today data — always enabled
   const { data, isLoading, isError, error, refetch } = useInvoices({ from, to, limit: 50 });
@@ -282,7 +320,25 @@ export function CashierView() {
     );
   }, [issuedQuery.data, partialQuery.data]);
 
-  function switchTab(next: 'today' | 'outstanding') {
+  // Unbilled data — enabled when tab is 'unbilled'
+  const unbilledEnabled = tab === 'unbilled';
+  const todayApptsQuery = useAppointments(
+    { date: dateStr, status: ['COMPLETED', 'IN_PROGRESS'], limit: 100 },
+    { enabled: unbilledEnabled },
+  );
+  const todayInvoicesUnbilledQuery = useInvoices({ from, to, limit: 200 }, { enabled: unbilledEnabled });
+
+  const unbilledAppointments = useMemo(() => {
+    if (!todayApptsQuery.data || !todayInvoicesUnbilledQuery.data) return [];
+    const billedIds = new Set(
+      todayInvoicesUnbilledQuery.data.data
+        .filter((inv) => inv.status !== 'CANCELLED' && inv.appointmentId)
+        .map((inv) => inv.appointmentId!),
+    );
+    return todayApptsQuery.data.data.filter((appt) => !billedIds.has(appt.id));
+  }, [todayApptsQuery.data, todayInvoicesUnbilledQuery.data]);
+
+  function switchTab(next: 'today' | 'outstanding' | 'unbilled') {
     setTab(next);
     setActiveId(null);
   }
@@ -315,6 +371,17 @@ export function CashierView() {
             {outstandingInvoices.length}
           </span>
         )}
+      </button>
+      <button
+        onClick={() => switchTab('unbilled')}
+        className={cn(
+          'flex-1 rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
+          tab === 'unbilled'
+            ? 'bg-background text-foreground shadow-sm'
+            : 'text-muted-foreground hover:text-foreground',
+        )}
+      >
+        {t('tabs.unbilled')}
       </button>
     </div>
   );
@@ -380,6 +447,64 @@ export function CashierView() {
               onSuccess={() => setActiveId(null)}
               onCancel={() => setActiveId(null)}
             />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Unbilled tab ──────────────────────────────────────────────────────────
+
+  if (tab === 'unbilled') {
+    const unbilledLoading = todayApptsQuery.isLoading || todayInvoicesUnbilledQuery.isLoading;
+    const unbilledError = todayApptsQuery.isError || todayInvoicesUnbilledQuery.isError;
+
+    if (unbilledLoading) {
+      return (
+        <div className="space-y-4">
+          {tabToggle}
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 rounded-xl" />)}
+          </div>
+        </div>
+      );
+    }
+
+    if (unbilledError) {
+      return (
+        <div className="space-y-4">
+          {tabToggle}
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-12 text-center">
+            <p className="text-sm font-medium text-destructive">{tCommon('states.error')}</p>
+            <button
+              onClick={() => { todayApptsQuery.refetch(); todayInvoicesUnbilledQuery.refetch(); }}
+              className="h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
+            >
+              {tCommon('actions.tryAgain')}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (unbilledAppointments.length === 0) {
+      return (
+        <div className="space-y-4">
+          {tabToggle}
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
+            <CheckCircle2 className="h-8 w-8 text-emerald-500/50" />
+            <p className="text-sm font-medium">{t('unbilled.empty')}</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {tabToggle}
+        <div className="overflow-hidden rounded-xl border border-border">
+          {unbilledAppointments.map((appt) => (
+            <UnbilledRow key={appt.id} appointment={appt} />
           ))}
         </div>
       </div>

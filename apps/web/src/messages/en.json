@@ -1706,6 +1706,11 @@
       },
       "errors": {
         "createFailed": "Failed to create invoice."
+      },
+      "appointmentContext": {
+        "title": "Linked to appointment",
+        "visitTypeFeeAutoFill": "will be added automatically",
+        "noVisitTypeFee": "No automatic fee — add items after creating"
       }
     },
     "payment": {
@@ -2299,7 +2304,8 @@
     "noInvoicesHint": "Invoices are created automatically when patients check in.",
     "tabs": {
       "today": "Today",
-      "outstanding": "Outstanding"
+      "outstanding": "Outstanding",
+      "unbilled": "Unbilled"
     },
     "outstanding": {
       "description": "Unpaid and partially paid invoices across all dates",
@@ -2307,6 +2313,10 @@
       "paid": "Paid",
       "empty": "No outstanding invoices",
       "emptyHint": "All issued invoices have been collected."
+    },
+    "unbilled": {
+      "empty": "All eligible appointments are invoiced",
+      "createInvoice": "Create Invoice"
     },
     "groups": {
       "pending": "Pending Payment",

@@ -259,11 +259,54 @@ export function LabWorklistPanel() {
   const t = useTranslations('technicianLabs');
   const tCommon = useTranslations('common');
 
-  const { data, isLoading, isError, error, refetch, isFetching } = useLabOrdersWorklist();
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+
+  const fromIso = from ? new Date(from + 'T00:00:00').toISOString() : undefined;
+  const toIso   = to   ? new Date(to   + 'T23:59:59').toISOString() : undefined;
+  const hasFilter = !!from || !!to;
+
+  const { data, isLoading, isError, error, refetch, isFetching } = useLabOrdersWorklist({
+    ...(fromIso ? { from: fromIso } : {}),
+    ...(toIso   ? { to:   toIso   } : {}),
+  });
 
   const pendingOrders = data?.filter((o) =>
     (PENDING_STATUSES as readonly string[]).includes(o.status),
   ) ?? [];
+
+  const filterRow = (
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs text-muted-foreground whitespace-nowrap">{t('filter.from')}</span>
+        <input
+          type="date"
+          value={from}
+          onChange={(e) => setFrom(e.target.value)}
+          dir="ltr"
+          className="h-8 w-36 rounded-md border bg-background px-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring"
+        />
+      </div>
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs text-muted-foreground whitespace-nowrap">{t('filter.to')}</span>
+        <input
+          type="date"
+          value={to}
+          onChange={(e) => setTo(e.target.value)}
+          dir="ltr"
+          className="h-8 w-36 rounded-md border bg-background px-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring"
+        />
+      </div>
+      {hasFilter && (
+        <button
+          onClick={() => { setFrom(''); setTo(''); }}
+          className="h-8 rounded-md border px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          {t('filter.clear')}
+        </button>
+      )}
+    </div>
+  );
 
   const header = (
     <div className="flex items-center justify-between">
@@ -286,6 +329,7 @@ export function LabWorklistPanel() {
     return (
       <div className="space-y-4">
         {header}
+        {filterRow}
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-24 w-full rounded-xl" />
@@ -299,6 +343,7 @@ export function LabWorklistPanel() {
     return (
       <div className="space-y-4">
         {header}
+        {filterRow}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-12 text-center">
           <p className="text-sm font-medium text-destructive">{t('error.loadFailed')}</p>
           <p className="max-w-xs text-xs text-muted-foreground">
@@ -319,6 +364,7 @@ export function LabWorklistPanel() {
     return (
       <div className="space-y-4">
         {header}
+        {filterRow}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
           <FlaskConical className="h-8 w-8 text-muted-foreground/50" />
           <p className="text-sm font-medium">{t('empty.title')}</p>
@@ -331,6 +377,7 @@ export function LabWorklistPanel() {
   return (
     <div className="space-y-4">
       {header}
+      {filterRow}
       <div className="space-y-3">
         {pendingOrders.map((order) => (
           <LabOrderCard key={order.id} order={order} />

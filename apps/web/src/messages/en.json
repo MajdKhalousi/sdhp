@@ -1399,6 +1399,11 @@
     },
     "validation": {
       "resultValueRequired": "Result value is required."
+    },
+    "filter": {
+      "from": "From",
+      "to": "To",
+      "clear": "Clear"
     }
   },
   "technicianRadiology": {
@@ -1456,6 +1461,11 @@
     "validation": {
       "findingsRequired": "Findings are required.",
       "impressionRequired": "Impression is required."
+    },
+    "filter": {
+      "from": "From",
+      "to": "To",
+      "clear": "Clear"
     }
   },
   "invoice": {

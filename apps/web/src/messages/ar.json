@@ -1399,6 +1399,11 @@
     },
     "validation": {
       "resultValueRequired": "قيمة النتيجة مطلوبة."
+    },
+    "filter": {
+      "from": "من",
+      "to": "إلى",
+      "clear": "مسح"
     }
   },
   "technicianRadiology": {
@@ -1456,6 +1461,11 @@
     "validation": {
       "findingsRequired": "النتائج مطلوبة.",
       "impressionRequired": "الانطباع مطلوب."
+    },
+    "filter": {
+      "from": "من",
+      "to": "إلى",
+      "clear": "مسح"
     }
   },
   "invoice": {

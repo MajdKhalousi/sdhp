@@ -152,7 +152,7 @@ async function main() {
   // ── Demo Users ─────────────────────────────────────────────────────────────
   await prisma.user.upsert({
     where: { phone: '+963900000001' },
-    update: {},
+    update: { passwordHash },
     create: {
       phone: '+963900000001',
       email: 'superadmin@sdhp.sy',
@@ -166,7 +166,7 @@ async function main() {
 
   await prisma.user.upsert({
     where: { phone: '+963912345678' },
-    update: { firstName: 'Ahmad', lastName: 'Khalil' },
+    update: { passwordHash, firstName: 'Ahmad', lastName: 'Khalil' },
     create: {
       phone: '+963912345678',
       email: 'admin@alnour.sy',
@@ -181,7 +181,7 @@ async function main() {
 
   await prisma.user.upsert({
     where: { phone: '+963912002001' },
-    update: {},
+    update: { passwordHash },
     create: {
       phone: '+963912002001',
       email: 'reception@alnour.sy',
@@ -197,7 +197,7 @@ async function main() {
   // Nurse
   await prisma.user.upsert({
     where: { phone: '+963912003001' },
-    update: {},
+    update: { passwordHash },
     create: {
       phone: '+963912003001',
       email: 'nurse@alnour.sy',
@@ -215,7 +215,7 @@ async function main() {
   // Accountant
   const userAccountant = await prisma.user.upsert({
     where: { phone: '+963912004001' },
-    update: {},
+    update: { passwordHash },
     create: {
       phone: '+963912004001',
       email: 'accountant@alnour.sy',
@@ -233,7 +233,7 @@ async function main() {
   // Technician
   await prisma.user.upsert({
     where: { phone: '+963912005001' },
-    update: {},
+    update: { passwordHash },
     create: {
       phone: '+963912005001',
       email: 'technician@alnour.sy',
@@ -251,7 +251,7 @@ async function main() {
   // Doctor users
   const drSamerUser = await prisma.user.upsert({
     where: { phone: '+963912001001' },
-    update: { firstName: 'Samer', lastName: 'Hassan', role: UserRole.DOCTOR },
+    update: { passwordHash, firstName: 'Samer', lastName: 'Hassan', role: UserRole.DOCTOR },
     create: {
       phone: '+963912001001',
       email: 'samer.hassan@alnour.sy',
@@ -266,7 +266,7 @@ async function main() {
 
   const drLaylaUser = await prisma.user.upsert({
     where: { phone: '+963912001002' },
-    update: { firstName: 'Layla', lastName: 'Nasser', role: UserRole.DOCTOR },
+    update: { passwordHash, firstName: 'Layla', lastName: 'Nasser', role: UserRole.DOCTOR },
     create: {
       phone: '+963912001002',
       email: 'layla.nasser@alnour.sy',
@@ -281,7 +281,7 @@ async function main() {
 
   const drOmarUser = await prisma.user.upsert({
     where: { phone: '+963912001003' },
-    update: { firstName: 'Omar', lastName: 'Saleh', role: UserRole.DOCTOR },
+    update: { passwordHash, firstName: 'Omar', lastName: 'Saleh', role: UserRole.DOCTOR },
     create: {
       phone: '+963912001003',
       email: 'omar.saleh@alnour.sy',
@@ -2760,9 +2760,9 @@ Review in 4 weeks with CBC and ferritin results.
   });
 
   // ── Clinic Settings (org-001) ────────────────────────────────────────────
-  await prisma.clinicSettings.upsert({
-    where: { id: 'seed-settings-001' },
-    update: {},
+  const clinicSettings = await prisma.clinicSettings.upsert({
+    where: { organizationId: 'seed-org-001' },
+    update: { defaultSlotMin: 20, lunchStartTime: '13:30', lunchEndTime: '14:30', timezone: 'Asia/Damascus' },
     create: {
       id: 'seed-settings-001',
       organizationId: 'seed-org-001',
@@ -2775,19 +2775,19 @@ Review in 4 weeks with CBC and ferritin results.
 
   // Working days: Sun–Thu open 08:00–17:00, Fri–Sat closed
   const workingDays = [
-    { id: 'seed-wd-0', dayOfWeek: 0, startTime: '08:00', endTime: '17:00', isOpen: true },  // Sun
-    { id: 'seed-wd-1', dayOfWeek: 1, startTime: '08:00', endTime: '17:00', isOpen: true },  // Mon
-    { id: 'seed-wd-2', dayOfWeek: 2, startTime: '08:00', endTime: '17:00', isOpen: true },  // Tue
-    { id: 'seed-wd-3', dayOfWeek: 3, startTime: '08:00', endTime: '17:00', isOpen: true },  // Wed
-    { id: 'seed-wd-4', dayOfWeek: 4, startTime: '08:00', endTime: '17:00', isOpen: true },  // Thu
-    { id: 'seed-wd-5', dayOfWeek: 5, startTime: '08:00', endTime: '13:00', isOpen: false }, // Fri
-    { id: 'seed-wd-6', dayOfWeek: 6, startTime: '08:00', endTime: '13:00', isOpen: false }, // Sat
+    { dayOfWeek: 0, startTime: '08:00', endTime: '17:00', isOpen: true },  // Sun
+    { dayOfWeek: 1, startTime: '08:00', endTime: '17:00', isOpen: true },  // Mon
+    { dayOfWeek: 2, startTime: '08:00', endTime: '17:00', isOpen: true },  // Tue
+    { dayOfWeek: 3, startTime: '08:00', endTime: '17:00', isOpen: true },  // Wed
+    { dayOfWeek: 4, startTime: '08:00', endTime: '17:00', isOpen: true },  // Thu
+    { dayOfWeek: 5, startTime: '08:00', endTime: '13:00', isOpen: false }, // Fri
+    { dayOfWeek: 6, startTime: '08:00', endTime: '13:00', isOpen: false }, // Sat
   ];
   for (const wd of workingDays) {
     await prisma.clinicWorkingDay.upsert({
-      where: { id: wd.id },
+      where: { clinicSettingsId_dayOfWeek: { clinicSettingsId: clinicSettings.id, dayOfWeek: wd.dayOfWeek } },
       update: { startTime: wd.startTime, endTime: wd.endTime, isOpen: wd.isOpen },
-      create: { ...wd, clinicSettingsId: 'seed-settings-001' },
+      create: { ...wd, clinicSettingsId: clinicSettings.id },
     });
   }
 

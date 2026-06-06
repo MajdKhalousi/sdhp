@@ -53,6 +53,7 @@ export interface FollowUpQuery {
   dateTo?: string;
   page?: number;
   limit?: number;
+  search?: string;
 }
 
 export interface FollowUpSummary {

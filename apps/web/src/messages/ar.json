@@ -2420,6 +2420,10 @@
       "DECLINED": "اعتذر عن الحضور",
       "RESCHEDULE_REQUESTED": "طلب تغيير الموعد"
     },
+    "search": {
+      "placeholder": "ابحث عن مريض بالاسم أو الرقم",
+      "noResults": "لا توجد مراجعات مطابقة للبحث"
+    },
     "forbidden": "ليس لديك صلاحية لعرض هذه الصفحة",
     "doctorPrefix": "د."
   },

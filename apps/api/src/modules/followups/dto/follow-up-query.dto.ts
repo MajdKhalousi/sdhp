@@ -44,4 +44,9 @@ export class FollowUpQueryDto extends PaginationQueryDto {
     message: 'dateTo must be a valid date in YYYY-MM-DD format',
   })
   dateTo?: string;
+
+  @ApiPropertyOptional({ description: 'Search by patient first name, last name, or MRN', example: 'Ali' })
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

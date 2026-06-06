@@ -3,9 +3,9 @@ import { api } from '@/lib/api';
 import type { FollowUpQuery, FollowUpsResponse, FollowUpSummary, FollowUpSummaryQuery } from '@/types/follow-up';
 
 export function useFollowUps(query: FollowUpQuery = {}) {
-  const { status, doctorId, branchId, dateFrom, dateTo, page, limit } = query;
+  const { status, doctorId, branchId, dateFrom, dateTo, page, limit, search } = query;
   return useQuery({
-    queryKey: ['follow-ups', status, doctorId, branchId, dateFrom, dateTo, page, limit],
+    queryKey: ['follow-ups', status, doctorId, branchId, dateFrom, dateTo, page, limit, search],
     queryFn: () =>
       api.get<FollowUpsResponse>('/v1/follow-ups', {
         ...(status?.length ? { status } : {}),
@@ -15,6 +15,7 @@ export function useFollowUps(query: FollowUpQuery = {}) {
         ...(dateTo ? { dateTo } : {}),
         ...(page ? { page } : {}),
         ...(limit ? { limit } : {}),
+        ...(search ? { search } : {}),
       }),
     staleTime: 30_000,
   });

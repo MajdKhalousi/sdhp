@@ -2420,6 +2420,10 @@
       "DECLINED": "Declined",
       "RESCHEDULE_REQUESTED": "Reschedule requested"
     },
+    "search": {
+      "placeholder": "Search patient name or MRN",
+      "noResults": "No follow-ups match your search"
+    },
     "forbidden": "You do not have permission to view this page",
     "doctorPrefix": "Dr."
   },

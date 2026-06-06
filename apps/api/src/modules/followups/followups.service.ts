@@ -159,7 +159,7 @@ export class FollowupsService {
   }
 
   private async buildEncounterWhere(
-    query: { doctorId?: string; branchId?: string; dateFrom?: string; dateTo?: string },
+    query: { doctorId?: string; branchId?: string; dateFrom?: string; dateTo?: string; search?: string },
     caller: JwtPayload,
   ): Promise<Prisma.EncounterWhereInput | null> {
     // DOCTOR: always scope to own profile; caller-supplied doctorId is ignored for security.
@@ -177,12 +177,23 @@ export class FollowupsService {
     if (query.dateFrom) followUpDateFilter.gte = damascusStartOfDay(query.dateFrom);
     if (query.dateTo)   followUpDateFilter.lte = damascusEndOfDay(query.dateTo);
 
+    const trimmedSearch = query.search?.trim();
+
     return {
       organizationId: caller.organizationId,
       deletedAt: null,
       followUpDate: followUpDateFilter,
       ...(doctorId       ? { doctorId }               : {}),
       ...(query.branchId ? { branchId: query.branchId } : {}),
+      ...(trimmedSearch ? {
+        patient: {
+          OR: [
+            { firstName: { contains: trimmedSearch, mode: 'insensitive' as const } },
+            { lastName:  { contains: trimmedSearch, mode: 'insensitive' as const } },
+            { mrn:       { contains: trimmedSearch, mode: 'insensitive' as const } },
+          ],
+        },
+      } : {}),
     };
   }
 

@@ -404,8 +404,18 @@ export function FollowUpList() {
   const [doctorId, setDoctorId] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [expandedEncounterId, setExpandedEncounterId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(id);
+  }, [search]);
 
   const showReminderButton = activeTab !== 'UPCOMING';
 
@@ -414,6 +424,7 @@ export function FollowUpList() {
     ...(doctorId ? { doctorId } : {}),
     ...(dateFrom ? { dateFrom } : {}),
     ...(dateTo ? { dateTo } : {}),
+    ...(debouncedSearch ? { search: debouncedSearch } : {}),
     page,
     limit: LIMIT,
   });
@@ -460,7 +471,7 @@ export function FollowUpList() {
     setExpandedEncounterId(null);
   }
 
-  const hasFilters = !!(doctorId || dateFrom || dateTo);
+  const hasFilters = !!(doctorId || dateFrom || dateTo || debouncedSearch);
 
   const COLUMNS = [
     t('columns.patient'),
@@ -474,6 +485,15 @@ export function FollowUpList() {
 
   const filters = (
     <div className="flex flex-wrap items-center gap-2">
+      <input
+        type="search"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="h-8 min-w-[200px] rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+        placeholder={t('search.placeholder')}
+        aria-label={t('search.placeholder')}
+      />
+
       <select
         value={doctorId}
         onChange={(e) => { setDoctorId(e.target.value); handleFilterChange(); }}
@@ -510,7 +530,7 @@ export function FollowUpList() {
 
       {hasFilters && (
         <button
-          onClick={() => { setDoctorId(''); setDateFrom(''); setDateTo(''); handleFilterChange(); }}
+          onClick={() => { setDoctorId(''); setDateFrom(''); setDateTo(''); setSearch(''); setDebouncedSearch(''); handleFilterChange(); }}
           className="h-8 rounded-md border px-3 text-xs text-muted-foreground transition-colors hover:bg-accent"
         >
           {tCommon('filter.clearFilters')}
@@ -594,7 +614,11 @@ export function FollowUpList() {
           <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
             <EmptyIcon className="h-8 w-8 text-muted-foreground/50" />
             <p className="text-sm font-medium">
-              {hasFilters ? t('empty.withFilters') : t(emptyKey as Parameters<typeof t>[0])}
+              {debouncedSearch
+                ? t('search.noResults')
+                : hasFilters
+                  ? t('empty.withFilters')
+                  : t(emptyKey as Parameters<typeof t>[0])}
             </p>
           </div>
         </div>

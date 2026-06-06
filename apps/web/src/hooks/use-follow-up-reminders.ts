@@ -3,6 +3,11 @@ import { api } from '@/lib/api';
 
 export type ReminderChannel = 'IN_APP' | 'SMS' | 'WHATSAPP' | 'EMAIL';
 export type ReminderStatus = 'PENDING' | 'SENT' | 'FAILED' | 'CANCELLED';
+export type PatientResponseStatus =
+  | 'CONFIRMED'
+  | 'NO_RESPONSE'
+  | 'DECLINED'
+  | 'RESCHEDULE_REQUESTED';
 
 interface CreateReminderBody {
   channel?: ReminderChannel;
@@ -17,6 +22,8 @@ export interface ReminderItem {
   status: ReminderStatus;
   sentAt: string | null;
   failureReason: string | null;
+  patientResponse: PatientResponseStatus | null;
+  contactNote: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -61,6 +68,24 @@ export function useUpdateFollowUpReminder() {
       api.patch<ReminderItem>(
         `/v1/follow-ups/${encounterId}/reminders/${reminderId}`,
         body,
+      ),
+  });
+}
+
+export function useRecordFollowUpResponse() {
+  return useMutation({
+    mutationFn: ({
+      encounterId,
+      reminderId,
+      patientResponse,
+    }: {
+      encounterId: string;
+      reminderId: string;
+      patientResponse: PatientResponseStatus;
+    }) =>
+      api.patch<ReminderItem>(
+        `/v1/follow-ups/${encounterId}/reminders/${reminderId}/response`,
+        { patientResponse },
       ),
   });
 }

@@ -2409,6 +2409,17 @@
     "whatsapp": {
       "noPhone": "No phone number on file"
     },
+    "patientResponse": {
+      "label": "Patient response",
+      "prompt": "Record response",
+      "recording": "Saving...",
+      "recorded": "Response recorded",
+      "failed": "Failed to record response",
+      "CONFIRMED": "Confirmed",
+      "NO_RESPONSE": "No response",
+      "DECLINED": "Declined",
+      "RESCHEDULE_REQUESTED": "Reschedule requested"
+    },
     "forbidden": "You do not have permission to view this page",
     "doctorPrefix": "Dr."
   },

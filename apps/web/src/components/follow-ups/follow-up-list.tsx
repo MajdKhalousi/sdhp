@@ -11,8 +11,9 @@ import {
   useCreateReminder,
   useUpdateFollowUpReminder,
   useFollowUpReminders,
+  useRecordFollowUpResponse,
 } from '@/hooks/use-follow-up-reminders';
-import type { ReminderItem } from '@/hooks/use-follow-up-reminders';
+import type { ReminderItem, PatientResponseStatus } from '@/hooks/use-follow-up-reminders';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -55,6 +56,7 @@ function FollowUpRow({
   const queryClient = useQueryClient();
   const createReminder = useCreateReminder();
   const updateReminder = useUpdateFollowUpReminder();
+  const recordResponse = useRecordFollowUpResponse();
 
   // Fetch existing reminders for this encounter on mount — drives initial button state
   const { data: remindersData, refetch: refetchReminders } = useFollowUpReminders(item.encounterId);
@@ -63,14 +65,15 @@ function FollowUpRow({
   const [localState, setLocalState] = useState<{ reminderId: string; status: 'PENDING' | 'SENT' } | null>(null);
   const [isPendingCreate, setIsPendingCreate] = useState(false);
   const [isPendingContact, setIsPendingContact] = useState(false);
+  const [isPendingResponse, setIsPendingResponse] = useState(false);
 
   // Derive authoritative state from server data: PENDING takes priority over SENT
   const backendState = useMemo(() => {
     if (!remindersData?.length) return null;
     const pending = remindersData.find((r) => r.status === 'PENDING');
-    if (pending) return { reminderId: pending.id, status: 'PENDING' as const };
+    if (pending) return { reminderId: pending.id, status: 'PENDING' as const, patientResponse: pending.patientResponse };
     const sent = remindersData.find((r) => r.status === 'SENT');
-    if (sent) return { reminderId: sent.id, status: 'SENT' as const };
+    if (sent) return { reminderId: sent.id, status: 'SENT' as const, patientResponse: sent.patientResponse };
     return null;
   }, [remindersData]);
 
@@ -118,6 +121,26 @@ function FollowUpRow({
         onError: () => {
           setIsPendingContact(false);
           toast({ title: t('reminder.failed'), variant: 'error' });
+        },
+      },
+    );
+  }
+
+  function handleRecordResponse(value: PatientResponseStatus) {
+    if (!reminderState) return;
+    const { reminderId } = reminderState;
+    setIsPendingResponse(true);
+    recordResponse.mutate(
+      { encounterId: item.encounterId, reminderId, patientResponse: value },
+      {
+        onSuccess: () => {
+          setIsPendingResponse(false);
+          void refetchReminders();
+          toast({ title: t('patientResponse.recorded'), variant: 'success' });
+        },
+        onError: () => {
+          setIsPendingResponse(false);
+          toast({ title: t('patientResponse.failed'), variant: 'error' });
         },
       },
     );
@@ -245,6 +268,30 @@ function FollowUpRow({
                 >
                   {t('actions.sendReminder')}
                 </button>
+              )
+            )}
+
+            {/* Patient response: select when no response yet, label when recorded */}
+            {showReminderButton && reminderState !== null && (
+              backendState?.patientResponse != null ? (
+                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                  {t('patientResponse.label')}: {t(`patientResponse.${backendState.patientResponse}` as Parameters<typeof t>[0])}
+                </span>
+              ) : (
+                <select
+                  disabled={isPendingResponse}
+                  defaultValue=""
+                  onChange={(e) => {
+                    if (e.target.value) handleRecordResponse(e.target.value as PatientResponseStatus);
+                  }}
+                  className="h-7 rounded-md border bg-background px-2 text-xs outline-none focus:ring-2 focus:ring-ring disabled:opacity-40"
+                >
+                  <option value="" disabled>{isPendingResponse ? t('patientResponse.recording') : t('patientResponse.prompt')}</option>
+                  <option value="CONFIRMED">{t('patientResponse.CONFIRMED')}</option>
+                  <option value="NO_RESPONSE">{t('patientResponse.NO_RESPONSE')}</option>
+                  <option value="DECLINED">{t('patientResponse.DECLINED')}</option>
+                  <option value="RESCHEDULE_REQUESTED">{t('patientResponse.RESCHEDULE_REQUESTED')}</option>
+                </select>
               )
             )}
 

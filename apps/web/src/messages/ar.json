@@ -2409,6 +2409,17 @@
     "whatsapp": {
       "noPhone": "لا يوجد رقم هاتف مسجل"
     },
+    "patientResponse": {
+      "label": "رد المريض",
+      "prompt": "تسجيل الرد",
+      "recording": "جارٍ الحفظ...",
+      "recorded": "تم تسجيل الرد",
+      "failed": "فشل تسجيل الرد",
+      "CONFIRMED": "تم التأكيد",
+      "NO_RESPONSE": "لم يرد",
+      "DECLINED": "اعتذر عن الحضور",
+      "RESCHEDULE_REQUESTED": "طلب تغيير الموعد"
+    },
     "forbidden": "ليس لديك صلاحية لعرض هذه الصفحة",
     "doctorPrefix": "د."
   },

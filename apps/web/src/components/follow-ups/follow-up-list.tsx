@@ -68,10 +68,17 @@ function FollowUpRow({
   const [isPendingResponse, setIsPendingResponse] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuFloatRef = useRef<HTMLDivElement>(null);
+  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
 
   useEffect(() => {
     function handleOutsideClick(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        menuRef.current && !menuRef.current.contains(target) &&
+        menuFloatRef.current && !menuFloatRef.current.contains(target)
+      ) {
         setIsMenuOpen(false);
       }
     }
@@ -260,7 +267,20 @@ function FollowUpRow({
             <div className="relative" ref={menuRef}>
               <button
                 type="button"
-                onClick={() => setIsMenuOpen((v) => !v)}
+                ref={triggerRef}
+                onClick={() => {
+                  if (!isMenuOpen && triggerRef.current) {
+                    const rect = triggerRef.current.getBoundingClientRect();
+                    setMenuStyle({
+                      position: 'fixed',
+                      top: rect.bottom + 4,
+                      ...(locale === 'ar' ? { left: rect.left } : { right: window.innerWidth - rect.right }),
+                      minWidth: 180,
+                      zIndex: 9999,
+                    });
+                  }
+                  setIsMenuOpen((v) => !v);
+                }}
                 className="inline-flex h-7 w-7 items-center justify-center rounded-md border text-muted-foreground transition-colors hover:bg-accent"
                 aria-label={t('columns.actions')}
               >
@@ -268,7 +288,7 @@ function FollowUpRow({
               </button>
 
               {isMenuOpen && (
-                <div className="absolute end-0 top-full z-10 mt-1 min-w-[180px] rounded-md border bg-background shadow-md">
+                <div ref={menuFloatRef} style={menuStyle} className="rounded-md border bg-background shadow-md">
                   {/* Appointment */}
                   {item.linkedAppointment ? (
                     <Link
@@ -557,78 +577,69 @@ export function FollowUpList() {
         aria-label={t('title')}
       />
 
+      {filters}
+
       {/* Loading */}
       {isLoading && (
-        <div className="space-y-4">
-          {filters}
-          <div className="overflow-hidden rounded-xl border border-border">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[900px]">
-                <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
-                  <tr>
-                    {COLUMNS.map((h, i) => (
-                      <th key={i} className="px-4 py-3 text-start font-medium">{h}</th>
+        <div className="overflow-hidden rounded-xl border border-border">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[900px]">
+              <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
+                <tr>
+                  {COLUMNS.map((h, i) => (
+                    <th key={i} className="px-4 py-3 text-start font-medium">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="border-t border-border">
+                    {COLUMNS.map((__, j) => (
+                      <td key={j} className="px-4 py-3">
+                        <Skeleton className="h-4 w-full" />
+                      </td>
                     ))}
                   </tr>
-                </thead>
-                <tbody>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <tr key={i} className="border-t border-border">
-                      {COLUMNS.map((__, j) => (
-                        <td key={j} className="px-4 py-3">
-                          <Skeleton className="h-4 w-full" />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
 
       {/* Error */}
       {!isLoading && isError && (
-        <div className="space-y-4">
-          {filters}
-          <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-16 text-center">
-            <p className="text-sm font-medium text-destructive">{t('error.loadFailed')}</p>
-            <p className="max-w-xs text-xs text-muted-foreground">
-              {error instanceof Error ? error.message : tCommon('states.error')}
-            </p>
-            <button
-              onClick={() => refetch()}
-              className="mt-1 h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
-            >
-              {tCommon('actions.tryAgain')}
-            </button>
-          </div>
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-16 text-center">
+          <p className="text-sm font-medium text-destructive">{t('error.loadFailed')}</p>
+          <p className="max-w-xs text-xs text-muted-foreground">
+            {error instanceof Error ? error.message : tCommon('states.error')}
+          </p>
+          <button
+            onClick={() => refetch()}
+            className="mt-1 h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
+          >
+            {tCommon('actions.tryAgain')}
+          </button>
         </div>
       )}
 
       {/* Empty */}
       {!isLoading && !isError && (!data || data.data.length === 0) && (
-        <div className="space-y-4">
-          {filters}
-          <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
-            <EmptyIcon className="h-8 w-8 text-muted-foreground/50" />
-            <p className="text-sm font-medium">
-              {debouncedSearch
-                ? t('search.noResults')
-                : hasFilters
-                  ? t('empty.withFilters')
-                  : t(emptyKey as Parameters<typeof t>[0])}
-            </p>
-          </div>
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
+          <EmptyIcon className="h-8 w-8 text-muted-foreground/50" />
+          <p className="text-sm font-medium">
+            {debouncedSearch
+              ? t('search.noResults')
+              : hasFilters
+                ? t('empty.withFilters')
+                : t(emptyKey as Parameters<typeof t>[0])}
+          </p>
         </div>
       )}
 
       {/* Data table */}
       {!isLoading && !isError && data && data.data.length > 0 && (
-        <div className="space-y-4">
-          {filters}
-
+        <Fragment>
           <div className="overflow-hidden rounded-xl border border-border">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[900px]">
@@ -680,7 +691,7 @@ export function FollowUpList() {
               </div>
             </div>
           )}
-        </div>
+        </Fragment>
       )}
     </div>
   );

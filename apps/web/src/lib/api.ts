@@ -70,7 +70,7 @@ async function request<T>(
   }
 
   if (!res.ok) {
-    if (res.status === 401) {
+    if (res.status === 401 && path !== '/v1/auth/login') {
       logout();
       redirectToLogin();
       throw new Error('Session expired. Please sign in again.');

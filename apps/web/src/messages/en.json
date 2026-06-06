@@ -38,7 +38,8 @@
       "signIn": "Sign In",
       "signingIn": "Signing in…",
       "authorizedOnly": "Authorized personnel only",
-      "loginFailed": "Login failed"
+      "loginFailed": "Login failed",
+      "invalidCredentials": "Invalid phone number or password."
     },
     "demo": {
       "heading": "Demo accounts",

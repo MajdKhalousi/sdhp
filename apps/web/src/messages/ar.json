@@ -38,7 +38,8 @@
       "signIn": "تسجيل الدخول",
       "signingIn": "جاري الدخول…",
       "authorizedOnly": "للمخوّلين فقط",
-      "loginFailed": "فشل تسجيل الدخول"
+      "loginFailed": "فشل تسجيل الدخول",
+      "invalidCredentials": "رقم الهاتف أو كلمة المرور غير صحيحة."
     },
     "demo": {
       "heading": "حسابات تجريبية",

@@ -45,7 +45,7 @@ export default function LoginPage() {
       login(res.accessToken, res.user);
       router.push('/dashboard');
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('login.loginFailed'));
+      setError(t('login.invalidCredentials'));
     } finally {
       setLoading(false);
     }

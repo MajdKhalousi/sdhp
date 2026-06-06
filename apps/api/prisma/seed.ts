@@ -2850,7 +2850,7 @@ Review in 4 weeks with CBC and ferritin results.
 
   for (const vt of visitTypes) {
     await prisma.visitType.upsert({
-      where: { id: vt.id },
+      where: { organizationId_code: { organizationId: 'seed-org-001', code: vt.code } },
       update: { name: vt.name, nameAr: vt.nameAr, color: vt.color, durationMinutes: vt.durationMinutes, basePrice: vt.basePrice },
       create: { ...vt, organizationId: 'seed-org-001' },
     });
@@ -2872,7 +2872,7 @@ Review in 4 weeks with CBC and ferritin results.
 
   for (const svc of services) {
     await prisma.service.upsert({
-      where: { id: svc.id },
+      where: { organizationId_code: { organizationId: 'seed-org-001', code: svc.code } },
       update: { name: svc.name, nameAr: svc.nameAr, defaultPrice: svc.defaultPrice },
       create: { ...svc, organizationId: 'seed-org-001' },
     });

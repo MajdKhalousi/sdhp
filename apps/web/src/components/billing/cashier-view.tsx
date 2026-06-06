@@ -326,7 +326,7 @@ export function CashierView() {
     { date: dateStr, status: ['COMPLETED', 'IN_PROGRESS'], limit: 100 },
     { enabled: unbilledEnabled },
   );
-  const todayInvoicesUnbilledQuery = useInvoices({ from, to, limit: 200 }, { enabled: unbilledEnabled });
+  const todayInvoicesUnbilledQuery = useInvoices({ from, to, limit: 100 }, { enabled: unbilledEnabled });
 
   const unbilledAppointments = useMemo(() => {
     const appts = todayApptsQuery.data?.data ?? [];

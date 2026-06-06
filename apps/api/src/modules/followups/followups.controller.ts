@@ -6,6 +6,7 @@ import { FollowUpQueryDto } from './dto/follow-up-query.dto';
 import { FollowUpSummaryQueryDto } from './dto/follow-up-summary-query.dto';
 import { CreateReminderDto } from './dto/create-reminder.dto';
 import { UpdateReminderDto } from './dto/update-reminder.dto';
+import { RecordResponseDto } from './dto/record-response.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
@@ -103,5 +104,26 @@ export class FollowupsController {
     @CurrentUser() user: JwtPayload,
   ) {
     return this.service.updateReminder(encounterId, reminderId, dto, user);
+  }
+
+  @Patch(':encounterId/reminders/:reminderId/response')
+  @Version('1')
+  @Roles(
+    UserRole.SUPER_ADMIN,
+    UserRole.ORG_ADMIN,
+    UserRole.BRANCH_ADMIN,
+    UserRole.NURSE,
+    UserRole.SECRETARY,
+  )
+  @ApiOperation({
+    summary: 'Record patient response for a follow-up reminder — DOCTOR excluded. Allowed when status is PENDING or SENT.',
+  })
+  recordResponse(
+    @Param('encounterId') encounterId: string,
+    @Param('reminderId') reminderId: string,
+    @Body() dto: RecordResponseDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.service.recordResponse(encounterId, reminderId, dto, user);
   }
 }

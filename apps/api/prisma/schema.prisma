@@ -130,6 +130,13 @@ enum ReminderStatus {
   CANCELLED
 }
 
+enum PatientResponseStatus {
+  CONFIRMED
+  NO_RESPONSE
+  DECLINED
+  RESCHEDULE_REQUESTED
+}
+
 // ─────────────────────────────────────────────
 // ORGANIZATIONS & BRANCHES
 // ─────────────────────────────────────────────
@@ -1023,9 +1030,11 @@ model FollowUpReminder {
   appointmentId  String?
   channel        ReminderChannel @default(IN_APP)
   scheduledFor   DateTime
-  status         ReminderStatus  @default(PENDING)
-  sentAt         DateTime?
-  failureReason  String?
+  status          ReminderStatus        @default(PENDING)
+  sentAt          DateTime?
+  failureReason   String?
+  patientResponse PatientResponseStatus?
+  contactNote     String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

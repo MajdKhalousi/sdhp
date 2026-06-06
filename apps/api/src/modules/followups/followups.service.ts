@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { AppointmentStatus, Prisma, ReminderChannel, ReminderStatus, UserRole } from '@prisma/client';
+import { AppointmentStatus, PatientResponseStatus, Prisma, ReminderChannel, ReminderStatus, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { PaginatedResponse } from '../../common/types/paginated-response.type';
@@ -8,6 +8,7 @@ import { FollowUpSummaryQueryDto } from './dto/follow-up-summary-query.dto';
 import { CreateReminderDto } from './dto/create-reminder.dto';
 import { UpdateReminderDto } from './dto/update-reminder.dto';
 import { FollowUpItem, FollowUpStatus, FollowUpSummary } from './followups.types';
+import { RecordResponseDto } from './dto/record-response.dto';
 
 // Damascus is permanently UTC+3 (no DST since 2022).
 const DAMASCUS_OFFSET_MS = 3 * 60 * 60 * 1000;
@@ -265,6 +266,8 @@ export class FollowupsService {
         status: true,
         sentAt: true,
         failureReason: true,
+        patientResponse: true,
+        contactNote: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -311,6 +314,53 @@ export class FollowupsService {
         status: true,
         sentAt: true,
         failureReason: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  async recordResponse(
+    encounterId: string,
+    reminderId: string,
+    dto: RecordResponseDto,
+    caller: JwtPayload,
+  ) {
+    const encounter = await this.prisma.encounter.findFirst({
+      where: { id: encounterId, organizationId: caller.organizationId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!encounter) throw new NotFoundException('Encounter not found');
+
+    const reminder = await this.prisma.followUpReminder.findFirst({
+      where: { id: reminderId, encounterId, organizationId: caller.organizationId },
+      select: { id: true, status: true },
+    });
+    if (!reminder) throw new NotFoundException('Reminder not found');
+
+    if (reminder.status === ReminderStatus.FAILED || reminder.status === ReminderStatus.CANCELLED) {
+      throw new BadRequestException(
+        `Cannot record response for a ${reminder.status.toLowerCase()} reminder`,
+      );
+    }
+
+    return this.prisma.followUpReminder.update({
+      where: { id: reminderId },
+      data: {
+        patientResponse: dto.patientResponse,
+        ...(dto.contactNote !== undefined ? { contactNote: dto.contactNote } : {}),
+      },
+      select: {
+        id: true,
+        encounterId: true,
+        patientId: true,
+        channel: true,
+        scheduledFor: true,
+        status: true,
+        sentAt: true,
+        failureReason: true,
+        patientResponse: true,
+        contactNote: true,
         createdAt: true,
         updatedAt: true,
       },

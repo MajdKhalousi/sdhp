@@ -3,7 +3,7 @@
 import { Fragment, useState, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, CalendarX2, AlertTriangle, Clock, UserX } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useFollowUps, useFollowUpSummary } from '@/hooks/use-follow-ups';
 import { useDoctorsList } from '@/hooks/use-appointments';
@@ -19,7 +19,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { FollowUpStatusBadge } from './follow-up-status-badge';
 import { FollowUpBookingPanel } from '@/components/encounters/follow-up-booking-panel';
 import type { FollowUpItem, FollowUpStatus } from '@/types/follow-up';
-import { formatDateDisplay, formatDateTimeDisplay } from '@/lib/format-date';
+import { formatDateDisplay, formatDateTimeDisplay, formatTimeDisplay } from '@/lib/format-date';
+import { normalizePhoneForWhatsApp, buildWhatsAppMessage } from '@/lib/format-phone';
 
 const LIMIT = 20;
 
@@ -49,6 +50,7 @@ function FollowUpRow({
   setExpandedEncounterId,
 }: FollowUpRowProps) {
   const t = useTranslations('followups');
+  const locale = useLocale();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const createReminder = useCreateReminder();
@@ -120,6 +122,21 @@ function FollowUpRow({
       },
     );
   }
+
+  const normalizedPhone = normalizePhoneForWhatsApp(item.patient.phone);
+  const whatsAppHref = (() => {
+    if (!normalizedPhone) return null;
+    const apptDoctor = item.linkedAppointment?.doctor ?? item.doctor;
+    const rawTime = item.linkedAppointment ? formatTimeDisplay(item.linkedAppointment.scheduledAt) : undefined;
+    const message = buildWhatsAppMessage({
+      locale,
+      patientName: `${item.patient.firstName} ${item.patient.lastName}`,
+      doctorName: `${apptDoctor.firstName} ${apptDoctor.lastName}`,
+      followUpDate: formatDateDisplay(item.followUpDate),
+      appointmentTime: rawTime && rawTime !== '—' ? rawTime : undefined,
+    });
+    return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
+  })();
 
   const isExpanded = expandedEncounterId === item.encounterId;
 
@@ -228,6 +245,27 @@ function FollowUpRow({
                 >
                   {t('actions.sendReminder')}
                 </button>
+              )
+            )}
+
+            {/* WhatsApp quick action */}
+            {showReminderButton && (
+              whatsAppHref ? (
+                <a
+                  href={whatsAppHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-7 items-center rounded-md border border-green-600/40 px-2 text-xs font-medium text-green-700 transition-colors hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-950/20"
+                >
+                  {t('actions.whatsappReminder')}
+                </a>
+              ) : (
+                <span
+                  title={t('whatsapp.noPhone')}
+                  className="inline-flex h-7 cursor-not-allowed items-center rounded-md border px-2 text-xs text-muted-foreground/40"
+                >
+                  {t('actions.whatsappReminder')}
+                </span>
               )
             )}
           </div>

@@ -2377,7 +2377,8 @@
       "viewPatient": "Patient",
       "sendReminder": "Remind",
       "markContacted": "Mark as Contacted",
-      "contacting": "Updating..."
+      "contacting": "Updating...",
+      "whatsappReminder": "WhatsApp Reminder"
     },
     "reminder": {
       "queued": "Reminder queued",
@@ -2404,6 +2405,9 @@
     },
     "error": {
       "loadFailed": "Failed to load follow-ups"
+    },
+    "whatsapp": {
+      "noPhone": "No phone number on file"
     },
     "forbidden": "You do not have permission to view this page",
     "doctorPrefix": "Dr."

@@ -2377,7 +2377,8 @@
       "viewPatient": "المريض",
       "sendReminder": "تذكير",
       "markContacted": "تم التواصل",
-      "contacting": "جارٍ التحديث..."
+      "contacting": "جارٍ التحديث...",
+      "whatsappReminder": "تذكير واتساب"
     },
     "reminder": {
       "queued": "تم جدولة التذكير",
@@ -2404,6 +2405,9 @@
     },
     "error": {
       "loadFailed": "فشل تحميل المراجعات"
+    },
+    "whatsapp": {
+      "noPhone": "لا يوجد رقم هاتف مسجل"
     },
     "forbidden": "ليس لديك صلاحية لعرض هذه الصفحة",
     "doctorPrefix": "د."

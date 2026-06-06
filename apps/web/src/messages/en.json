@@ -2301,7 +2301,7 @@
     "title": "Cashier",
     "subtitle": "Collect payments and manage outstanding invoices.",
     "noInvoices": "No invoices for today",
-    "noInvoicesHint": "Invoices are created automatically when patients check in.",
+    "noInvoicesHint": "Use the Unbilled tab to create invoices for today's completed appointments.",
     "tabs": {
       "today": "Today",
       "outstanding": "Outstanding",

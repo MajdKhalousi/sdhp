@@ -79,7 +79,13 @@ function InvoiceRow({ invoice, isActive, onAction, onSuccess, onCancel }: RowPro
             <InvoiceStatusBadge status={invoice.status} />
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            <span dir="ltr">{invoice.invoiceNumber}</span>
+            <Link
+              href={`/dashboard/invoices/${invoice.id}`}
+              className="tabular-nums hover:underline"
+              dir="ltr"
+            >
+              {invoice.invoiceNumber}
+            </Link>
             <span aria-hidden>·</span>
             <span dir="ltr">{formatAmount(invoice.totalAmount, locale)}</span>
             {remaining > 0 && paid > 0 && (
@@ -547,7 +553,7 @@ export function CashierView() {
   }
 
   const invoices = (data?.data ?? []).filter((inv) => inv.status !== 'CANCELLED');
-  const pending = invoices.filter((inv) => (inv.status === 'DRAFT' && parseFloat(inv.totalAmount) > 0) || inv.status === 'ISSUED');
+  const pending = invoices.filter((inv) => inv.status === 'DRAFT' || inv.status === 'ISSUED');
   const partial = invoices.filter((inv) => inv.status === 'PARTIALLY_PAID');
   const collected = invoices.filter((inv) => inv.status === 'PAID');
 

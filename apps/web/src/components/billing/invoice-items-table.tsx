@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRemoveInvoiceItem } from '@/hooks/use-invoices';
+import { useVisitTypesList } from '@/hooks/use-appointments';
 import { AddInvoiceItemForm } from './add-invoice-item-form';
 import type { Invoice } from '@/types/invoice';
 
@@ -81,6 +82,7 @@ export function InvoiceItemsTable({ invoice }: InvoiceItemsTableProps) {
   const locale = useLocale();
   const [showAddForm, setShowAddForm] = useState(false);
   const isDraft = invoice.status === 'DRAFT';
+  const { data: visitTypes } = useVisitTypesList();
 
   return (
     <div className="overflow-hidden rounded-xl border border-border">
@@ -116,7 +118,14 @@ export function InvoiceItemsTable({ invoice }: InvoiceItemsTableProps) {
               {invoice.items.map((item) => (
                 <tr key={item.id} className="border-t border-border">
                   <td className="px-4 py-3">
-                    <p className="text-sm">{item.description}</p>
+                    <p className="text-sm">
+                      {(() => {
+                        if (!item.visitTypeId || !visitTypes) return item.description;
+                        const vt = visitTypes.find((v) => v.id === item.visitTypeId);
+                        if (!vt) return item.description;
+                        return locale === 'ar' && vt.nameAr ? vt.nameAr : vt.name;
+                      })()}
+                    </p>
                     {item.notes && (
                       <p className="text-xs text-muted-foreground">{item.notes}</p>
                     )}

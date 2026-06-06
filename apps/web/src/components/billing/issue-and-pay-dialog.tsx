@@ -35,7 +35,10 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
     amount: remaining > 0 ? String(remaining) : '',
     method: '',
     referenceNumber: '',
-    paidAt: '',
+    paidAt: (() => {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    })(),
   });
   const [validationError, setValidationError] = useState('');
   const [submitError, setSubmitError] = useState('');

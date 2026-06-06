@@ -1,8 +1,8 @@
 'use client';
 
-import { Fragment, useState, useMemo } from 'react';
+import { Fragment, useState, useMemo, useRef, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight, CalendarX2, AlertTriangle, Clock, UserX } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CalendarX2, AlertTriangle, Clock, UserX, MoreHorizontal } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useFollowUps, useFollowUpSummary } from '@/hooks/use-follow-ups';
@@ -66,6 +66,20 @@ function FollowUpRow({
   const [isPendingCreate, setIsPendingCreate] = useState(false);
   const [isPendingContact, setIsPendingContact] = useState(false);
   const [isPendingResponse, setIsPendingResponse] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleOutsideClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    }
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleOutsideClick);
+    }
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [isMenuOpen]);
 
   // Derive authoritative state from server data: PENDING takes priority over SENT
   const backendState = useMemo(() => {
@@ -229,92 +243,128 @@ function FollowUpRow({
 
         {/* Actions */}
         <td className="px-4 py-3">
-          <div className="flex items-center justify-end gap-1.5">
-            {item.linkedAppointment ? (
-              <Link
-                href={`/dashboard/appointments/${item.linkedAppointment.id}`}
-                className="h-7 rounded-md border px-2 text-xs text-muted-foreground transition-colors hover:bg-accent"
-              >
-                {t('actions.viewAppointment')}
-              </Link>
-            ) : (
+          <div className="flex items-center justify-end gap-2">
+            {/* Status labels — always visible when present, never hidden in menu */}
+            {showReminderButton && reminderState?.status === 'SENT' && (
+              <span className="whitespace-nowrap text-xs font-medium text-green-700 dark:text-green-400">
+                {t('reminders.sent')}
+              </span>
+            )}
+            {showReminderButton && reminderState !== null && backendState?.patientResponse != null && (
+              <span className="whitespace-nowrap text-xs text-muted-foreground">
+                {t('patientResponse.label')}: {t(`patientResponse.${backendState.patientResponse}` as Parameters<typeof t>[0])}
+              </span>
+            )}
+
+            {/* Actions dropdown */}
+            <div className="relative" ref={menuRef}>
               <button
-                onClick={() => setExpandedEncounterId(isExpanded ? null : item.encounterId)}
-                className="h-7 rounded-md border border-primary/40 px-2 text-xs font-medium text-primary transition-colors hover:bg-primary/5"
+                type="button"
+                onClick={() => setIsMenuOpen((v) => !v)}
+                className="inline-flex h-7 w-7 items-center justify-center rounded-md border text-muted-foreground transition-colors hover:bg-accent"
+                aria-label={t('columns.actions')}
               >
-                {t('actions.bookNow')}
+                <MoreHorizontal className="h-4 w-4" />
               </button>
-            )}
 
-            {/* Reminder: three mutually exclusive states */}
-            {showReminderButton && (
-              reminderState?.status === 'SENT' ? (
-                <span className="text-xs font-medium text-green-700 dark:text-green-400">
-                  {t('reminders.sent')}
-                </span>
-              ) : reminderState?.status === 'PENDING' ? (
-                <button
-                  onClick={handleMarkContacted}
-                  disabled={isPendingContact}
-                  className="h-7 rounded-md border border-green-600/40 px-2 text-xs font-medium text-green-700 transition-colors hover:bg-green-50 disabled:opacity-40 dark:text-green-400 dark:hover:bg-green-950/20"
-                >
-                  {isPendingContact ? t('actions.contacting') : t('actions.markContacted')}
-                </button>
-              ) : (
-                <button
-                  onClick={handleSendReminder}
-                  disabled={isPendingCreate}
-                  className="h-7 rounded-md border px-2 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-40"
-                >
-                  {t('actions.sendReminder')}
-                </button>
-              )
-            )}
+              {isMenuOpen && (
+                <div className="absolute end-0 top-full z-10 mt-1 min-w-[180px] rounded-md border bg-background shadow-md">
+                  {/* Appointment */}
+                  {item.linkedAppointment ? (
+                    <Link
+                      href={`/dashboard/appointments/${item.linkedAppointment.id}`}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex w-full items-center px-3 py-2 text-xs transition-colors hover:bg-accent"
+                    >
+                      {t('actions.viewAppointment')}
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setExpandedEncounterId(isExpanded ? null : item.encounterId);
+                        setIsMenuOpen(false);
+                      }}
+                      className="flex w-full items-center px-3 py-2 text-xs text-primary transition-colors hover:bg-accent"
+                    >
+                      {t('actions.bookNow')}
+                    </button>
+                  )}
 
-            {/* Patient response: select when no response yet, label when recorded */}
-            {showReminderButton && reminderState !== null && (
-              backendState?.patientResponse != null ? (
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  {t('patientResponse.label')}: {t(`patientResponse.${backendState.patientResponse}` as Parameters<typeof t>[0])}
-                </span>
-              ) : (
-                <select
-                  disabled={isPendingResponse}
-                  defaultValue=""
-                  onChange={(e) => {
-                    if (e.target.value) handleRecordResponse(e.target.value as PatientResponseStatus);
-                  }}
-                  className="h-7 rounded-md border bg-background px-2 text-xs outline-none focus:ring-2 focus:ring-ring disabled:opacity-40"
-                >
-                  <option value="" disabled>{isPendingResponse ? t('patientResponse.recording') : t('patientResponse.prompt')}</option>
-                  <option value="CONFIRMED">{t('patientResponse.CONFIRMED')}</option>
-                  <option value="NO_RESPONSE">{t('patientResponse.NO_RESPONSE')}</option>
-                  <option value="DECLINED">{t('patientResponse.DECLINED')}</option>
-                  <option value="RESCHEDULE_REQUESTED">{t('patientResponse.RESCHEDULE_REQUESTED')}</option>
-                </select>
-              )
-            )}
+                  {/* Mark as Contacted */}
+                  {showReminderButton && reminderState?.status === 'PENDING' && (
+                    <>
+                      <hr className="border-border" />
+                      <button
+                        onClick={() => { handleMarkContacted(); setIsMenuOpen(false); }}
+                        disabled={isPendingContact}
+                        className="flex w-full items-center px-3 py-2 text-xs text-green-700 transition-colors hover:bg-accent disabled:opacity-40 dark:text-green-400"
+                      >
+                        {isPendingContact ? t('actions.contacting') : t('actions.markContacted')}
+                      </button>
+                    </>
+                  )}
 
-            {/* WhatsApp quick action */}
-            {showReminderButton && (
-              whatsAppHref ? (
-                <a
-                  href={whatsAppHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-7 items-center rounded-md border border-green-600/40 px-2 text-xs font-medium text-green-700 transition-colors hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-950/20"
-                >
-                  {t('actions.whatsappReminder')}
-                </a>
-              ) : (
-                <span
-                  title={t('whatsapp.noPhone')}
-                  className="inline-flex h-7 cursor-not-allowed items-center rounded-md border px-2 text-xs text-muted-foreground/40"
-                >
-                  {t('actions.whatsappReminder')}
-                </span>
-              )
-            )}
+                  {/* Remind */}
+                  {showReminderButton && reminderState === null && (
+                    <>
+                      <hr className="border-border" />
+                      <button
+                        onClick={() => { handleSendReminder(); setIsMenuOpen(false); }}
+                        disabled={isPendingCreate}
+                        className="flex w-full items-center px-3 py-2 text-xs transition-colors hover:bg-accent disabled:opacity-40"
+                      >
+                        {t('actions.sendReminder')}
+                      </button>
+                    </>
+                  )}
+
+                  {/* Record patient response */}
+                  {showReminderButton && reminderState !== null && backendState?.patientResponse == null && (
+                    <>
+                      <hr className="border-border" />
+                      <p className="px-3 pb-1 pt-2 text-xs font-medium text-muted-foreground">
+                        {t('patientResponse.prompt')}
+                      </p>
+                      {(['CONFIRMED', 'NO_RESPONSE', 'DECLINED', 'RESCHEDULE_REQUESTED'] as PatientResponseStatus[]).map((val) => (
+                        <button
+                          key={val}
+                          onClick={() => { handleRecordResponse(val); setIsMenuOpen(false); }}
+                          disabled={isPendingResponse}
+                          className="flex w-full items-center px-3 py-2 text-xs transition-colors hover:bg-accent disabled:opacity-40"
+                        >
+                          {t(`patientResponse.${val}` as Parameters<typeof t>[0])}
+                        </button>
+                      ))}
+                    </>
+                  )}
+
+                  {/* WhatsApp */}
+                  {showReminderButton && (
+                    <>
+                      <hr className="border-border" />
+                      {whatsAppHref ? (
+                        <a
+                          href={whatsAppHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="flex w-full items-center px-3 py-2 text-xs text-green-700 transition-colors hover:bg-accent dark:text-green-400"
+                        >
+                          {t('actions.whatsappReminder')}
+                        </a>
+                      ) : (
+                        <span
+                          title={t('whatsapp.noPhone')}
+                          className="flex w-full cursor-not-allowed items-center px-3 py-2 text-xs text-muted-foreground/40"
+                        >
+                          {t('actions.whatsappReminder')}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </td>
       </tr>

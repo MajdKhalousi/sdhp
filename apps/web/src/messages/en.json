@@ -1361,7 +1361,7 @@
   },
   "technicianLabs": {
     "pageTitle": "Lab Worklist",
-    "pageSubtitle": "Process pending lab orders",
+    "pageSubtitle": "Process and review lab orders",
     "forbidden": "You do not have access to the lab worklist",
     "panelTitle": "Lab Orders",
     "autoRefresh": "Auto-refreshes every 30s",
@@ -1374,9 +1374,9 @@
       "withSearch": "No orders match your search",
       "withSearchSub": "Try a different name or MRN.",
       "noPending": "No pending orders",
-      "noPendingSub": "All orders are completed.",
+      "noPendingSub": "No pending orders match the selected filters.",
       "noCompleted": "No completed orders",
-      "noCompletedSub": "No orders completed in this date range."
+      "noCompletedSub": "No completed orders match the selected filters."
     },
     "error": {
       "loadFailed": "Failed to load lab orders",
@@ -1446,7 +1446,7 @@
   },
   "technicianRadiology": {
     "pageTitle": "Radiology Worklist",
-    "pageSubtitle": "Process pending radiology orders",
+    "pageSubtitle": "Process and review radiology orders",
     "forbidden": "You do not have access to the radiology worklist",
     "panelTitle": "Radiology Orders",
     "autoRefresh": "Auto-refreshes every 30s",
@@ -1459,9 +1459,9 @@
       "withSearch": "No orders match your search",
       "withSearchSub": "Try a different name or MRN.",
       "noPending": "No pending orders",
-      "noPendingSub": "All orders are completed.",
+      "noPendingSub": "No pending orders match the selected filters.",
       "noCompleted": "No completed orders",
-      "noCompletedSub": "No orders completed in this date range."
+      "noCompletedSub": "No completed orders match the selected filters."
     },
     "error": {
       "loadFailed": "Failed to load radiology orders",

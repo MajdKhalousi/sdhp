@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { RefreshCw, ScanLine, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import {
@@ -196,6 +196,7 @@ function RadiologyReportForm({ order }: { order: RadiologyOrder }) {
 
 function RadiologyReportSummary({ report }: { report: RadiologyReport }) {
   const t = useTranslations('technicianRadiology');
+  if (!report.findings && !report.impression) return null;
   return (
     <div className="mt-3 space-y-1.5 border-t pt-3">
       {report.findings && (
@@ -207,7 +208,7 @@ function RadiologyReportSummary({ report }: { report: RadiologyReport }) {
       {report.impression && (
         <div>
           <p className="text-xs font-medium text-foreground">{t('report.impressionDisplayLabel')}</p>
-          <p className="text-xs text-muted-foreground">{report.impression}</p>
+          <p className="line-clamp-3 text-xs text-muted-foreground">{report.impression}</p>
         </div>
       )}
     </div>
@@ -263,7 +264,7 @@ function RadiologyOrderCard({ order }: { order: RadiologyOrder }) {
           </div>
           {order.clinicalInfo && (
             <p className="mt-1 text-xs italic text-muted-foreground">
-              {t('card.clinicalInfo')}: {order.clinicalInfo}
+              {t('card.clinicalInfo')}: <bdi>{order.clinicalInfo}</bdi>
             </p>
           )}
         </div>
@@ -418,28 +419,23 @@ export function RadiologyWorklistPanel() {
   );
 
   // ── Status count row ──────────────────────────────────────────────────────
+  const countItems = [
+    { key: 'ordered',    count: statusCounts.ORDERED,     label: t('statusCounts.ordered',    { count: statusCounts.ORDERED })    },
+    { key: 'scheduled',  count: statusCounts.SCHEDULED,   label: t('statusCounts.scheduled',  { count: statusCounts.SCHEDULED })  },
+    { key: 'inProgress', count: statusCounts.IN_PROGRESS, label: t('statusCounts.inProgress', { count: statusCounts.IN_PROGRESS }) },
+    { key: 'resulted',   count: statusCounts.RESULTED,    label: t('statusCounts.resulted',   { count: statusCounts.RESULTED })   },
+    { key: 'reviewed',   count: statusCounts.REVIEWED,    label: t('statusCounts.reviewed',   { count: statusCounts.REVIEWED })   },
+  ].filter((item) => item.count > 0);
+
   const countRow =
-    !isLoading && !isError && allOrders.length > 0 ? (
+    !isLoading && !isError && countItems.length > 0 ? (
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border bg-muted/40 px-3 py-2">
-        <span className="text-xs text-muted-foreground">
-          {t('statusCounts.ordered', { count: statusCounts.ORDERED })}
-        </span>
-        <span className="text-xs text-muted-foreground/40">·</span>
-        <span className="text-xs text-muted-foreground">
-          {t('statusCounts.scheduled', { count: statusCounts.SCHEDULED })}
-        </span>
-        <span className="text-xs text-muted-foreground/40">·</span>
-        <span className="text-xs text-muted-foreground">
-          {t('statusCounts.inProgress', { count: statusCounts.IN_PROGRESS })}
-        </span>
-        <span className="text-xs text-muted-foreground/40">·</span>
-        <span className="text-xs text-muted-foreground">
-          {t('statusCounts.resulted', { count: statusCounts.RESULTED })}
-        </span>
-        <span className="text-xs text-muted-foreground/40">·</span>
-        <span className="text-xs text-muted-foreground">
-          {t('statusCounts.reviewed', { count: statusCounts.REVIEWED })}
-        </span>
+        {countItems.map((item, idx) => (
+          <Fragment key={item.key}>
+            {idx > 0 && <span className="text-xs text-muted-foreground/40">·</span>}
+            <span className="text-xs text-muted-foreground">{item.label}</span>
+          </Fragment>
+        ))}
       </div>
     ) : null;
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { RefreshCw, FlaskConical, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import {
@@ -211,12 +211,13 @@ function LabResultForm({ order }: { order: LabOrder }) {
 
 function LabResultSummary({ result }: { result: LabResult }) {
   const t = useTranslations('technicianLabs');
+  if (!result.resultValue && !result.referenceRange && !result.interpretation) return null;
   return (
     <div className="mt-3 space-y-1 border-t pt-3">
       {result.resultValue && (
         <p className="text-xs">
           <span className="font-medium text-foreground">{t('result.resultLabel')}:</span>{' '}
-          <span className="text-muted-foreground">
+          <span className="text-muted-foreground" dir="ltr">
             {result.resultValue}{result.unit ? ` ${result.unit}` : ''}
           </span>
         </p>
@@ -224,13 +225,13 @@ function LabResultSummary({ result }: { result: LabResult }) {
       {result.referenceRange && (
         <p className="text-xs">
           <span className="font-medium text-foreground">{t('result.referenceRangeLabel')}:</span>{' '}
-          <span className="text-muted-foreground">{result.referenceRange}</span>
+          <span className="text-muted-foreground" dir="ltr">{result.referenceRange}</span>
         </p>
       )}
       {result.interpretation && (
         <p className="text-xs">
           <span className="font-medium text-foreground">{t('result.interpretationLabel')}:</span>{' '}
-          <span className="text-muted-foreground">{result.interpretation}</span>
+          <span className="text-muted-foreground" dir="ltr">{result.interpretation}</span>
         </p>
       )}
     </div>
@@ -280,7 +281,7 @@ function LabOrderCard({ order }: { order: LabOrder }) {
           </div>
           {order.clinicalInfo && (
             <p className="mt-1 text-xs italic text-muted-foreground">
-              {t('card.clinicalInfo')}: {order.clinicalInfo}
+              {t('card.clinicalInfo')}: <bdi>{order.clinicalInfo}</bdi>
             </p>
           )}
         </div>
@@ -435,28 +436,23 @@ export function LabWorklistPanel() {
   );
 
   // ── Status count row ──────────────────────────────────────────────────────
+  const countItems = [
+    { key: 'ordered',    count: statusCounts.ORDERED,          label: t('statusCounts.ordered',    { count: statusCounts.ORDERED })          },
+    { key: 'sampled',    count: statusCounts.SAMPLE_COLLECTED, label: t('statusCounts.sampled',    { count: statusCounts.SAMPLE_COLLECTED }) },
+    { key: 'inProgress', count: statusCounts.IN_PROGRESS,      label: t('statusCounts.inProgress', { count: statusCounts.IN_PROGRESS })      },
+    { key: 'resulted',   count: statusCounts.RESULTED,         label: t('statusCounts.resulted',   { count: statusCounts.RESULTED })         },
+    { key: 'reviewed',   count: statusCounts.REVIEWED,         label: t('statusCounts.reviewed',   { count: statusCounts.REVIEWED })         },
+  ].filter((item) => item.count > 0);
+
   const countRow =
-    !isLoading && !isError && allOrders.length > 0 ? (
+    !isLoading && !isError && countItems.length > 0 ? (
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border bg-muted/40 px-3 py-2">
-        <span className="text-xs text-muted-foreground">
-          {t('statusCounts.ordered', { count: statusCounts.ORDERED })}
-        </span>
-        <span className="text-xs text-muted-foreground/40">·</span>
-        <span className="text-xs text-muted-foreground">
-          {t('statusCounts.sampled', { count: statusCounts.SAMPLE_COLLECTED })}
-        </span>
-        <span className="text-xs text-muted-foreground/40">·</span>
-        <span className="text-xs text-muted-foreground">
-          {t('statusCounts.inProgress', { count: statusCounts.IN_PROGRESS })}
-        </span>
-        <span className="text-xs text-muted-foreground/40">·</span>
-        <span className="text-xs text-muted-foreground">
-          {t('statusCounts.resulted', { count: statusCounts.RESULTED })}
-        </span>
-        <span className="text-xs text-muted-foreground/40">·</span>
-        <span className="text-xs text-muted-foreground">
-          {t('statusCounts.reviewed', { count: statusCounts.REVIEWED })}
-        </span>
+        {countItems.map((item, idx) => (
+          <Fragment key={item.key}>
+            {idx > 0 && <span className="text-xs text-muted-foreground/40">·</span>}
+            <span className="text-xs text-muted-foreground">{item.label}</span>
+          </Fragment>
+        ))}
       </div>
     ) : null;
 

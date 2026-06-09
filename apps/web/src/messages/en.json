@@ -1599,6 +1599,9 @@
       "appointmentContext": {
         "title": "Appointment",
         "visitType": "Visit Type"
+      },
+      "statusGuidance": {
+        "paid": "This invoice has been fully paid. No further payment is required."
       }
     },
     "items": {

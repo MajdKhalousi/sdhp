@@ -1599,6 +1599,9 @@
       "appointmentContext": {
         "title": "الموعد",
         "visitType": "نوع الزيارة"
+      },
+      "statusGuidance": {
+        "paid": "تم سداد هذه الفاتورة بالكامل. لا يلزم أي دفع إضافي."
       }
     },
     "items": {

@@ -2323,6 +2323,8 @@
     },
     "unbilled": {
       "empty": "All eligible appointments are invoiced",
+      "emptyHint": "Today's completed appointments have all been invoiced.",
+      "description": "Today's completed appointments without an invoice",
       "createInvoice": "Create Invoice",
       "doctorPrefix": "Dr. "
     },

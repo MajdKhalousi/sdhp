@@ -549,6 +549,7 @@ export function CashierView() {
           <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
             <CheckCircle2 className="h-8 w-8 text-emerald-500/50" />
             <p className="text-sm font-medium">{t('unbilled.empty')}</p>
+            <p className="text-xs text-muted-foreground">{t('unbilled.emptyHint')}</p>
           </div>
         </div>
       );
@@ -557,6 +558,7 @@ export function CashierView() {
     return (
       <div className="space-y-4">
         {tabToggle}
+        <p className="text-sm text-muted-foreground">{t('unbilled.description')}</p>
         <div className="overflow-hidden rounded-xl border border-border">
           {unbilledAppointments.map((appt) => (
             <UnbilledRow key={appt.id} appointment={appt} visitTypes={visitTypes} />

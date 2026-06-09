@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
-import { useRemoveInvoiceItem } from '@/hooks/use-invoices';
+import { useRemoveInvoiceItem, useServicesList } from '@/hooks/use-invoices';
 import { useVisitTypesList } from '@/hooks/use-appointments';
 import { AddInvoiceItemForm } from './add-invoice-item-form';
 import type { Invoice } from '@/types/invoice';
@@ -83,6 +83,7 @@ export function InvoiceItemsTable({ invoice }: InvoiceItemsTableProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const isDraft = invoice.status === 'DRAFT';
   const { data: visitTypes } = useVisitTypesList();
+  const { data: services } = useServicesList();
 
   return (
     <div className="overflow-hidden rounded-xl border border-border">
@@ -120,10 +121,15 @@ export function InvoiceItemsTable({ invoice }: InvoiceItemsTableProps) {
                   <td className="px-4 py-3">
                     <p className="text-sm">
                       {(() => {
-                        if (!item.visitTypeId || !visitTypes) return item.description;
-                        const vt = visitTypes.find((v) => v.id === item.visitTypeId);
-                        if (!vt) return item.description;
-                        return locale === 'ar' && vt.nameAr ? vt.nameAr : vt.name;
+                        if (item.visitTypeId && visitTypes) {
+                          const vt = visitTypes.find((v) => v.id === item.visitTypeId);
+                          if (vt) return locale === 'ar' && vt.nameAr ? vt.nameAr : vt.name;
+                        }
+                        if (item.serviceId && services) {
+                          const svc = services.find((s) => s.id === item.serviceId);
+                          if (svc) return locale === 'ar' && svc.nameAr ? svc.nameAr : svc.name;
+                        }
+                        return item.description;
                       })()}
                     </p>
                     {item.notes && (

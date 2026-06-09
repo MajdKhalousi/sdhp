@@ -1595,6 +1595,9 @@
         "notes": "الملاحظات",
         "createdBy": "أنشئت بواسطة",
         "date": "التاريخ"
+      },
+      "appointmentContext": {
+        "title": "الموعد"
       }
     },
     "items": {

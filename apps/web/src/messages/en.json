@@ -1595,6 +1595,9 @@
         "notes": "Notes",
         "createdBy": "Created By",
         "date": "Date"
+      },
+      "appointmentContext": {
+        "title": "Appointment"
       }
     },
     "items": {

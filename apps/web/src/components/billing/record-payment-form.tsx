@@ -33,21 +33,22 @@ interface FormState {
   notes: string;
 }
 
-const INITIAL: FormState = {
-  amount: '',
-  method: '',
-  referenceNumber: '',
-  paidAt: '',
-  notes: '',
-};
-
 export function RecordPaymentForm({ invoiceId, remaining, onCancel, onSuccess }: RecordPaymentFormProps) {
   const t = useTranslations('invoice.payment');
   const tPayments = useTranslations('invoice.payments');
   const tCommon = useTranslations('common');
   const locale = useLocale();
 
-  const [form, setForm] = useState<FormState>(INITIAL);
+  const [form, setForm] = useState<FormState>({
+    amount: remaining > 0 ? String(remaining) : '',
+    method: '',
+    referenceNumber: '',
+    paidAt: (() => {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    })(),
+    notes: '',
+  });
   const [validationError, setValidationError] = useState('');
 
   const { mutate, isPending, error: mutationError } = useRecordPayment();
@@ -71,7 +72,7 @@ export function RecordPaymentForm({ invoiceId, remaining, onCancel, onSuccess }:
       setValidationError(t('validation.amountMin'));
       return;
     }
-    if (remaining > 0 && amount > remaining) {
+    if (remaining > 0 && amount > remaining + 0.001) {
       setValidationError(t('validation.amountExceedsRemaining'));
       return;
     }
@@ -93,7 +94,6 @@ export function RecordPaymentForm({ invoiceId, remaining, onCancel, onSuccess }:
       },
       {
         onSuccess: () => {
-          setForm(INITIAL);
           setValidationError('');
           onSuccess?.();
           onCancel();

@@ -142,6 +142,14 @@ export default function BillingReportsPage() {
                 className="h-9 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
+            {(customFrom || customTo) && (
+              <button
+                onClick={() => { setCustomFrom(''); setCustomTo(''); setPage(1); }}
+                className="h-9 self-end rounded-md border px-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              >
+                {t('clearDates')}
+              </button>
+            )}
           </>
         )}
       </div>

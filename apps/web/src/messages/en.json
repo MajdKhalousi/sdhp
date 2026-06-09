@@ -1601,7 +1601,8 @@
         "visitType": "Visit Type"
       },
       "statusGuidance": {
-        "paid": "This invoice has been fully paid. No further payment is required."
+        "paid": "This invoice has been fully paid. No further payment is required.",
+        "cancelled": "This invoice has been cancelled and is no longer valid."
       }
     },
     "items": {

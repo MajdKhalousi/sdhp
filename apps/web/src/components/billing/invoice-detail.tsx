@@ -463,6 +463,16 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
         </div>
       )}
 
+      {/* Cancelled guidance */}
+      {invoice.status === 'CANCELLED' && (
+        <div className="rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          {t('statusGuidance.cancelled')}
+          {invoice.cancelReason && (
+            <p className="mt-1 text-xs text-muted-foreground">{invoice.cancelReason}</p>
+          )}
+        </div>
+      )}
+
       {/* Appointment Context */}
       {invoice.appointmentId && resolvedVisitType && (
         <div className="rounded-xl border border-border bg-muted/30 px-4 py-3">

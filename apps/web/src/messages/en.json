@@ -375,7 +375,8 @@
       "inQueue": "In queue",
       "justNow": "just now",
       "scheduled": "Appt: {time}",
-      "visitType": "Visit: {name}"
+      "visitType": "Visit: {name}",
+      "viewAppointment": "View appointment →"
     },
     "walkIn": {
       "title": "Walk-in Registration",

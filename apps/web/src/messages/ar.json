@@ -375,7 +375,8 @@
       "inQueue": "في الطابور",
       "justNow": "الآن",
       "scheduled": "موعد: {time}",
-      "visitType": "الزيارة: {name}"
+      "visitType": "الزيارة: {name}",
+      "viewAppointment": "عرض الموعد ←"
     },
     "walkIn": {
       "title": "تسجيل دون موعد",

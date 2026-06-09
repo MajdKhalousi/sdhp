@@ -57,6 +57,12 @@ export function QueueTicket({ entry, invoice, visitTypeName }: { entry: QueueEnt
           {doctor.specialization ? ` · ${doctor.specialization}` : ''}
           {patient.phone ? ` · ${patient.phone}` : ''}
         </p>
+        <Link
+          href={`/dashboard/appointments/${appointment.id}`}
+          className="text-xs text-primary hover:underline"
+        >
+          {t('viewAppointment')}
+        </Link>
         {appointment.scheduledAt && (
           <p className="text-xs text-muted-foreground">
             {t('scheduled', { time: formatTimeDisplay(appointment.scheduledAt) })}

@@ -140,6 +140,15 @@ export function WalkInWizard({ initialPatientId }: WalkInWizardProps = {}) {
   const apiError = apptApiError || checkInApiError;
   const displayError = validationError || apiError;
 
+  const bookedPatient = activePatients.find((p) => p.id === form.patientId) ?? null;
+  const bookedDoctor  = activeDoctors.find((d) => d.id === form.doctorId)   ?? null;
+  const bookedVisitType = form.visitTypeId
+    ? (activeVisitTypes.find((vt) => vt.id === form.visitTypeId) ?? null)
+    : null;
+  const bookedVisitTypeName = bookedVisitType
+    ? (locale === 'ar' && bookedVisitType.nameAr ? bookedVisitType.nameAr : bookedVisitType.name)
+    : null;
+
   const stepIndicator = (
     <div className="mb-6 flex items-center gap-2">
       <span
@@ -178,6 +187,31 @@ export function WalkInWizard({ initialPatientId }: WalkInWizardProps = {}) {
         <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-900/40 dark:bg-green-900/20 dark:text-green-400">
           {t('booked')}
         </div>
+
+        {bookedPatient && bookedDoctor && (
+          <div className="rounded-lg border bg-muted/30 px-4 py-3 text-sm">
+            <div className="space-y-1.5">
+              <div className="flex items-baseline justify-between gap-4">
+                <span className="text-muted-foreground">{t('fields.patientLabel')}</span>
+                <span className="font-medium">{bookedPatient.firstName} {bookedPatient.lastName}</span>
+              </div>
+              <div className="flex items-baseline justify-between gap-4">
+                <span className="text-muted-foreground">{t('fields.doctorLabel')}</span>
+                <span className="font-medium">{tQueue('doctorPrefix')}{bookedDoctor.user.firstName} {bookedDoctor.user.lastName}</span>
+              </div>
+              <div className="flex items-baseline justify-between gap-4">
+                <span className="text-muted-foreground">{t('fields.dateTimeLabel')}</span>
+                <span className="font-medium" dir="ltr">{form.scheduledAt.replace('T', ' ')}</span>
+              </div>
+              {bookedVisitTypeName && (
+                <div className="flex items-baseline justify-between gap-4">
+                  <span className="text-muted-foreground">{t('fields.visitTypeLabel')}</span>
+                  <span className="font-medium">{bookedVisitTypeName}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {displayError && (
           <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">

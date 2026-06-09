@@ -202,6 +202,9 @@ export default function BillingReportsPage() {
             <p className="mt-2 text-2xl font-bold tabular-nums">
               {report ? `${report.collectionRate.toFixed(1)}%` : '—'}
             </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {report ? t('cards.collectionRateHint') : ''}
+            </p>
           </div>
         </div>
       )}
@@ -210,6 +213,7 @@ export default function BillingReportsPage() {
       <div className="rounded-xl border bg-card shadow-sm">
         <div className="border-b px-5 py-4">
           <h2 className="text-base font-semibold">{t('outstandingPatients.title')}</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t('outstandingPatients.scopeNote')}</p>
         </div>
 
         {outstandingLoading ? (

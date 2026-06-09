@@ -2461,6 +2461,7 @@
       "collected": "المحصل",
       "currentOutstanding": "المستحقات الحالية",
       "collectionRate": "نسبة التحصيل",
+      "collectionRateHint": "من إجمالي مبلغ الفواتير",
       "invoices": "فاتورة",
       "paid": "مدفوعة",
       "partial": "جزئية",
@@ -2468,6 +2469,7 @@
     },
     "outstandingPatients": {
       "title": "المرضى أصحاب المستحقات",
+      "scopeNote": "جميع المرضى أصحاب الأرصدة غير المدفوعة — لا تتأثر بالفترة الزمنية المحددة",
       "patient": "المريض",
       "mrn": "رقم الملف",
       "outstanding": "المستحق",

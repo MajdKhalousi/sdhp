@@ -2461,6 +2461,7 @@
       "collected": "Collected",
       "currentOutstanding": "Current Outstanding",
       "collectionRate": "Collection Rate",
+      "collectionRateHint": "of total invoiced amount",
       "invoices": "invoices",
       "paid": "paid",
       "partial": "partial",
@@ -2468,6 +2469,7 @@
     },
     "outstandingPatients": {
       "title": "Patients with Outstanding Balances",
+      "scopeNote": "All patients with unpaid balances — not filtered by the selected period",
       "patient": "Patient",
       "mrn": "MRN",
       "outstanding": "Outstanding",

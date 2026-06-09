@@ -2320,7 +2320,8 @@
     },
     "unbilled": {
       "empty": "All eligible appointments are invoiced",
-      "createInvoice": "Create Invoice"
+      "createInvoice": "Create Invoice",
+      "doctorPrefix": "Dr. "
     },
     "groups": {
       "pending": "Pending Payment",

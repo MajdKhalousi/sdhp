@@ -2320,7 +2320,8 @@
     },
     "unbilled": {
       "empty": "جميع المواعيد المؤهلة لديها فواتير",
-      "createInvoice": "إنشاء فاتورة"
+      "createInvoice": "إنشاء فاتورة",
+      "doctorPrefix": "د. "
     },
     "groups": {
       "pending": "بانتظار الدفع",

@@ -1597,7 +1597,8 @@
         "date": "التاريخ"
       },
       "appointmentContext": {
-        "title": "الموعد"
+        "title": "الموعد",
+        "visitType": "نوع الزيارة"
       }
     },
     "items": {

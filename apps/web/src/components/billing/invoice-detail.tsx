@@ -5,14 +5,14 @@ import { Link } from '@/i18n/navigation';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useInvoice, useIssueInvoice, useVoidPayment } from '@/hooks/use-invoices';
-import { useAppointment, useVisitTypesList } from '@/hooks/use-appointments';
+import { useVisitTypesList } from '@/hooks/use-appointments';
 import { useAuthStore } from '@/store/auth';
 import { InvoiceStatusBadge } from './invoice-status-badge';
 import { InvoiceItemsTable } from './invoice-items-table';
 import { CancelInvoiceDialog } from './cancel-invoice-dialog';
 import { RecordPaymentForm } from './record-payment-form';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatDateDisplay, formatDateTimeDisplay } from '@/lib/format-date';
+import { formatDateDisplay } from '@/lib/format-date';
 import { isOverdue } from '@/lib/billing-utils';
 import type { Invoice } from '@/types/invoice';
 
@@ -332,13 +332,10 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
   const tInvoice = useTranslations('invoice');
   const tPrint = useTranslations('invoice.print');
   const tCommon = useTranslations('common');
-  const tApptList = useTranslations('appointment.list');
   const locale = useLocale();
 
   const { data: invoice, isLoading, isError, error, refetch } = useInvoice(invoiceId);
   const { user } = useAuthStore();
-  const appointmentId = invoice?.appointmentId ?? '';
-  const { data: apptData } = useAppointment(appointmentId);
   const { data: visitTypes } = useVisitTypesList();
 
   if (isLoading) {
@@ -386,8 +383,9 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
   const canCreate = INVOICE_CREATE_ROLES.has(user?.role ?? '');
 
   const resolvedVisitType: string | null = (() => {
-    if (!apptData || !apptData.visitTypeId || !visitTypes) return null;
-    const vt = visitTypes.find((v) => v.id === apptData.visitTypeId);
+    const itemWithVT = invoice.items.find((item) => item.visitTypeId);
+    if (!itemWithVT || !visitTypes) return null;
+    const vt = visitTypes.find((v) => v.id === itemWithVT.visitTypeId);
     if (!vt) return null;
     return locale === 'ar' && vt.nameAr ? vt.nameAr : vt.name;
   })();
@@ -459,27 +457,15 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
       </div>
 
       {/* Appointment Context */}
-      {invoice.appointmentId && apptData && (
+      {invoice.appointmentId && resolvedVisitType && (
         <div className="rounded-xl border border-border bg-muted/30 px-4 py-3">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {t('appointmentContext.title')}
           </p>
           <div className="flex flex-wrap gap-x-6 gap-y-1.5">
             <div className="flex flex-col gap-0.5">
-              <span className="text-xs text-muted-foreground">{tApptList('columns.doctor')}</span>
-              <span className="text-sm font-medium">
-                {apptData.doctor.user.firstName} {apptData.doctor.user.lastName}
-              </span>
-            </div>
-            {resolvedVisitType && (
-              <div className="flex flex-col gap-0.5">
-                <span className="text-xs text-muted-foreground">{tApptList('columns.visitType')}</span>
-                <span className="text-sm font-medium">{resolvedVisitType}</span>
-              </div>
-            )}
-            <div className="flex flex-col gap-0.5">
-              <span className="text-xs text-muted-foreground">{tApptList('columns.scheduled')}</span>
-              <span className="text-sm font-medium" dir="ltr">{formatDateTimeDisplay(apptData.scheduledAt)}</span>
+              <span className="text-xs text-muted-foreground">{t('appointmentContext.visitType')}</span>
+              <span className="text-sm font-medium">{resolvedVisitType}</span>
             </div>
           </div>
         </div>

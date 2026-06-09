@@ -1597,7 +1597,8 @@
         "date": "Date"
       },
       "appointmentContext": {
-        "title": "Appointment"
+        "title": "Appointment",
+        "visitType": "Visit Type"
       }
     },
     "items": {

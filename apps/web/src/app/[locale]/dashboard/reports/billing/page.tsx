@@ -64,9 +64,11 @@ export default function BillingReportsPage() {
     [preset, customFrom, customTo],
   );
 
+  const customDatesIncomplete = preset === 'custom' && (!customFrom || !customTo);
+
   const { data: report, isLoading: reportLoading, isError: reportError } = useBillingReport(
     { from, to },
-    canView,
+    canView && !customDatesIncomplete,
   );
 
   const { data: outstandingData, isLoading: outstandingLoading } = useOutstandingPatients(
@@ -145,7 +147,11 @@ export default function BillingReportsPage() {
       </div>
 
       {/* Summary cards */}
-      {reportLoading ? (
+      {customDatesIncomplete ? (
+        <div className="rounded-xl border border-dashed py-12 text-center">
+          <p className="text-sm text-muted-foreground">{t('customRangePrompt')}</p>
+        </div>
+      ) : reportLoading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
         </div>

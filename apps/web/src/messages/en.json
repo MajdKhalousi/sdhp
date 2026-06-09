@@ -2483,7 +2483,8 @@
     "errors": {
       "loadFailed": "Failed to load billing reports"
     },
-    "forbidden": "You do not have permission to view billing reports"
+    "forbidden": "You do not have permission to view billing reports",
+    "customRangePrompt": "Select a start and end date to view the report for a custom period."
   },
   "error": {
     "notFound": {

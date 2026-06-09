@@ -145,7 +145,7 @@ export function AppointmentList() {
         <option value="">{tCommon('filter.allDoctors')}</option>
         {doctorsData?.data.map((d) => (
           <option key={d.id} value={d.id}>
-            Dr. {d.user.firstName} {d.user.lastName}
+            {t('doctorPrefix')}{d.user.firstName} {d.user.lastName}
           </option>
         ))}
       </select>
@@ -288,7 +288,7 @@ export function AppointmentList() {
                 </td>
                 <td className="px-4 py-3">
                   <p className="text-sm">
-                    Dr. {appt.doctor.user.firstName} {appt.doctor.user.lastName}
+                    {t('doctorPrefix')}{appt.doctor.user.firstName} {appt.doctor.user.lastName}
                   </p>
                   {appt.doctor.specialization && (
                     <p className="text-xs text-muted-foreground">{appt.doctor.specialization}</p>

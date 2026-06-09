@@ -116,7 +116,7 @@ export function QueueBoard() {
         <option value="">{tCommon('filter.allDoctors')}</option>
         {activeDoctors.map((d) => (
           <option key={d.id} value={d.id}>
-            Dr. {d.user.firstName} {d.user.lastName}
+            {t('doctorPrefix')}{d.user.firstName} {d.user.lastName}
           </option>
         ))}
       </select>

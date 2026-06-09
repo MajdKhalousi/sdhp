@@ -24,6 +24,7 @@ const STATUS_LEFT: Record<QueueStatus, string> = {
 
 export function QueueTicket({ entry, invoice, visitTypeName }: { entry: QueueEntry; invoice?: Invoice; visitTypeName?: string }) {
   const t = useTranslations('queue.ticket');
+  const tQueue = useTranslations('queue');
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const { ticketNumber, status, createdAt, calledAt, appointment } = entry;
@@ -52,7 +53,7 @@ export function QueueTicket({ entry, invoice, visitTypeName }: { entry: QueueEnt
           </span>
         </p>
         <p className="truncate text-xs text-muted-foreground" dir="ltr">
-          Dr. {doctor.user.firstName} {doctor.user.lastName}
+          {tQueue('doctorPrefix')}{doctor.user.firstName} {doctor.user.lastName}
           {doctor.specialization ? ` · ${doctor.specialization}` : ''}
           {patient.phone ? ` · ${patient.phone}` : ''}
         </p>

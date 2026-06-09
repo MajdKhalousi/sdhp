@@ -332,7 +332,8 @@
       "actions": {
         "createInvoice": "Create Invoice"
       }
-    }
+    },
+    "doctorPrefix": "Dr. "
   },
   "queue": {
     "status": {
@@ -439,7 +440,8 @@
       "confirm": "Skip",
       "cancel": "No",
       "failed": "Failed to skip"
-    }
+    },
+    "doctorPrefix": "Dr. "
   },
   "encounter": {
     "status": {

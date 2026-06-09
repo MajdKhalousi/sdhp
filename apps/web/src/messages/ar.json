@@ -332,7 +332,8 @@
       "actions": {
         "createInvoice": "إنشاء فاتورة"
       }
-    }
+    },
+    "doctorPrefix": "د. "
   },
   "queue": {
     "status": {
@@ -439,7 +440,8 @@
       "confirm": "تجاوز",
       "cancel": "لا",
       "failed": "فشل التجاوز"
-    }
+    },
+    "doctorPrefix": "د. "
   },
   "encounter": {
     "status": {

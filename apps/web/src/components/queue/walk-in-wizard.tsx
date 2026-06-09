@@ -35,6 +35,7 @@ const INITIAL: Step1Form = {
 
 export function WalkInWizard({ initialPatientId }: WalkInWizardProps = {}) {
   const t = useTranslations('queue.walkIn');
+  const tQueue = useTranslations('queue');
   const tCommon = useTranslations('common');
   const router = useRouter();
   const locale = useLocale();
@@ -265,7 +266,7 @@ export function WalkInWizard({ initialPatientId }: WalkInWizardProps = {}) {
           <option value="">{doctorsLoading ? t('select.loadingDoctors') : t('select.selectDoctor')}</option>
           {activeDoctors.map((d) => (
             <option key={d.id} value={d.id}>
-              Dr. {d.user.firstName} {d.user.lastName}
+              {tQueue('doctorPrefix')}{d.user.firstName} {d.user.lastName}
               {d.specialization ? ` — ${d.specialization}` : ''}
             </option>
           ))}

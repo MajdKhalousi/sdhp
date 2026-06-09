@@ -154,7 +154,7 @@ export default function AppointmentDetailPage() {
             </Field>
 
             <Field label={t('fields.doctor')}>
-              Dr. {appointment.doctor.user.firstName} {appointment.doctor.user.lastName}
+              {tAppt('doctorPrefix')}{appointment.doctor.user.firstName} {appointment.doctor.user.lastName}
               {appointment.doctor.specialization && (
                 <span className="block text-xs text-muted-foreground">
                   {appointment.doctor.specialization}

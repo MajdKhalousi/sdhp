@@ -43,6 +43,7 @@ export function AppointmentForm({
   initialVisitTypeId,
 }: Props = {}) {
   const t = useTranslations('appointment.form');
+  const tAppt = useTranslations('appointment');
   const tCommon = useTranslations('common');
   const router = useRouter();
 
@@ -181,7 +182,7 @@ export function AppointmentForm({
           <option value="">{doctorsLoading ? t('select.loadingDoctors') : t('select.selectDoctor')}</option>
           {activeDoctors.map((d) => (
             <option key={d.id} value={d.id}>
-              Dr. {d.user.firstName} {d.user.lastName}
+              {tAppt('doctorPrefix')}{d.user.firstName} {d.user.lastName}
               {d.specialization ? ` — ${d.specialization}` : ''}
             </option>
           ))}

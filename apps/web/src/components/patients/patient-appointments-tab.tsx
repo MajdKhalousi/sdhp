@@ -132,7 +132,7 @@ export function PatientAppointmentsTab({ patientId }: { patientId: string }) {
                   </td>
                   <td className="px-4 py-3">
                     <p className="text-sm">
-                      Dr. {appt.doctor.user.firstName} {appt.doctor.user.lastName}
+                      {tAppt('doctorPrefix')}{appt.doctor.user.firstName} {appt.doctor.user.lastName}
                     </p>
                     {appt.doctor.specialization && (
                       <p className="text-xs text-muted-foreground">{appt.doctor.specialization}</p>

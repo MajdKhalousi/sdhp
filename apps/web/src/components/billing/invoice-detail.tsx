@@ -438,7 +438,7 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
             rel="noopener noreferrer"
             className="inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent"
           >
-            {tPrint('printInvoice')}
+            {invoice.status === 'PAID' ? tPrint('printReceipt') : tPrint('printInvoice')}
           </a>
         </div>
       </div>

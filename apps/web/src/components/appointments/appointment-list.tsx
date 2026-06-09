@@ -233,9 +233,11 @@ export function AppointmentList() {
           <CalendarX2 className="h-8 w-8 text-muted-foreground/50" />
           <p className="text-sm font-medium">{t('list.empty.heading')}</p>
           <p className="text-xs text-muted-foreground">
-            {status || date !== todayStr() || doctorId
-              ? t('list.empty.withFilters')
-              : t('list.empty.noData')}
+            {!status && date === todayStr() && !doctorId
+              ? t('list.empty.noDataToday')
+              : status || date !== todayStr() || doctorId
+                ? t('list.empty.withFilters')
+                : t('list.empty.noData')}
           </p>
         </div>
       </div>

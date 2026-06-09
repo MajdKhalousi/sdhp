@@ -206,7 +206,8 @@
       "empty": {
         "heading": "No appointments found",
         "withFilters": "Try adjusting your filters.",
-        "noData": "Create the first appointment to get started."
+        "noData": "Create the first appointment to get started.",
+        "noDataToday": "No appointments scheduled for today."
       },
       "error": {
         "loadFailed": "Failed to load appointments"

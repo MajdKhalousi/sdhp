@@ -9,8 +9,12 @@ import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateDisplay } from '@/lib/format-date';
 import { isOverdue } from '@/lib/billing-utils';
+import type { Invoice, InvoiceStatus } from '@/types/invoice';
 
 const INVOICE_CREATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
+const OUTSTANDING_STATUSES = new Set<InvoiceStatus>(['ISSUED', 'PARTIALLY_PAID']);
+const SETTLED_STATUSES     = new Set<InvoiceStatus>(['PAID']);
+const OTHER_STATUSES       = new Set<InvoiceStatus>(['DRAFT', 'CANCELLED']);
 
 function formatAmount(value: string, locale: string): string {
   const num = parseFloat(value);
@@ -23,18 +27,18 @@ function formatAmount(value: string, locale: string): string {
   );
 }
 
-
 interface InvoicesTabProps {
   patientId: string;
 }
 
 export function InvoicesTab({ patientId }: InvoicesTabProps) {
-  const t = useTranslations('invoice.list');
+  const t       = useTranslations('invoice.list');
+  const tDetail = useTranslations('patient.detail');
   const tActions = useTranslations('invoice.actions');
   const tInvoice = useTranslations('invoice');
-  const tError = useTranslations('patient.detail.error');
-  const tCommon = useTranslations('common');
-  const locale = useLocale();
+  const tError   = useTranslations('patient.detail.error');
+  const tCommon  = useTranslations('common');
+  const locale   = useLocale();
   const { user } = useAuthStore();
   const canCreate = user ? INVOICE_CREATE_ROLES.has(user.role) : false;
 
@@ -91,73 +95,117 @@ export function InvoicesTab({ patientId }: InvoicesTabProps) {
     );
   }
 
+  const outstandingInvoices = data.filter((inv) => OUTSTANDING_STATUSES.has(inv.status));
+  const settledInvoices     = data.filter((inv) => SETTLED_STATUSES.has(inv.status));
+  const otherInvoices       = data.filter((inv) => OTHER_STATUSES.has(inv.status));
+
+  function renderRow(invoice: Invoice) {
+    const rem = parseFloat(invoice.totalAmount) - parseFloat(invoice.paidAmount);
+    return (
+      <tr key={invoice.id} className="border-t border-border transition-colors hover:bg-muted/20">
+        <td className="px-4 py-3">
+          <Link
+            href={`/dashboard/invoices/${invoice.id}`}
+            className="text-sm font-medium tabular-nums hover:underline"
+            dir="ltr"
+          >
+            {invoice.invoiceNumber}
+          </Link>
+        </td>
+        <td className="px-4 py-3">
+          <InvoiceStatusBadge status={invoice.status} />
+        </td>
+        <td className="px-4 py-3 text-end text-sm tabular-nums" dir="ltr">
+          {formatAmount(invoice.totalAmount, locale)}
+        </td>
+        <td className="px-4 py-3 text-end text-sm tabular-nums" dir="ltr">
+          {formatAmount(invoice.paidAmount, locale)}
+        </td>
+        <td className="px-4 py-3 text-end text-sm tabular-nums" dir="ltr">
+          {invoice.status === 'CANCELLED' || invoice.status === 'DRAFT'
+            ? '—'
+            : (!isNaN(rem) ? formatAmount(String(rem), locale) : '—')}
+        </td>
+        <td className="px-4 py-3 text-sm whitespace-nowrap" dir="ltr">
+          {invoice.dueDate && isOverdue(invoice) ? (
+            <span className="font-medium text-destructive">
+              {formatDateDisplay(invoice.dueDate)}{' '}
+              <span className="ms-0.5 rounded-full bg-destructive/10 px-1.5 py-0.5 text-xs">
+                {tInvoice('overdue')}
+              </span>
+            </span>
+          ) : (
+            <span className="text-muted-foreground">{formatDateDisplay(invoice.dueDate)}</span>
+          )}
+        </td>
+        <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap" dir="ltr">
+          {formatDateDisplay(invoice.issuedAt ?? invoice.createdAt)}
+        </td>
+      </tr>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {newInvoiceBtn}
       <div className="overflow-hidden rounded-xl border border-border">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px]">
-          <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
-            <tr>
-              <th className="px-4 py-3 text-start font-medium">{t('columns.invoiceNumber')}</th>
-              <th className="px-4 py-3 text-start font-medium">{t('columns.status')}</th>
-              <th className="px-4 py-3 text-end font-medium">{t('columns.amount')}</th>
-              <th className="px-4 py-3 text-end font-medium">{t('columns.paid')}</th>
-              <th className="px-4 py-3 text-end font-medium">{t('columns.remaining')}</th>
-              <th className="px-4 py-3 text-start font-medium">{t('columns.dueDate')}</th>
-              <th className="px-4 py-3 text-start font-medium">{t('columns.date')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((invoice) => {
-              const rem = parseFloat(invoice.totalAmount) - parseFloat(invoice.paidAmount);
-              return (
-                <tr key={invoice.id} className="border-t border-border transition-colors hover:bg-muted/20">
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/dashboard/invoices/${invoice.id}`}
-                      className="text-sm font-medium tabular-nums hover:underline"
-                      dir="ltr"
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px]">
+            <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
+              <tr>
+                <th className="px-4 py-3 text-start font-medium">{t('columns.invoiceNumber')}</th>
+                <th className="px-4 py-3 text-start font-medium">{t('columns.status')}</th>
+                <th className="px-4 py-3 text-end font-medium">{t('columns.amount')}</th>
+                <th className="px-4 py-3 text-end font-medium">{t('columns.paid')}</th>
+                <th className="px-4 py-3 text-end font-medium">{t('columns.remaining')}</th>
+                <th className="px-4 py-3 text-start font-medium">{t('columns.dueDate')}</th>
+                <th className="px-4 py-3 text-start font-medium">{t('columns.date')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {outstandingInvoices.length > 0 && (
+                <>
+                  <tr className="border-t border-border">
+                    <td
+                      colSpan={7}
+                      className="bg-muted/30 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
                     >
-                      {invoice.invoiceNumber}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3">
-                    <InvoiceStatusBadge status={invoice.status} />
-                  </td>
-                  <td className="px-4 py-3 text-end text-sm tabular-nums" dir="ltr">
-                    {formatAmount(invoice.totalAmount, locale)}
-                  </td>
-                  <td className="px-4 py-3 text-end text-sm tabular-nums" dir="ltr">
-                    {formatAmount(invoice.paidAmount, locale)}
-                  </td>
-                  <td className="px-4 py-3 text-end text-sm tabular-nums" dir="ltr">
-                    {invoice.status === 'CANCELLED' || invoice.status === 'DRAFT'
-                      ? '—'
-                      : (!isNaN(rem) ? formatAmount(String(rem), locale) : '—')}
-                  </td>
-                  <td className="px-4 py-3 text-sm whitespace-nowrap" dir="ltr">
-                    {invoice.dueDate && isOverdue(invoice) ? (
-                      <span className="font-medium text-destructive">
-                        {formatDateDisplay(invoice.dueDate)}{' '}
-                        <span className="ms-0.5 rounded-full bg-destructive/10 px-1.5 py-0.5 text-xs">
-                          {tInvoice('overdue')}
-                        </span>
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">{formatDateDisplay(invoice.dueDate)}</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap" dir="ltr">
-                    {formatDateDisplay(invoice.issuedAt ?? invoice.createdAt)}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                      {tDetail('invoices.sectionOutstanding')}
+                    </td>
+                  </tr>
+                  {outstandingInvoices.map(renderRow)}
+                </>
+              )}
+              {settledInvoices.length > 0 && (
+                <>
+                  <tr className="border-t border-border">
+                    <td
+                      colSpan={7}
+                      className="bg-muted/30 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                    >
+                      {tDetail('invoices.sectionSettled')}
+                    </td>
+                  </tr>
+                  {settledInvoices.map(renderRow)}
+                </>
+              )}
+              {otherInvoices.length > 0 && (
+                <>
+                  <tr className="border-t border-border">
+                    <td
+                      colSpan={7}
+                      className="bg-muted/30 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                    >
+                      {tDetail('invoices.sectionOther')}
+                    </td>
+                  </tr>
+                  {otherInvoices.map(renderRow)}
+                </>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
     </div>
   );
 }

@@ -964,6 +964,11 @@
         "sectionUpcoming": "القادمة",
         "sectionPast": "السابقة"
       },
+      "invoices": {
+        "sectionOutstanding": "المستحقة",
+        "sectionSettled": "المسددة",
+        "sectionOther": "أخرى"
+      },
       "overview": {
         "demographics": "البيانات الأساسية",
         "family": "معلومات الأسرة",

@@ -964,6 +964,11 @@
         "sectionUpcoming": "Upcoming",
         "sectionPast": "Past"
       },
+      "invoices": {
+        "sectionOutstanding": "Outstanding",
+        "sectionSettled": "Settled",
+        "sectionOther": "Other"
+      },
       "overview": {
         "demographics": "Demographics",
         "family": "Family Information",

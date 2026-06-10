@@ -46,6 +46,13 @@ function formatAmount(value: number, locale: string): string {
 
 const PRESET_ORDER: Preset[] = ['today', 'thisMonth', 'custom'];
 
+function getDaysOutstanding(dateStr: string | null): number {
+  if (!dateStr) return 0;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return 0;
+  return Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+}
+
 export default function BillingReportsPage() {
   const t = useTranslations('billingReports');
   const tCommon = useTranslations('common');
@@ -260,33 +267,41 @@ export default function BillingReportsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {patients.map((p) => (
-                    <tr key={p.patientId} className="transition-colors hover:bg-muted/30">
-                      <td className="px-5 py-3 font-medium">
-                        {p.firstName} {p.lastName}
-                      </td>
-                      <td className="px-5 py-3 font-mono text-xs text-muted-foreground" dir="ltr">
-                        {p.mrn}
-                      </td>
-                      <td className="px-5 py-3 font-semibold text-amber-600 dark:text-amber-400" dir="ltr">
-                        {formatAmount(p.outstandingAmount, locale)}
-                      </td>
-                      <td className="px-5 py-3 text-muted-foreground">
-                        {p.invoiceCount}
-                      </td>
-                      <td className="px-5 py-3 text-muted-foreground">
-                        {formatDateDisplay(p.oldestUnpaidAt)}
-                      </td>
-                      <td className="px-5 py-3">
-                        <Link
-                          href={`/dashboard/patients/${p.patientId}?tab=invoices`}
-                          className="rounded-md border px-2.5 py-1 text-xs font-medium transition-colors hover:bg-accent"
-                        >
-                          {t('outstandingPatients.viewPatient')}
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
+                  {patients.map((p) => {
+                    const daysOld = getDaysOutstanding(p.oldestUnpaidAt);
+                    const ageClass = daysOld >= 60
+                      ? 'text-destructive'
+                      : daysOld >= 30
+                      ? 'text-amber-600 dark:text-amber-400'
+                      : 'text-muted-foreground';
+                    return (
+                      <tr key={p.patientId} className="transition-colors hover:bg-muted/30">
+                        <td className="px-5 py-3 font-medium">
+                          {p.firstName} {p.lastName}
+                        </td>
+                        <td className="px-5 py-3 font-mono text-xs text-muted-foreground" dir="ltr">
+                          {p.mrn}
+                        </td>
+                        <td className="px-5 py-3 font-semibold text-amber-600 dark:text-amber-400" dir="ltr">
+                          {formatAmount(p.outstandingAmount, locale)}
+                        </td>
+                        <td className="px-5 py-3 text-muted-foreground">
+                          {p.invoiceCount}
+                        </td>
+                        <td className={`px-5 py-3 font-medium ${ageClass}`} dir="ltr">
+                          {formatDateDisplay(p.oldestUnpaidAt)}
+                        </td>
+                        <td className="px-5 py-3">
+                          <Link
+                            href={`/dashboard/patients/${p.patientId}?tab=invoices`}
+                            className="rounded-md border px-2.5 py-1 text-xs font-medium transition-colors hover:bg-accent"
+                          >
+                            {t('outstandingPatients.viewPatient')}
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

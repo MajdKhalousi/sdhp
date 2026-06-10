@@ -2487,7 +2487,7 @@
       "invoices": "Invoices",
       "oldestUnpaid": "Oldest Unpaid",
       "action": "Action",
-      "viewPatient": "View Patient",
+      "viewPatient": "View Invoices",
       "empty": "No outstanding balances",
       "emptyHint": "All invoices are settled."
     },

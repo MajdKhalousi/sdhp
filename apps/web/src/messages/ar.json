@@ -2487,7 +2487,7 @@
       "invoices": "الفواتير",
       "oldestUnpaid": "أقدم مستحق",
       "action": "إجراء",
-      "viewPatient": "عرض المريض",
+      "viewPatient": "عرض الفواتير",
       "empty": "لا توجد مستحقات",
       "emptyHint": "جميع الفواتير مسددة."
     },

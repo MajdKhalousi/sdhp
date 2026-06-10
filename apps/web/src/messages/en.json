@@ -960,7 +960,9 @@
         "appointments": "Appointments"
       },
       "appointments": {
-        "empty": "No appointments found for this patient."
+        "empty": "No appointments found for this patient.",
+        "sectionUpcoming": "Upcoming",
+        "sectionPast": "Past"
       },
       "overview": {
         "demographics": "Demographics",

@@ -960,7 +960,9 @@
         "appointments": "المواعيد"
       },
       "appointments": {
-        "empty": "لا توجد مواعيد لهذا المريض."
+        "empty": "لا توجد مواعيد لهذا المريض.",
+        "sectionUpcoming": "القادمة",
+        "sectionPast": "السابقة"
       },
       "overview": {
         "demographics": "البيانات الأساسية",

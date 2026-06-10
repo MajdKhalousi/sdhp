@@ -23,6 +23,8 @@ const RESCHEDULE_ELIGIBLE: AppointmentStatus[] = ['SCHEDULED', 'CONFIRMED'];
 const CANCEL_ELIGIBLE: AppointmentStatus[]     = ['SCHEDULED', 'CONFIRMED', 'CHECKED_IN', 'IN_QUEUE', 'IN_PROGRESS'];
 
 const APPOINTMENT_MUTATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+const UPCOMING_STATUSES = new Set<AppointmentStatus>(['SCHEDULED', 'CONFIRMED', 'CHECKED_IN', 'IN_QUEUE', 'IN_PROGRESS']);
+const PAST_STATUSES     = new Set<AppointmentStatus>(['COMPLETED', 'CANCELLED', 'NO_SHOW']);
 
 export function PatientAppointmentsTab({ patientId }: { patientId: string }) {
   const t       = useTranslations('patient.detail');
@@ -84,6 +86,8 @@ export function PatientAppointmentsTab({ patientId }: { patientId: string }) {
   }
 
   const appointments = data?.data ?? [];
+  const upcomingAppointments = appointments.filter((a) => UPCOMING_STATUSES.has(a.status));
+  const pastAppointments     = appointments.filter((a) => PAST_STATUSES.has(a.status));
 
   if (appointments.length === 0) {
     return (
@@ -94,6 +98,67 @@ export function PatientAppointmentsTab({ patientId }: { patientId: string }) {
           <p className="text-sm text-muted-foreground">{t('appointments.empty')}</p>
         </div>
       </div>
+    );
+  }
+
+  function renderRow(appt: Appointment) {
+    return (
+      <tr key={appt.id} className="border-t border-border transition-colors hover:bg-muted/20">
+        <td className="whitespace-nowrap px-4 py-3 text-sm" dir="ltr">
+          {formatDateTimeDisplay(appt.scheduledAt)}
+        </td>
+        <td className="px-4 py-3">
+          <p className="text-sm">
+            {tAppt('doctorPrefix')}{appt.doctor.user.firstName} {appt.doctor.user.lastName}
+          </p>
+          {appt.doctor.specialization && (
+            <p className="text-xs text-muted-foreground">{appt.doctor.specialization}</p>
+          )}
+        </td>
+        <td className="px-4 py-3 text-sm text-muted-foreground">
+          {getVisitTypeName(appt.visitTypeId)}
+        </td>
+        <td className="px-4 py-3 text-sm text-muted-foreground">
+          {tAppt('list.durationMinutes', { count: appt.durationMin })}
+        </td>
+        <td className="px-4 py-3">
+          <AppointmentStatusBadge status={appt.status} />
+        </td>
+        <td className="px-4 py-3">
+          <div className="flex flex-col items-end gap-1.5">
+            <div className="flex flex-wrap items-center justify-end gap-1.5">
+              <Link
+                href={`/dashboard/appointments/${appt.id}`}
+                className="h-7 rounded-md border px-2 text-xs text-muted-foreground transition-colors hover:bg-accent"
+              >
+                {tCommon('actions.view')}
+              </Link>
+              {canMutate && CHECKIN_ELIGIBLE.includes(appt.status) && (
+                <CheckInButton appointmentId={appt.id} />
+              )}
+              {canMutate && CONFIRM_ELIGIBLE.includes(appt.status) && (
+                <ConfirmButton appointmentId={appt.id} />
+              )}
+            </div>
+            <div className="flex flex-wrap items-center justify-end gap-1.5">
+              {canMutate && RESCHEDULE_ELIGIBLE.includes(appt.status) && (
+                <button
+                  onClick={() => setRescheduleAppt(appt)}
+                  className="h-6 rounded border px-2 text-xs text-muted-foreground transition-colors hover:bg-accent"
+                >
+                  {tAppt('reschedule.trigger')}
+                </button>
+              )}
+              {canMutate && NOSHOW_ELIGIBLE.includes(appt.status) && (
+                <NoShowButton appointmentId={appt.id} />
+              )}
+              {canMutate && CANCEL_ELIGIBLE.includes(appt.status) && (
+                <CancelAppointmentDialog appointmentId={appt.id} />
+              )}
+            </div>
+          </div>
+        </td>
+      </tr>
     );
   }
 
@@ -122,67 +187,32 @@ export function PatientAppointmentsTab({ patientId }: { patientId: string }) {
               </tr>
             </thead>
             <tbody>
-              {appointments.map((appt) => (
-                <tr
-                  key={appt.id}
-                  className="border-t border-border transition-colors hover:bg-muted/20"
-                >
-                  <td className="whitespace-nowrap px-4 py-3 text-sm" dir="ltr">
-                    {formatDateTimeDisplay(appt.scheduledAt)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <p className="text-sm">
-                      {tAppt('doctorPrefix')}{appt.doctor.user.firstName} {appt.doctor.user.lastName}
-                    </p>
-                    {appt.doctor.specialization && (
-                      <p className="text-xs text-muted-foreground">{appt.doctor.specialization}</p>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">
-                    {getVisitTypeName(appt.visitTypeId)}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">
-                    {tAppt('list.durationMinutes', { count: appt.durationMin })}
-                  </td>
-                  <td className="px-4 py-3">
-                    <AppointmentStatusBadge status={appt.status} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col items-end gap-1.5">
-                      <div className="flex flex-wrap items-center justify-end gap-1.5">
-                        <Link
-                          href={`/dashboard/appointments/${appt.id}`}
-                          className="h-7 rounded-md border px-2 text-xs text-muted-foreground transition-colors hover:bg-accent"
-                        >
-                          {tCommon('actions.view')}
-                        </Link>
-                        {canMutate && CHECKIN_ELIGIBLE.includes(appt.status) && (
-                          <CheckInButton appointmentId={appt.id} />
-                        )}
-                        {canMutate && CONFIRM_ELIGIBLE.includes(appt.status) && (
-                          <ConfirmButton appointmentId={appt.id} />
-                        )}
-                      </div>
-                      <div className="flex flex-wrap items-center justify-end gap-1.5">
-                        {canMutate && RESCHEDULE_ELIGIBLE.includes(appt.status) && (
-                          <button
-                            onClick={() => setRescheduleAppt(appt)}
-                            className="h-6 rounded border px-2 text-xs text-muted-foreground transition-colors hover:bg-accent"
-                          >
-                            {tAppt('reschedule.trigger')}
-                          </button>
-                        )}
-                        {canMutate && NOSHOW_ELIGIBLE.includes(appt.status) && (
-                          <NoShowButton appointmentId={appt.id} />
-                        )}
-                        {canMutate && CANCEL_ELIGIBLE.includes(appt.status) && (
-                          <CancelAppointmentDialog appointmentId={appt.id} />
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {upcomingAppointments.length > 0 && (
+                <>
+                  <tr className="border-t border-border">
+                    <td
+                      colSpan={6}
+                      className="bg-muted/30 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                    >
+                      {t('appointments.sectionUpcoming')}
+                    </td>
+                  </tr>
+                  {upcomingAppointments.map(renderRow)}
+                </>
+              )}
+              {pastAppointments.length > 0 && (
+                <>
+                  <tr className="border-t border-border">
+                    <td
+                      colSpan={6}
+                      className="bg-muted/30 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                    >
+                      {t('appointments.sectionPast')}
+                    </td>
+                  </tr>
+                  {pastAppointments.map(renderRow)}
+                </>
+              )}
             </tbody>
           </table>
         </div>

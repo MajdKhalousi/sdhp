@@ -183,7 +183,7 @@ export default function BillingReportsPage() {
               {report ? formatAmount(report.totalInvoiced, locale) : '—'}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              {report ? `${report.invoiceCount} ${t('cards.invoices')}` : ''}
+              {report ? `${report.invoiceCount} ${t('cards.invoices')}${report.cancelledCount > 0 ? ` · ${report.cancelledCount} ${t('cards.cancelled')}` : ''}` : ''}
             </p>
           </div>
 

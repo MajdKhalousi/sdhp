@@ -2475,7 +2475,8 @@
       "invoices": "invoices",
       "paid": "paid",
       "partial": "partial",
-      "unpaid": "unpaid"
+      "unpaid": "unpaid",
+      "cancelled": "cancelled"
     },
     "outstandingPatients": {
       "title": "Patients with Outstanding Balances",

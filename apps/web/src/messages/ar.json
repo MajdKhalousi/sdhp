@@ -2475,7 +2475,8 @@
       "invoices": "فاتورة",
       "paid": "مدفوعة",
       "partial": "جزئية",
-      "unpaid": "غير مدفوعة"
+      "unpaid": "غير مدفوعة",
+      "cancelled": "ملغاة"
     },
     "outstandingPatients": {
       "title": "المرضى أصحاب المستحقات",

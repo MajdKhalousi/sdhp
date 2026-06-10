@@ -36,7 +36,7 @@ export function PatientOutstandingBalance({ patientId, onViewInvoices }: Props) 
           onClick={onViewInvoices}
           className="shrink-0 text-xs font-medium text-primary hover:underline"
         >
-          {t('viewInvoices')} →
+          {t('viewInvoices')}
         </button>
       </div>
 

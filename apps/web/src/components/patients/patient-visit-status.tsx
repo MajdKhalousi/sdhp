@@ -91,7 +91,7 @@ export function PatientVisitStatus({ patientId, lastEncounterEvent, canViewEncou
               onClick={onViewAppointments}
               className="shrink-0 text-xs font-medium text-primary hover:underline"
             >
-              {t('viewAppointments')} →
+              {t('viewAppointments')}
             </button>
           )}
         </div>

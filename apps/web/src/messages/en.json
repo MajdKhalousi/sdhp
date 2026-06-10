@@ -1137,7 +1137,7 @@
       "nextFollowUp": "Next Follow-up",
       "pendingLabs": "Pending Labs",
       "pendingRadiology": "Pending Radiology",
-      "viewHistory": "View Full History",
+      "viewHistory": "View Full History →",
       "noHistory": "No visits recorded yet",
       "notAvailable": "—",
       "loadFailed": "Failed to load clinical snapshot",
@@ -1164,7 +1164,7 @@
       "noUpcomingAppointment": "No upcoming appointments",
       "viewEncounter": "View encounter",
       "bookAppointment": "Book appointment",
-      "viewAppointments": "View appointments",
+      "viewAppointments": "View appointments →",
       "startedAt": "Started",
       "scheduledAt": "Scheduled",
       "doctor": "Dr.",
@@ -1175,7 +1175,7 @@
       "amount": "Balance",
       "invoiceCount": "Invoices",
       "oldestUnpaid": "Oldest unpaid",
-      "viewInvoices": "View invoices"
+      "viewInvoices": "View invoices →"
     },
     "duplicate": {
       "heading": "Possible duplicate patient",

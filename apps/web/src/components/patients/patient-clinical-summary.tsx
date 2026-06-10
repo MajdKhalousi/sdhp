@@ -110,7 +110,7 @@ export function PatientClinicalSummary({ patientId, onViewHistory }: Props) {
             onClick={onViewHistory}
             className="text-xs font-medium text-primary hover:underline"
           >
-            {t('viewHistory')} →
+            {t('viewHistory')}
           </button>
         )}
       </div>

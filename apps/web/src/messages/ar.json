@@ -1137,7 +1137,7 @@
       "nextFollowUp": "المراجعة القادمة",
       "pendingLabs": "تحاليل قيد الانتظار",
       "pendingRadiology": "أشعة قيد الانتظار",
-      "viewHistory": "عرض السجل الكامل",
+      "viewHistory": "عرض السجل الكامل ←",
       "noHistory": "لا توجد زيارات مسجلة بعد",
       "notAvailable": "—",
       "loadFailed": "تعذر تحميل اللمحة السريرية",
@@ -1164,7 +1164,7 @@
       "noUpcomingAppointment": "لا توجد مواعيد قادمة",
       "viewEncounter": "عرض الزيارة",
       "bookAppointment": "حجز موعد",
-      "viewAppointments": "عرض المواعيد",
+      "viewAppointments": "عرض المواعيد ←",
       "startedAt": "بدأت",
       "scheduledAt": "مجدول",
       "doctor": "د.",
@@ -1175,7 +1175,7 @@
       "amount": "الرصيد",
       "invoiceCount": "عدد الفواتير",
       "oldestUnpaid": "أقدم فاتورة غير مدفوعة",
-      "viewInvoices": "عرض الفواتير"
+      "viewInvoices": "عرض الفواتير ←"
     },
     "duplicate": {
       "heading": "قد يكون المريض مسجلًا مسبقًا",

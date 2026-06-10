@@ -376,7 +376,10 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
   }
 
   const remaining = parseFloat(invoice.totalAmount) - parseFloat(invoice.paidAmount);
-  const remainingStr = isNaN(remaining) ? '—' : formatAmount(String(remaining), locale);
+  const remainingStr =
+    isNaN(remaining) || invoice.status === 'CANCELLED'
+      ? '—'
+      : formatAmount(String(remaining), locale);
   const isDraft = invoice.status === 'DRAFT';
   const isCancellable = invoice.status === 'DRAFT' || invoice.status === 'ISSUED';
   const canCancel = BILLING_WRITE_ROLES.has(user?.role ?? '');
@@ -409,7 +412,7 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
             </div>
             <p className="text-sm text-muted-foreground">
               <Link
-                href={`/dashboard/patients/${invoice.patientId}`}
+                href={`/dashboard/patients/${invoice.patientId}?tab=invoices`}
                 className="text-primary hover:underline"
               >
                 {invoice.patient.firstName} {invoice.patient.lastName}

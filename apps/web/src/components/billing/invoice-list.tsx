@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Link } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { Plus, Receipt } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
 import { useTranslations, useLocale } from 'next-intl';
@@ -33,6 +33,7 @@ export function InvoiceList() {
   const tCommon = useTranslations('common');
   const locale = useLocale();
 
+  const router = useRouter();
   const { user } = useAuthStore();
   const canCreate = user ? INVOICE_CREATE_ROLES.has(user.role) : false;
 
@@ -250,10 +251,12 @@ export function InvoiceList() {
                 <tr
                   key={invoice.id}
                   className="border-t border-border transition-colors hover:bg-muted/20 cursor-pointer"
+                  onClick={() => router.push(`/dashboard/invoices/${invoice.id}`)}
                 >
                   <td className="px-4 py-3">
                     <Link
                       href={`/dashboard/invoices/${invoice.id}`}
+                      onClick={(e) => e.stopPropagation()}
                       className="block text-sm font-medium tabular-nums hover:underline"
                       dir="ltr"
                     >
@@ -278,7 +281,9 @@ export function InvoiceList() {
                     {formatAmount(invoice.paidAmount, locale)}
                   </td>
                   <td className="px-4 py-3 text-sm tabular-nums" dir="ltr">
-                    {formatAmount(String(Math.max(0, parseFloat(invoice.totalAmount) - parseFloat(invoice.paidAmount))), locale)}
+                    {invoice.status === 'CANCELLED' || invoice.status === 'DRAFT'
+                      ? '—'
+                      : formatAmount(String(Math.max(0, parseFloat(invoice.totalAmount) - parseFloat(invoice.paidAmount))), locale)}
                   </td>
                   <td className="px-4 py-3 text-sm whitespace-nowrap" dir="ltr">
                     {invoice.dueDate && isOverdue(invoice) ? (

@@ -83,9 +83,12 @@ function InvoiceRow({ invoice, isActive, onAction, onSuccess, onCancel, visitTyp
         {/* Patient + invoice info */}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium">
+            <Link
+              href={`/dashboard/patients/${invoice.patientId}?tab=invoices`}
+              className="text-sm font-medium hover:underline"
+            >
               {invoice.patient.firstName} {invoice.patient.lastName}
-            </span>
+            </Link>
             <span className="text-xs text-muted-foreground" dir="ltr">{invoice.patient.mrn}</span>
             <InvoiceStatusBadge status={invoice.status} />
           </div>
@@ -190,9 +193,12 @@ function OutstandingRow({ invoice, isActive, onAction, onSuccess, onCancel, visi
       <div className="flex flex-wrap items-start justify-between gap-3 px-4 py-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium">
+            <Link
+              href={`/dashboard/patients/${invoice.patientId}?tab=invoices`}
+              className="text-sm font-medium hover:underline"
+            >
               {invoice.patient.firstName} {invoice.patient.lastName}
-            </span>
+            </Link>
             <span className="text-xs text-muted-foreground" dir="ltr">{invoice.patient.mrn}</span>
             <InvoiceStatusBadge status={invoice.status} />
           </div>

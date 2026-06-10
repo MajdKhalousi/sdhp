@@ -13,6 +13,7 @@ interface FormState {
   method: PaymentMethod | '';
   referenceNumber: string;
   paidAt: string;
+  notes: string;
 }
 
 interface Props {
@@ -39,6 +40,7 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
       const d = new Date();
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     })(),
+    notes: '',
   });
   const [validationError, setValidationError] = useState('');
   const [submitError, setSubmitError] = useState('');
@@ -107,6 +109,7 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
             method: form.method as PaymentMethod,
             ...(form.referenceNumber.trim() ? { referenceNumber: form.referenceNumber.trim() } : {}),
             ...(form.paidAt ? { paidAt: new Date(form.paidAt).toISOString() } : {}),
+            ...(form.notes.trim() ? { notes: form.notes.trim() } : {}),
           },
         });
         onSuccess();
@@ -226,6 +229,17 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
               disabled={isSubmitting}
               className="h-8 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
               dir="ltr"
+            />
+          </div>
+          <div className="space-y-1 sm:col-span-2 lg:col-span-4">
+            <label className="text-xs font-medium">{tPayment('fields.notes')}</label>
+            <input
+              type="text"
+              value={form.notes}
+              onChange={setField('notes')}
+              disabled={isSubmitting}
+              placeholder={tPayment('fields.notesPlaceholder')}
+              className="h-8 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
             />
           </div>
         </div>

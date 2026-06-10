@@ -83,10 +83,6 @@
         "sub": "مريض في الطابور",
         "annotation": "{done} مكتملة عبر الطابور اليوم"
       },
-      "totalPatients": {
-        "label": "إجمالي المرضى",
-        "sub": "مسجّل"
-      },
       "completedToday": {
         "label": "مكتمل اليوم",
         "sub": "زيارة منتهية"

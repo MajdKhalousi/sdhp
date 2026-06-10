@@ -83,10 +83,6 @@
         "sub": "patients in queue",
         "annotation": "{done} completed via queue today"
       },
-      "totalPatients": {
-        "label": "Total Patients",
-        "sub": "registered"
-      },
       "completedToday": {
         "label": "Completed Today",
         "sub": "encounters finished"

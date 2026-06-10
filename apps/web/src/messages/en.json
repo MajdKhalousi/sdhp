@@ -438,7 +438,7 @@
     },
     "skip": {
       "trigger": "Skip",
-      "confirm": "Skip",
+      "confirm": "Yes, skip",
       "cancel": "No",
       "failed": "Failed to skip"
     },

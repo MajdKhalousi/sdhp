@@ -111,7 +111,12 @@ export default function DoctorWorkspacePage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-semibold text-foreground">
-                        {patient.firstName} {patient.lastName}
+                        <Link
+                          href={`/dashboard/patients/${patient.id}`}
+                          className="hover:underline"
+                        >
+                          {patient.firstName} {patient.lastName}
+                        </Link>
                       </p>
                       <span className="font-mono text-xs text-muted-foreground" dir="ltr">
                         {t('card.mrn')} {patient.mrn}

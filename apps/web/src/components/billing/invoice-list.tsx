@@ -264,9 +264,13 @@ export function InvoiceList() {
                     </Link>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-sm">
+                    <Link
+                      href={`/dashboard/patients/${invoice.patientId}?tab=invoices`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="block text-sm hover:underline"
+                    >
                       {invoice.patient.firstName} {invoice.patient.lastName}
-                    </p>
+                    </Link>
                     <p className="text-xs text-muted-foreground" dir="ltr">
                       {invoice.patient.mrn}
                     </p>

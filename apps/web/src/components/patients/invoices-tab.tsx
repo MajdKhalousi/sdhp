@@ -132,7 +132,9 @@ export function InvoicesTab({ patientId }: InvoicesTabProps) {
                     {formatAmount(invoice.paidAmount, locale)}
                   </td>
                   <td className="px-4 py-3 text-end text-sm tabular-nums" dir="ltr">
-                    {!isNaN(rem) ? formatAmount(String(rem), locale) : '—'}
+                    {invoice.status === 'CANCELLED' || invoice.status === 'DRAFT'
+                      ? '—'
+                      : (!isNaN(rem) ? formatAmount(String(rem), locale) : '—')}
                   </td>
                   <td className="px-4 py-3 text-sm whitespace-nowrap" dir="ltr">
                     {invoice.dueDate && isOverdue(invoice) ? (

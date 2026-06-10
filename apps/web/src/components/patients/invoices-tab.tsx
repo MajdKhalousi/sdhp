@@ -106,7 +106,7 @@ export function InvoicesTab({ patientId }: InvoicesTabProps) {
         <td className="px-4 py-3">
           <Link
             href={`/dashboard/invoices/${invoice.id}`}
-            className="text-sm font-medium tabular-nums hover:underline"
+            className="text-sm font-medium tabular-nums text-primary hover:underline"
             dir="ltr"
           >
             {invoice.invoiceNumber}

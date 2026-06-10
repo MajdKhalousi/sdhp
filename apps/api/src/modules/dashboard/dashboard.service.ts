@@ -80,6 +80,7 @@ export class DashboardService {
       followUpsOverdue,
       completedLabsToday,
       completedRadiologyToday,
+      collectedTodayAgg,
     ] = await Promise.all([
       // 1. Today's appointments grouped by status
       this.prisma.appointment.groupBy({
@@ -241,6 +242,22 @@ export class DashboardService {
           updatedAt: { gte: todayStart, lt: todayEnd },
         },
       }),
+
+      // 13. Payments received today — aggregated by payment.paidAt (billing roles only)
+      isBillingRole
+        ? this.prisma.payment.aggregate({
+            where: {
+              voidedAt: null,
+              paidAt: { gte: todayStart, lt: todayEnd },
+              invoice: {
+                ...(orgId ? { organizationId: orgId } : {}),
+                ...(query.branchId ? { branchId: query.branchId } : {}),
+                deletedAt: null,
+              },
+            },
+            _sum: { amount: true },
+          })
+        : Promise.resolve(null),
     ]);
 
     // Appointments
@@ -259,7 +276,7 @@ export class DashboardService {
       unpaidInvoiceCount: number;
     } | null = null;
 
-    if (isBillingRole && billingPeriodGroups !== null && billingOutstandingAgg !== null) {
+    if (isBillingRole && billingPeriodGroups !== null && billingOutstandingAgg !== null && collectedTodayAgg !== null) {
       const byInv = new Map(billingPeriodGroups.map((g) => [g.status, g]));
       const activeGroups = [
         byInv.get(InvoiceStatus.ISSUED),
@@ -270,10 +287,7 @@ export class DashboardService {
         (s, g) => s + (g?._sum.totalAmount?.toNumber() ?? 0),
         0,
       );
-      const collectedToday = activeGroups.reduce(
-        (s, g) => s + (g?._sum.paidAmount?.toNumber() ?? 0),
-        0,
-      );
+      const collectedToday = collectedTodayAgg._sum.amount?.toNumber() ?? 0;
       const outstandingTotal = billingOutstandingAgg._sum.totalAmount?.toNumber() ?? 0;
       const outstandingPaid = billingOutstandingAgg._sum.paidAmount?.toNumber() ?? 0;
       billing = {

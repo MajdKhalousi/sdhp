@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useIssueInvoice, useRecordPayment } from '@/hooks/use-invoices';
+import { useToast } from '@/hooks/use-toast';
 import type { Invoice, PaymentMethod } from '@/types/invoice';
 
 const PAYMENT_METHODS: PaymentMethod[] = ['CASH', 'CARD', 'BANK_TRANSFER', 'INSURANCE', 'OTHER'];
@@ -46,6 +47,7 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
   const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const { toast } = useToast();
   const { mutateAsync: issueInvoice } = useIssueInvoice();
   const { mutateAsync: recordPayment } = useRecordPayment();
 
@@ -113,6 +115,7 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
           },
         });
         onSuccess();
+        toast({ title: t('paymentRecorded'), variant: 'success' });
       } catch (err) {
         setSubmitError(
           isDraft

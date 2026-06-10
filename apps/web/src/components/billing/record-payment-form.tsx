@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRecordPayment } from '@/hooks/use-invoices';
+import { useToast } from '@/hooks/use-toast';
 import type { PaymentMethod } from '@/types/invoice';
 
 const PAYMENT_METHODS: PaymentMethod[] = ['CASH', 'CARD', 'BANK_TRANSFER', 'INSURANCE', 'OTHER'];
@@ -51,6 +52,7 @@ export function RecordPaymentForm({ invoiceId, remaining, onCancel, onSuccess }:
   });
   const [validationError, setValidationError] = useState('');
 
+  const { toast } = useToast();
   const { mutate, isPending, error: mutationError } = useRecordPayment();
 
   function set(field: keyof FormState) {
@@ -96,6 +98,7 @@ export function RecordPaymentForm({ invoiceId, remaining, onCancel, onSuccess }:
         onSuccess: () => {
           setValidationError('');
           onSuccess?.();
+          toast({ title: t('recorded'), variant: 'success' });
           onCancel();
         },
       },

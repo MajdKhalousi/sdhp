@@ -1744,6 +1744,7 @@
       },
       "submit": "Record Payment",
       "submitting": "Recording…",
+      "recorded": "Payment recorded successfully",
       "remainingHint": "Balance: {amount}",
       "validation": {
         "amountRequired": "Amount is required.",
@@ -2356,6 +2357,7 @@
       "paymentError": "Invoice issued but payment failed. Please record payment manually.",
       "submitButton": "Confirm & Collect",
       "submitting": "Processing…",
+      "paymentRecorded": "Payment recorded successfully",
       "close": "Close"
     },
     "todaySummary": {

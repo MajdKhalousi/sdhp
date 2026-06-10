@@ -1744,6 +1744,7 @@
       },
       "submit": "تسجيل الدفعة",
       "submitting": "جارٍ التسجيل…",
+      "recorded": "تم تسجيل الدفعة بنجاح",
       "remainingHint": "الرصيد: {amount}",
       "validation": {
         "amountRequired": "المبلغ مطلوب.",
@@ -2356,6 +2357,7 @@
       "paymentError": "تم إصدار الفاتورة لكن فشل تسجيل الدفعة. يرجى تسجيل الدفع يدويًا.",
       "submitButton": "تأكيد وتحصيل",
       "submitting": "جارٍ المعالجة…",
+      "paymentRecorded": "تم تسجيل الدفعة بنجاح",
       "close": "إغلاق"
     },
     "todaySummary": {

@@ -504,7 +504,7 @@ export function CashierView() {
               invoice={inv}
               isActive={activeId === inv.id}
               onAction={() => setActiveId(inv.id)}
-              onSuccess={() => setActiveId(null)}
+              onSuccess={() => { setActiveId(null); issuedQuery.refetch(); partialQuery.refetch(); }}
               onCancel={() => setActiveId(null)}
               visitTypes={visitTypes}
             />

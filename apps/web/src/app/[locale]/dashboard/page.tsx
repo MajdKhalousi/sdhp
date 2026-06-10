@@ -171,6 +171,7 @@ export default function DashboardPage() {
       value: o?.appointments.noShow ?? '—',
       sub: t('stats.noShowsToday.sub'),
       icon: UserX,
+      href: `/dashboard/appointments?status=NO_SHOW&date=${today}`,
     });
     if (canSeeCompleted) {
       stats.push({
@@ -486,7 +487,7 @@ export default function DashboardPage() {
                 )}
               </div>
               <Link
-                href="/dashboard/queue"
+                href={waitingHref}
                 className="text-xs text-muted-foreground transition-colors hover:text-foreground"
               >
                 {t('actions.manage')}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import { Banknote, Wallet, TrendingUp, FileText, Users } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
@@ -52,7 +53,11 @@ export default function BillingReportsPage() {
   const { user } = useAuthStore();
   const canView = BILLING_ROLES.has(user?.role ?? '');
 
-  const [preset, setPreset] = useState<Preset>('thisMonth');
+  const searchParams = useSearchParams();
+  const initialPreset = (searchParams.get('preset') as Preset | null) ?? 'thisMonth';
+  const [preset, setPreset] = useState<Preset>(
+    PRESET_ORDER.includes(initialPreset as Preset) ? initialPreset : 'thisMonth',
+  );
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
   const [page, setPage] = useState(1);

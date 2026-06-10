@@ -373,7 +373,7 @@ export default function DashboardPage() {
       {canSeeBilling && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Link
-            href="/dashboard/reports/billing"
+            href="/dashboard/reports/billing?preset=today"
             className="rounded-xl border bg-card p-6 shadow-sm transition-colors hover:border-primary/40"
           >
             <div className="flex items-start justify-between">
@@ -391,7 +391,7 @@ export default function DashboardPage() {
             )}
           </Link>
           <Link
-            href="/dashboard/reports/billing"
+            href="/dashboard/reports/billing?preset=today"
             className="rounded-xl border bg-card p-6 shadow-sm transition-colors hover:border-primary/40"
           >
             <div className="flex items-start justify-between">

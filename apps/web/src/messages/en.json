@@ -266,7 +266,8 @@
       "trigger": "No-show",
       "confirm": "Confirm",
       "cancel": "Cancel",
-      "skipping": "…"
+      "skipping": "…",
+      "error": "Failed to mark no-show"
     },
     "confirm": {
       "trigger": "Confirm",

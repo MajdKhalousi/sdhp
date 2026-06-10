@@ -266,7 +266,8 @@
       "trigger": "لم يحضر",
       "confirm": "تأكيد",
       "cancel": "إلغاء",
-      "skipping": "…"
+      "skipping": "…",
+      "error": "فشل تسجيل الغياب"
     },
     "confirm": {
       "trigger": "تأكيد",

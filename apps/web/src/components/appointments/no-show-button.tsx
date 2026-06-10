@@ -16,7 +16,7 @@ export function NoShowButton({ appointmentId }: { appointmentId: string }) {
       { id: appointmentId, dto: { status: 'NO_SHOW' } },
       {
         onSuccess: () => setConfirming(false),
-        onError: (e) => setError(e instanceof Error ? e.message : 'Failed to mark no-show'),
+        onError: (e) => setError(e instanceof Error ? e.message : t('error')),
       },
     );
   }

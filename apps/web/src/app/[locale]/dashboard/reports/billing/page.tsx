@@ -279,7 +279,7 @@ export default function BillingReportsPage() {
                       </td>
                       <td className="px-5 py-3">
                         <Link
-                          href={`/dashboard/patients/${p.patientId}`}
+                          href={`/dashboard/patients/${p.patientId}?tab=invoices`}
                           className="rounded-md border px-2.5 py-1 text-xs font-medium transition-colors hover:bg-accent"
                         >
                           {t('outstandingPatients.viewPatient')}

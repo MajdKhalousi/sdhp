@@ -246,7 +246,9 @@ export default function PatientPage({ params }: { params: { id: string } }) {
   const canSeeVisitStatus  = user ? SAFETY_ALERT_ROLES.has(user.role) : false;
   const [activeTab, setActiveTab] = useState(() => {
     const tab = searchParams.get('tab');
-    return tab === 'timeline' || tab === 'medical-history' ? 'timeline' : 'overview';
+    return tab === 'timeline' || tab === 'medical-history' ? 'timeline'
+      : tab === 'invoices' ? 'invoices'
+      : 'overview';
   });
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);

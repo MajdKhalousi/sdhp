@@ -1285,7 +1285,7 @@
       "radiologyCount": "radiology",
       "filesCount": "files",
       "reportsCount": "reports",
-      "viewEncounter": "View Encounter",
+      "viewEncounter": "View Encounter →",
       "downloadReport": "Download PDF",
       "downloading": "Downloading..."
     },

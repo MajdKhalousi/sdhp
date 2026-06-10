@@ -1285,7 +1285,7 @@
       "radiologyCount": "أشعة",
       "filesCount": "ملفات",
       "reportsCount": "تقارير",
-      "viewEncounter": "عرض الزيارة",
+      "viewEncounter": "عرض الزيارة ←",
       "downloadReport": "تحميل PDF",
       "downloading": "جارِ التحميل..."
     },

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { Link } from '@/i18n/navigation';
 import { RefreshCw, Stethoscope } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useQueue } from '@/hooks/use-queue';
@@ -162,7 +163,12 @@ export function DoctorQueuePanel() {
 
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">
-                    {patient.firstName} {patient.lastName}
+                    <Link
+                      href={`/dashboard/patients/${patient.id}`}
+                      className="hover:underline"
+                    >
+                      {patient.firstName} {patient.lastName}
+                    </Link>
                     <span className="ms-1.5 font-mono text-xs font-normal text-muted-foreground" dir="ltr">
                       {patient.mrn}
                     </span>

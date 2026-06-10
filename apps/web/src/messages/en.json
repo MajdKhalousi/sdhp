@@ -1345,7 +1345,7 @@
     "counter": "{count, plural, one {# patient waiting} other {# patients waiting}}",
     "empty": {
       "title": "No patients waiting",
-      "subtitle": "All scheduled patients have been seen."
+      "subtitle": "No patients are waiting right now."
     },
     "error": {
       "loadFailed": "Failed to load queue",

@@ -376,7 +376,8 @@
       "justNow": "just now",
       "scheduled": "Appt: {time}",
       "visitType": "Visit: {name}",
-      "viewAppointment": "View appointment →"
+      "viewAppointment": "View appointment →",
+      "viewInvoice": "View invoice →"
     },
     "walkIn": {
       "title": "Walk-in Registration",

@@ -376,7 +376,8 @@
       "justNow": "الآن",
       "scheduled": "موعد: {time}",
       "visitType": "الزيارة: {name}",
-      "viewAppointment": "عرض الموعد ←"
+      "viewAppointment": "عرض الموعد ←",
+      "viewInvoice": "عرض الفاتورة ←"
     },
     "walkIn": {
       "title": "تسجيل دون موعد",

@@ -74,8 +74,14 @@ export function QueueTicket({ entry, invoice, visitTypeName }: { entry: QueueEnt
           </p>
         )}
         {invoice && invoice.status !== 'CANCELLED' && (
-          <div className="mt-1">
+          <div className="mt-1 flex items-center gap-2">
             <InvoiceStatusBadge status={invoice.status} />
+            <Link
+              href={`/dashboard/invoices/${invoice.id}`}
+              className="text-xs text-primary hover:underline"
+            >
+              {t('viewInvoice')}
+            </Link>
           </div>
         )}
       </div>

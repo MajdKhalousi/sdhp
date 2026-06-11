@@ -90,7 +90,8 @@
       "collectedToday": {
         "label": "محصل اليوم",
         "sub": "المدفوعات المستلمة اليوم",
-        "annotation": "نسبة التحصيل اليوم {rate}%"
+        "annotation": "نسبة التحصيل اليوم {rate}%",
+        "noInvoicesToday": "لا توجد فواتير صادرة اليوم"
       },
       "outstandingBalance": {
         "label": "المستحقات",

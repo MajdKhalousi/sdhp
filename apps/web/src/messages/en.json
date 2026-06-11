@@ -90,7 +90,8 @@
       "collectedToday": {
         "label": "Collected Today",
         "sub": "Payments received today",
-        "annotation": "{rate}% collection rate today"
+        "annotation": "{rate}% collection rate today",
+        "noInvoicesToday": "no invoices issued today"
       },
       "outstandingBalance": {
         "label": "Outstanding Balance",

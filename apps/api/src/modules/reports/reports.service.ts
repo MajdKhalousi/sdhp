@@ -248,7 +248,7 @@ export class ReportsService {
       deletedAt: null as null,
     };
 
-    const [periodGroups, outstandingAgg] = await Promise.all([
+    const [periodGroups, outstandingAgg, collectedAgg] = await Promise.all([
       // Period-scoped groupBy for non-DRAFT statuses, filtered by issuedAt range
       this.prisma.invoice.groupBy({
         by: ['status'],
@@ -275,6 +275,19 @@ export class ReportsService {
         },
         _sum: { totalAmount: true, paidAmount: true },
       }),
+      // Payments received in period — aggregated by payment.paidAt
+      this.prisma.payment.aggregate({
+        where: {
+          voidedAt: null,
+          ...this.paidAtFilter(query.from, query.to),
+          invoice: {
+            ...(orgId ? { organizationId: orgId } : {}),
+            ...(query.branchId ? { branchId: query.branchId } : {}),
+            deletedAt: null,
+          },
+        },
+        _sum: { amount: true },
+      }),
     ]);
 
     const byStatus = new Map(periodGroups.map((g) => [g.status, g]));
@@ -288,10 +301,7 @@ export class ReportsService {
       (s, g) => s + (g?._sum.totalAmount?.toNumber() ?? 0),
       0,
     );
-    const totalCollected = activeGroups.reduce(
-      (s, g) => s + (g?._sum.paidAmount?.toNumber() ?? 0),
-      0,
-    );
+    const totalCollected = collectedAgg._sum.amount?.toNumber() ?? 0;
     const invoiceCount = activeGroups.reduce((s, g) => s + (g?._count._all ?? 0), 0);
     const paidCount = paidGroup?._count._all ?? 0;
     const partialCount = partialGroup?._count._all ?? 0;
@@ -385,6 +395,16 @@ export class ReportsService {
     if (!from && !to) return {};
     return {
       issuedAt: {
+        ...(from ? { gte: new Date(from) } : {}),
+        ...(to ? { lte: new Date(to) } : {}),
+      },
+    };
+  }
+
+  private paidAtFilter(from?: string, to?: string) {
+    if (!from && !to) return {};
+    return {
+      paidAt: {
         ...(from ? { gte: new Date(from) } : {}),
         ...(to ? { lte: new Date(to) } : {}),
       },

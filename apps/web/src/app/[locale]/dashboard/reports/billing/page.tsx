@@ -203,7 +203,7 @@ export default function BillingReportsPage() {
               {report ? formatAmount(report.totalCollected, locale) : '—'}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              {report ? `${report.paidCount} ${t('cards.paid')} · ${report.partialCount} ${t('cards.partial')}` : ''}
+              {report ? t('cards.collectedBasis') : ''}
             </p>
           </div>
 
@@ -226,10 +226,18 @@ export default function BillingReportsPage() {
               <TrendingUp className="h-4 w-4 shrink-0 text-muted-foreground/50" />
             </div>
             <p className="mt-2 text-2xl font-bold tabular-nums">
-              {report ? `${report.collectionRate.toFixed(1)}%` : '—'}
+              {report
+                ? report.totalInvoiced === 0
+                  ? '—'
+                  : `${report.collectionRate.toFixed(1)}%`
+                : '—'}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              {report ? t('cards.collectionRateHint') : ''}
+              {report
+                ? report.totalInvoiced === 0
+                  ? t('cards.collectionRateNoInvoices')
+                  : t('cards.collectionRateHint')
+                : ''}
             </p>
           </div>
         </div>

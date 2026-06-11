@@ -137,6 +137,10 @@ function InvoiceRow({ invoice, isActive, onAction, onSuccess, onCancel, visitTyp
                 {tInvoicePrint('printReceipt')}
               </a>
             </div>
+          ) : remaining <= 0 && invoice.status !== 'DRAFT' ? (
+            <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+              {t('actions.noCharge')}
+            </span>
           ) : (
             <button
               onClick={onAction}
@@ -144,7 +148,9 @@ function InvoiceRow({ invoice, isActive, onAction, onSuccess, onCancel, visitTyp
               className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
             >
               <CreditCard className="h-3 w-3" />
-              {getActionLabel()}
+              {remaining <= 0 && invoice.status === 'DRAFT'
+                ? t('issueAndPayDialog.issueOnlyButton')
+                : getActionLabel()}
             </button>
           )}
         </div>
@@ -248,14 +254,20 @@ function OutstandingRow({ invoice, isActive, onAction, onSuccess, onCancel, visi
         </div>
 
         <div className="shrink-0">
-          <button
-            onClick={onAction}
-            disabled={isActive}
-            className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
-          >
-            <CreditCard className="h-3 w-3" />
-            {getActionLabel()}
-          </button>
+          {remaining <= 0 ? (
+            <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+              {t('actions.noCharge')}
+            </span>
+          ) : (
+            <button
+              onClick={onAction}
+              disabled={isActive}
+              className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+            >
+              <CreditCard className="h-3 w-3" />
+              {getActionLabel()}
+            </button>
+          )}
         </div>
       </div>
 

@@ -2350,7 +2350,8 @@
       "issueAndPay": "Issue & Collect",
       "collectPayment": "Collect Payment",
       "collectRemaining": "Collect Remaining",
-      "paid": "Paid"
+      "paid": "Paid",
+      "noCharge": "No charge"
     },
     "issueAndPayDialog": {
       "title": "Collect Payment",
@@ -2360,7 +2361,9 @@
       "submitButton": "Confirm & Collect",
       "submitting": "Processing…",
       "paymentRecorded": "Payment recorded successfully",
-      "close": "Close"
+      "close": "Close",
+      "noBalanceDue": "No balance due. This invoice will be issued without collecting payment.",
+      "issueOnlyButton": "Issue Invoice"
     },
     "todaySummary": {
       "title": "Today Summary",

@@ -33,6 +33,7 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
   const locale = useLocale();
 
   const remaining = Math.max(0, parseFloat(invoice.totalAmount) - parseFloat(invoice.paidAmount));
+  const isDraft = invoice.status === 'DRAFT';
 
   const [form, setForm] = useState<FormState>({
     amount: remaining > 0 ? String(remaining) : '',
@@ -73,6 +74,24 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
     e.preventDefault();
     setSubmitError('');
 
+    // Issue-only path: zero-balance DRAFT invoice — issue without recording payment
+    if (isDraft && remaining <= 0) {
+      setIsSubmitting(true);
+      try {
+        await issueInvoice(invoice.id);
+        onSuccess();
+        toast({ title: t('paymentRecorded'), variant: 'success' });
+      } catch {
+        setSubmitError(t('issueError'));
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    // Defense-in-depth: non-draft zero-remaining — not reachable from UI after cashier guards
+    if (remaining <= 0) return;
+
     const amount = parseFloat(form.amount);
     if (!form.amount || isNaN(amount)) {
       setValidationError(tPayment('validation.amountRequired'));
@@ -93,8 +112,6 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
 
     setIsSubmitting(true);
     try {
-      const isDraft = invoice.status === 'DRAFT';
-
       if (isDraft) {
         try {
           await issueInvoice(invoice.id);
@@ -187,92 +204,117 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
       )}
 
       <form onSubmit={handleSubmit}>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="space-y-1">
-            <label className="text-xs font-medium">
-              {tPayment('fields.amount')} <span className="text-destructive">*</span>
-            </label>
-            <input
-              type="number"
-              min={0.01}
-              step="any"
-              value={form.amount}
-              onChange={setField('amount')}
-              disabled={isSubmitting}
-              className="h-8 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
-              dir="ltr"
-            />
+        {isDraft && remaining <= 0 ? (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">{t('noBalanceDue')}</p>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSubmitting ? t('submitting') : t('issueOnlyButton')}
+              </button>
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={isSubmitting}
+                className="h-8 rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-60"
+              >
+                {tCommon('actions.cancel')}
+              </button>
+            </div>
           </div>
-          <div className="space-y-1">
-            <label className="text-xs font-medium">
-              {tPayment('fields.method')} <span className="text-destructive">*</span>
-            </label>
-            <select
-              value={form.method}
-              onChange={setField('method')}
-              disabled={isSubmitting}
-              className="h-8 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
-            >
-              <option value="">{tPayment('fields.selectMethod')}</option>
-              {PAYMENT_METHODS.map((m) => (
-                <option key={m} value={m}>
-                  {tPayments(`method.${m}` as Parameters<typeof tPayments>[0])}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs font-medium">{tPayment('fields.referenceNumber')}</label>
-            <input
-              type="text"
-              value={form.referenceNumber}
-              onChange={setField('referenceNumber')}
-              disabled={isSubmitting}
-              className="h-8 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
-              dir="ltr"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs font-medium">{tPayment('fields.paidAt')}</label>
-            <input
-              type="date"
-              value={form.paidAt}
-              onChange={setField('paidAt')}
-              disabled={isSubmitting}
-              className="h-8 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
-              dir="ltr"
-            />
-          </div>
-          <div className="space-y-1 sm:col-span-2 lg:col-span-4">
-            <label className="text-xs font-medium">{tPayment('fields.notes')}</label>
-            <input
-              type="text"
-              value={form.notes}
-              onChange={setField('notes')}
-              disabled={isSubmitting}
-              placeholder={tPayment('fields.notesPlaceholder')}
-              className="h-8 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
-            />
-          </div>
-        </div>
+        ) : (
+          <>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium">
+                  {tPayment('fields.amount')} <span className="text-destructive">*</span>
+                </label>
+                <input
+                  type="number"
+                  min={0.01}
+                  step="any"
+                  value={form.amount}
+                  onChange={setField('amount')}
+                  disabled={isSubmitting}
+                  className="h-8 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+                  dir="ltr"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium">
+                  {tPayment('fields.method')} <span className="text-destructive">*</span>
+                </label>
+                <select
+                  value={form.method}
+                  onChange={setField('method')}
+                  disabled={isSubmitting}
+                  className="h-8 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+                >
+                  <option value="">{tPayment('fields.selectMethod')}</option>
+                  {PAYMENT_METHODS.map((m) => (
+                    <option key={m} value={m}>
+                      {tPayments(`method.${m}` as Parameters<typeof tPayments>[0])}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium">{tPayment('fields.referenceNumber')}</label>
+                <input
+                  type="text"
+                  value={form.referenceNumber}
+                  onChange={setField('referenceNumber')}
+                  disabled={isSubmitting}
+                  className="h-8 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+                  dir="ltr"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium">{tPayment('fields.paidAt')}</label>
+                <input
+                  type="date"
+                  value={form.paidAt}
+                  onChange={setField('paidAt')}
+                  disabled={isSubmitting}
+                  className="h-8 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+                  dir="ltr"
+                />
+              </div>
+              <div className="space-y-1 sm:col-span-2 lg:col-span-4">
+                <label className="text-xs font-medium">{tPayment('fields.notes')}</label>
+                <input
+                  type="text"
+                  value={form.notes}
+                  onChange={setField('notes')}
+                  disabled={isSubmitting}
+                  placeholder={tPayment('fields.notesPlaceholder')}
+                  className="h-8 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+                />
+              </div>
+            </div>
 
-        <div className="mt-3 flex gap-2">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isSubmitting ? t('submitting') : t('submitButton')}
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isSubmitting}
-            className="h-8 rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-60"
-          >
-            {tCommon('actions.cancel')}
-          </button>
-        </div>
+            <div className="mt-3 flex gap-2">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSubmitting ? t('submitting') : t('submitButton')}
+              </button>
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={isSubmitting}
+                className="h-8 rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-60"
+              >
+                {tCommon('actions.cancel')}
+              </button>
+            </div>
+          </>
+        )}
       </form>
     </div>
   );

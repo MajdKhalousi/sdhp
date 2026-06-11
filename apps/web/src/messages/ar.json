@@ -2350,7 +2350,8 @@
       "issueAndPay": "إصدار وتحصيل",
       "collectPayment": "تحصيل الدفع",
       "collectRemaining": "تحصيل المتبقي",
-      "paid": "مدفوعة"
+      "paid": "مدفوعة",
+      "noCharge": "بدون رسوم"
     },
     "issueAndPayDialog": {
       "title": "تحصيل الدفع",
@@ -2360,7 +2361,9 @@
       "submitButton": "تأكيد وتحصيل",
       "submitting": "جارٍ المعالجة…",
       "paymentRecorded": "تم تسجيل الدفعة بنجاح",
-      "close": "إغلاق"
+      "close": "إغلاق",
+      "noBalanceDue": "لا يوجد رصيد مستحق. سيتم إصدار الفاتورة بدون تحصيل دفعة.",
+      "issueOnlyButton": "إصدار الفاتورة"
     },
     "todaySummary": {
       "title": "ملخص اليوم",

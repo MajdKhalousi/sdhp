@@ -36,6 +36,17 @@ export function Toaster() {
                 {t.description}
               </RadixToast.Description>
             )}
+            {t.action && (
+              <a
+                href={t.action.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => dismiss(t.id)}
+                className="mt-1.5 inline-flex items-center rounded-md border px-2.5 py-1 text-xs font-medium transition-colors hover:bg-accent"
+              >
+                {t.action.label}
+              </a>
+            )}
           </div>
           <RadixToast.Close
             onClick={() => dismiss(t.id)}

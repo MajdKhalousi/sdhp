@@ -91,7 +91,8 @@
         "label": "محصل اليوم",
         "sub": "المدفوعات المستلمة اليوم",
         "annotation": "نسبة التحصيل اليوم {rate}%",
-        "noInvoicesToday": "لا توجد فواتير صادرة اليوم"
+        "noInvoicesToday": "لا توجد فواتير صادرة اليوم",
+        "includesPriorPayments": "يشمل مدفوعات على فواتير سابقة"
       },
       "outstandingBalance": {
         "label": "المستحقات",

@@ -386,9 +386,11 @@ export default function DashboardPage() {
             <p className="mt-1 text-xs text-muted-foreground">{t('stats.collectedToday.sub')}</p>
             {overview?.billing && (
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {(overview.billing.invoicedToday ?? 0) > 0
-                  ? t('stats.collectedToday.annotation', { rate: overview.billing.collectionRateToday })
-                  : t('stats.collectedToday.noInvoicesToday')}
+                {(overview.billing.invoicedToday ?? 0) === 0
+                  ? t('stats.collectedToday.noInvoicesToday')
+                  : overview.billing.collectionRateToday > 100
+                    ? t('stats.collectedToday.includesPriorPayments')
+                    : t('stats.collectedToday.annotation', { rate: overview.billing.collectionRateToday })}
               </p>
             )}
           </Link>

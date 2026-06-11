@@ -28,6 +28,7 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
   const tPayment = useTranslations('invoice.payment');
   const tPayments = useTranslations('invoice.payments');
   const tDetail = useTranslations('invoice.detail');
+  const tPrint = useTranslations('invoice.print');
   const tCommon = useTranslations('common');
   const locale = useLocale();
 
@@ -115,8 +116,14 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
           },
         });
         onSuccess();
-        toast({ title: t('paymentRecorded'), variant: 'success' });
-        window.open(`/${locale}/invoice/${invoice.id}/print`, '_blank');
+        toast({
+          title: t('paymentRecorded'),
+          variant: 'success',
+          action: {
+            label: tPrint('printReceipt'),
+            href: `/${locale}/invoice/${invoice.id}/print`,
+          },
+        });
       } catch (err) {
         setSubmitError(
           isDraft

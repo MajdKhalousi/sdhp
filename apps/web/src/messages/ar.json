@@ -2419,7 +2419,8 @@
       "sendReminder": "تذكير",
       "markContacted": "تم التواصل",
       "contacting": "جارٍ التحديث...",
-      "whatsappReminder": "تذكير واتساب"
+      "whatsappReminder": "تذكير واتساب",
+      "contactNote": "ملاحظة التواصل..."
     },
     "reminder": {
       "queued": "تم جدولة التذكير",

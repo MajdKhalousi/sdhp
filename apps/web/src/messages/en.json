@@ -2419,7 +2419,8 @@
       "sendReminder": "Remind",
       "markContacted": "Mark as Contacted",
       "contacting": "Updating...",
-      "whatsappReminder": "WhatsApp Reminder"
+      "whatsappReminder": "WhatsApp Reminder",
+      "contactNote": "Contact note..."
     },
     "reminder": {
       "queued": "Reminder queued",

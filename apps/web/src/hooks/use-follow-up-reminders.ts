@@ -31,6 +31,7 @@ export interface ReminderItem {
 interface UpdateReminderBody {
   status: 'SENT' | 'FAILED';
   failureReason?: string;
+  contactNote?: string;
 }
 
 export function useCreateReminder() {

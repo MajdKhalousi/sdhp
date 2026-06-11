@@ -18,4 +18,9 @@ export class UpdateReminderDto {
   @IsString()
   @ApiPropertyOptional()
   failureReason?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiPropertyOptional({ description: 'Optional note recorded during the contact attempt' })
+  contactNote?: string;
 }

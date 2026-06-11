@@ -316,6 +316,9 @@ export class FollowupsService {
         ...(dto.status === ReminderStatus.SENT
           ? { sentAt: new Date(), failureReason: null }
           : { failureReason: dto.failureReason ?? 'Contact failed' }),
+        ...(dto.contactNote !== undefined
+          ? { contactNote: dto.contactNote.trim() || null }
+          : {}),
       },
       select: {
         id: true,
@@ -326,6 +329,7 @@ export class FollowupsService {
         status: true,
         sentAt: true,
         failureReason: true,
+        contactNote: true,
         createdAt: true,
         updatedAt: true,
       },

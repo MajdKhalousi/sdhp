@@ -65,6 +65,7 @@ function FollowUpRow({
   const [localState, setLocalState] = useState<{ reminderId: string; status: 'PENDING' | 'SENT' } | null>(null);
   const [isPendingCreate, setIsPendingCreate] = useState(false);
   const [isPendingContact, setIsPendingContact] = useState(false);
+  const [contactNoteValue, setContactNoteValue] = useState('');
   const [isPendingResponse, setIsPendingResponse] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -130,13 +131,22 @@ function FollowUpRow({
   function handleMarkContacted() {
     if (!reminderState || reminderState.status !== 'PENDING') return;
     const { reminderId } = reminderState;
+    const trimmedNote = contactNoteValue.trim();
     setIsPendingContact(true);
     updateReminder.mutate(
-      { encounterId: item.encounterId, reminderId, body: { status: 'SENT' } },
+      {
+        encounterId: item.encounterId,
+        reminderId,
+        body: {
+          status: 'SENT',
+          ...(trimmedNote ? { contactNote: trimmedNote } : {}),
+        },
+      },
       {
         onSuccess: () => {
           setIsPendingContact(false);
           setLocalState({ reminderId, status: 'SENT' });
+          setContactNoteValue('');
           toast({ title: t('reminders.sent'), variant: 'success' });
         },
         onError: () => {
@@ -314,6 +324,21 @@ function FollowUpRow({
                   {showReminderButton && reminderState?.status === 'PENDING' && (
                     <>
                       <hr className="border-border" />
+                      <div className="px-3 pt-2 pb-1">
+                        <input
+                          type="text"
+                          value={contactNoteValue}
+                          onChange={(e) => setContactNoteValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !isPendingContact) {
+                              handleMarkContacted();
+                              setIsMenuOpen(false);
+                            }
+                          }}
+                          placeholder={t('actions.contactNote')}
+                          className="h-7 w-full rounded-md border bg-background px-2 text-xs outline-none focus:ring-1 focus:ring-ring"
+                        />
+                      </div>
                       <button
                         onClick={() => { handleMarkContacted(); setIsMenuOpen(false); }}
                         disabled={isPendingContact}

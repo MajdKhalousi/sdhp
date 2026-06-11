@@ -956,7 +956,11 @@
         "files": "الملفات الطبية",
         "reports": "التقارير",
         "invoices": "الفواتير",
-        "appointments": "المواعيد"
+        "appointments": "المواعيد",
+        "followUps": "المتابعات"
+      },
+      "followUps": {
+        "empty": "لا توجد سجلات متابعة لهذا المريض."
       },
       "appointments": {
         "empty": "لا توجد مواعيد لهذا المريض.",

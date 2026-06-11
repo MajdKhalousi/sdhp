@@ -956,7 +956,11 @@
         "files": "Medical Files",
         "reports": "Reports",
         "invoices": "Invoices",
-        "appointments": "Appointments"
+        "appointments": "Appointments",
+        "followUps": "Follow-Ups"
+      },
+      "followUps": {
+        "empty": "No follow-up records for this patient."
       },
       "appointments": {
         "empty": "No appointments found for this patient.",

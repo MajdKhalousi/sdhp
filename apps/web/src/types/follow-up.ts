@@ -54,6 +54,7 @@ export interface FollowUpQuery {
   page?: number;
   limit?: number;
   search?: string;
+  patientId?: string;
 }
 
 export interface FollowUpSummary {

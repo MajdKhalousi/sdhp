@@ -159,7 +159,7 @@ export class FollowupsService {
   }
 
   private async buildEncounterWhere(
-    query: { doctorId?: string; branchId?: string; dateFrom?: string; dateTo?: string; search?: string },
+    query: { doctorId?: string; branchId?: string; dateFrom?: string; dateTo?: string; search?: string; patientId?: string },
     caller: JwtPayload,
   ): Promise<Prisma.EncounterWhereInput | null> {
     // DOCTOR: always scope to own profile; caller-supplied doctorId is ignored for security.
@@ -183,8 +183,9 @@ export class FollowupsService {
       organizationId: caller.organizationId,
       deletedAt: null,
       followUpDate: followUpDateFilter,
-      ...(doctorId       ? { doctorId }               : {}),
-      ...(query.branchId ? { branchId: query.branchId } : {}),
+      ...(doctorId        ? { doctorId }                  : {}),
+      ...(query.branchId  ? { branchId: query.branchId }  : {}),
+      ...(query.patientId ? { patientId: query.patientId } : {}),
       ...(trimmedSearch ? {
         patient: {
           OR: [

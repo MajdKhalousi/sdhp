@@ -26,6 +26,7 @@ import { PatientClinicalSummary } from '@/components/patients/patient-clinical-s
 import { PatientSafetyAlerts } from '@/components/patients/patient-safety-alerts';
 import { PatientVisitStatus } from '@/components/patients/patient-visit-status';
 import { PatientOutstandingBalance } from '@/components/patients/patient-outstanding-balance';
+import { PatientFollowUpsTab } from '@/components/patients/patient-follow-ups-tab';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { Patient, CreatePatientInput, UpdatePatientInput } from '@/hooks/use-patient';
@@ -248,6 +249,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
     const tab = searchParams.get('tab');
     return tab === 'timeline' || tab === 'medical-history' ? 'timeline'
       : tab === 'invoices' ? 'invoices'
+      : tab === 'follow-ups' ? 'follow-ups'
       : 'overview';
   });
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -304,6 +306,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
   const TABS: TabItem[] = [
     { value: 'overview',      label: t('detail.tabs.overview')      },
     { value: 'appointments',  label: t('detail.tabs.appointments')  },
+    ...(canSeeSafetyAlerts ? [{ value: 'follow-ups', label: t('detail.tabs.followUps') }] : []),
     { value: 'timeline',      label: t('detail.tabs.timeline')      },
     { value: 'prescriptions', label: t('detail.tabs.prescriptions') },
     { value: 'labs',          label: t('detail.tabs.labs')          },
@@ -485,6 +488,12 @@ export default function PatientPage({ params }: { params: { id: string } }) {
         <TabPanel value="appointments" activeValue={activeTab}>
           <PatientAppointmentsTab patientId={id} />
         </TabPanel>
+
+        {canSeeSafetyAlerts && (
+          <TabPanel value="follow-ups" activeValue={activeTab}>
+            <PatientFollowUpsTab patientId={id} />
+          </TabPanel>
+        )}
 
         <TabPanel value="timeline" activeValue={activeTab}>
           <TimelineTab patientId={id} />

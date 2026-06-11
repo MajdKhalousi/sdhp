@@ -49,4 +49,9 @@ export class FollowUpQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by patient ID — returns all follow-ups for a specific patient', example: 'patient-cuid' })
+  @IsOptional()
+  @IsString()
+  patientId?: string;
 }

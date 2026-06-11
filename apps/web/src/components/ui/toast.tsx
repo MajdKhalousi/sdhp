@@ -21,7 +21,7 @@ export function Toaster() {
           key={t.id}
           open
           onOpenChange={(open) => { if (!open) dismiss(t.id); }}
-          duration={4000}
+          duration={t.duration ?? 4000}
           className={cn(
             'flex items-start gap-3 rounded-xl border p-4 shadow-lg',
             'data-[state=open]:animate-in data-[state=closed]:animate-out',

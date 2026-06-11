@@ -119,6 +119,7 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
         toast({
           title: t('paymentRecorded'),
           variant: 'success',
+          duration: 10000,
           action: {
             label: tPrint('printReceipt'),
             href: `/${locale}/invoice/${invoice.id}/print`,

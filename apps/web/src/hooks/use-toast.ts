@@ -8,6 +8,7 @@ export interface ToastItem {
   description?: string;
   variant?: ToastVariant;
   action?: { label: string; href: string };
+  duration?: number;
 }
 
 interface ToastStore {

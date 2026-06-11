@@ -252,19 +252,23 @@ export default function InvoicePrintPage({ params }: Props) {
             <p className="text-sm text-muted-foreground">{tPrint('noPayments')}</p>
           ) : (
             <div className="overflow-hidden rounded-md border">
-              <table className="w-full min-w-[480px] text-sm">
+              <table className="w-full min-w-[560px] text-sm">
                 <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
                   <tr>
                     <th className="px-3 py-2 text-start font-medium">{t('payments.columns.date')}</th>
                     <th className="px-3 py-2 text-start font-medium">{t('payments.columns.method')}</th>
                     <th className="px-3 py-2 text-end font-medium">{t('payments.columns.amount')}</th>
                     <th className="px-3 py-2 text-start font-medium">{t('payments.columns.reference')}</th>
+                    <th className="px-3 py-2 text-start font-medium">{t('payments.columns.receivedBy')}</th>
                     <th className="px-3 py-2 text-start font-medium">{t('payments.columns.status')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {invoice.payments.map((payment) => {
                     const isVoided = payment.voidedAt !== null;
+                    const receivedByName = payment.receivedBy
+                      ? `${payment.receivedBy.firstName} ${payment.receivedBy.lastName}`.trim()
+                      : '—';
                     return (
                       <tr key={payment.id} className={`border-t ${isVoided ? 'opacity-60' : ''}`}>
                         <td className="whitespace-nowrap px-3 py-2" dir="ltr">
@@ -280,6 +284,9 @@ export default function InvoicePrintPage({ params }: Props) {
                         </td>
                         <td className="px-3 py-2 text-muted-foreground" dir="ltr">
                           {payment.referenceNumber ?? '—'}
+                        </td>
+                        <td className="px-3 py-2" dir="auto">
+                          {receivedByName}
                         </td>
                         <td className="px-3 py-2">
                           {isVoided ? (

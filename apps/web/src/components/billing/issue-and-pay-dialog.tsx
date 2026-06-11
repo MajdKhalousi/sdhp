@@ -116,6 +116,7 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
         });
         onSuccess();
         toast({ title: t('paymentRecorded'), variant: 'success' });
+        window.open(`/${locale}/invoice/${invoice.id}/print`, '_blank');
       } catch (err) {
         setSubmitError(
           isDraft

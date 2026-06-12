@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { AppointmentStatus, InvoiceStatus, Prisma, UserRole } from '@prisma/client';
+import { AppointmentStatus, ClinicPatientLinkType, ClinicPatientStatus, InvoiceStatus, Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { PaginatedResponse } from '../../common/types/paginated-response.type';
@@ -260,34 +260,59 @@ export class PatientsService {
     const mrn = dto.mrn ?? await this.generateMrn(organizationId);
 
     try {
-      const result = await this.prisma.patient.create({
-        data: {
-          organizationId,
-          mrn,
-          firstName: dto.firstName,
-          lastName: dto.lastName,
-          firstNameAr: dto.firstNameAr,
-          lastNameAr: dto.lastNameAr,
-          fatherName: dto.fatherName,
-          fatherNameAr: dto.fatherNameAr,
-          motherName: dto.motherName,
-          motherNameAr: dto.motherNameAr,
-          dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
-          gender: dto.gender,
-          phone: dto.phone,
-          email: dto.email,
-          nationalId: dto.nationalId,
-          bloodType: dto.bloodType,
-          address: dto.address,
-          city: dto.city,
-          chronicDiseases: dto.chronicDiseases,
-          emergencyName: dto.emergencyName,
-          emergencyPhone: dto.emergencyPhone,
-          notes: dto.notes,
-          isActive: dto.isActive,
-        },
-        select: SELECT,
+      const result = await this.prisma.$transaction(async (tx) => {
+        const patient = await tx.patient.create({
+          data: {
+            organizationId,
+            mrn,
+            firstName: dto.firstName,
+            lastName: dto.lastName,
+            firstNameAr: dto.firstNameAr,
+            lastNameAr: dto.lastNameAr,
+            fatherName: dto.fatherName,
+            fatherNameAr: dto.fatherNameAr,
+            motherName: dto.motherName,
+            motherNameAr: dto.motherNameAr,
+            dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
+            gender: dto.gender,
+            phone: dto.phone,
+            email: dto.email,
+            nationalId: dto.nationalId,
+            bloodType: dto.bloodType,
+            address: dto.address,
+            city: dto.city,
+            chronicDiseases: dto.chronicDiseases,
+            emergencyName: dto.emergencyName,
+            emergencyPhone: dto.emergencyPhone,
+            notes: dto.notes,
+            isActive: dto.isActive,
+          },
+          select: SELECT,
+        });
+
+        await tx.clinicPatient.create({
+          data: {
+            organizationId,
+            patientId:             patient.id,
+            mrn:                   patient.mrn,
+            localNotes:            patient.notes ?? null,
+            linkType:              ClinicPatientLinkType.CLINIC_CREATED,
+            status:                ClinicPatientStatus.ACTIVE,
+            consentGiven:          false,
+            consentAt:             null,
+            linkedAt:              patient.createdAt,
+            linkedById:            caller.sub,
+            lastVisitAt:           null,
+            registrationSource:    null,
+            verificationCodeHash:  null,
+            verificationExpiresAt: null,
+            deletedAt:             null,
+          },
+        });
+
+        return patient;
       });
+
       await this.auditWriter.log({
         caller,
         action: 'CREATE',

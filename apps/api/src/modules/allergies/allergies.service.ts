@@ -1,22 +1,12 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { assertPatientLinkedToOrg } from '../../common/helpers/patient-access.helper';
 import { CreateAllergyDto } from './dto/create-allergy.dto';
 import { UpdateAllergyDto } from './dto/update-allergy.dto';
 import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
 
-const PATIENT_SELECT = {
-  id: true,
-  organizationId: true,
-  mrn: true,
-  firstName: true,
-  lastName: true,
-} as const;
+const PATIENT_SELECT = { id: true } as const;
 
 const ALLERGY_SELECT = {
   id: true,
@@ -104,16 +94,13 @@ export class AllergiesService {
 
   // ── Private helpers ────────────────────────────────────────────────────────
 
-  private async resolvePatient(patientId: string, caller: JwtPayload) {
+  private async resolvePatient(patientId: string, caller: JwtPayload): Promise<void> {
     const patient = await this.prisma.patient.findFirst({
       where: { id: patientId, deletedAt: null },
       select: PATIENT_SELECT,
     });
     if (!patient) throw new NotFoundException('Patient not found');
-    if (caller.role !== UserRole.SUPER_ADMIN && patient.organizationId !== caller.organizationId) {
-      throw new ForbiddenException('Cannot access patient from another organization');
-    }
-    return patient;
+    await assertPatientLinkedToOrg(this.prisma, patientId, caller);
   }
 
   private async resolveAllergy(id: string, patientId: string) {

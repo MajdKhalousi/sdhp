@@ -215,6 +215,20 @@ export class PatientsService {
       select: DUP_SELECT,
     });
 
+    let linkedPatientIds = new Set<string>();
+    if (caller.role !== UserRole.SUPER_ADMIN && candidates.length > 0) {
+      const links = await this.prisma.clinicPatient.findMany({
+        where: {
+          patientId: { in: candidates.map((c) => c.id) },
+          organizationId: caller.organizationId,
+          status: ClinicPatientStatus.ACTIVE,
+          deletedAt: null,
+        },
+        select: { patientId: true },
+      });
+      linkedPatientIds = new Set(links.map((l) => l.patientId));
+    }
+
     const matches = candidates.map((c) => {
       const reasons: DuplicateReason[] = [];
 
@@ -258,6 +272,7 @@ export class PatientsService {
         dateOfBirth: c.dateOfBirth ? c.dateOfBirth.toISOString().split('T')[0] : null,
         isActive: c.isActive,
         isArchived: c.deletedAt !== null,
+        isAlreadyLinked: linkedPatientIds.has(c.id),
         reasons,
       };
     });

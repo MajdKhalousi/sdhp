@@ -1192,6 +1192,8 @@
       "description": "The following patient(s) may already be registered. Review before creating a new file.",
       "phoneOnlyDescription": "A matching phone number may belong to the same patient or a family member. Review before creating a new file.",
       "archivedBadge": "Archived",
+      "alreadyInClinicBadge": "Already in your clinic",
+      "alreadyLinkedNote": "This patient is already registered in your clinic. Open the existing record instead of creating a duplicate.",
       "reasons": {
         "nationalId": "Same national ID",
         "phone": "Same phone number",

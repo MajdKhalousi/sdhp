@@ -14,6 +14,7 @@ export interface DuplicateCandidate {
   dateOfBirth: string | null;
   isActive: boolean;
   isArchived: boolean;
+  isAlreadyLinked: boolean;
   reasons: DuplicateReason[];
 }
 

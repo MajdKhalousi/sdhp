@@ -28,6 +28,7 @@ export function DuplicateWarning({ matches, onCreateAnyway, onCancel, isCreating
   const router = useRouter();
   const guard = useUnsavedGuardStore();
   const isPhoneOnly = matches.every(m => m.reasons.length === 1 && m.reasons[0] === 'phone');
+  const anyLinked = matches.some(m => m.isAlreadyLinked);
 
   return (
     <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-700/50 dark:bg-amber-900/10">
@@ -55,6 +56,11 @@ export function DuplicateWarning({ matches, onCreateAnyway, onCancel, isCreating
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-1.5">
                     <span className="text-sm font-medium text-foreground">{displayName}</span>
+                    {c.isAlreadyLinked && (
+                      <span className="inline-flex items-center rounded-md bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                        {t('alreadyInClinicBadge')}
+                      </span>
+                    )}
                     {c.isArchived && (
                       <span className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
                         {t('archivedBadge')}
@@ -92,15 +98,21 @@ export function DuplicateWarning({ matches, onCreateAnyway, onCancel, isCreating
         })}
       </div>
 
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={onCreateAnyway}
-          disabled={isCreating}
-          className="inline-flex h-8 items-center rounded-md bg-amber-600 px-3 text-xs font-medium text-white transition-colors hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-amber-700 dark:hover:bg-amber-600"
-        >
-          {t('actions.createAnyway')}
-        </button>
+      <div className="flex flex-wrap items-center gap-2">
+        {anyLinked ? (
+          <p className="text-xs text-amber-700 dark:text-amber-400">
+            {t('alreadyLinkedNote')}
+          </p>
+        ) : (
+          <button
+            type="button"
+            onClick={onCreateAnyway}
+            disabled={isCreating}
+            className="inline-flex h-8 items-center rounded-md bg-amber-600 px-3 text-xs font-medium text-white transition-colors hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-amber-700 dark:hover:bg-amber-600"
+          >
+            {t('actions.createAnyway')}
+          </button>
+        )}
         <button
           type="button"
           onClick={onCancel}

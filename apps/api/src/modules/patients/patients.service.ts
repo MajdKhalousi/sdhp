@@ -15,6 +15,7 @@ import { DuplicateCheckQueryDto } from './dto/duplicate-check-query.dto';
 import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
 import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
 import { MedicalTimelineEventType } from '@prisma/client';
+import { assertPatientLinkedToOrg } from '../../common/helpers/patient-access.helper';
 
 const SELECT = {
   id: true,
@@ -150,7 +151,7 @@ export class PatientsService {
     });
 
     if (!patient) throw new NotFoundException('Patient not found');
-    this.assertOwnership(patient.organizationId, caller);
+    await assertPatientLinkedToOrg(this.prisma, patient.id, caller);
     return patient;
   }
 
@@ -343,7 +344,7 @@ export class PatientsService {
     });
 
     if (!patient) throw new NotFoundException('Patient not found');
-    this.assertOwnership(patient.organizationId, caller);
+    await assertPatientLinkedToOrg(this.prisma, patient.id, caller);
 
     const { ...data } = dto;
 
@@ -380,7 +381,7 @@ export class PatientsService {
     });
 
     if (!patient) throw new NotFoundException('Patient not found');
-    this.assertOwnership(patient.organizationId, caller);
+    await assertPatientLinkedToOrg(this.prisma, patient.id, caller);
 
     await this.prisma.patient.update({
       where: { id },
@@ -400,13 +401,6 @@ export class PatientsService {
       createdById: caller.sub,
       metadata: null,
     });
-  }
-
-  private assertOwnership(patientOrgId: string, caller: JwtPayload): void {
-    if (caller.role === UserRole.SUPER_ADMIN) return;
-    if (patientOrgId !== caller.organizationId) {
-      throw new NotFoundException('Patient not found');
-    }
   }
 
   private async resolveOrgId(dtoOrgId: string | undefined, caller: JwtPayload): Promise<string> {

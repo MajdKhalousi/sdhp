@@ -3,7 +3,7 @@
 import { AlertTriangle } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link, useRouter } from '@/i18n/navigation';
-import type { DuplicateCandidate, DuplicateReason, PlatformCandidate } from '@/hooks/use-patient';
+import type { DuplicateCandidate, DuplicateReason, PlatformCandidate, LinkRequestResult } from '@/hooks/use-patient';
 import { useUnsavedGuardStore } from '@/store/unsaved-guard';
 
 interface Props {
@@ -12,6 +12,9 @@ interface Props {
   onCreateAnyway: () => void;
   onCancel: () => void;
   isCreating: boolean;
+  onRequestLink?: () => void;
+  isRequestingLink?: boolean;
+  linkRequestResult?: LinkRequestResult | null;
 }
 
 const REASON_BADGE_CLASS = 'inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium';
@@ -22,7 +25,16 @@ const REASON_COLORS: Record<DuplicateReason, string> = {
   nameAndDob: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
 };
 
-export function DuplicateWarning({ matches, platformCandidates = [], onCreateAnyway, onCancel, isCreating }: Props) {
+export function DuplicateWarning({
+  matches,
+  platformCandidates = [],
+  onCreateAnyway,
+  onCancel,
+  isCreating,
+  onRequestLink,
+  isRequestingLink = false,
+  linkRequestResult = null,
+}: Props) {
   const t = useTranslations('patient.duplicate');
   const tForm = useTranslations('patient.form');
   const locale = useLocale();
@@ -30,6 +42,10 @@ export function DuplicateWarning({ matches, platformCandidates = [], onCreateAny
   const guard = useUnsavedGuardStore();
   const isPhoneOnly = matches.every(m => m.reasons.length === 1 && m.reasons[0] === 'phone');
   const anyLinked = matches.some(m => m.isAlreadyLinked);
+
+  function minutesUntil(iso: string): number {
+    return Math.max(1, Math.round((new Date(iso).getTime() - Date.now()) / 60_000));
+  }
 
   return (
     <div className="space-y-3">
@@ -141,6 +157,35 @@ export function DuplicateWarning({ matches, platformCandidates = [], onCreateAny
               );
             })}
           </div>
+
+          {linkRequestResult ? (
+            <div className="mt-3 rounded-lg border border-blue-300 bg-white p-3 dark:border-blue-700 dark:bg-card">
+              <p className="mb-2 text-xs font-semibold text-blue-900 dark:text-blue-300">
+                {t('platform.codeSentTitle')}
+              </p>
+              <p className="mb-1 font-mono text-2xl font-bold tracking-widest text-foreground" dir="ltr">
+                {linkRequestResult.code}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {t('platform.codeExpiry', { minutes: minutesUntil(linkRequestResult.expiresAt) })}
+              </p>
+              <p className="mt-1.5 text-xs text-blue-700 dark:text-blue-400">
+                {t('platform.codeSentBody')}
+              </p>
+            </div>
+          ) : onRequestLink && (
+            <div className="mt-3 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={onRequestLink}
+                disabled={isRequestingLink || isCreating}
+                className="inline-flex h-8 items-center rounded-md bg-blue-600 px-3 text-xs font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-blue-700 dark:hover:bg-blue-600"
+              >
+                {isRequestingLink ? t('platform.pendingLink') : t('platform.requestLink')}
+              </button>
+              <p className="text-xs text-blue-600 dark:text-blue-400">{t('platform.requestLinkHint')}</p>
+            </div>
+          )}
         </div>
       )}
 

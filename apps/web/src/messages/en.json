@@ -1210,7 +1210,15 @@
         "matchReason": {
           "nationalId": "National ID match",
           "phone": "Phone number match"
-        }
+        },
+        "requestLink": "Request Link",
+        "requestLinkHint": "Request a verification code to link this patient to your clinic.",
+        "codeSentTitle": "Verification code",
+        "codeSentBody": "Give this code to the patient to confirm the link.",
+        "code": "Code",
+        "codeExpiry": "Expires in {minutes} min",
+        "pendingLink": "Link request sent",
+        "requestFailed": "Link request failed. Please try again."
       }
     },
     "unsaved": {

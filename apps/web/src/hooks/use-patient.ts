@@ -187,3 +187,33 @@ export function useCheckPlatformCandidates() {
       }),
   });
 }
+
+export interface LinkRequestResult {
+  clinicPatientId: string;
+  maskedPatient: {
+    firstName: string | null;
+    firstNameAr: string | null;
+    lastNameInitial: string | null;
+    lastNameArInitial: string | null;
+    phoneLastFour: string | null;
+    birthYear: number | null;
+    matchReason: 'phone' | 'nationalId';
+  };
+  code: string;
+  expiresAt: string;
+}
+
+export interface LinkRequestInput {
+  phone?: string | null;
+  nationalId?: string | null;
+}
+
+export function useLinkRequest() {
+  return useMutation({
+    mutationFn: (data: LinkRequestInput) =>
+      api.post<LinkRequestResult>('/v1/patients/link-request', {
+        ...(data.phone      ? { phone:      data.phone }      : {}),
+        ...(data.nationalId ? { nationalId: data.nationalId } : {}),
+      }),
+  });
+}

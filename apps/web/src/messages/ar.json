@@ -1210,7 +1210,15 @@
         "matchReason": {
           "nationalId": "تطابق رقم الهوية",
           "phone": "تطابق رقم الهاتف"
-        }
+        },
+        "requestLink": "طلب ربط",
+        "requestLinkHint": "اطلب رمز تحقق لربط هذا المريض بعيادتك.",
+        "codeSentTitle": "رمز التحقق",
+        "codeSentBody": "أعطِ هذا الرمز للمريض لتأكيد الربط.",
+        "code": "الرمز",
+        "codeExpiry": "ينتهي خلال {minutes} دقيقة",
+        "pendingLink": "تم إرسال طلب الربط",
+        "requestFailed": "فشل طلب الربط. يرجى المحاولة مرة أخرى."
       }
     },
     "unsaved": {

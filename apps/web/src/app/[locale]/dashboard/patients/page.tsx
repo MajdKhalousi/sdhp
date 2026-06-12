@@ -6,8 +6,8 @@ import { Search, UserX } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import type { CreatePatientInput, UpdatePatientInput, DuplicateCandidate, PlatformCandidate } from '@/hooks/use-patient';
-import { usePatients, useCreatePatient, useDeletePatient, useCheckDuplicatePatient, useCheckPlatformCandidates } from '@/hooks/use-patient';
+import type { CreatePatientInput, UpdatePatientInput, DuplicateCandidate, PlatformCandidate, LinkRequestResult } from '@/hooks/use-patient';
+import { usePatients, useCreatePatient, useDeletePatient, useCheckDuplicatePatient, useCheckPlatformCandidates, useLinkRequest } from '@/hooks/use-patient';
 import { PatientForm } from '@/components/patients/patient-form';
 import { DuplicateWarning } from '@/components/patients/duplicate-warning';
 import { DiscardConfirm } from '@/components/patients/discard-confirm';
@@ -66,6 +66,7 @@ export default function PatientsPage() {
   const [pendingPayload, setPendingPayload] = useState<CreatePatientInput | null>(null);
   const [duplicateMatches, setDuplicateMatches] = useState<DuplicateCandidate[]>([]);
   const [platformCandidates, setPlatformCandidates] = useState<PlatformCandidate[]>([]);
+  const [linkRequestResult, setLinkRequestResult] = useState<LinkRequestResult | null>(null);
   const [isCreateFormDirty, setIsCreateFormDirty] = useState(false);
 
   // 350 ms debounce — avoids firing on every keystroke
@@ -91,6 +92,7 @@ export default function PatientsPage() {
   const deletePatient = useDeletePatient();
   const checkDuplicate = useCheckDuplicatePatient();
   const checkPlatformCandidates = useCheckPlatformCandidates();
+  const linkRequest = useLinkRequest();
   const guard = useUnsavedGuardStore();
   const router = useRouter();
 
@@ -117,6 +119,7 @@ export default function PatientsPage() {
     setDuplicateMatches([]);
     setPlatformCandidates([]);
     setPendingPayload(null);
+    setLinkRequestResult(null);
     setIsCreateFormDirty(false);
   }
 
@@ -176,6 +179,21 @@ export default function PatientsPage() {
     setPendingPayload(null);
     setDuplicateMatches([]);
     setPlatformCandidates([]);
+    setLinkRequestResult(null);
+  }
+
+  async function handleRequestLink() {
+    if (!pendingPayload) return;
+    setCreateError(null);
+    try {
+      const result = await linkRequest.mutateAsync({
+        phone:      pendingPayload.phone,
+        nationalId: pendingPayload.nationalId,
+      });
+      setLinkRequestResult(result);
+    } catch {
+      setCreateError(t('duplicate.platform.requestFailed'));
+    }
   }
 
   async function handleDelete(patientId: string) {
@@ -244,6 +262,9 @@ export default function PatientsPage() {
               onCreateAnyway={handleCreateAnyway}
               onCancel={handleCancelDuplicateWarning}
               isCreating={createPatient.isPending}
+              onRequestLink={handleRequestLink}
+              isRequestingLink={linkRequest.isPending}
+              linkRequestResult={linkRequestResult}
             />
           )}
           <PatientForm
@@ -251,7 +272,7 @@ export default function PatientsPage() {
             onSubmit={handleCreate}
             onCancel={requestCloseCreateForm}
             onDirtyChange={setIsCreateFormDirty}
-            isSubmitting={createPatient.isPending || checkDuplicate.isPending || checkPlatformCandidates.isPending}
+            isSubmitting={createPatient.isPending || checkDuplicate.isPending || checkPlatformCandidates.isPending || linkRequest.isPending}
           />
         </div>
       )}

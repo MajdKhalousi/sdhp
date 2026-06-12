@@ -7,6 +7,7 @@ import {
 import { LabOrderStatus, MedicalTimelineEventType, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { assertPatientLinkedToOrg } from '../../common/helpers/patient-access.helper';
 import { CreateLabOrderDto } from './dto/create-lab-order.dto';
 import { UpdateLabOrderStatusDto } from './dto/update-lab-order-status.dto';
 import { UpsertLabResultDto } from './dto/upsert-lab-result.dto';
@@ -103,15 +104,12 @@ export class LabsService {
   async create(dto: CreateLabOrderDto, caller: JwtPayload) {
     const orgId = await this.resolveCreateOrgId(dto, caller);
 
-    // Validate patient exists and belongs to resolved org
     const patient = await this.prisma.patient.findFirst({
       where: { id: dto.patientId, deletedAt: null },
-      select: { id: true, organizationId: true },
+      select: { id: true },
     });
     if (!patient) throw new NotFoundException('Patient not found');
-    if (patient.organizationId !== orgId) {
-      throw new ForbiddenException('Patient does not belong to this organization');
-    }
+    await assertPatientLinkedToOrg(this.prisma, dto.patientId, caller);
 
     if (dto.branchId) await this.assertBranchBelongsToOrg(dto.branchId, orgId);
     if (dto.encounterId) {

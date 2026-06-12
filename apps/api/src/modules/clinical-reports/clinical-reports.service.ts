@@ -11,6 +11,7 @@ import { PdfService } from '../pdf/pdf.service';
 import { StorageService } from '../storage/storage.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { assertPatientLinkedToOrg } from '../../common/helpers/patient-access.helper';
 import { CreateClinicalReportDto } from './dto/create-clinical-report.dto';
 import { UpdateClinicalReportDto } from './dto/update-clinical-report.dto';
 import { QueryClinicalReportsDto } from './dto/query-clinical-reports.dto';
@@ -92,12 +93,10 @@ export class ClinicalReportsService {
 
     const patient = await this.prisma.patient.findFirst({
       where: { id: dto.patientId, deletedAt: null },
-      select: { id: true, organizationId: true },
+      select: { id: true },
     });
     if (!patient) throw new NotFoundException('Patient not found');
-    if (patient.organizationId !== orgId) {
-      throw new ForbiddenException('Patient does not belong to this organization');
-    }
+    await assertPatientLinkedToOrg(this.prisma, dto.patientId, caller);
 
     await this.assertEncounterBelongsToOrgAndPatient(dto.encounterId, orgId, dto.patientId);
 

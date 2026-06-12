@@ -10,6 +10,7 @@ import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeli
 import { StorageService } from '../storage/storage.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { assertPatientLinkedToOrg } from '../../common/helpers/patient-access.helper';
 import { CreateMedicalFileDto } from './dto/create-medical-file.dto';
 import { UpdateMedicalFileDto } from './dto/update-medical-file.dto';
 import { MedicalFileQueryDto } from './dto/medical-file-query.dto';
@@ -68,12 +69,10 @@ export class MedicalFilesService {
 
     const patient = await this.prisma.patient.findFirst({
       where: { id: dto.patientId, deletedAt: null },
-      select: { id: true, organizationId: true },
+      select: { id: true },
     });
     if (!patient) throw new NotFoundException('Patient not found');
-    if (patient.organizationId !== orgId) {
-      throw new ForbiddenException('Patient does not belong to this organization');
-    }
+    await assertPatientLinkedToOrg(this.prisma, dto.patientId, caller);
 
     if (!dto.storageKey.startsWith(`${orgId}/${dto.patientId}/`)) {
       throw new BadRequestException('Invalid file storage key for patient');
@@ -183,14 +182,11 @@ export class MedicalFilesService {
       select: { id: true, organizationId: true },
     });
     if (!patient) throw new NotFoundException('Patient not found');
+    await assertPatientLinkedToOrg(this.prisma, dto.patientId, caller);
 
     const orgId = caller.role === UserRole.SUPER_ADMIN
       ? patient.organizationId
       : caller.organizationId;
-
-    if (patient.organizationId !== orgId) {
-      throw new ForbiddenException('Patient does not belong to this organization');
-    }
 
     if (dto.encounterId) {
       await this.assertEncounterBelongsToOrgAndPatient(dto.encounterId, orgId, dto.patientId);

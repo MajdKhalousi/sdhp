@@ -8,6 +8,7 @@ import {
 import { InvoiceStatus, Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { assertPatientLinkedToOrg } from '../../common/helpers/patient-access.helper';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { AddInvoiceItemDto } from './dto/add-invoice-item.dto';
@@ -133,12 +134,10 @@ export class BillingService {
 
     const patient = await this.prisma.patient.findFirst({
       where: { id: dto.patientId, deletedAt: null },
-      select: { id: true, organizationId: true },
+      select: { id: true },
     });
     if (!patient) throw new NotFoundException('Patient not found');
-    if (patient.organizationId !== orgId) {
-      throw new ForbiddenException('Patient does not belong to this organization');
-    }
+    await assertPatientLinkedToOrg(this.prisma, dto.patientId, caller);
 
     if (dto.branchId) await this.assertBranchBelongsToOrg(dto.branchId, orgId);
     if (dto.appointmentId) await this.assertAppointmentBelongsToOrg(dto.appointmentId, orgId);

@@ -7,6 +7,7 @@ import {
 import { MedicalTimelineEventType, RadiologyOrderStatus, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { assertPatientLinkedToOrg } from '../../common/helpers/patient-access.helper';
 import { CreateRadiologyOrderDto } from './dto/create-radiology-order.dto';
 import { UpdateRadiologyOrderStatusDto } from './dto/update-radiology-order-status.dto';
 import { UpsertRadiologyReportDto } from './dto/upsert-radiology-report.dto';
@@ -104,12 +105,10 @@ export class RadiologyService {
 
     const patient = await this.prisma.patient.findFirst({
       where: { id: dto.patientId, deletedAt: null },
-      select: { id: true, organizationId: true },
+      select: { id: true },
     });
     if (!patient) throw new NotFoundException('Patient not found');
-    if (patient.organizationId !== orgId) {
-      throw new ForbiddenException('Patient does not belong to this organization');
-    }
+    await assertPatientLinkedToOrg(this.prisma, dto.patientId, caller);
 
     if (dto.branchId) await this.assertBranchBelongsToOrg(dto.branchId, orgId);
     if (dto.encounterId) {

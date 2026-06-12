@@ -8,6 +8,7 @@ import {
 import { AppointmentStatus, MedicalTimelineEventType, Prisma, QueueStatus, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { assertPatientLinkedToOrg } from '../../common/helpers/patient-access.helper';
 import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { CreateEncounterDto } from './dto/create-encounter.dto';
 import { UpdateEncounterDto } from './dto/update-encounter.dto';
@@ -132,7 +133,7 @@ export class EncountersService {
     // For DOCTOR caller: enforce their own profile as doctorId.
     const doctorId = await this.resolveDoctorId(dto.doctorId, caller, organizationId);
 
-    await this.validatePatient(dto.patientId, organizationId);
+    await this.validatePatient(dto.patientId, caller);
     await this.validateDoctor(doctorId, organizationId);
 
     if (dto.branchId) {
@@ -429,16 +430,14 @@ export class EncountersService {
     return doctorProfile.id;
   }
 
-  private async validatePatient(patientId: string, organizationId: string): Promise<void> {
+  private async validatePatient(patientId: string, caller: JwtPayload): Promise<void> {
     const patient = await this.prisma.patient.findFirst({
       where: { id: patientId, deletedAt: null },
-      select: { id: true, isActive: true, organizationId: true },
+      select: { id: true, isActive: true },
     });
     if (!patient) throw new NotFoundException('Patient not found');
     if (!patient.isActive) throw new BadRequestException('Patient is inactive');
-    if (patient.organizationId !== organizationId) {
-      throw new ForbiddenException('Patient does not belong to this organization');
-    }
+    await assertPatientLinkedToOrg(this.prisma, patientId, caller);
   }
 
   private async validateDoctor(doctorId: string, organizationId: string): Promise<void> {

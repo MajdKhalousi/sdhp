@@ -18,8 +18,10 @@ import { useToast } from '@/hooks/use-toast';
 import { Tabs } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FollowUpStatusBadge } from './follow-up-status-badge';
+import { AppointmentStatusBadge } from '@/components/appointments/appointment-status-badge';
 import { FollowUpBookingPanel } from '@/components/encounters/follow-up-booking-panel';
 import type { FollowUpItem, FollowUpStatus } from '@/types/follow-up';
+import type { AppointmentStatus } from '@/types/appointment';
 import { formatDateDisplay, formatDateTimeDisplay, formatTimeDisplay } from '@/lib/format-date';
 import { normalizePhoneForWhatsApp, buildWhatsAppMessage } from '@/lib/format-phone';
 
@@ -208,6 +210,9 @@ function FollowUpRow({
           {item.patient.phone && (
             <p className="text-xs text-muted-foreground" dir="ltr">{item.patient.phone}</p>
           )}
+          <p className="text-xs text-muted-foreground" dir="ltr">
+            {t('encounterDate')}: {formatDateDisplay(item.encounterDate)}
+          </p>
         </td>
 
         {/* Doctor */}
@@ -252,6 +257,7 @@ function FollowUpRow({
                 {t('doctorPrefix')} {item.linkedAppointment.doctor.firstName}{' '}
                 {item.linkedAppointment.doctor.lastName}
               </p>
+              <AppointmentStatusBadge status={item.linkedAppointment.status as AppointmentStatus} />
             </div>
           ) : (
             <span className="text-xs text-muted-foreground">—</span>

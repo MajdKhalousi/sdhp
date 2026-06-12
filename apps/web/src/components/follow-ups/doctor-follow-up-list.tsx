@@ -250,6 +250,9 @@ export function DoctorFollowUpList() {
                           {item.patient.phone && (
                             <p className="text-xs text-muted-foreground" dir="ltr">{item.patient.phone}</p>
                           )}
+                          <p className="text-xs text-muted-foreground" dir="ltr">
+                            {t('encounterDate')}: {formatDateDisplay(item.encounterDate)}
+                          </p>
                         </td>
 
                         {/* Recommended Date */}

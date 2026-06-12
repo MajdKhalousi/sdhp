@@ -2,6 +2,7 @@ generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -137,6 +138,20 @@ enum PatientResponseStatus {
   RESCHEDULE_REQUESTED
 }
 
+enum ClinicPatientStatus {
+  ACTIVE
+  PENDING_VERIFICATION
+  SUSPENDED
+  REVOKED
+}
+
+enum ClinicPatientLinkType {
+  CLINIC_CREATED
+  PATIENT_VERIFIED
+  IMPORTED
+  INVITED
+}
+
 // ─────────────────────────────────────────────
 // ORGANIZATIONS & BRANCHES
 // ─────────────────────────────────────────────
@@ -157,15 +172,15 @@ model Organization {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  branches        Branch[]
-  users           User[]
-  departments     Department[]
-  patients        Patient[]
-  appointments    Appointment[]
-  queueEntries    QueueEntry[]
-  auditLogs       AuditLog[]
-  labOrders       LabOrder[]
-  radiologyOrders RadiologyOrder[]
+  branches              Branch[]
+  users                 User[]
+  departments           Department[]
+  patients              Patient[]
+  appointments          Appointment[]
+  queueEntries          QueueEntry[]
+  auditLogs             AuditLog[]
+  labOrders             LabOrder[]
+  radiologyOrders       RadiologyOrder[]
   medicalFiles          MedicalFile[]
   invoices              Invoice[]
   medicalTimelineEvents MedicalTimelineEvent[]
@@ -175,6 +190,7 @@ model Organization {
   services              Service[]
   followUpReminders     FollowUpReminder[]
   billingPolicy         BillingPolicy?
+  clinicPatients        ClinicPatient[]
 
   @@map("organizations")
 }
@@ -227,16 +243,17 @@ model User {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization     Organization  @relation(fields: [organizationId], references: [id])
-  branch           Branch?       @relation(fields: [branchId], references: [id])
-  doctor           Doctor?
-  auditLogs        AuditLog[]
-  uploadedFiles    MedicalFile[]
-  createdInvoices       Invoice[]              @relation("InvoicesCreated")
-  receivedPayments      Payment[]              @relation("PaymentsReceived")
-  voidedPayments        Payment[]              @relation("PaymentsVoided")
-  timelineEventsCreated MedicalTimelineEvent[] @relation("TimelineEventsCreated")
+  organization           Organization           @relation(fields: [organizationId], references: [id])
+  branch                 Branch?                @relation(fields: [branchId], references: [id])
+  doctor                 Doctor?
+  auditLogs              AuditLog[]
+  uploadedFiles          MedicalFile[]
+  createdInvoices        Invoice[]              @relation("InvoicesCreated")
+  receivedPayments       Payment[]              @relation("PaymentsReceived")
+  voidedPayments         Payment[]              @relation("PaymentsVoided")
+  timelineEventsCreated  MedicalTimelineEvent[] @relation("TimelineEventsCreated")
   createdClinicalReports ClinicalReport[]
+  linkedClinicPatients   ClinicPatient[]        @relation("ClinicPatientLinkedBy")
 
   @@index([organizationId])
   @@map("users")
@@ -282,15 +299,15 @@ model Doctor {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  user                     User              @relation(fields: [userId], references: [id])
-  department               Department?       @relation(fields: [departmentId], references: [id])
+  user                     User                      @relation(fields: [userId], references: [id])
+  department               Department?               @relation(fields: [departmentId], references: [id])
   appointments             Appointment[]
   encounters               Encounter[]
-  orderedLabOrders         LabOrder[]        @relation("LabOrdersOrdered")
-  reviewedLabResults       LabResult[]       @relation("LabResultsReviewed")
-  orderedRadiologyOrders   RadiologyOrder[]  @relation("RadiologyOrdersOrdered")
-  reportedRadiologyReports RadiologyReport[] @relation("RadiologyReportsReported")
-  reviewedRadiologyReports RadiologyReport[] @relation("RadiologyReportsReviewed")
+  orderedLabOrders         LabOrder[]                @relation("LabOrdersOrdered")
+  reviewedLabResults       LabResult[]               @relation("LabResultsReviewed")
+  orderedRadiologyOrders   RadiologyOrder[]          @relation("RadiologyOrdersOrdered")
+  reportedRadiologyReports RadiologyReport[]         @relation("RadiologyReportsReported")
+  reviewedRadiologyReports RadiologyReport[]         @relation("RadiologyReportsReviewed")
   schedules                DoctorSchedule[]
   scheduleExceptions       DoctorScheduleException[]
 
@@ -302,47 +319,49 @@ model Doctor {
 // ─────────────────────────────────────────────
 
 model Patient {
-  id             String    @id @default(cuid())
-  organizationId String
-  mrn            String
-  firstName      String
-  lastName       String
-  firstNameAr    String?
-  lastNameAr     String?
-  fatherName     String?
-  fatherNameAr   String?
-  motherName     String?
-  motherNameAr   String?
-  dateOfBirth    DateTime?
-  gender         Gender?
-  phone          String?
-  email          String?
-  nationalId     String?
+  id              String    @id @default(cuid())
+  organizationId  String
+  mrn             String
+  firstName       String
+  lastName        String
+  firstNameAr     String?
+  lastNameAr      String?
+  fatherName      String?
+  fatherNameAr    String?
+  motherName      String?
+  motherNameAr    String?
+  dateOfBirth     DateTime?
+  gender          Gender?
+  phone           String?
+  email           String?
+  nationalId      String?
   bloodType       String?
   address         String?
   city            String?
   chronicDiseases String?
   emergencyName   String?
   emergencyPhone  String?
-  isActive       Boolean   @default(true)
-  notes          String?
+  isActive        Boolean   @default(true)
+  notes           String?
+  platformId      String?   @unique
+  hasPortalAccess Boolean   @default(false)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization          Organization           @relation(fields: [organizationId], references: [id])
-  allergies             Allergy[]
-  appointments          Appointment[]
-  encounters            Encounter[]
-  labOrders             LabOrder[]
-  radiologyOrders       RadiologyOrder[]
-  medicalFiles          MedicalFile[]
-  invoices              Invoice[]
-  clinicalReports       ClinicalReport[]
-
+  organization      Organization           @relation(fields: [organizationId], references: [id])
+  allergies         Allergy[]
+  appointments      Appointment[]
+  encounters        Encounter[]
+  labOrders         LabOrder[]
+  radiologyOrders   RadiologyOrder[]
+  medicalFiles      MedicalFile[]
+  invoices          Invoice[]
+  clinicalReports   ClinicalReport[]
   timelineEvents    MedicalTimelineEvent[]
   followUpReminders FollowUpReminder[]
+  clinicLinks       ClinicPatient[]
 
   @@unique([organizationId, mrn])
   @@index([organizationId])
@@ -376,7 +395,7 @@ model MedicalTimelineEvent {
 }
 
 model Allergy {
-  id        String          @id @default(cuid())
+  id        String           @id @default(cuid())
   patientId String
   substance String
   reaction  String?
@@ -390,6 +409,39 @@ model Allergy {
   patient Patient @relation(fields: [patientId], references: [id])
 
   @@map("allergies")
+}
+
+model ClinicPatient {
+  id                    String                @id @default(cuid())
+  organizationId        String
+  patientId             String
+  mrn                   String
+  localNotes            String?
+  linkType              ClinicPatientLinkType @default(CLINIC_CREATED)
+  status                ClinicPatientStatus   @default(ACTIVE)
+  registrationSource    String?
+  consentGiven          Boolean               @default(false)
+  consentAt             DateTime?
+  verificationCodeHash  String?
+  verificationExpiresAt DateTime?
+  linkedAt              DateTime              @default(now())
+  linkedById            String?
+  lastVisitAt           DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  patient      Patient      @relation(fields: [patientId], references: [id])
+  linkedBy     User?        @relation("ClinicPatientLinkedBy", fields: [linkedById], references: [id])
+
+  @@unique([organizationId, patientId])
+  @@unique([organizationId, mrn])
+  @@index([organizationId])
+  @@index([patientId])
+  @@index([organizationId, status])
+  @@map("clinic_patients")
 }
 
 // ─────────────────────────────────────────────
@@ -415,12 +467,12 @@ model Appointment {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization    Organization @relation(fields: [organizationId], references: [id])
-  branch          Branch?      @relation(fields: [branchId], references: [id])
-  patient         Patient      @relation(fields: [patientId], references: [id])
-  doctor          Doctor       @relation(fields: [doctorId], references: [id])
-  visitType       VisitType?   @relation(fields: [visitTypeId], references: [id])
-  sourceEncounter Encounter?   @relation("FollowUpAppointments", fields: [sourceEncounterId], references: [id])
+  organization    Organization       @relation(fields: [organizationId], references: [id])
+  branch          Branch?            @relation(fields: [branchId], references: [id])
+  patient         Patient            @relation(fields: [patientId], references: [id])
+  doctor          Doctor             @relation(fields: [doctorId], references: [id])
+  visitType       VisitType?         @relation(fields: [visitTypeId], references: [id])
+  sourceEncounter Encounter?         @relation("FollowUpAppointments", fields: [sourceEncounterId], references: [id])
   queueEntry      QueueEntry?
   encounter       Encounter?
   invoices        Invoice[]
@@ -439,7 +491,7 @@ model QueueEntry {
   id             String      @id @default(cuid())
   appointmentId  String      @unique
   organizationId String
-  businessDate   String      // YYYY-MM-DD in Asia/Damascus — used for daily ticket reset
+  businessDate   String // YYYY-MM-DD in Asia/Damascus — used for daily ticket reset
   ticketNumber   Int
   status         QueueStatus @default(WAITING)
   calledAt       DateTime?
@@ -463,32 +515,32 @@ model QueueEntry {
 // ─────────────────────────────────────────────
 
 model Encounter {
-  id             String    @id @default(cuid())
-  organizationId String
-  branchId       String?
-  patientId      String
-  doctorId       String
-  appointmentId  String?   @unique
-  chiefComplaint              String?
-  historyOfPresentIllness     String?
-  notes                       String?
-  diagnosis                   String?
-  diagnosisCode  String?
-  treatmentPlan               String?
-  patientInstructions         String?
-  followUpDate                DateTime?
-  vitals         Json?
-  startedAt      DateTime  @default(now())
-  endedAt        DateTime?
+  id                      String    @id @default(cuid())
+  organizationId          String
+  branchId                String?
+  patientId               String
+  doctorId                String
+  appointmentId           String?   @unique
+  chiefComplaint          String?
+  historyOfPresentIllness String?
+  notes                   String?
+  diagnosis               String?
+  diagnosisCode           String?
+  treatmentPlan           String?
+  patientInstructions     String?
+  followUpDate            DateTime?
+  vitals                  Json?
+  startedAt               DateTime  @default(now())
+  endedAt                 DateTime?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  patient              Patient       @relation(fields: [patientId], references: [id])
-  doctor               Doctor        @relation(fields: [doctorId], references: [id])
-  appointment          Appointment?  @relation(fields: [appointmentId], references: [id])
-  followUpAppointments Appointment[] @relation("FollowUpAppointments")
+  patient              Patient            @relation(fields: [patientId], references: [id])
+  doctor               Doctor             @relation(fields: [doctorId], references: [id])
+  appointment          Appointment?       @relation(fields: [appointmentId], references: [id])
+  followUpAppointments Appointment[]      @relation("FollowUpAppointments")
   prescriptions        Prescription[]
   labOrders            LabOrder[]
   radiologyOrders      RadiologyOrder[]
@@ -907,7 +959,7 @@ model ClinicSettings {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  organization Organization      @relation(fields: [organizationId], references: [id])
+  organization Organization       @relation(fields: [organizationId], references: [id])
   workingDays  ClinicWorkingDay[]
 
   @@map("clinic_settings")
@@ -916,9 +968,9 @@ model ClinicSettings {
 model ClinicWorkingDay {
   id               String  @id @default(cuid())
   clinicSettingsId String
-  dayOfWeek        Int     // 0=Sun, 1=Mon … 6=Sat
-  startTime        String  // "08:00"
-  endTime          String  // "17:00"
+  dayOfWeek        Int // 0=Sun, 1=Mon … 6=Sat
+  startTime        String // "08:00"
+  endTime          String // "17:00"
   isOpen           Boolean @default(true)
 
   clinicSettings ClinicSettings @relation(fields: [clinicSettingsId], references: [id], onDelete: Cascade)
@@ -985,9 +1037,9 @@ model Service {
 model DoctorSchedule {
   id        String  @id @default(cuid())
   doctorId  String
-  dayOfWeek Int     // 0=Sun, 1=Mon … 6=Sat
-  startTime String  // "08:00"
-  endTime   String  // "16:00"
+  dayOfWeek Int // 0=Sun, 1=Mon … 6=Sat
+  startTime String // "08:00"
+  endTime   String // "16:00"
   isActive  Boolean @default(true)
 
   createdAt DateTime @default(now())
@@ -1003,10 +1055,10 @@ model DoctorSchedule {
 model DoctorScheduleException {
   id        String                @id @default(cuid())
   doctorId  String
-  date      DateTime              // calendar date stored as midnight UTC
+  date      DateTime // calendar date stored as midnight UTC
   type      ScheduleExceptionType
-  startTime String?               // null = full day off
-  endTime   String?               // null = full day off
+  startTime String? // null = full day off
+  endTime   String? // null = full day off
   reason    String?
 
   createdAt DateTime @default(now())
@@ -1023,14 +1075,14 @@ model DoctorScheduleException {
 // ─────────────────────────────────────────────
 
 model FollowUpReminder {
-  id             String          @id @default(cuid())
-  organizationId String
-  patientId      String
-  encounterId    String
-  appointmentId  String?
-  channel        ReminderChannel @default(IN_APP)
-  scheduledFor   DateTime
-  status          ReminderStatus        @default(PENDING)
+  id              String                 @id @default(cuid())
+  organizationId  String
+  patientId       String
+  encounterId     String
+  appointmentId   String?
+  channel         ReminderChannel        @default(IN_APP)
+  scheduledFor    DateTime
+  status          ReminderStatus         @default(PENDING)
   sentAt          DateTime?
   failureReason   String?
   patientResponse PatientResponseStatus?

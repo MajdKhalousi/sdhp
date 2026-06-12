@@ -2467,6 +2467,7 @@
       "noResults": "No follow-ups match your search"
     },
     "forbidden": "You do not have permission to view this page",
+    "encounterDate": "Encounter",
     "doctorPrefix": "Dr."
   },
   "billingReports": {

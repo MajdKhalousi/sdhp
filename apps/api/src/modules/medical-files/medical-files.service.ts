@@ -232,16 +232,15 @@ export class MedicalFilesService {
   async findByPatient(patientId: string, query: MedicalFileQueryDto, caller: JwtPayload) {
     const patient = await this.prisma.patient.findFirst({
       where: { id: patientId, deletedAt: null },
-      select: { id: true, organizationId: true },
+      select: { id: true },
     });
     if (!patient) throw new NotFoundException('Patient not found');
-    if (caller.role !== UserRole.SUPER_ADMIN && patient.organizationId !== caller.organizationId) {
-      throw new ForbiddenException('Cannot access patient from another organization');
-    }
+    await assertPatientLinkedToOrg(this.prisma, patientId, caller);
 
     return this.prisma.medicalFile.findMany({
       where: {
         patientId,
+        ...(caller.role !== UserRole.SUPER_ADMIN ? { organizationId: caller.organizationId } : {}),
         deletedAt: null,
         ...(query.category ? { category: query.category } : {}),
         ...this.createdAtFilter(query.from, query.to),

@@ -1203,6 +1203,14 @@
       "actions": {
         "createAnyway": "Create Anyway",
         "viewPatient": "View Patient"
+      },
+      "platform": {
+        "heading": "Possible match in another clinic",
+        "description": "The following may be registered at another clinic. Only partial details are shown to protect patient privacy.",
+        "matchReason": {
+          "nationalId": "National ID match",
+          "phone": "Phone number match"
+        }
       }
     },
     "unsaved": {

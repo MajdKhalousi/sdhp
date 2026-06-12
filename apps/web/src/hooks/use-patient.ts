@@ -162,3 +162,28 @@ export function useCheckDuplicatePatient() {
       }),
   });
 }
+
+export interface PlatformCandidate {
+  firstName: string | null;
+  firstNameAr: string | null;
+  lastNameInitial: string | null;
+  lastNameArInitial: string | null;
+  phoneLastFour: string | null;
+  birthYear: number | null;
+  matchReason: 'phone' | 'nationalId';
+}
+
+export interface PlatformCandidateQuery {
+  phone?: string | null;
+  nationalId?: string | null;
+}
+
+export function useCheckPlatformCandidates() {
+  return useMutation({
+    mutationFn: (query: PlatformCandidateQuery) =>
+      api.get<{ candidates: PlatformCandidate[] }>('/v1/patients/platform-candidates', {
+        ...(query.phone      ? { phone:      query.phone }      : {}),
+        ...(query.nationalId ? { nationalId: query.nationalId } : {}),
+      }),
+  });
+}

@@ -6,8 +6,8 @@ import { Search, UserX } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import type { CreatePatientInput, UpdatePatientInput, DuplicateCandidate } from '@/hooks/use-patient';
-import { usePatients, useCreatePatient, useDeletePatient, useCheckDuplicatePatient } from '@/hooks/use-patient';
+import type { CreatePatientInput, UpdatePatientInput, DuplicateCandidate, PlatformCandidate } from '@/hooks/use-patient';
+import { usePatients, useCreatePatient, useDeletePatient, useCheckDuplicatePatient, useCheckPlatformCandidates } from '@/hooks/use-patient';
 import { PatientForm } from '@/components/patients/patient-form';
 import { DuplicateWarning } from '@/components/patients/duplicate-warning';
 import { DiscardConfirm } from '@/components/patients/discard-confirm';
@@ -65,6 +65,7 @@ export default function PatientsPage() {
   const [archiveConfirmId, setArchiveConfirmId] = useState<string | null>(null);
   const [pendingPayload, setPendingPayload] = useState<CreatePatientInput | null>(null);
   const [duplicateMatches, setDuplicateMatches] = useState<DuplicateCandidate[]>([]);
+  const [platformCandidates, setPlatformCandidates] = useState<PlatformCandidate[]>([]);
   const [isCreateFormDirty, setIsCreateFormDirty] = useState(false);
 
   // 350 ms debounce — avoids firing on every keystroke
@@ -89,6 +90,7 @@ export default function PatientsPage() {
   const createPatient = useCreatePatient();
   const deletePatient = useDeletePatient();
   const checkDuplicate = useCheckDuplicatePatient();
+  const checkPlatformCandidates = useCheckPlatformCandidates();
   const guard = useUnsavedGuardStore();
   const router = useRouter();
 
@@ -113,6 +115,7 @@ export default function PatientsPage() {
     setIsCreateOpen(false);
     setCreateError(null);
     setDuplicateMatches([]);
+    setPlatformCandidates([]);
     setPendingPayload(null);
     setIsCreateFormDirty(false);
   }
@@ -133,17 +136,28 @@ export default function PatientsPage() {
   async function handleCreate(formData: CreatePatientInput | UpdatePatientInput) {
     setCreateError(null);
     const payload = formData as CreatePatientInput;
+    const hasPlatformIdentifier = !!(payload.phone || payload.nationalId);
     try {
-      const result = await checkDuplicate.mutateAsync({
-        firstName:   payload.firstName,
-        lastName:    payload.lastName,
-        phone:       payload.phone,
-        nationalId:  payload.nationalId ?? undefined,
-        dateOfBirth: payload.dateOfBirth,
-      });
-      if (result.matches.length > 0) {
+      const [dupResult, platformResult] = await Promise.all([
+        checkDuplicate.mutateAsync({
+          firstName:   payload.firstName,
+          lastName:    payload.lastName,
+          phone:       payload.phone,
+          nationalId:  payload.nationalId ?? undefined,
+          dateOfBirth: payload.dateOfBirth,
+        }),
+        (hasPlatformIdentifier
+          ? checkPlatformCandidates.mutateAsync({
+              phone:      payload.phone,
+              nationalId: payload.nationalId,
+            })
+          : Promise.resolve({ candidates: [] as PlatformCandidate[] })
+        ).catch(() => ({ candidates: [] as PlatformCandidate[] })),
+      ]);
+      if (dupResult.matches.length > 0 || platformResult.candidates.length > 0) {
         setPendingPayload(payload);
-        setDuplicateMatches(result.matches);
+        setDuplicateMatches(dupResult.matches);
+        setPlatformCandidates(platformResult.candidates);
         return;
       }
       await doCreate(payload);
@@ -161,6 +175,7 @@ export default function PatientsPage() {
   function handleCancelDuplicateWarning() {
     setPendingPayload(null);
     setDuplicateMatches([]);
+    setPlatformCandidates([]);
   }
 
   async function handleDelete(patientId: string) {
@@ -222,9 +237,10 @@ export default function PatientsPage() {
               onDiscard={guard.confirmLeave}
             />
           )}
-          {!guard.showConfirm && duplicateMatches.length > 0 && (
+          {!guard.showConfirm && (duplicateMatches.length > 0 || platformCandidates.length > 0) && (
             <DuplicateWarning
               matches={duplicateMatches}
+              platformCandidates={platformCandidates}
               onCreateAnyway={handleCreateAnyway}
               onCancel={handleCancelDuplicateWarning}
               isCreating={createPatient.isPending}
@@ -235,7 +251,7 @@ export default function PatientsPage() {
             onSubmit={handleCreate}
             onCancel={requestCloseCreateForm}
             onDirtyChange={setIsCreateFormDirty}
-            isSubmitting={createPatient.isPending || checkDuplicate.isPending}
+            isSubmitting={createPatient.isPending || checkDuplicate.isPending || checkPlatformCandidates.isPending}
           />
         </div>
       )}

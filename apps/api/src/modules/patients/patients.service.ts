@@ -70,7 +70,16 @@ export class PatientsService {
     const baseWhere: Prisma.PatientWhereInput =
       caller.role === UserRole.SUPER_ADMIN
         ? { deletedAt: null }
-        : { organizationId: caller.organizationId, deletedAt: null };
+        : {
+            deletedAt: null,
+            clinicLinks: {
+              some: {
+                organizationId: caller.organizationId,
+                status:         ClinicPatientStatus.ACTIVE,
+                deletedAt:      null,
+              },
+            },
+          };
 
     const searchRaw = (query.search ?? '').replace(/\s+/g, ' ').trim();
     const tokens = searchRaw ? searchRaw.split(' ') : [];

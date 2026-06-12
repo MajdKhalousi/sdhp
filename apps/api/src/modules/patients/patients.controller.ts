@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
   Version,
 } from '@nestjs/common';
 import {
@@ -19,6 +20,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { UserRole } from '@prisma/client';
 import { PatientsService } from './patients.service';
 import { PatientQueryDto } from './dto/patient-query.dto';
@@ -26,6 +28,8 @@ import { DuplicateCheckQueryDto } from './dto/duplicate-check-query.dto';
 import { PlatformCandidateQueryDto } from './dto/platform-candidate-query.dto';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { LinkRequestDto } from './dto/link-request.dto';
+import { VerifyLinkDto } from './dto/verify-link.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
@@ -106,5 +110,29 @@ export class PatientsController {
   @ApiOperation({ summary: 'Soft-delete patient — ORG_ADMIN restricted to own org' })
   remove(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.service.remove(id, user);
+  }
+
+  @Post('link-request')
+  @Version('1')
+  @Roles(UserRole.ORG_ADMIN, UserRole.DOCTOR, UserRole.SECRETARY)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { ttl: 60_000, limit: 5 } })
+  @ApiOperation({
+    summary: 'Request a cross-org patient link — creates a PENDING_VERIFICATION ClinicPatient and returns a one-time 6-digit code. All failure responses are generic.',
+  })
+  linkRequest(@Body() dto: LinkRequestDto, @CurrentUser() user: JwtPayload) {
+    return this.service.createLinkRequest(dto, user);
+  }
+
+  @Post('verify-link')
+  @Version('1')
+  @Roles(UserRole.ORG_ADMIN, UserRole.DOCTOR, UserRole.SECRETARY)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { ttl: 60_000, limit: 10 } })
+  @ApiOperation({
+    summary: 'Verify a pending patient link — validates the 6-digit code and transitions the ClinicPatient to ACTIVE + PATIENT_VERIFIED.',
+  })
+  verifyLink(@Body() dto: VerifyLinkDto, @CurrentUser() user: JwtPayload) {
+    return this.service.verifyLink(dto, user);
   }
 }

@@ -18,6 +18,9 @@ import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-wri
 import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
 import { MedicalTimelineEventType } from '@prisma/client';
 import { assertPatientLinkedToOrg } from '../../common/helpers/patient-access.helper';
+import * as bcrypt from 'bcrypt';
+import { LinkRequestDto } from './dto/link-request.dto';
+import { VerifyLinkDto } from './dto/verify-link.dto';
 
 const SELECT = {
   id: true,
@@ -530,5 +533,224 @@ export class PatientsService {
       if (!isNaN(n)) next = n + 1;
     }
     return `MRN-${String(next).padStart(6, '0')}`;
+  }
+
+  // LNK- prefix avoids collision with MRN- sequences used by created patients.
+  private async generateLinkMrn(organizationId: string): Promise<string> {
+    const last = await this.prisma.clinicPatient.findFirst({
+      where: { organizationId, mrn: { startsWith: 'LNK-' }, deletedAt: null },
+      orderBy: { mrn: 'desc' },
+      select: { mrn: true },
+    });
+    let next = 1;
+    if (last?.mrn) {
+      const n = parseInt(last.mrn.slice(4), 10);
+      if (!isNaN(n)) next = n + 1;
+    }
+    return `LNK-${String(next).padStart(6, '0')}`;
+  }
+
+  async createLinkRequest(dto: LinkRequestDto, caller: JwtPayload) {
+    if (caller.role === UserRole.SUPER_ADMIN) {
+      throw new ForbiddenException('Not allowed for this role');
+    }
+
+    const nationalId = dto.nationalId?.replace(/\s+/g, ' ').trim() || undefined;
+    const phoneDigits = dto.phone?.replace(/\D/g, '') || undefined;
+    const phoneSuffix = phoneDigits && phoneDigits.length >= 9 ? phoneDigits.slice(-9) : undefined;
+
+    if (!nationalId && !phoneSuffix) {
+      throw new BadRequestException('At least one of phone or nationalId is required');
+    }
+
+    const GENERIC_ERROR = 'No linkable patient found for the provided identifier';
+
+    const orConditions: Prisma.PatientWhereInput[] = [];
+    if (nationalId) orConditions.push({ nationalId: { equals: nationalId, mode: 'insensitive' } });
+    if (phoneSuffix) orConditions.push({ phone: { contains: phoneSuffix } });
+
+    // Exclude patients already actively linked to caller's org
+    const candidates = await this.prisma.patient.findMany({
+      where: {
+        deletedAt: null,
+        OR: orConditions,
+        NOT: {
+          clinicLinks: {
+            some: {
+              organizationId: caller.organizationId,
+              status:         ClinicPatientStatus.ACTIVE,
+              deletedAt:      null,
+            },
+          },
+        },
+      },
+      select: {
+        id:          true,
+        firstName:   true,
+        firstNameAr: true,
+        lastName:    true,
+        lastNameAr:  true,
+        phone:       true,
+        nationalId:  true,
+        dateOfBirth: true,
+      },
+      take: 5,
+    });
+
+    // Generic failure for 0 or >1 matches — never reveal which case
+    if (candidates.length !== 1) {
+      throw new BadRequestException(GENERIC_ERROR);
+    }
+
+    const patient = candidates[0];
+
+    // Include soft-deleted rows so we can block P2002 and treat them generically.
+    // @@unique([organizationId, patientId]) applies regardless of deletedAt.
+    const existing = await this.prisma.clinicPatient.findFirst({
+      where: { organizationId: caller.organizationId, patientId: patient.id },
+      select: { id: true, status: true, deletedAt: true },
+    });
+
+    // Only a live (non-deleted) PENDING_VERIFICATION row is eligible for code regeneration.
+    // ACTIVE, SUSPENDED, REVOKED, and soft-deleted rows all get the same generic 400.
+    const canRegenerate =
+      existing !== null &&
+      existing.deletedAt === null &&
+      existing.status === ClinicPatientStatus.PENDING_VERIFICATION;
+
+    if (existing !== null && !canRegenerate) {
+      throw new BadRequestException(GENERIC_ERROR);
+    }
+
+    const plainCode    = String(Math.floor(100000 + Math.random() * 900000));
+    const codeHash     = await bcrypt.hash(plainCode, 10);
+    const expiresAt    = new Date(Date.now() + 15 * 60 * 1000);
+
+    let clinicPatientId: string;
+
+    if (canRegenerate && existing) {
+      // Live PENDING row — regenerate code and expiry only
+      await this.prisma.clinicPatient.update({
+        where: { id: existing.id },
+        data:  { verificationCodeHash: codeHash, verificationExpiresAt: expiresAt },
+      });
+      clinicPatientId = existing.id;
+    } else {
+      const mrn = await this.generateLinkMrn(caller.organizationId);
+      try {
+        const created = await this.prisma.clinicPatient.create({
+          data: {
+            organizationId:        caller.organizationId,
+            patientId:             patient.id,
+            mrn,
+            linkType:              ClinicPatientLinkType.INVITED,
+            status:                ClinicPatientStatus.PENDING_VERIFICATION,
+            registrationSource:    'platform_link_request',
+            consentGiven:          false,
+            consentAt:             null,
+            verificationCodeHash:  codeHash,
+            verificationExpiresAt: expiresAt,
+            linkedAt:              new Date(),
+            linkedById:            caller.sub,
+            lastVisitAt:           null,
+            localNotes:            null,
+            deletedAt:             null,
+          },
+          select: { id: true },
+        });
+        clinicPatientId = created.id;
+      } catch (e) {
+        // Race condition: a concurrent request created the row between our read and write
+        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+          throw new BadRequestException(GENERIC_ERROR);
+        }
+        throw e;
+      }
+    }
+
+    const cDigits       = patient.phone?.replace(/\D/g, '') ?? '';
+    const nationalIdMatch =
+      nationalId && patient.nationalId &&
+      patient.nationalId.replace(/\s+/g, ' ').trim().toLowerCase() === nationalId.toLowerCase();
+    const matchReason: 'nationalId' | 'phone' = nationalIdMatch ? 'nationalId' : 'phone';
+
+    const maskedPatient = {
+      firstName:         patient.firstName   || null,
+      firstNameAr:       patient.firstNameAr || null,
+      lastNameInitial:   patient.lastName?.[0]?.toUpperCase()  ?? null,
+      lastNameArInitial: patient.lastNameAr?.[0] ?? null,
+      phoneLastFour:     cDigits.length >= 4 ? cDigits.slice(-4) : null,
+      birthYear:         patient.dateOfBirth ? new Date(patient.dateOfBirth).getFullYear() : null,
+      matchReason,
+    };
+
+    await this.auditWriter.log({
+      caller,
+      action:     'CREATE',
+      resource:   'patientLinkRequest',
+      resourceId: clinicPatientId,
+      newData:    toSnapshot({ clinicPatientId, organizationId: caller.organizationId, matchReason }),
+    });
+
+    return { clinicPatientId, maskedPatient, code: plainCode, expiresAt };
+  }
+
+  async verifyLink(dto: VerifyLinkDto, caller: JwtPayload) {
+    if (caller.role === UserRole.SUPER_ADMIN) {
+      throw new ForbiddenException('Not allowed for this role');
+    }
+
+    const GENERIC_ERROR = 'Invalid or expired verification code';
+
+    const link = await this.prisma.clinicPatient.findFirst({
+      where: {
+        id:             dto.clinicPatientId,
+        organizationId: caller.organizationId,
+        status:         ClinicPatientStatus.PENDING_VERIFICATION,
+        deletedAt:      null,
+      },
+      select: {
+        id:                    true,
+        patientId:             true,
+        verificationCodeHash:  true,
+        verificationExpiresAt: true,
+      },
+    });
+
+    if (!link || !link.verificationCodeHash || !link.verificationExpiresAt) {
+      throw new BadRequestException(GENERIC_ERROR);
+    }
+
+    if (new Date() > link.verificationExpiresAt) {
+      throw new BadRequestException(GENERIC_ERROR);
+    }
+
+    const codeValid = await bcrypt.compare(dto.code, link.verificationCodeHash);
+    if (!codeValid) {
+      throw new BadRequestException(GENERIC_ERROR);
+    }
+
+    const now = new Date();
+    await this.prisma.clinicPatient.update({
+      where: { id: link.id },
+      data: {
+        status:                ClinicPatientStatus.ACTIVE,
+        linkType:              ClinicPatientLinkType.PATIENT_VERIFIED,
+        consentGiven:          true,
+        consentAt:             now,
+        verificationCodeHash:  null,
+        verificationExpiresAt: null,
+      },
+    });
+
+    await this.auditWriter.log({
+      caller,
+      action:     'UPDATE',
+      resource:   'patientLinkRequest',
+      resourceId: link.id,
+      newData:    toSnapshot({ status: 'ACTIVE', consentGiven: true, consentAt: now }),
+    });
+
+    return { success: true, clinicPatientId: link.id };
   }
 }

@@ -516,16 +516,15 @@ export class BillingService {
   async findByPatient(patientId: string, query: BillingQueryDto, caller: JwtPayload) {
     const patient = await this.prisma.patient.findFirst({
       where: { id: patientId, deletedAt: null },
-      select: { id: true, organizationId: true },
+      select: { id: true },
     });
     if (!patient) throw new NotFoundException('Patient not found');
-    if (caller.role !== UserRole.SUPER_ADMIN && patient.organizationId !== caller.organizationId) {
-      throw new ForbiddenException('Cannot access patient from another organization');
-    }
+    await assertPatientLinkedToOrg(this.prisma, patientId, caller);
 
     return this.prisma.invoice.findMany({
       where: {
         patientId,
+        ...(caller.role !== UserRole.SUPER_ADMIN ? { organizationId: caller.organizationId } : {}),
         deletedAt: null,
         ...(query.status ? { status: query.status } : {}),
         ...this.createdAtFilter(query.from, query.to),
@@ -613,17 +612,15 @@ export class BillingService {
   async getPatientOutstandingBalance(patientId: string, caller: JwtPayload) {
     const patient = await this.prisma.patient.findFirst({
       where: { id: patientId, deletedAt: null },
-      select: { id: true, organizationId: true },
+      select: { id: true },
     });
     if (!patient) throw new NotFoundException('Patient not found');
-    if (caller.role !== UserRole.SUPER_ADMIN && patient.organizationId !== caller.organizationId) {
-      throw new ForbiddenException('Cannot access patient from another organization');
-    }
+    await assertPatientLinkedToOrg(this.prisma, patientId, caller);
 
     const invoices = await this.prisma.invoice.findMany({
       where: {
         patientId,
-        organizationId: patient.organizationId,
+        ...(caller.role !== UserRole.SUPER_ADMIN ? { organizationId: caller.organizationId } : {}),
         status: { in: [InvoiceStatus.ISSUED, InvoiceStatus.PARTIALLY_PAID] },
         totalAmount: { gt: 0 },
         deletedAt: null,

@@ -1,7 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { assertPatientLinkedToOrg } from '../../common/helpers/patient-access.helper';
 import {
   ClinicalReportEventData,
   EncounterEventData,
@@ -20,7 +21,6 @@ import { PatientTimelineQueryDto } from './dto/patient-timeline-query.dto';
 
 const PATIENT_SELECT = {
   id: true,
-  organizationId: true,
   mrn: true,
   firstName: true,
   lastName: true,
@@ -132,9 +132,9 @@ export class MedicalTimelineService {
       select: PATIENT_SELECT,
     });
     if (!patient) throw new NotFoundException('Patient not found');
-    this.assertPatientAccess(patient.organizationId, caller);
+    await assertPatientLinkedToOrg(this.prisma, patientId, caller);
 
-    const { organizationId } = patient;
+    const organizationId = caller.role !== UserRole.SUPER_ADMIN ? caller.organizationId : undefined;
     const types = query.types ?? ALL_EVENT_TYPES;
     const dateFilter = this.buildDateFilter(query.from, query.to);
 
@@ -142,7 +142,7 @@ export class MedicalTimelineService {
     if (types.includes(TimelineEventType.ENCOUNTER))
       fetchers.push(this.fetchEncounters(patientId, organizationId, dateFilter));
     if (types.includes(TimelineEventType.PRESCRIPTION))
-      fetchers.push(this.fetchPrescriptions(patientId, dateFilter));
+      fetchers.push(this.fetchPrescriptions(patientId, organizationId, dateFilter));
     if (types.includes(TimelineEventType.LAB_ORDER))
       fetchers.push(this.fetchLabOrders(patientId, organizationId, dateFilter));
     if (types.includes(TimelineEventType.RADIOLOGY_ORDER))
@@ -177,13 +177,13 @@ export class MedicalTimelineService {
 
   private async fetchEncounters(
     patientId: string,
-    organizationId: string,
+    organizationId: string | undefined,
     dateFilter: DateRangeFilter | undefined,
   ): Promise<TimelineEvent[]> {
     const rows = await this.prisma.encounter.findMany({
       where: {
         patientId,
-        organizationId,
+        ...(organizationId ? { organizationId } : {}),
         deletedAt: null,
         ...(dateFilter ? { startedAt: dateFilter } : {}),
       },
@@ -263,12 +263,17 @@ export class MedicalTimelineService {
 
   private async fetchPrescriptions(
     patientId: string,
+    organizationId: string | undefined,
     dateFilter: DateRangeFilter | undefined,
   ): Promise<TimelineEvent[]> {
     const rows = await this.prisma.prescription.findMany({
       where: {
         deletedAt: null,
-        encounter: { patientId, deletedAt: null },
+        encounter: {
+          patientId,
+          deletedAt: null,
+          ...(organizationId ? { organizationId } : {}),
+        },
         ...(dateFilter ? { createdAt: dateFilter } : {}),
       },
       select: PRESCRIPTION_TIMELINE_SELECT,
@@ -292,13 +297,13 @@ export class MedicalTimelineService {
 
   private async fetchLabOrders(
     patientId: string,
-    organizationId: string,
+    organizationId: string | undefined,
     dateFilter: DateRangeFilter | undefined,
   ): Promise<TimelineEvent[]> {
     const rows = await this.prisma.labOrder.findMany({
       where: {
         patientId,
-        organizationId,
+        ...(organizationId ? { organizationId } : {}),
         deletedAt: null,
         ...(dateFilter ? { createdAt: dateFilter } : {}),
       },
@@ -329,13 +334,13 @@ export class MedicalTimelineService {
 
   private async fetchRadiologyOrders(
     patientId: string,
-    organizationId: string,
+    organizationId: string | undefined,
     dateFilter: DateRangeFilter | undefined,
   ): Promise<TimelineEvent[]> {
     const rows = await this.prisma.radiologyOrder.findMany({
       where: {
         patientId,
-        organizationId,
+        ...(organizationId ? { organizationId } : {}),
         deletedAt: null,
         ...(dateFilter ? { createdAt: dateFilter } : {}),
       },
@@ -366,13 +371,13 @@ export class MedicalTimelineService {
 
   private async fetchMedicalFiles(
     patientId: string,
-    organizationId: string,
+    organizationId: string | undefined,
     dateFilter: DateRangeFilter | undefined,
   ): Promise<TimelineEvent[]> {
     const rows = await this.prisma.medicalFile.findMany({
       where: {
         patientId,
-        organizationId,
+        ...(organizationId ? { organizationId } : {}),
         deletedAt: null,
         ...(dateFilter ? { createdAt: dateFilter } : {}),
       },
@@ -403,13 +408,13 @@ export class MedicalTimelineService {
 
   private async fetchClinicalReports(
     patientId: string,
-    organizationId: string,
+    organizationId: string | undefined,
     dateFilter: DateRangeFilter | undefined,
   ): Promise<TimelineEvent[]> {
     const rows = await this.prisma.clinicalReport.findMany({
       where: {
         patientId,
-        organizationId,
+        ...(organizationId ? { organizationId } : {}),
         deletedAt: null,
         ...(dateFilter ? { createdAt: dateFilter } : {}),
       },
@@ -438,13 +443,6 @@ export class MedicalTimelineService {
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────
-
-  private assertPatientAccess(patientOrgId: string, caller: JwtPayload): void {
-    if (caller.role === UserRole.SUPER_ADMIN) return;
-    if (patientOrgId !== caller.organizationId) {
-      throw new ForbiddenException('Access to this patient is not allowed');
-    }
-  }
 
   private buildDateFilter(from?: string, to?: string): DateRangeFilter | undefined {
     if (!from && !to) return undefined;

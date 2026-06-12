@@ -371,6 +371,8 @@ model Patient {
   @@index([organizationId, nationalId])
   @@index([organizationId, deletedAt])
   @@index([organizationId, isActive])
+  @@index([nationalId])
+  @@index([phone])
   @@map("patients")
 }
 

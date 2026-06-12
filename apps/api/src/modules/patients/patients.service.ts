@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,6 +13,7 @@ import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { PatientQueryDto } from './dto/patient-query.dto';
 import { DuplicateCheckQueryDto } from './dto/duplicate-check-query.dto';
+import { PlatformCandidateQueryDto } from './dto/platform-candidate-query.dto';
 import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
 import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
 import { MedicalTimelineEventType } from '@prisma/client';
@@ -278,6 +280,79 @@ export class PatientsService {
     });
 
     return { matches };
+  }
+
+  async findPlatformCandidates(query: PlatformCandidateQueryDto, caller: JwtPayload) {
+    if (caller.role === UserRole.SUPER_ADMIN) {
+      throw new ForbiddenException('Not allowed for this role');
+    }
+
+    const nationalId = query.nationalId?.replace(/\s+/g, ' ').trim() || undefined;
+    const phoneDigits = query.phone?.replace(/\D/g, '') || undefined;
+    const phoneSuffix = phoneDigits && phoneDigits.length >= 9 ? phoneDigits.slice(-9) : undefined;
+
+    if (!nationalId && !phoneSuffix) {
+      throw new BadRequestException('At least one of phone or nationalId is required');
+    }
+
+    const orConditions: Prisma.PatientWhereInput[] = [];
+    if (nationalId) {
+      orConditions.push({ nationalId: { equals: nationalId, mode: 'insensitive' } });
+    }
+    if (phoneSuffix) {
+      orConditions.push({ phone: { contains: phoneSuffix } });
+    }
+
+    const PLATFORM_SELECT = {
+      firstName:   true,
+      firstNameAr: true,
+      lastName:    true,
+      lastNameAr:  true,
+      phone:       true,
+      dateOfBirth: true,
+      nationalId:  true,
+    } as const;
+
+    const rows = await this.prisma.patient.findMany({
+      where: {
+        deletedAt: null,
+        OR: orConditions,
+        NOT: {
+          clinicLinks: {
+            some: {
+              organizationId: caller.organizationId,
+              status:         ClinicPatientStatus.ACTIVE,
+              deletedAt:      null,
+            },
+          },
+        },
+      },
+      select: PLATFORM_SELECT,
+      take: 5,
+    });
+
+    const candidates = rows.map((r) => {
+      const nationalIdMatch =
+        nationalId &&
+        r.nationalId &&
+        r.nationalId.replace(/\s+/g, ' ').trim().toLowerCase() === nationalId.toLowerCase();
+
+      const cDigits     = r.phone?.replace(/\D/g, '') ?? '';
+      const matchReason: 'nationalId' | 'phone' = nationalIdMatch ? 'nationalId' : 'phone';
+      const phoneLastFour = cDigits.length >= 4 ? cDigits.slice(-4) : null;
+
+      return {
+        firstName:         r.firstName   || null,
+        firstNameAr:       r.firstNameAr || null,
+        lastNameInitial:   r.lastName?.[0]?.toUpperCase()  ?? null,
+        lastNameArInitial: r.lastNameAr?.[0] ?? null,
+        phoneLastFour,
+        birthYear:         r.dateOfBirth ? new Date(r.dateOfBirth).getFullYear() : null,
+        matchReason,
+      };
+    });
+
+    return { candidates };
   }
 
   async create(dto: CreatePatientDto, caller: JwtPayload) {

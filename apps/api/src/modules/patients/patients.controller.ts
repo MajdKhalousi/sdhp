@@ -23,6 +23,7 @@ import { UserRole } from '@prisma/client';
 import { PatientsService } from './patients.service';
 import { PatientQueryDto } from './dto/patient-query.dto';
 import { DuplicateCheckQueryDto } from './dto/duplicate-check-query.dto';
+import { PlatformCandidateQueryDto } from './dto/platform-candidate-query.dto';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -49,6 +50,14 @@ export class PatientsController {
   @ApiOperation({ summary: 'Check for potential duplicate patients before create — org-scoped, includes archived' })
   checkDuplicate(@Query() query: DuplicateCheckQueryDto, @CurrentUser() user: JwtPayload) {
     return this.service.checkDuplicate(query, user);
+  }
+
+  @Get('platform-candidates')
+  @Version('1')
+  @Roles(UserRole.ORG_ADMIN, UserRole.DOCTOR, UserRole.SECRETARY, UserRole.NURSE, UserRole.ACCOUNTANT)
+  @ApiOperation({ summary: 'Search platform-wide for masked candidates by nationalId or phone — excludes same-org patients' })
+  platformCandidates(@Query() query: PlatformCandidateQueryDto, @CurrentUser() user: JwtPayload) {
+    return this.service.findPlatformCandidates(query, user);
   }
 
   @Get(':id')

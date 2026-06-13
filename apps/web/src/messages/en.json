@@ -1218,7 +1218,14 @@
         "code": "Code",
         "codeExpiry": "Expires in {minutes} min",
         "pendingLink": "Link request sent",
-        "requestFailed": "Link request failed. Please try again."
+        "requestFailed": "Link request failed. Please try again.",
+        "verifyCodeLabel": "Enter the code the patient provides:",
+        "verifyCodePlaceholder": "6-digit code",
+        "verifyButton": "Verify Link",
+        "verifyingButton": "Verifying...",
+        "verifyFailed": "Verification failed. Please try again.",
+        "verifySuccess": "Patient successfully linked to your clinic.",
+        "requestNewCode": "Request new code"
       }
     },
     "unsaved": {

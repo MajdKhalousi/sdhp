@@ -217,3 +217,24 @@ export function useLinkRequest() {
       }),
   });
 }
+
+export interface VerifyLinkInput {
+  clinicPatientId: string;
+  code: string;
+}
+
+export interface VerifyLinkResult {
+  success: boolean;
+  clinicPatientId: string;
+}
+
+export function useVerifyLink() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: VerifyLinkInput) =>
+      api.post<VerifyLinkResult>('/v1/patients/verify-link', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+    },
+  });
+}

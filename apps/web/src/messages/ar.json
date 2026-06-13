@@ -1218,7 +1218,14 @@
         "code": "الرمز",
         "codeExpiry": "ينتهي خلال {minutes} دقيقة",
         "pendingLink": "تم إرسال طلب الربط",
-        "requestFailed": "فشل طلب الربط. يرجى المحاولة مرة أخرى."
+        "requestFailed": "فشل طلب الربط. يرجى المحاولة مرة أخرى.",
+        "verifyCodeLabel": "أدخل الرمز الذي يقدمه المريض:",
+        "verifyCodePlaceholder": "رمز مكون من 6 أرقام",
+        "verifyButton": "التحقق من الربط",
+        "verifyingButton": "جارٍ التحقق...",
+        "verifyFailed": "فشل التحقق. يرجى المحاولة مرة أخرى.",
+        "verifySuccess": "تم ربط المريض بعيادتك بنجاح.",
+        "requestNewCode": "طلب رمز جديد"
       }
     },
     "unsaved": {

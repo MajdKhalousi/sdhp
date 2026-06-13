@@ -7,7 +7,8 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { CreatePatientInput, UpdatePatientInput, DuplicateCandidate, PlatformCandidate, LinkRequestResult } from '@/hooks/use-patient';
-import { usePatients, useCreatePatient, useDeletePatient, useCheckDuplicatePatient, useCheckPlatformCandidates, useLinkRequest } from '@/hooks/use-patient';
+import { usePatients, useCreatePatient, useDeletePatient, useCheckDuplicatePatient, useCheckPlatformCandidates, useLinkRequest, useVerifyLink } from '@/hooks/use-patient';
+import { useToast } from '@/hooks/use-toast';
 import { PatientForm } from '@/components/patients/patient-form';
 import { DuplicateWarning } from '@/components/patients/duplicate-warning';
 import { DiscardConfirm } from '@/components/patients/discard-confirm';
@@ -67,6 +68,7 @@ export default function PatientsPage() {
   const [duplicateMatches, setDuplicateMatches] = useState<DuplicateCandidate[]>([]);
   const [platformCandidates, setPlatformCandidates] = useState<PlatformCandidate[]>([]);
   const [linkRequestResult, setLinkRequestResult] = useState<LinkRequestResult | null>(null);
+  const [verifyLinkError, setVerifyLinkError] = useState<string | null>(null);
   const [isCreateFormDirty, setIsCreateFormDirty] = useState(false);
 
   // 350 ms debounce — avoids firing on every keystroke
@@ -93,6 +95,8 @@ export default function PatientsPage() {
   const checkDuplicate = useCheckDuplicatePatient();
   const checkPlatformCandidates = useCheckPlatformCandidates();
   const linkRequest = useLinkRequest();
+  const verifyLink = useVerifyLink();
+  const { toast } = useToast();
   const guard = useUnsavedGuardStore();
   const router = useRouter();
 
@@ -120,6 +124,7 @@ export default function PatientsPage() {
     setPlatformCandidates([]);
     setPendingPayload(null);
     setLinkRequestResult(null);
+    setVerifyLinkError(null);
     setIsCreateFormDirty(false);
   }
 
@@ -180,11 +185,13 @@ export default function PatientsPage() {
     setDuplicateMatches([]);
     setPlatformCandidates([]);
     setLinkRequestResult(null);
+    setVerifyLinkError(null);
   }
 
   async function handleRequestLink() {
     if (!pendingPayload) return;
     setCreateError(null);
+    setVerifyLinkError(null);
     try {
       const result = await linkRequest.mutateAsync({
         phone:      pendingPayload.phone,
@@ -193,6 +200,18 @@ export default function PatientsPage() {
       setLinkRequestResult(result);
     } catch {
       setCreateError(t('duplicate.platform.requestFailed'));
+    }
+  }
+
+  async function handleVerifyLink(code: string) {
+    if (!linkRequestResult) return;
+    setVerifyLinkError(null);
+    try {
+      await verifyLink.mutateAsync({ clinicPatientId: linkRequestResult.clinicPatientId, code });
+      toast({ title: t('duplicate.platform.verifySuccess'), variant: 'success' });
+      closeCreateForm();
+    } catch {
+      setVerifyLinkError(t('duplicate.platform.verifyFailed'));
     }
   }
 
@@ -265,6 +284,9 @@ export default function PatientsPage() {
               onRequestLink={handleRequestLink}
               isRequestingLink={linkRequest.isPending}
               linkRequestResult={linkRequestResult}
+              onVerifyLink={handleVerifyLink}
+              isVerifyingLink={verifyLink.isPending}
+              verifyError={verifyLinkError}
             />
           )}
           <PatientForm
@@ -272,7 +294,7 @@ export default function PatientsPage() {
             onSubmit={handleCreate}
             onCancel={requestCloseCreateForm}
             onDirtyChange={setIsCreateFormDirty}
-            isSubmitting={createPatient.isPending || checkDuplicate.isPending || checkPlatformCandidates.isPending || linkRequest.isPending}
+            isSubmitting={createPatient.isPending || checkDuplicate.isPending || checkPlatformCandidates.isPending || linkRequest.isPending || verifyLink.isPending}
           />
         </div>
       )}

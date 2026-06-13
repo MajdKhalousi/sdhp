@@ -36,6 +36,10 @@ export interface TodayHubEntry {
     startedAt: string;
     endedAt: string | null;
   } | null;
+  startEncounter: {
+    patientId: string;
+    doctorId: string;
+  } | null;
   invoice: {
     id: string;
     invoiceNumber: string;

@@ -8,6 +8,7 @@ import { useTodayHub, type TodayHubEntry } from '@/hooks/use-today-hub';
 import { useDoctorsList } from '@/hooks/use-appointments';
 import { CheckInButton } from '@/components/queue/check-in-button';
 import { AdvanceQueueButton } from '@/components/queue/advance-queue-button';
+import { StartEncounterButton } from '@/components/doctor/start-encounter-button';
 import type { QueueStatus } from '@/types/queue';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
@@ -333,6 +334,14 @@ export default function TodayPage() {
                               entryId={entry.queue!.id}
                               status={entry.queue!.status as QueueStatus}
                               onSuccess={() => void refetch()}
+                            />
+                          )}
+                          {canOpenEncounter && entry.startEncounter && (
+                            <StartEncounterButton
+                              patientId={entry.startEncounter.patientId}
+                              doctorId={entry.startEncounter.doctorId}
+                              appointmentId={entry.appointment.id}
+                              appointmentStatus={entry.appointment.status}
                             />
                           )}
                           {entry.patient.clinicPatientId && (

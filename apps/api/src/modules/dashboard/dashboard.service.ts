@@ -19,6 +19,10 @@ const PATIENT_STAT_ROLES = new Set<UserRole>([UserRole.SUPER_ADMIN, UserRole.ORG
 // SECRETARY is intentionally excluded — not in billing roles anywhere in the product.
 const TODAY_HUB_BILLING_ROLES = new Set<UserRole>([UserRole.ORG_ADMIN, UserRole.ACCOUNTANT]);
 
+// Roles that receive the startEncounter payload (Patient.id + Doctor.id) in Today Hub rows.
+// Only ORG_ADMIN and DOCTOR can create encounters; all other roles receive null.
+const TODAY_HUB_ENCOUNTER_ROLES = new Set<UserRole>([UserRole.ORG_ADMIN, UserRole.DOCTOR]);
+
 // Damascus is permanently UTC+3 (no DST since 2022)
 const DAMASCUS_OFFSET_MS = 3 * 60 * 60 * 1000;
 
@@ -365,6 +369,7 @@ export class DashboardService {
     const branchFilter = query.branchId ? { branchId: query.branchId } : {};
     const doctorFilter = doctorId ? { doctorId } : {};
     const canSeeBilling = TODAY_HUB_BILLING_ROLES.has(caller.role);
+    const canSeeEncounterIds = TODAY_HUB_ENCOUNTER_ROLES.has(caller.role);
 
     const rows = await this.prisma.appointment.findMany({
       where: {
@@ -398,6 +403,7 @@ export class DashboardService {
         },
         patient: {
           select: {
+            id: true,
             mrn: true,
             firstName: true,
             lastName: true,
@@ -418,6 +424,7 @@ export class DashboardService {
         },
         doctor: {
           select: {
+            id: true,
             user: {
               select: {
                 id: true,
@@ -506,6 +513,18 @@ export class DashboardService {
           }
         : null;
 
+      // Expose internal DB UUIDs needed to call POST /v1/encounters — restricted to
+      // ORG_ADMIN and DOCTOR only, and only when the row is actually eligible
+      // (queue status is CALLED and no encounter has started yet).
+      // All other roles and all non-CALLED rows receive null.
+      const startEncounter =
+        canSeeEncounterIds &&
+        queue !== null &&
+        queue.status === QueueStatus.CALLED &&
+        encounter === null
+          ? { patientId: row.patient.id, doctorId: row.doctor.id }
+          : null;
+
       return {
         appointment: {
           id: row.id,
@@ -534,6 +553,7 @@ export class DashboardService {
         queue,
         encounter,
         invoice,
+        startEncounter,
       };
     });
 

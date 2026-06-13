@@ -537,8 +537,11 @@ export class PatientsService {
 
   // LNK- prefix avoids collision with MRN- sequences used by created patients.
   private async generateLinkMrn(organizationId: string): Promise<string> {
+    // Include soft-deleted rows so we never regenerate a sequence number whose
+    // MRN is still present in the DB (the @@unique([organizationId, mrn])
+    // constraint applies regardless of deletedAt).
     const last = await this.prisma.clinicPatient.findFirst({
-      where: { organizationId, mrn: { startsWith: 'LNK-' }, deletedAt: null },
+      where: { organizationId, mrn: { startsWith: 'LNK-' } },
       orderBy: { mrn: 'desc' },
       select: { mrn: true },
     });

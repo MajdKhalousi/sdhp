@@ -1,6 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import {
   AppointmentStatus,
+  ClinicPatientStatus,
   InvoiceStatus,
   LabOrderStatus,
   QueueStatus,
@@ -10,6 +11,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { DashboardQueryDto } from './dto/dashboard-query.dto';
+import { TodayHubQueryDto } from './dto/today-hub-query.dto';
 
 const BILLING_ROLES = new Set<UserRole>([UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ACCOUNTANT]);
 const PATIENT_STAT_ROLES = new Set<UserRole>([UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY]);
@@ -324,6 +326,258 @@ export class DashboardService {
       },
       billing,
     };
+  }
+
+  async getTodayHub(query: TodayHubQueryDto, caller: JwtPayload) {
+    // SUPER_ADMIN excluded from V1 — cross-org semantics are undefined for this view.
+    if (caller.role === UserRole.SUPER_ADMIN) {
+      throw new ForbiddenException(
+        'Today Hub is not available for SUPER_ADMIN in V1. Use /dashboard/overview with an organizationId.',
+      );
+    }
+
+    const orgId = caller.organizationId!;
+
+    if (query.branchId) {
+      await this.assertBranchBelongsToOrg(query.branchId, orgId);
+    }
+
+    const dateStr = query.date ?? todayDamascus();
+    const { gte: dayStart, lt: dayEnd } = this.buildDayRange(dateStr);
+
+    // DOCTOR role: resolve own doctor profile; ignore query.doctorId for security.
+    // Same pattern as getOverview and appointments.service buildWhere.
+    let doctorId: string | undefined;
+    if (caller.role === UserRole.DOCTOR) {
+      const profile = await this.prisma.doctor.findFirst({
+        where: { userId: caller.sub, deletedAt: null },
+        select: { id: true },
+      });
+      if (!profile) return this.emptyTodayHub(dateStr);
+      doctorId = profile.id;
+    } else if (query.doctorId) {
+      doctorId = query.doctorId;
+    }
+
+    const branchFilter = query.branchId ? { branchId: query.branchId } : {};
+    const doctorFilter = doctorId ? { doctorId } : {};
+
+    const rows = await this.prisma.appointment.findMany({
+      where: {
+        organizationId: orgId,
+        deletedAt: null,
+        scheduledAt: { gte: dayStart, lt: dayEnd },
+        ...branchFilter,
+        ...doctorFilter,
+        // Phase 126 access gate: only return appointments for patients that have an
+        // ACTIVE ClinicPatient link for this org. Equivalent to assertPatientLinkedToOrg
+        // but applied as a bulk Prisma predicate rather than N per-row calls.
+        patient: {
+          clinicLinks: {
+            some: {
+              organizationId: orgId,
+              status: ClinicPatientStatus.ACTIVE,
+              deletedAt: null,
+            },
+          },
+        },
+      },
+      orderBy: { scheduledAt: 'asc' },
+      take: 200,
+      select: {
+        id: true,
+        scheduledAt: true,
+        durationMin: true,
+        status: true,
+        visitType: {
+          select: { name: true, nameAr: true },
+        },
+        patient: {
+          select: {
+            mrn: true,
+            firstName: true,
+            lastName: true,
+            firstNameAr: true,
+            lastNameAr: true,
+            // Fetch the ACTIVE clinic link to obtain clinicPatientId for frontend navigation.
+            // The where filter above guarantees at least one such link exists.
+            clinicLinks: {
+              where: {
+                organizationId: orgId,
+                status: ClinicPatientStatus.ACTIVE,
+                deletedAt: null,
+              },
+              select: { id: true },
+              take: 1,
+            },
+          },
+        },
+        doctor: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                firstNameAr: true,
+                lastNameAr: true,
+              },
+            },
+          },
+        },
+        // 1:1 optional back-relation (QueueEntry.appointmentId is @unique).
+        // Include deletedAt so we can discard soft-deleted entries in mapping.
+        queueEntry: {
+          select: {
+            id: true,
+            ticketNumber: true,
+            status: true,
+            calledAt: true,
+            deletedAt: true,
+          },
+        },
+        // 1:1 optional back-relation (Encounter.appointmentId is @unique).
+        // Include deletedAt so we can discard soft-deleted encounters in mapping.
+        encounter: {
+          select: {
+            id: true,
+            startedAt: true,
+            endedAt: true,
+            deletedAt: true,
+          },
+        },
+        // Latest non-cancelled, non-deleted invoice linked to this appointment.
+        invoices: {
+          where: {
+            deletedAt: null,
+            status: { not: InvoiceStatus.CANCELLED },
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: {
+            id: true,
+            invoiceNumber: true,
+            status: true,
+            totalAmount: true,
+            paidAmount: true,
+          },
+        },
+      },
+    });
+
+    const entries = rows.map((row) => {
+      const clinicLink = row.patient.clinicLinks[0];
+
+      const rawQueue = row.queueEntry;
+      const queue =
+        rawQueue && rawQueue.deletedAt === null
+          ? {
+              id: rawQueue.id,
+              ticketNumber: rawQueue.ticketNumber,
+              status: rawQueue.status,
+              calledAt: rawQueue.calledAt,
+            }
+          : null;
+
+      const rawEncounter = row.encounter;
+      const encounter =
+        rawEncounter && rawEncounter.deletedAt === null
+          ? {
+              id: rawEncounter.id,
+              startedAt: rawEncounter.startedAt,
+              endedAt: rawEncounter.endedAt,
+            }
+          : null;
+
+      const rawInvoice = row.invoices[0];
+      const invoice = rawInvoice
+        ? {
+            id: rawInvoice.id,
+            invoiceNumber: rawInvoice.invoiceNumber,
+            status: rawInvoice.status,
+            totalAmount: rawInvoice.totalAmount,
+            paidAmount: rawInvoice.paidAmount,
+          }
+        : null;
+
+      return {
+        appointment: {
+          id: row.id,
+          scheduledAt: row.scheduledAt,
+          durationMin: row.durationMin,
+          status: row.status,
+          visitType: row.visitType
+            ? { name: row.visitType.name, nameAr: row.visitType.nameAr }
+            : null,
+        },
+        patient: {
+          clinicPatientId: clinicLink?.id ?? null,
+          mrn: row.patient.mrn,
+          firstName: row.patient.firstName,
+          lastName: row.patient.lastName,
+          firstNameAr: row.patient.firstNameAr,
+          lastNameAr: row.patient.lastNameAr,
+        },
+        doctor: {
+          userId: row.doctor.user.id,
+          firstName: row.doctor.user.firstName,
+          lastName: row.doctor.user.lastName,
+          firstNameAr: row.doctor.user.firstNameAr,
+          lastNameAr: row.doctor.user.lastNameAr,
+        },
+        queue,
+        encounter,
+        invoice,
+      };
+    });
+
+    const summary = {
+      total: entries.length,
+      // Not yet checked in (no queue entry)
+      scheduled: entries.filter(
+        (e) =>
+          (e.appointment.status === AppointmentStatus.SCHEDULED ||
+            e.appointment.status === AppointmentStatus.CONFIRMED ||
+            e.appointment.status === AppointmentStatus.CHECKED_IN) &&
+          !e.queue,
+      ).length,
+      // In queue, waiting to be called
+      waiting: entries.filter(
+        (e) => e.queue?.status === QueueStatus.WAITING || e.queue?.status === QueueStatus.CALLED,
+      ).length,
+      // With doctor now
+      inProgress: entries.filter((e) => e.queue?.status === QueueStatus.IN_PROGRESS).length,
+      // Visit concluded (completed normally, cancelled, or no-show — all terminal states)
+      done: entries.filter(
+        (e) =>
+          e.appointment.status === AppointmentStatus.COMPLETED ||
+          e.appointment.status === AppointmentStatus.CANCELLED ||
+          e.appointment.status === AppointmentStatus.NO_SHOW ||
+          e.queue?.status === QueueStatus.DONE ||
+          e.queue?.status === QueueStatus.SKIPPED,
+      ).length,
+      // Invoice outstanding
+      unpaid: entries.filter((e) => e.invoice?.status === InvoiceStatus.ISSUED).length,
+      partialPaid: entries.filter((e) => e.invoice?.status === InvoiceStatus.PARTIALLY_PAID).length,
+    };
+
+    return { date: dateStr, summary, entries };
+  }
+
+  private emptyTodayHub(date: string) {
+    return {
+      date,
+      summary: { total: 0, scheduled: 0, waiting: 0, inProgress: 0, done: 0, unpaid: 0, partialPaid: 0 },
+      entries: [],
+    };
+  }
+
+  // Mirrors the same Damascus-timezone day-boundary logic in appointments.service.ts.
+  // 'date' is a YYYY-MM-DD string in Asia/Damascus (UTC+3, no DST since 2022).
+  private buildDayRange(date: string): { gte: Date; lt: Date } {
+    const TZ_OFFSET_MS = 3 * 60 * 60 * 1000;
+    const start = new Date(new Date(`${date}T00:00:00.000Z`).getTime() - TZ_OFFSET_MS);
+    return { gte: start, lt: new Date(start.getTime() + 24 * 60 * 60 * 1000) };
   }
 
   private emptyResponse() {

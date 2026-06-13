@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useRouter } from '@/i18n/navigation';
 import { Search, UserX } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
@@ -69,7 +69,9 @@ export default function PatientsPage() {
   const [platformCandidates, setPlatformCandidates] = useState<PlatformCandidate[]>([]);
   const [linkRequestResult, setLinkRequestResult] = useState<LinkRequestResult | null>(null);
   const [verifyLinkError, setVerifyLinkError] = useState<string | null>(null);
+  const [verifySuccess, setVerifySuccess] = useState(false);
   const [isCreateFormDirty, setIsCreateFormDirty] = useState(false);
+  const verifyCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 350 ms debounce — avoids firing on every keystroke
   useEffect(() => {
@@ -108,16 +110,24 @@ export default function PatientsPage() {
     guard.setEnabled(isCreateOpen && isCreateFormDirty);
   }, [isCreateOpen, isCreateFormDirty]);
 
-  // Reset guard when patients page unmounts (navigated away while form was open)
+  // Reset guard and any pending verify-close timer when patients page unmounts
   useEffect(() => {
     return () => {
       const s = useUnsavedGuardStore.getState();
       s.setEnabled(false);
       s.stayHere();
+      if (verifyCloseTimerRef.current) {
+        clearTimeout(verifyCloseTimerRef.current);
+        verifyCloseTimerRef.current = null;
+      }
     };
   }, []);
 
   function closeCreateForm() {
+    if (verifyCloseTimerRef.current) {
+      clearTimeout(verifyCloseTimerRef.current);
+      verifyCloseTimerRef.current = null;
+    }
     setIsCreateOpen(false);
     setCreateError(null);
     setDuplicateMatches([]);
@@ -125,6 +135,7 @@ export default function PatientsPage() {
     setPendingPayload(null);
     setLinkRequestResult(null);
     setVerifyLinkError(null);
+    setVerifySuccess(false);
     setIsCreateFormDirty(false);
   }
 
@@ -181,17 +192,27 @@ export default function PatientsPage() {
   }
 
   function handleCancelDuplicateWarning() {
+    if (verifyCloseTimerRef.current) {
+      clearTimeout(verifyCloseTimerRef.current);
+      verifyCloseTimerRef.current = null;
+    }
     setPendingPayload(null);
     setDuplicateMatches([]);
     setPlatformCandidates([]);
     setLinkRequestResult(null);
     setVerifyLinkError(null);
+    setVerifySuccess(false);
   }
 
   async function handleRequestLink() {
     if (!pendingPayload) return;
+    if (verifyCloseTimerRef.current) {
+      clearTimeout(verifyCloseTimerRef.current);
+      verifyCloseTimerRef.current = null;
+    }
     setCreateError(null);
     setVerifyLinkError(null);
+    setVerifySuccess(false);
     try {
       const result = await linkRequest.mutateAsync({
         phone:      pendingPayload.phone,
@@ -208,8 +229,12 @@ export default function PatientsPage() {
     setVerifyLinkError(null);
     try {
       await verifyLink.mutateAsync({ clinicPatientId: linkRequestResult.clinicPatientId, code });
+      setVerifySuccess(true);
       toast({ title: t('duplicate.platform.verifySuccess'), variant: 'success' });
-      closeCreateForm();
+      verifyCloseTimerRef.current = setTimeout(() => {
+        verifyCloseTimerRef.current = null;
+        closeCreateForm();
+      }, 1800);
     } catch {
       setVerifyLinkError(t('duplicate.platform.verifyFailed'));
     }
@@ -287,6 +312,7 @@ export default function PatientsPage() {
               onVerifyLink={handleVerifyLink}
               isVerifyingLink={verifyLink.isPending}
               verifyError={verifyLinkError}
+              verifySuccess={verifySuccess}
             />
           )}
           <PatientForm

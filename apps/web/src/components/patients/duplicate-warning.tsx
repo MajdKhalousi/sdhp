@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link, useRouter } from '@/i18n/navigation';
 import type { DuplicateCandidate, DuplicateReason, PlatformCandidate, LinkRequestResult } from '@/hooks/use-patient';
@@ -19,6 +19,7 @@ interface Props {
   onVerifyLink?: (code: string) => void;
   isVerifyingLink?: boolean;
   verifyError?: string | null;
+  verifySuccess?: boolean;
 }
 
 const REASON_BADGE_CLASS = 'inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium';
@@ -41,6 +42,7 @@ export function DuplicateWarning({
   onVerifyLink,
   isVerifyingLink = false,
   verifyError = null,
+  verifySuccess = false,
 }: Props) {
   const t = useTranslations('patient.duplicate');
   const tForm = useTranslations('patient.form');
@@ -186,42 +188,53 @@ export function DuplicateWarning({
                 {t('platform.codeSentBody')}
               </p>
               <hr className="my-3 border-blue-100 dark:border-blue-800/40" />
-              <p className="mb-1.5 text-xs font-semibold text-blue-900 dark:text-blue-300">
-                {t('platform.verifyCodeLabel')}
-              </p>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={6}
-                  value={otpValue}
-                  onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  placeholder={t('platform.verifyCodePlaceholder')}
-                  disabled={isVerifyingLink || isCreating}
-                  className="h-9 w-32 rounded-md border bg-background px-3 font-mono text-sm tracking-widest outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
-                  dir="ltr"
-                />
-                <button
-                  type="button"
-                  onClick={() => onVerifyLink?.(otpValue)}
-                  disabled={otpValue.length !== 6 || isVerifyingLink || isCreating}
-                  className="inline-flex h-9 items-center rounded-md bg-blue-600 px-3 text-xs font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-blue-700 dark:hover:bg-blue-600"
-                >
-                  {isVerifyingLink ? t('platform.verifyingButton') : t('platform.verifyButton')}
-                </button>
-              </div>
-              {verifyError && (
-                <p className="mt-1.5 text-xs text-destructive">{verifyError}</p>
-              )}
-              {onRequestLink && (
-                <button
-                  type="button"
-                  onClick={onRequestLink}
-                  disabled={isRequestingLink || isCreating}
-                  className="mt-2 text-xs text-blue-600 underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:opacity-60 dark:text-blue-400"
-                >
-                  {t('platform.requestNewCode')}
-                </button>
+              {verifySuccess ? (
+                <div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-3 py-2.5 dark:border-green-800 dark:bg-green-950/30">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600 dark:text-green-400" />
+                  <p className="text-sm font-medium text-green-800 dark:text-green-300">
+                    {t('platform.verifySuccess')}
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <p className="mb-1.5 text-xs font-semibold text-blue-900 dark:text-blue-300">
+                    {t('platform.verifyCodeLabel')}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={otpValue}
+                      onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder={t('platform.verifyCodePlaceholder')}
+                      disabled={isVerifyingLink || isCreating}
+                      className="h-9 w-32 rounded-md border bg-background px-3 font-mono text-sm tracking-widest outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
+                      dir="ltr"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => onVerifyLink?.(otpValue)}
+                      disabled={otpValue.length !== 6 || isVerifyingLink || isCreating}
+                      className="inline-flex h-9 items-center rounded-md bg-blue-600 px-3 text-xs font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-blue-700 dark:hover:bg-blue-600"
+                    >
+                      {isVerifyingLink ? t('platform.verifyingButton') : t('platform.verifyButton')}
+                    </button>
+                  </div>
+                  {verifyError && (
+                    <p className="mt-1.5 text-xs text-destructive">{verifyError}</p>
+                  )}
+                  {onRequestLink && (
+                    <button
+                      type="button"
+                      onClick={onRequestLink}
+                      disabled={isRequestingLink || isCreating}
+                      className="mt-2 text-xs text-blue-600 underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:opacity-60 dark:text-blue-400"
+                    >
+                      {t('platform.requestNewCode')}
+                    </button>
+                  )}
+                </>
               )}
             </div>
           ) : onRequestLink && (

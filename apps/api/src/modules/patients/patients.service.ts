@@ -612,13 +612,19 @@ export class PatientsService {
     });
 
     // Only a live (non-deleted) PENDING_VERIFICATION row is eligible for code regeneration.
-    // ACTIVE, SUSPENDED, REVOKED, and soft-deleted rows all get the same generic 400.
     const canRegenerate =
       existing !== null &&
       existing.deletedAt === null &&
       existing.status === ClinicPatientStatus.PENDING_VERIFICATION;
 
-    if (existing !== null && !canRegenerate) {
+    // A previously cancelled row (REVOKED + soft-deleted via cancelPendingLink) is eligible
+    // for re-request — restore the same row rather than create a new one (@@unique blocks it).
+    const canRecreate =
+      existing !== null &&
+      existing.deletedAt !== null &&
+      existing.status === ClinicPatientStatus.REVOKED;
+
+    if (existing !== null && !canRegenerate && !canRecreate) {
       throw new BadRequestException(GENERIC_ERROR);
     }
 
@@ -633,6 +639,19 @@ export class PatientsService {
       await this.prisma.clinicPatient.update({
         where: { id: existing.id },
         data:  { verificationCodeHash: codeHash, verificationExpiresAt: expiresAt },
+      });
+      clinicPatientId = existing.id;
+    } else if (canRecreate && existing) {
+      // Previously cancelled (REVOKED + soft-deleted) row — restore it as a new pending request.
+      // MRN (LNK-XXXXXX) is kept from the original row; no new sequence number is needed.
+      await this.prisma.clinicPatient.update({
+        where: { id: existing.id },
+        data: {
+          status:                ClinicPatientStatus.PENDING_VERIFICATION,
+          deletedAt:             null,
+          verificationCodeHash:  codeHash,
+          verificationExpiresAt: expiresAt,
+        },
       });
       clinicPatientId = existing.id;
     } else {

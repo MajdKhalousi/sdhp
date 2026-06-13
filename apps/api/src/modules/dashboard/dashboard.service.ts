@@ -15,6 +15,9 @@ import { TodayHubQueryDto } from './dto/today-hub-query.dto';
 
 const BILLING_ROLES = new Set<UserRole>([UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ACCOUNTANT]);
 const PATIENT_STAT_ROLES = new Set<UserRole>([UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY]);
+// Today Hub billing gate: mirrors BILLING_ROLES minus SUPER_ADMIN (blocked in V1).
+// SECRETARY is intentionally excluded — not in billing roles anywhere in the product.
+const TODAY_HUB_BILLING_ROLES = new Set<UserRole>([UserRole.ORG_ADMIN, UserRole.ACCOUNTANT]);
 
 // Damascus is permanently UTC+3 (no DST since 2022)
 const DAMASCUS_OFFSET_MS = 3 * 60 * 60 * 1000;
@@ -361,6 +364,7 @@ export class DashboardService {
 
     const branchFilter = query.branchId ? { branchId: query.branchId } : {};
     const doctorFilter = doctorId ? { doctorId } : {};
+    const canSeeBilling = TODAY_HUB_BILLING_ROLES.has(caller.role);
 
     const rows = await this.prisma.appointment.findMany({
       where: {
@@ -489,7 +493,9 @@ export class DashboardService {
             }
           : null;
 
-      const rawInvoice = row.invoices[0];
+      // Only expose invoice fields to billing-visible roles (ORG_ADMIN, ACCOUNTANT).
+      // DOCTOR/NURSE/SECRETARY and other non-billing roles receive null regardless of DB state.
+      const rawInvoice = canSeeBilling ? row.invoices[0] : undefined;
       const invoice = rawInvoice
         ? {
             id: rawInvoice.id,
@@ -556,9 +562,11 @@ export class DashboardService {
           e.queue?.status === QueueStatus.DONE ||
           e.queue?.status === QueueStatus.SKIPPED,
       ).length,
-      // Invoice outstanding
-      unpaid: entries.filter((e) => e.invoice?.status === InvoiceStatus.ISSUED).length,
-      partialPaid: entries.filter((e) => e.invoice?.status === InvoiceStatus.PARTIALLY_PAID).length,
+      // Invoice counters are meaningful only for billing-visible roles.
+      // Non-billing roles (DOCTOR, NURSE, SECRETARY) always receive 0 to avoid
+      // leaking financial data through aggregate counts.
+      unpaid: canSeeBilling ? entries.filter((e) => e.invoice?.status === InvoiceStatus.ISSUED).length : 0,
+      partialPaid: canSeeBilling ? entries.filter((e) => e.invoice?.status === InvoiceStatus.PARTIALLY_PAID).length : 0,
     };
 
     return { date: dateStr, summary, entries };

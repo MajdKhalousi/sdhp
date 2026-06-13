@@ -15,6 +15,12 @@ import { cn } from '@/lib/utils';
 // Must match backend TODAY_HUB_BILLING_ROLES — ORG_ADMIN and ACCOUNTANT only.
 const BILLING_ROLES = new Set(['ORG_ADMIN', 'ACCOUNTANT']);
 
+// Roles that can open the encounter workspace (/dashboard/doctor/encounter/[id]).
+// API allows ORG_ADMIN + DOCTOR to read encounters; frontend page has no role guard.
+// NURSE/SECRETARY: API allows read but we hide the link (not their workflow surface).
+// ACCOUNTANT: encounters are clinical, never show.
+const ENCOUNTER_ROLES = new Set(['ORG_ADMIN', 'DOCTOR']);
+
 function todayDamascus(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
 }
@@ -61,6 +67,7 @@ export default function TodayPage() {
   const { user } = useAuthStore();
   const role = user?.role ?? '';
   const canSeeBilling = BILLING_ROLES.has(role);
+  const canOpenEncounter = ENCOUNTER_ROLES.has(role);
 
   const [date, setDate] = useState(todayDamascus());
 
@@ -271,7 +278,7 @@ export default function TodayPage() {
                               {t('actions.openPatient')}
                             </Link>
                           )}
-                          {entry.encounter && (
+                          {canOpenEncounter && entry.encounter && (
                             <Link
                               href={`/dashboard/doctor/encounter/${entry.encounter.id}`}
                               className="text-xs text-primary hover:underline"

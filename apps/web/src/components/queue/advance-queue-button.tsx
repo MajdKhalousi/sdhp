@@ -18,7 +18,15 @@ const ADVANCE: Partial<Record<QueueStatus, Config>> = {
   },
 };
 
-export function AdvanceQueueButton({ entryId, status }: { entryId: string; status: QueueStatus }) {
+export function AdvanceQueueButton({
+  entryId,
+  status,
+  onSuccess,
+}: {
+  entryId: string;
+  status: QueueStatus;
+  onSuccess?: () => void;
+}) {
   const t = useTranslations('queue.advance');
   const cfg = ADVANCE[status];
   const [error, setError] = useState('');
@@ -35,7 +43,10 @@ export function AdvanceQueueButton({ entryId, status }: { entryId: string; statu
           setError('');
           mutate(
             { id: entryId, dto: { status: cfg.next } },
-            { onError: (e) => setError(e instanceof Error ? e.message : 'Failed') },
+            {
+              onSuccess: () => onSuccess?.(),
+              onError: (e) => setError(e instanceof Error ? e.message : 'Failed'),
+            },
           );
         }}
         disabled={isPending}

@@ -7,6 +7,8 @@ import { useAuthStore } from '@/store/auth';
 import { useTodayHub, type TodayHubEntry } from '@/hooks/use-today-hub';
 import { useDoctorsList } from '@/hooks/use-appointments';
 import { CheckInButton } from '@/components/queue/check-in-button';
+import { AdvanceQueueButton } from '@/components/queue/advance-queue-button';
+import type { QueueStatus } from '@/types/queue';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -31,6 +33,12 @@ const DOCTOR_FILTER_ROLES = new Set(['ORG_ADMIN', 'SECRETARY']);
 // Roles allowed to check patients in to the queue from Today Hub.
 const CHECK_IN_ROLES = new Set(['ORG_ADMIN', 'SECRETARY']);
 
+// Roles allowed to advance queue status from Today Hub.
+// Backend PATCH /v1/queue/:id allows: SUPER_ADMIN, ORG_ADMIN, DOCTOR, NURSE.
+// SECRETARY is excluded — backend returns 403 for SECRETARY on this endpoint.
+// DOCTOR excluded — Doctor Queue page is the correct surface for their workflow.
+const ADVANCE_ROLES = new Set(['ORG_ADMIN', 'NURSE']);
+
 function todayDamascus(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
 }
@@ -42,6 +50,12 @@ function canCheckInEntry(entry: TodayHubEntry): boolean {
   if (entry.queue !== null) return false;
   const s = entry.appointment.status;
   return s === 'SCHEDULED' || s === 'CONFIRMED';
+}
+
+function canAdvanceEntry(entry: TodayHubEntry): boolean {
+  if (!entry.queue) return false;
+  const s = entry.queue.status;
+  return s === 'WAITING' || s === 'CALLED';
 }
 
 function computeVisitStatus(entry: TodayHubEntry): { key: VisitStatusKey; variant: BadgeVariant } {
@@ -86,6 +100,7 @@ export default function TodayPage() {
   const canOpenEncounter = ENCOUNTER_ROLES.has(role);
   const canFilterByDoctor = DOCTOR_FILTER_ROLES.has(role);
   const canCheckIn = CHECK_IN_ROLES.has(role);
+  const canAdvance = ADVANCE_ROLES.has(role);
 
   const [date, setDate] = useState(todayDamascus());
   const [doctorId, setDoctorId] = useState<string | undefined>(undefined);
@@ -310,6 +325,13 @@ export default function TodayPage() {
                           {canCheckIn && canCheckInEntry(entry) && (
                             <CheckInButton
                               appointmentId={entry.appointment.id}
+                              onSuccess={() => void refetch()}
+                            />
+                          )}
+                          {canAdvance && canAdvanceEntry(entry) && (
+                            <AdvanceQueueButton
+                              entryId={entry.queue!.id}
+                              status={entry.queue!.status as QueueStatus}
                               onSuccess={() => void refetch()}
                             />
                           )}

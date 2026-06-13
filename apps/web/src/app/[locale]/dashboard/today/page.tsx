@@ -5,6 +5,7 @@ import { Link } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { useTodayHub, type TodayHubEntry } from '@/hooks/use-today-hub';
+import { useDoctorsList } from '@/hooks/use-appointments';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -20,6 +21,11 @@ const BILLING_ROLES = new Set(['ORG_ADMIN', 'ACCOUNTANT']);
 // NURSE/SECRETARY: API allows read but we hide the link (not their workflow surface).
 // ACCOUNTANT: encounters are clinical, never show.
 const ENCOUNTER_ROLES = new Set(['ORG_ADMIN', 'DOCTOR']);
+
+// Roles that see multiple doctors' schedules and can filter by doctor.
+// DOCTOR is scoped by backend to own rows regardless of query param.
+// NURSE/ACCOUNTANT have no cross-doctor scheduling context.
+const DOCTOR_FILTER_ROLES = new Set(['ORG_ADMIN', 'SECRETARY']);
 
 function todayDamascus(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
@@ -68,10 +74,13 @@ export default function TodayPage() {
   const role = user?.role ?? '';
   const canSeeBilling = BILLING_ROLES.has(role);
   const canOpenEncounter = ENCOUNTER_ROLES.has(role);
+  const canFilterByDoctor = DOCTOR_FILTER_ROLES.has(role);
 
   const [date, setDate] = useState(todayDamascus());
+  const [doctorId, setDoctorId] = useState<string | undefined>(undefined);
 
-  const { data, isLoading, isError, refetch } = useTodayHub({ date });
+  const { data: doctors } = useDoctorsList();
+  const { data, isLoading, isError, refetch } = useTodayHub({ date, doctorId });
 
   const summary = data?.summary;
   const entries = data?.entries ?? [];
@@ -112,12 +121,29 @@ export default function TodayPage() {
           <h1 className="text-2xl font-semibold">{t('title')}</h1>
           <p className="mt-0.5 text-xs text-muted-foreground">{t('liveRefresh')}</p>
         </div>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value || todayDamascus())}
-          className="h-8 rounded-md border border-input bg-background px-3 text-sm"
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          {canFilterByDoctor && (
+            <select
+              value={doctorId ?? ''}
+              onChange={(e) => setDoctorId(e.target.value || undefined)}
+              className="h-8 rounded-md border border-input bg-background px-3 text-sm"
+              aria-label={t('filter.doctor')}
+            >
+              <option value="">{t('filter.allDoctors')}</option>
+              {(doctors?.data ?? []).map((doc) => (
+                <option key={doc.id} value={doc.id}>
+                  {doc.user.firstName} {doc.user.lastName}
+                </option>
+              ))}
+            </select>
+          )}
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value || todayDamascus())}
+            className="h-8 rounded-md border border-input bg-background px-3 text-sm"
+          />
+        </div>
       </div>
 
       {/* Summary cards */}

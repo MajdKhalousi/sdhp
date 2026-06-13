@@ -204,6 +204,10 @@
         "heading": "No visits scheduled today",
         "viewAppointments": "Go to Appointments"
       },
+      "filter": {
+        "doctor": "Doctor",
+        "allDoctors": "All doctors"
+      },
       "errors": {
         "loadFailed": "Failed to load today's visits"
       }

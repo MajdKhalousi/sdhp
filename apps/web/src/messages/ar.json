@@ -204,6 +204,10 @@
         "heading": "لا توجد زيارات مجدولة اليوم",
         "viewAppointments": "الذهاب إلى المواعيد"
       },
+      "filter": {
+        "doctor": "الطبيب",
+        "allDoctors": "كل الأطباء"
+      },
       "errors": {
         "loadFailed": "فشل تحميل زيارات اليوم"
       }

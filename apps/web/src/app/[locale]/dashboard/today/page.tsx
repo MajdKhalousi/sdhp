@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { useTodayHub, type TodayHubEntry } from '@/hooks/use-today-hub';
 import { useDoctorsList } from '@/hooks/use-appointments';
+import { CheckInButton } from '@/components/queue/check-in-button';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,12 +28,21 @@ const ENCOUNTER_ROLES = new Set(['ORG_ADMIN', 'DOCTOR']);
 // NURSE/ACCOUNTANT have no cross-doctor scheduling context.
 const DOCTOR_FILTER_ROLES = new Set(['ORG_ADMIN', 'SECRETARY']);
 
+// Roles allowed to check patients in to the queue from Today Hub.
+const CHECK_IN_ROLES = new Set(['ORG_ADMIN', 'SECRETARY']);
+
 function todayDamascus(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
 }
 
 type BadgeVariant = BadgeProps['variant'];
 type VisitStatusKey = 'scheduled' | 'waiting' | 'inProgress' | 'done' | 'cancelled' | 'noShow';
+
+function canCheckInEntry(entry: TodayHubEntry): boolean {
+  if (entry.queue !== null) return false;
+  const s = entry.appointment.status;
+  return s === 'SCHEDULED' || s === 'CONFIRMED';
+}
 
 function computeVisitStatus(entry: TodayHubEntry): { key: VisitStatusKey; variant: BadgeVariant } {
   const { appointment, queue, encounter } = entry;
@@ -75,6 +85,7 @@ export default function TodayPage() {
   const canSeeBilling = BILLING_ROLES.has(role);
   const canOpenEncounter = ENCOUNTER_ROLES.has(role);
   const canFilterByDoctor = DOCTOR_FILTER_ROLES.has(role);
+  const canCheckIn = CHECK_IN_ROLES.has(role);
 
   const [date, setDate] = useState(todayDamascus());
   const [doctorId, setDoctorId] = useState<string | undefined>(undefined);
@@ -293,9 +304,15 @@ export default function TodayPage() {
                         </td>
                       )}
 
-                      {/* Actions: navigation links only, no state-changing buttons */}
+                      {/* Actions */}
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap items-center gap-3">
+                          {canCheckIn && canCheckInEntry(entry) && (
+                            <CheckInButton
+                              appointmentId={entry.appointment.id}
+                              onSuccess={() => void refetch()}
+                            />
+                          )}
                           {entry.patient.clinicPatientId && (
                             <Link
                               href={`/dashboard/patients/${entry.patient.clinicPatientId}`}

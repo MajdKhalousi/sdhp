@@ -64,6 +64,14 @@ export class PatientsController {
     return this.service.findPlatformCandidates(query, user);
   }
 
+  @Get('pending-links')
+  @Version('1')
+  @Roles(UserRole.ORG_ADMIN, UserRole.DOCTOR, UserRole.SECRETARY)
+  @ApiOperation({ summary: 'List PENDING_VERIFICATION patient link requests for the caller\'s org — masked patient data only, never returns PHI' })
+  listPendingLinks(@CurrentUser() user: JwtPayload) {
+    return this.service.listPendingLinks(user);
+  }
+
   @Get(':id')
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR, UserRole.SECRETARY, UserRole.NURSE, UserRole.ACCOUNTANT)
@@ -101,6 +109,17 @@ export class PatientsController {
     return this.service.update(id, dto, user);
   }
 
+  @Delete('pending-links/:id')
+  @Version('1')
+  @Roles(UserRole.ORG_ADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse({ description: 'Pending link cancelled' })
+  @ApiNotFoundResponse({ description: 'Pending link not found or already active/cancelled' })
+  @ApiOperation({ summary: 'Cancel a pending patient link — ORG_ADMIN only, sets status=REVOKED and deletedAt' })
+  cancelPendingLink(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.service.cancelPendingLink(id, user);
+  }
+
   @Delete(':id')
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
@@ -134,5 +153,15 @@ export class PatientsController {
   })
   verifyLink(@Body() dto: VerifyLinkDto, @CurrentUser() user: JwtPayload) {
     return this.service.verifyLink(dto, user);
+  }
+
+  @Post('pending-links/:id/resend-code')
+  @Version('1')
+  @Roles(UserRole.ORG_ADMIN, UserRole.DOCTOR, UserRole.SECRETARY)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { ttl: 60_000, limit: 5 } })
+  @ApiOperation({ summary: 'Regenerate verification code for an existing pending patient link — returns new plaintext code and expiry' })
+  resendLinkCode(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.service.resendLinkCode(id, user);
   }
 }

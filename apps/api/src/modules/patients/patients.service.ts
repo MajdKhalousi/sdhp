@@ -753,4 +753,135 @@ export class PatientsService {
 
     return { success: true, clinicPatientId: link.id };
   }
+
+  async listPendingLinks(caller: JwtPayload) {
+    if (caller.role === UserRole.SUPER_ADMIN) {
+      throw new ForbiddenException('Not allowed for this role');
+    }
+
+    const links = await this.prisma.clinicPatient.findMany({
+      where: {
+        organizationId: caller.organizationId,
+        status:         ClinicPatientStatus.PENDING_VERIFICATION,
+        deletedAt:      null,
+      },
+      select: {
+        id:                    true,
+        mrn:                   true,
+        createdAt:             true,
+        verificationExpiresAt: true,
+        patient: {
+          select: {
+            firstName:   true,
+            firstNameAr: true,
+            lastName:    true,
+            lastNameAr:  true,
+            phone:       true,
+            dateOfBirth: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const now = new Date();
+    return links.map(link => {
+      const p            = link.patient;
+      const phoneDigits  = p.phone?.replace(/\D/g, '') ?? '';
+      return {
+        clinicPatientId:       link.id,
+        linkRequestNo:         link.mrn,
+        maskedPatient: {
+          firstName:         p.firstName       || null,
+          firstNameAr:       p.firstNameAr     || null,
+          lastNameInitial:   p.lastName?.[0]?.toUpperCase()  ?? null,
+          lastNameArInitial: p.lastNameAr?.[0] ?? null,
+          phoneLastFour:     phoneDigits.length >= 4 ? phoneDigits.slice(-4) : null,
+          birthYear:         p.dateOfBirth ? new Date(p.dateOfBirth).getFullYear() : null,
+        },
+        createdAt:             link.createdAt.toISOString(),
+        verificationExpiresAt: link.verificationExpiresAt?.toISOString() ?? null,
+        isExpired:             link.verificationExpiresAt ? now > link.verificationExpiresAt : false,
+      };
+    });
+  }
+
+  async cancelPendingLink(clinicPatientId: string, caller: JwtPayload) {
+    if (caller.role !== UserRole.ORG_ADMIN) {
+      throw new ForbiddenException('Only ORG_ADMIN can cancel pending links');
+    }
+
+    const link = await this.prisma.clinicPatient.findFirst({
+      where: {
+        id:             clinicPatientId,
+        organizationId: caller.organizationId,
+        status:         ClinicPatientStatus.PENDING_VERIFICATION,
+        deletedAt:      null,
+      },
+      select: { id: true },
+    });
+
+    if (!link) {
+      throw new NotFoundException('Pending link not found');
+    }
+
+    const now = new Date();
+    await this.prisma.clinicPatient.update({
+      where: { id: link.id },
+      data: {
+        status:    ClinicPatientStatus.REVOKED,
+        deletedAt: now,
+      },
+    });
+
+    await this.auditWriter.log({
+      caller,
+      action:     'UPDATE',
+      resource:   'patientLinkRequest',
+      resourceId: link.id,
+      newData:    toSnapshot({ status: 'REVOKED', cancelledAt: now }),
+    });
+  }
+
+  async resendLinkCode(clinicPatientId: string, caller: JwtPayload) {
+    if (caller.role === UserRole.SUPER_ADMIN) {
+      throw new ForbiddenException('Not allowed for this role');
+    }
+
+    const link = await this.prisma.clinicPatient.findFirst({
+      where: {
+        id:             clinicPatientId,
+        organizationId: caller.organizationId,
+        status:         ClinicPatientStatus.PENDING_VERIFICATION,
+        deletedAt:      null,
+      },
+      select: { id: true },
+    });
+
+    if (!link) {
+      throw new NotFoundException('Pending link not found');
+    }
+
+    const plainCode = String(Math.floor(100000 + Math.random() * 900000));
+    const codeHash  = await bcrypt.hash(plainCode, 10);
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+    await this.prisma.clinicPatient.update({
+      where: { id: link.id },
+      data: {
+        verificationCodeHash:  codeHash,
+        verificationExpiresAt: expiresAt,
+      },
+    });
+
+    await this.auditWriter.log({
+      caller,
+      action:     'UPDATE',
+      resource:   'patientLinkRequest',
+      resourceId: link.id,
+      newData:    toSnapshot({ resent: true, expiresAt }),
+    });
+
+    return { clinicPatientId: link.id, code: plainCode, expiresAt: expiresAt.toISOString() };
+  }
 }

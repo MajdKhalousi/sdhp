@@ -1235,6 +1235,54 @@
         "stay": "البقاء",
         "discard": "الخروج بدون حفظ"
       }
+    },
+    "pendingLinks": {
+      "title": "طلبات ربط المرضى",
+      "backToPatients": "العودة إلى المرضى",
+      "badge": "طلبات الربط ({count})",
+      "badgeZero": "طلبات الربط",
+      "tableColumns": {
+        "requestRef": "رقم طلب الربط",
+        "patient": "المريض",
+        "phone": "آخر 4 أرقام",
+        "birthYear": "سنة الميلاد",
+        "requestedAt": "تاريخ الطلب",
+        "expiresAt": "انتهاء الصلاحية",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "status": {
+        "pending": "بانتظار التحقق",
+        "expired": "منتهي الصلاحية"
+      },
+      "actions": {
+        "resendCode": "إعادة توليد رمز التحقق",
+        "cancelRequest": "إلغاء الطلب",
+        "resending": "جارٍ التوليد...",
+        "cancelling": "جارٍ الإلغاء..."
+      },
+      "cancelConfirm": {
+        "heading": "إلغاء طلب الربط؟",
+        "description": "لن يتمكن المريض من التحقق باستخدام هذا الرمز. يمكنك إنشاء طلب جديد بعد الإلغاء.",
+        "confirm": "نعم، إلغاء",
+        "abort": "إبقاء"
+      },
+      "resendSuccess": {
+        "title": "رمز التحقق الجديد",
+        "description": "شارك هذا الرمز مع المريض لتأكيد الربط.",
+        "codeLabel": "الرمز",
+        "expiresLabel": "ينتهي في",
+        "dismiss": "تم"
+      },
+      "empty": {
+        "heading": "لا توجد طلبات ربط معلّقة",
+        "description": "تم التحقق من جميع طلبات الربط أو إلغاؤها."
+      },
+      "error": {
+        "loadFailed": "فشل تحميل طلبات الربط.",
+        "cancelFailed": "فشل إلغاء طلب الربط.",
+        "resendFailed": "فشل إعادة توليد الرمز."
+      }
     }
   },
   "doctorWorkspace": {

@@ -1235,6 +1235,54 @@
         "stay": "Stay",
         "discard": "Leave without saving"
       }
+    },
+    "pendingLinks": {
+      "title": "Pending Patient Links",
+      "backToPatients": "Back to Patients",
+      "badge": "Pending Links ({count})",
+      "badgeZero": "Pending Links",
+      "tableColumns": {
+        "requestRef": "Request Reference",
+        "patient": "Patient",
+        "phone": "Phone (last 4)",
+        "birthYear": "Birth Year",
+        "requestedAt": "Requested",
+        "expiresAt": "Expires",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "pending": "Pending",
+        "expired": "Expired"
+      },
+      "actions": {
+        "resendCode": "Resend Code",
+        "cancelRequest": "Cancel Request",
+        "resending": "Resending...",
+        "cancelling": "Cancelling..."
+      },
+      "cancelConfirm": {
+        "heading": "Cancel this link request?",
+        "description": "The patient will no longer be able to verify with this code. You can request a new link after cancelling.",
+        "confirm": "Yes, Cancel",
+        "abort": "Keep"
+      },
+      "resendSuccess": {
+        "title": "New verification code",
+        "description": "Share this code with the patient to confirm the link.",
+        "codeLabel": "Code",
+        "expiresLabel": "Expires",
+        "dismiss": "Done"
+      },
+      "empty": {
+        "heading": "No pending link requests",
+        "description": "All patient link requests have been verified or cancelled."
+      },
+      "error": {
+        "loadFailed": "Failed to load pending links.",
+        "cancelFailed": "Failed to cancel link request.",
+        "resendFailed": "Failed to resend code."
+      }
     }
   },
   "doctorWorkspace": {

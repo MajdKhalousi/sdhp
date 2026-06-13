@@ -238,3 +238,57 @@ export function useVerifyLink() {
     },
   });
 }
+
+export interface PendingLinkMaskedPatient {
+  firstName: string | null;
+  firstNameAr: string | null;
+  lastNameInitial: string | null;
+  lastNameArInitial: string | null;
+  phoneLastFour: string | null;
+  birthYear: number | null;
+}
+
+export interface PendingLinkItem {
+  clinicPatientId: string;
+  linkRequestNo: string;
+  maskedPatient: PendingLinkMaskedPatient;
+  createdAt: string;
+  verificationExpiresAt: string | null;
+  isExpired: boolean;
+}
+
+export interface ResendLinkCodeResult {
+  clinicPatientId: string;
+  code: string;
+  expiresAt: string;
+}
+
+export function usePendingLinks() {
+  return useQuery({
+    queryKey: ['patients', 'pending-links'],
+    queryFn: () => api.get<PendingLinkItem[]>('/v1/patients/pending-links'),
+    staleTime: 30_000,
+  });
+}
+
+export function useCancelPendingLink() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (clinicPatientId: string) =>
+      api.delete<void>(`/v1/patients/pending-links/${clinicPatientId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patients', 'pending-links'] });
+    },
+  });
+}
+
+export function useResendPendingLinkCode() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (clinicPatientId: string) =>
+      api.post<ResendLinkCodeResult>(`/v1/patients/pending-links/${clinicPatientId}/resend-code`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patients', 'pending-links'] });
+    },
+  });
+}

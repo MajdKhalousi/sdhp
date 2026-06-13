@@ -7,7 +7,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { CreatePatientInput, UpdatePatientInput, DuplicateCandidate, PlatformCandidate, LinkRequestResult } from '@/hooks/use-patient';
-import { usePatients, useCreatePatient, useDeletePatient, useCheckDuplicatePatient, useCheckPlatformCandidates, useLinkRequest, useVerifyLink } from '@/hooks/use-patient';
+import { usePatients, useCreatePatient, useDeletePatient, useCheckDuplicatePatient, useCheckPlatformCandidates, useLinkRequest, useVerifyLink, usePendingLinks } from '@/hooks/use-patient';
 import { useToast } from '@/hooks/use-toast';
 import { PatientForm } from '@/components/patients/patient-form';
 import { DuplicateWarning } from '@/components/patients/duplicate-warning';
@@ -92,6 +92,8 @@ export default function PatientsPage() {
   }, [isCreateOpen, isCreateFormDirty]);
 
   const { data, isLoading, isError, error, refetch } = usePatients({ search: debouncedSearch, page, limit: PAGE_LIMIT });
+  const { data: pendingLinksData } = usePendingLinks();
+  const pendingLinksCount = pendingLinksData?.length ?? 0;
   const createPatient = useCreatePatient();
   const deletePatient = useDeletePatient();
   const checkDuplicate = useCheckDuplicatePatient();
@@ -263,6 +265,14 @@ export default function PatientsPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard/patients/pending-links"
+            className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
+          >
+            {pendingLinksCount > 0
+              ? t('pendingLinks.badge', { count: pendingLinksCount })
+              : t('pendingLinks.badgeZero')}
+          </Link>
           {canEdit && (
             <button
               onClick={() => { setIsCreateOpen(true); setCreateError(null); }}

@@ -66,7 +66,8 @@
       "settings": "الإعدادات",
       "doctors": "الأطباء",
       "followUps": "المراجعات",
-      "myFollowUps": "مراجعاتي"
+      "myFollowUps": "مراجعاتي",
+      "today": "اليوم"
     }
   },
   "dashboard": {
@@ -163,6 +164,49 @@
       "pendingLabs": "{count} طلبات مخبر ما زالت قيد الانتظار",
       "pendingRadiology": "{count} طلبات أشعة ما زالت قيد الانتظار",
       "unpaidInvoices": "{count} فواتير غير مدفوعة"
+    },
+    "today": {
+      "title": "عمل اليوم",
+      "subtitle": "قائمة الزيارات المباشرة لهذا اليوم",
+      "liveRefresh": "يتحدث تلقائيًا كل 30 ثانية",
+      "columns": {
+        "time": "الوقت",
+        "patient": "المريض",
+        "doctor": "الطبيب",
+        "queue": "الطابور",
+        "status": "حالة الزيارة",
+        "invoice": "الفاتورة",
+        "actions": "الإجراءات"
+      },
+      "visitStatus": {
+        "scheduled": "مجدول",
+        "waiting": "بانتظار الدور",
+        "inProgress": "قيد المعاينة",
+        "done": "منتهي",
+        "cancelled": "ملغى",
+        "noShow": "لم يحضر"
+      },
+      "summary": {
+        "total": "إجمالي الزيارات",
+        "scheduled": "مجدول",
+        "waiting": "انتظار",
+        "inProgress": "قيد المعاينة",
+        "done": "منتهية",
+        "unpaid": "غير مدفوع",
+        "partialPaid": "مدفوع جزئيًا"
+      },
+      "actions": {
+        "openPatient": "فتح ملف المريض",
+        "openEncounter": "فتح المعاينة",
+        "openInvoice": "فتح الفاتورة"
+      },
+      "empty": {
+        "heading": "لا توجد زيارات مجدولة اليوم",
+        "viewAppointments": "الذهاب إلى المواعيد"
+      },
+      "errors": {
+        "loadFailed": "فشل تحميل زيارات اليوم"
+      }
     }
   },
   "appointment": {

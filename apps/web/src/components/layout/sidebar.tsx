@@ -7,6 +7,7 @@ import { useUnsavedGuardStore } from '@/store/unsaved-guard';
 import {
   Activity,
   LayoutDashboard,
+  ListChecks,
   Users,
   Calendar,
   ListOrdered,
@@ -36,6 +37,11 @@ const NAV_ITEMS: NavItem[] = [
     href: '/dashboard',
     icon: LayoutDashboard,
     roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY', 'ACCOUNTANT', 'TECHNICIAN'],
+  },
+  {
+    href: '/dashboard/today',
+    icon: ListChecks,
+    roles: ['ORG_ADMIN', 'SECRETARY', 'DOCTOR', 'NURSE', 'ACCOUNTANT'],
   },
   {
     href: '/dashboard/patients',
@@ -144,6 +150,7 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
 
   const navItemLabels: Record<string, string> = {
     '/dashboard':                      t('items.dashboard'),
+    '/dashboard/today':                t('items.today'),
     '/dashboard/patients':             t('items.patients'),
     '/dashboard/appointments':         t('items.appointments'),
     '/dashboard/queue':                t('items.queue'),

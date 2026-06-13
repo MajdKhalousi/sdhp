@@ -329,7 +329,8 @@ export default function TodayPage() {
                               onSuccess={() => void refetch()}
                             />
                           )}
-                          {canAdvance && canAdvanceEntry(entry) && (
+                          {/* Prefer Start Visit over queue-only Begin when both are possible, to avoid moving CALLED -> IN_PROGRESS without creating an encounter from Today Hub. */}
+                          {canAdvance && canAdvanceEntry(entry) && !entry.startEncounter && (
                             <AdvanceQueueButton
                               entryId={entry.queue!.id}
                               status={entry.queue!.status as QueueStatus}

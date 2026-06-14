@@ -63,8 +63,7 @@ function isBillingActionable(entry: TodayHubEntry): boolean {
   return (
     entry.appointment.status === 'COMPLETED' ||
     entry.queue?.status === 'IN_PROGRESS' ||
-    entry.queue?.status === 'DONE' ||
-    entry.queue?.status === 'SKIPPED'
+    entry.queue?.status === 'DONE'
   );
 }
 

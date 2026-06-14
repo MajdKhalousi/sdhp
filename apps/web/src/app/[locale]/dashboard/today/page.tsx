@@ -59,6 +59,15 @@ function canAdvanceEntry(entry: TodayHubEntry): boolean {
   return s === 'WAITING' || s === 'CALLED';
 }
 
+function isBillingActionable(entry: TodayHubEntry): boolean {
+  return (
+    entry.appointment.status === 'COMPLETED' ||
+    entry.queue?.status === 'IN_PROGRESS' ||
+    entry.queue?.status === 'DONE' ||
+    entry.queue?.status === 'SKIPPED'
+  );
+}
+
 function computeVisitStatus(entry: TodayHubEntry): { key: VisitStatusKey; variant: BadgeVariant } {
   const { appointment, queue, encounter } = entry;
 
@@ -364,9 +373,28 @@ export default function TodayPage() {
                           {canSeeBilling && entry.invoice && (
                             <Link
                               href={`/dashboard/invoices/${entry.invoice.id}`}
+                              className={cn(
+                                'text-xs hover:underline',
+                                entry.invoice.status === 'PAID'
+                                  ? 'text-muted-foreground'
+                                  : 'text-primary',
+                              )}
+                            >
+                              {entry.invoice.status === 'DRAFT'
+                                ? t('actions.issueInvoice')
+                                : entry.invoice.status === 'ISSUED'
+                                ? t('actions.collectPayment')
+                                : entry.invoice.status === 'PARTIALLY_PAID'
+                                ? t('actions.collectRemaining')
+                                : t('actions.openInvoice')}
+                            </Link>
+                          )}
+                          {canSeeBilling && !entry.invoice && isBillingActionable(entry) && (
+                            <Link
+                              href={`/dashboard/invoices/new?appointmentId=${entry.appointment.id}`}
                               className="text-xs text-primary hover:underline"
                             >
-                              {t('actions.openInvoice')}
+                              {t('actions.createInvoice')}
                             </Link>
                           )}
                         </div>

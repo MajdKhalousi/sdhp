@@ -198,7 +198,11 @@
       "actions": {
         "openPatient": "Open Patient",
         "openEncounter": "Open Encounter",
-        "openInvoice": "Open Invoice"
+        "openInvoice": "Open Invoice",
+        "issueInvoice": "Issue Invoice",
+        "collectPayment": "Collect Payment",
+        "collectRemaining": "Collect Remaining",
+        "createInvoice": "Create Invoice"
       },
       "empty": {
         "heading": "No visits scheduled today",

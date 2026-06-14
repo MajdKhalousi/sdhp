@@ -198,7 +198,11 @@
       "actions": {
         "openPatient": "فتح ملف المريض",
         "openEncounter": "فتح المعاينة",
-        "openInvoice": "فتح الفاتورة"
+        "openInvoice": "فتح الفاتورة",
+        "issueInvoice": "إصدار الفاتورة",
+        "collectPayment": "تحصيل الدفع",
+        "collectRemaining": "تحصيل المتبقي",
+        "createInvoice": "إنشاء فاتورة"
       },
       "empty": {
         "heading": "لا توجد زيارات مجدولة اليوم",

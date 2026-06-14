@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Link } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
@@ -9,6 +9,7 @@ import { useDoctorsList } from '@/hooks/use-appointments';
 import { CheckInButton } from '@/components/queue/check-in-button';
 import { AdvanceQueueButton } from '@/components/queue/advance-queue-button';
 import { StartEncounterButton } from '@/components/doctor/start-encounter-button';
+import { RecordPaymentForm } from '@/components/billing/record-payment-form';
 import type { QueueStatus } from '@/types/queue';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
@@ -113,6 +114,7 @@ export default function TodayPage() {
 
   const [date, setDate] = useState(todayDamascus());
   const [doctorId, setDoctorId] = useState<string | undefined>(undefined);
+  const [paymentOpenInvoiceId, setPaymentOpenInvoiceId] = useState<string | null>(null);
 
   const { data: doctors } = useDoctorsList();
   const { data, isLoading, isError, refetch } = useTodayHub({ date, doctorId });
@@ -253,9 +255,20 @@ export default function TodayPage() {
               <tbody>
                 {entries.map((entry) => {
                   const vs = computeVisitStatus(entry);
+                  const totalAmount = Number.parseFloat(entry.invoice?.totalAmount ?? '');
+                  const paidAmount = Number.parseFloat(entry.invoice?.paidAmount ?? '');
+                  const invoiceRemaining =
+                    Number.isFinite(totalAmount) && Number.isFinite(paidAmount)
+                      ? Math.max(0, totalAmount - paidAmount)
+                      : 0;
+                  const canInlineCollect =
+                    canSeeBilling &&
+                    !!entry.invoice &&
+                    (entry.invoice.status === 'ISSUED' || entry.invoice.status === 'PARTIALLY_PAID') &&
+                    invoiceRemaining > 0;
                   return (
+                    <Fragment key={entry.appointment.id}>
                     <tr
-                      key={entry.appointment.id}
                       className="border-t border-border transition-colors hover:bg-muted/20"
                     >
                       {/* Time + duration */}
@@ -370,23 +383,32 @@ export default function TodayPage() {
                             </Link>
                           )}
                           {canSeeBilling && entry.invoice && (
-                            <Link
-                              href={`/dashboard/invoices/${entry.invoice.id}`}
-                              className={cn(
-                                'text-xs hover:underline',
-                                entry.invoice.status === 'PAID'
-                                  ? 'text-muted-foreground'
-                                  : 'text-primary',
-                              )}
-                            >
-                              {entry.invoice.status === 'DRAFT'
-                                ? t('actions.issueInvoice')
-                                : entry.invoice.status === 'ISSUED'
-                                ? t('actions.collectPayment')
-                                : entry.invoice.status === 'PARTIALLY_PAID'
-                                ? t('actions.collectRemaining')
-                                : t('actions.openInvoice')}
-                            </Link>
+                            canInlineCollect ? (
+                              <button
+                                onClick={() => setPaymentOpenInvoiceId(
+                                  paymentOpenInvoiceId === entry.invoice!.id ? null : entry.invoice!.id
+                                )}
+                                className="text-xs text-primary hover:underline"
+                              >
+                                {entry.invoice.status === 'ISSUED'
+                                  ? t('actions.collectPayment')
+                                  : t('actions.collectRemaining')}
+                              </button>
+                            ) : (
+                              <Link
+                                href={`/dashboard/invoices/${entry.invoice.id}`}
+                                className={cn(
+                                  'text-xs hover:underline',
+                                  entry.invoice.status === 'PAID'
+                                    ? 'text-muted-foreground'
+                                    : 'text-primary',
+                                )}
+                              >
+                                {entry.invoice.status === 'DRAFT'
+                                  ? t('actions.issueInvoice')
+                                  : t('actions.openInvoice')}
+                              </Link>
+                            )
                           )}
                           {canSeeBilling && !entry.invoice && isBillingActionable(entry) && (
                             <Link
@@ -399,6 +421,22 @@ export default function TodayPage() {
                         </div>
                       </td>
                     </tr>
+                    {paymentOpenInvoiceId === entry.invoice?.id && entry.invoice && (
+                      <tr>
+                        <td colSpan={canSeeBilling ? 7 : 6} className="p-0">
+                          <RecordPaymentForm
+                            invoiceId={entry.invoice.id}
+                            remaining={invoiceRemaining}
+                            onCancel={() => setPaymentOpenInvoiceId(null)}
+                            onSuccess={() => {
+                              setPaymentOpenInvoiceId(null);
+                              void refetch();
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    )}
+                    </Fragment>
                   );
                 })}
               </tbody>

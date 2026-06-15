@@ -12,7 +12,7 @@ import {
 } from '@/hooks/use-staff';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { STAFF_ROLES, MANAGEABLE_STAFF_ROLES, PROTECTED_ROLES } from '@/types/staff';
+import { STAFF_ROLES, ORG_ADMIN_MANAGEABLE_ROLES, PROTECTED_ROLES } from '@/types/staff';
 import type { StaffUser, CreateStaffDto, UpdateStaffDto, StaffRole } from '@/types/staff';
 import { useAuthStore } from '@/store/auth';
 import type { AuthUser } from '@/store/auth';
@@ -324,7 +324,6 @@ function StaffForm({ mode, initial, onDone, onCreated, roleOptions }: StaffFormP
 
 const KNOWN_DISPLAY_ROLES = new Set<string>([
   ...STAFF_ROLES,
-  'ORG_ADMIN',
   'SUPER_ADMIN',
   'BRANCH_ADMIN',
 ]);
@@ -351,7 +350,7 @@ export function StaffTable() {
   const locale  = useLocale();
   const { user } = useAuthStore();
 
-  const roleOptions: StaffRole[] = user?.role === 'ORG_ADMIN' ? MANAGEABLE_STAFF_ROLES : STAFF_ROLES;
+  const roleOptions: StaffRole[] = user?.role === 'ORG_ADMIN' ? ORG_ADMIN_MANAGEABLE_ROLES : STAFF_ROLES;
 
   const [showInactive, setShowInactive] = useState(false);
   const [expandedId, setExpandedId]     = useState<string | 'new' | null>(null);

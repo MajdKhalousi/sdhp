@@ -1,4 +1,5 @@
 export type StaffRole =
+  | 'ORG_ADMIN'
   | 'SECRETARY'
   | 'DOCTOR'
   | 'NURSE'
@@ -6,6 +7,7 @@ export type StaffRole =
   | 'TECHNICIAN';
 
 export const STAFF_ROLES: StaffRole[] = [
+  'ORG_ADMIN',
   'SECRETARY',
   'DOCTOR',
   'NURSE',
@@ -13,7 +15,13 @@ export const STAFF_ROLES: StaffRole[] = [
   'TECHNICIAN',
 ];
 
-export const MANAGEABLE_STAFF_ROLES = STAFF_ROLES;
+export const ORG_ADMIN_MANAGEABLE_ROLES: StaffRole[] = [
+  'SECRETARY',
+  'DOCTOR',
+  'NURSE',
+  'ACCOUNTANT',
+  'TECHNICIAN',
+];
 
 export const PROTECTED_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'BRANCH_ADMIN']);
 

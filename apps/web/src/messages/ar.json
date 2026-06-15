@@ -2219,13 +2219,14 @@
         "placeholders": {
           "phone": "مثال: 963912345678+",
           "email": "مثال: staff@clinic.com",
-          "password": "8 أحرف على الأقل"
+          "password": "10 أحرف على الأقل"
         },
         "validation": {
           "firstNameRequired": "الاسم الأول مطلوب.",
           "lastNameRequired": "الاسم الأخير مطلوب.",
           "phoneRequired": "الهاتف مطلوب.",
-          "passwordRequired": "كلمة المرور مطلوبة (8 أحرف على الأقل).",
+          "passwordRequired": "كلمة المرور مطلوبة (10 أحرف على الأقل).",
+          "passwordFormat": "يجب أن تحتوي كلمة المرور على حرف ورقم على الأقل.",
           "roleRequired": "الدور مطلوب.",
           "emailFormat": "أدخل عنوان بريد إلكتروني صحيح."
         },
@@ -2238,6 +2239,8 @@
         }
       },
       "roles": {
+        "SUPER_ADMIN": "مدير النظام",
+        "BRANCH_ADMIN": "مدير الفرع",
         "ORG_ADMIN": "مدير",
         "SECRETARY": "سكرتير",
         "DOCTOR": "طبيب",
@@ -2245,6 +2248,7 @@
         "ACCOUNTANT": "محاسب",
         "TECHNICIAN": "تقني"
       },
+      "protectedAccount": "محمي",
       "status": {
         "active": "نشط",
         "inactive": "غير نشط"

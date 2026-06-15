@@ -2219,13 +2219,14 @@
         "placeholders": {
           "phone": "e.g. +963912345678",
           "email": "e.g. staff@clinic.com",
-          "password": "Min. 8 characters"
+          "password": "Min. 10 characters"
         },
         "validation": {
           "firstNameRequired": "First name is required.",
           "lastNameRequired": "Last name is required.",
           "phoneRequired": "Phone is required.",
-          "passwordRequired": "Password is required (min. 8 characters).",
+          "passwordRequired": "Password is required (min. 10 characters).",
+          "passwordFormat": "Password must contain at least one letter and one number.",
           "roleRequired": "Role is required.",
           "emailFormat": "Enter a valid email address."
         },
@@ -2238,6 +2239,8 @@
         }
       },
       "roles": {
+        "SUPER_ADMIN": "Super Admin",
+        "BRANCH_ADMIN": "Branch Admin",
         "ORG_ADMIN": "Admin",
         "SECRETARY": "Secretary",
         "DOCTOR": "Doctor",
@@ -2245,6 +2248,7 @@
         "ACCOUNTANT": "Accountant",
         "TECHNICIAN": "Technician"
       },
+      "protectedAccount": "Protected",
       "status": {
         "active": "Active",
         "inactive": "Inactive"

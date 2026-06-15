@@ -12,8 +12,10 @@ import {
 } from '@/hooks/use-staff';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { STAFF_ROLES } from '@/types/staff';
-import type { StaffUser, CreateStaffDto, UpdateStaffDto } from '@/types/staff';
+import { STAFF_ROLES, MANAGEABLE_STAFF_ROLES, PROTECTED_ROLES } from '@/types/staff';
+import type { StaffUser, CreateStaffDto, UpdateStaffDto, StaffRole } from '@/types/staff';
+import { useAuthStore } from '@/store/auth';
+import type { AuthUser } from '@/store/auth';
 
 // ─── Field helpers ────────────────────────────────────────────────────────────
 
@@ -69,9 +71,10 @@ interface StaffFormProps {
   initial?: StaffUser;
   onDone: () => void;
   onCreated?: (role: string) => void;
+  roleOptions: readonly StaffRole[];
 }
 
-function StaffForm({ mode, initial, onDone, onCreated }: StaffFormProps) {
+function StaffForm({ mode, initial, onDone, onCreated, roleOptions }: StaffFormProps) {
   const t       = useTranslations('settings.staff');
   const tCommon = useTranslations('common');
   const create  = useCreateStaff();
@@ -103,8 +106,13 @@ function StaffForm({ mode, initial, onDone, onCreated }: StaffFormProps) {
     if (!values.lastName.trim())  errs.lastName  = t('form.validation.lastNameRequired');
     if (!values.phone.trim())     errs.phone     = t('form.validation.phoneRequired');
     if (!values.role)             errs.role      = t('form.validation.roleRequired');
-    if (mode === 'create' && values.password.length < 8)
-      errs.password = t('form.validation.passwordRequired');
+    if (mode === 'create') {
+      if (values.password.length < 10) {
+        errs.password = t('form.validation.passwordRequired');
+      } else if (!/(?=.*[A-Za-z])/.test(values.password) || !/(?=.*\d)/.test(values.password)) {
+        errs.password = t('form.validation.passwordFormat');
+      }
+    }
     if (values.email.trim() && !EMAIL_RE.test(values.email.trim()))
       errs.email = t('form.validation.emailFormat');
     return errs;
@@ -274,7 +282,7 @@ function StaffForm({ mode, initial, onDone, onCreated }: StaffFormProps) {
             disabled={isPending}
           >
             <option value="">—</option>
-            {STAFF_ROLES.map((r) => (
+            {roleOptions.map((r) => (
               <option key={r} value={r}>
                 {t(`roles.${r}`)}
               </option>
@@ -314,11 +322,23 @@ function StaffForm({ mode, initial, onDone, onCreated }: StaffFormProps) {
 
 // ─── Role display helper ──────────────────────────────────────────────────────
 
-const KNOWN_ROLES = new Set<string>(STAFF_ROLES);
+const KNOWN_DISPLAY_ROLES = new Set<string>([
+  ...STAFF_ROLES,
+  'ORG_ADMIN',
+  'SUPER_ADMIN',
+  'BRANCH_ADMIN',
+]);
 
 function RoleLabel({ role, t }: { role: string; t: ReturnType<typeof useTranslations<'settings.staff'>> }) {
-  if (KNOWN_ROLES.has(role)) return <>{t(`roles.${role as (typeof STAFF_ROLES)[number]}`)}</>;
+  if (KNOWN_DISPLAY_ROLES.has(role)) return <>{t(`roles.${role}` as Parameters<typeof t>[0])}</>;
   return <>{role}</>;
+}
+
+function canManageRow(member: StaffUser, currentUser: AuthUser | null): boolean {
+  if (!currentUser || currentUser.role !== 'ORG_ADMIN') return true;
+  if (member.id === currentUser.id) return false;
+  if (PROTECTED_ROLES.has(member.role)) return false;
+  return true;
 }
 
 // ─── Staff Table ──────────────────────────────────────────────────────────────
@@ -329,6 +349,9 @@ export function StaffTable() {
   const t       = useTranslations('settings.staff');
   const tCommon = useTranslations('common');
   const locale  = useLocale();
+  const { user } = useAuthStore();
+
+  const roleOptions: StaffRole[] = user?.role === 'ORG_ADMIN' ? MANAGEABLE_STAFF_ROLES : STAFF_ROLES;
 
   const [showInactive, setShowInactive] = useState(false);
   const [expandedId, setExpandedId]     = useState<string | 'new' | null>(null);
@@ -491,6 +514,7 @@ export function StaffTable() {
                       mode="create"
                       onDone={() => setExpandedId(null)}
                       onCreated={(role) => setDoctorHint(role === 'DOCTOR')}
+                      roleOptions={roleOptions}
                     />
                   </td>
                 </tr>
@@ -536,34 +560,38 @@ export function StaffTable() {
                     </td>
 
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => {
-                            setExpandedId(expandedId === member.id ? null : member.id);
-                            setDeletingId(null);
-                          }}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
-                          aria-label="Edit"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setDeletingId(deletingId === member.id ? null : member.id);
-                            setExpandedId(null);
-                            setDeleteError(null);
-                          }}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-destructive/30 text-destructive transition-colors hover:bg-destructive/10"
-                          aria-label="Deactivate"
-                        >
-                          <UserX className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
+                      {canManageRow(member, user) ? (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => {
+                              setExpandedId(expandedId === member.id ? null : member.id);
+                              setDeletingId(null);
+                            }}
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
+                            aria-label="Edit"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setDeletingId(deletingId === member.id ? null : member.id);
+                              setExpandedId(null);
+                              setDeleteError(null);
+                            }}
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-destructive/30 text-destructive transition-colors hover:bg-destructive/10"
+                            aria-label="Deactivate"
+                          >
+                            <UserX className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <Badge variant="outline">{t('protectedAccount')}</Badge>
+                      )}
                     </td>
 
                   </tr>
 
-                  {expandedId === member.id && (
+                  {expandedId === member.id && canManageRow(member, user) && (
                     <tr className="border-t border-border bg-muted/10">
                       <td colSpan={COL_COUNT} className="p-4">
                         <p className="mb-3 text-sm font-semibold">{t('form.editTitle')}</p>
@@ -571,12 +599,13 @@ export function StaffTable() {
                           mode="edit"
                           initial={member}
                           onDone={() => setExpandedId(null)}
+                          roleOptions={roleOptions}
                         />
                       </td>
                     </tr>
                   )}
 
-                  {deletingId === member.id && (
+                  {deletingId === member.id && canManageRow(member, user) && (
                     <tr className="border-t border-border bg-destructive/5">
                       <td colSpan={COL_COUNT} className="px-4 py-2.5">
                         <div className="flex flex-wrap items-center gap-3">

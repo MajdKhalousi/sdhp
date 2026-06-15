@@ -140,11 +140,12 @@ export class UsersService {
     if (!found) throw new NotFoundException('User not found');
     this.assertOwnership(found.organizationId, user);
 
-    if (user.role !== UserRole.SUPER_ADMIN && dto.role !== undefined) {
+    if (user.role !== UserRole.SUPER_ADMIN) {
       if (id === user.sub) {
-        throw new ForbiddenException('Cannot change your own role');
+        if (dto.role !== undefined) throw new ForbiddenException('Cannot change your own role');
+        if (dto.isActive !== undefined) throw new ForbiddenException('Cannot change your own active status');
       }
-      if (!ORG_ADMIN_ALLOWED_ROLES.includes(dto.role)) {
+      if (dto.role !== undefined && !ORG_ADMIN_ALLOWED_ROLES.includes(dto.role)) {
         throw new ForbiddenException('Cannot assign this role');
       }
     }

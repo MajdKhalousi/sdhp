@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { LogOut, Menu } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
 import { useUnsavedGuardStore } from '@/store/unsaved-guard';
-import { useRouter, usePathname } from '@/i18n/navigation';
+import { Link, useRouter, usePathname } from '@/i18n/navigation';
 import { formatDateDisplay } from '@/lib/format-date';
 
 interface HeaderProps {
@@ -75,7 +75,10 @@ export function Header({ onMenuClick }: HeaderProps = {}) {
           {locale === 'ar' ? 'EN' : 'عربي'}
         </button>
 
-        <div className="flex items-center gap-2 rounded-md px-2 py-1">
+        <Link
+          href="/dashboard/profile"
+          className="flex items-center gap-2 rounded-md px-2 py-1 transition-colors hover:bg-accent"
+        >
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
             {initials}
           </div>
@@ -83,7 +86,7 @@ export function Header({ onMenuClick }: HeaderProps = {}) {
             <p className="text-sm font-medium">{displayName}</p>
             <p className="text-xs text-muted-foreground">{displayRole}</p>
           </div>
-        </div>
+        </Link>
 
         <button
           onClick={handleLogout}

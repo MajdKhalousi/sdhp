@@ -1,10 +1,11 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { LoginDto } from './dto/login.dto';
 import { LoginResponseDto } from './dto/auth-response.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -73,6 +74,42 @@ export class AuthService {
     // The client MUST discard the token immediately on receiving this response.
     // Current JWT lifetime is 24 h in production (see JWT_EXPIRES_IN in env).
     this.logger.log(`Logout — userId=${caller.sub}`);
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {
+    if (dto.newPassword !== dto.confirmPassword) {
+      throw new BadRequestException('New password and confirmation do not match');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId, deletedAt: null },
+      select: { id: true, passwordHash: true },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const currentValid = await bcrypt.compare(dto.currentPassword, user.passwordHash);
+    if (!currentValid) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    const sameAsCurrent = await bcrypt.compare(dto.newPassword, user.passwordHash);
+    if (sameAsCurrent) {
+      throw new BadRequestException('New password must be different from the current password');
+    }
+
+    const BCRYPT_ROUNDS = 12;
+    const newHash = await bcrypt.hash(dto.newPassword, BCRYPT_ROUNDS);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: newHash },
+      select: { id: true },
+    });
+
+    this.logger.log(`Password changed — userId=${userId}`);
   }
 
   async getMe(userId: string) {

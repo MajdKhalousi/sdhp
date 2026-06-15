@@ -22,6 +22,7 @@ import {
   UserCog,
   CalendarClock,
   BookMarked,
+  CircleUser,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
@@ -113,6 +114,11 @@ const NAV_ITEMS: NavItem[] = [
     icon: Settings,
     roles: ['SUPER_ADMIN', 'ORG_ADMIN'],
   },
+  {
+    href: '/dashboard/profile',
+    icon: CircleUser,
+    roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'BRANCH_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY', 'ACCOUNTANT', 'TECHNICIAN'],
+  },
 ];
 
 interface SidebarProps {
@@ -165,6 +171,7 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
     '/dashboard/reports/billing':      t('items.billingReports'),
     '/dashboard/doctors':               t('items.doctors'),
     '/dashboard/settings/clinic':      t('items.settings'),
+    '/dashboard/profile':              t('items.profile'),
   };
 
   const visibleItems = NAV_ITEMS.filter((item) => item.roles.includes(role));

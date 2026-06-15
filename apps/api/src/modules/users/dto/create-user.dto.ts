@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsOptional,
   IsString,
+  Matches,
   MinLength,
 } from 'class-validator';
 
@@ -39,9 +40,10 @@ export class CreateUserDto {
   @IsEmail()
   email?: string;
 
-  @ApiProperty({ example: 'password123', minLength: 8 })
+  @ApiProperty({ example: 'password12', minLength: 10 })
   @IsString()
-  @MinLength(8)
+  @MinLength(10, { message: 'Password must be at least 10 characters' })
+  @Matches(/^(?=.*[A-Za-z])(?=.*\d).+$/, { message: 'Password must contain at least one letter and one number' })
   password: string;
 
   @ApiProperty({ enum: UserRole, example: UserRole.SECRETARY })

@@ -35,6 +35,14 @@ type UserRecord = Prisma.UserGetPayload<{ select: typeof SELECT }>;
 
 const BCRYPT_ROUNDS = 12;
 
+const ORG_ADMIN_ALLOWED_ROLES: UserRole[] = [
+  UserRole.DOCTOR,
+  UserRole.NURSE,
+  UserRole.SECRETARY,
+  UserRole.ACCOUNTANT,
+  UserRole.TECHNICIAN,
+];
+
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
@@ -87,8 +95,8 @@ export class UsersService {
       }
       organizationId = user.organizationId;
 
-      if (dto.role === UserRole.SUPER_ADMIN) {
-        throw new ForbiddenException('Cannot assign SUPER_ADMIN role');
+      if (!ORG_ADMIN_ALLOWED_ROLES.includes(dto.role)) {
+        throw new ForbiddenException('Cannot assign this role');
       }
     }
 
@@ -132,8 +140,13 @@ export class UsersService {
     if (!found) throw new NotFoundException('User not found');
     this.assertOwnership(found.organizationId, user);
 
-    if (user.role !== UserRole.SUPER_ADMIN && dto.role === UserRole.SUPER_ADMIN) {
-      throw new ForbiddenException('Cannot assign SUPER_ADMIN role');
+    if (user.role !== UserRole.SUPER_ADMIN && dto.role !== undefined) {
+      if (id === user.sub) {
+        throw new ForbiddenException('Cannot change your own role');
+      }
+      if (!ORG_ADMIN_ALLOWED_ROLES.includes(dto.role)) {
+        throw new ForbiddenException('Cannot assign this role');
+      }
     }
 
     if (dto.branchId) {
@@ -162,6 +175,10 @@ export class UsersService {
   }
 
   async remove(id: string, user: JwtPayload) {
+    if (user.role === UserRole.ORG_ADMIN && id === user.sub) {
+      throw new ForbiddenException('Cannot deactivate your own account');
+    }
+
     const found = await this.prisma.user.findFirst({
       where: { id, deletedAt: null },
       select: { id: true, organizationId: true },

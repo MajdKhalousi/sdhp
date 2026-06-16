@@ -77,13 +77,22 @@ export class UsersController {
     return this.service.update(id, dto, user);
   }
 
+  @Patch(':id/restore')
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
+  @ApiOperation({ summary: 'Restore soft-deleted user — ORG_ADMIN restricted to own org and normal staff roles' })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  restore(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.service.restore(id, user);
+  }
+
   @Delete(':id')
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse({ description: 'User soft-deleted' })
   @ApiNotFoundResponse({ description: 'User not found' })
-  @ApiOperation({ summary: 'Soft-delete user — ORG_ADMIN restricted to own org' })
+  @ApiOperation({ summary: 'Soft-delete user — ORG_ADMIN restricted to own org and normal staff roles' })
   remove(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.service.remove(id, user);
   }

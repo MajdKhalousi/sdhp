@@ -29,6 +29,7 @@ const SELECT = {
   lastLoginAt: true,
   createdAt: true,
   updatedAt: true,
+  deletedAt: true,
 } as const;
 
 type UserRecord = Prisma.UserGetPayload<{ select: typeof SELECT }>;
@@ -54,8 +55,11 @@ export class UsersService {
 
     const where =
       user.role === UserRole.SUPER_ADMIN
-        ? { deletedAt: null }
-        : { organizationId: user.organizationId, deletedAt: null };
+        ? (query.includeDeleted ? {} : { deletedAt: null })
+        : {
+            organizationId: user.organizationId,
+            ...(query.includeDeleted ? {} : { deletedAt: null }),
+          };
 
     const [data, total] = await Promise.all([
       this.prisma.user.findMany({ where, select: SELECT, orderBy: { createdAt: 'desc' }, skip, take: limit }),
@@ -186,15 +190,47 @@ export class UsersService {
 
     const found = await this.prisma.user.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true, organizationId: true },
+      select: { id: true, organizationId: true, role: true },
     });
 
     if (!found) throw new NotFoundException('User not found');
     this.assertOwnership(found.organizationId, user);
 
+    if (user.role !== UserRole.SUPER_ADMIN) {
+      if (!ORG_ADMIN_ALLOWED_ROLES.includes(found.role)) {
+        throw new ForbiddenException('Cannot deactivate this user');
+      }
+    }
+
     await this.prisma.user.update({
       where: { id },
       data: { deletedAt: new Date(), isActive: false },
+    });
+  }
+
+  async restore(id: string, user: JwtPayload) {
+    if (user.role === UserRole.ORG_ADMIN && id === user.sub) {
+      throw new ForbiddenException('Cannot restore your own account');
+    }
+
+    const found = await this.prisma.user.findFirst({
+      where: { id },
+      select: { id: true, organizationId: true, role: true },
+    });
+
+    if (!found) throw new NotFoundException('User not found');
+    this.assertOwnership(found.organizationId, user);
+
+    if (user.role !== UserRole.SUPER_ADMIN) {
+      if (!ORG_ADMIN_ALLOWED_ROLES.includes(found.role)) {
+        throw new ForbiddenException('Cannot restore this user');
+      }
+    }
+
+    return await this.prisma.user.update({
+      where: { id },
+      data: { isActive: true, deletedAt: null },
+      select: SELECT,
     });
   }
 

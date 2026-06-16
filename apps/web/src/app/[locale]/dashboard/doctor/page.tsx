@@ -1,14 +1,27 @@
 'use client';
 
-import { Link } from '@/i18n/navigation';
+import { useEffect } from 'react';
+import { Link, useRouter } from '@/i18n/navigation';
 import { RefreshCw, Stethoscope } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
+import { useAuthStore } from '@/store/auth';
 import { useEncounters } from '@/hooks/use-encounters';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateDisplay, formatTimeDisplay } from '@/lib/format-date';
+import { DOCTOR_WORKSPACE_ROLES } from '@/lib/permissions';
 
 export default function DoctorWorkspacePage() {
+  const router = useRouter();
+  const { user } = useAuthStore();
+
+  useEffect(() => {
+    if (user && !DOCTOR_WORKSPACE_ROLES.has(user.role)) {
+      router.replace('/dashboard');
+    }
+  }, [user, router]);
+
+  if (!user || !DOCTOR_WORKSPACE_ROLES.has(user.role)) return null;
   const locale = useLocale();
   const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   const t = useTranslations('doctorWorkspace');

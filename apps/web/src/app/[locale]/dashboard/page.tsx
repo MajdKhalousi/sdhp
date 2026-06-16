@@ -18,6 +18,15 @@ import { QueueStatusBadge } from '@/components/queue/queue-status-badge';
 import type { Appointment, AppointmentsResponse } from '@/types/appointment';
 import type { QueueEntry, QueueResponse } from '@/types/queue';
 import { formatTimeDisplay } from '@/lib/format-date';
+import {
+  DASHBOARD_BILLING_ROLES,
+  DASHBOARD_OPS_ROLES,
+  DASHBOARD_LAB_ROLES,
+  DASHBOARD_WORKLOAD_ROLES,
+  DASHBOARD_COMPLETED_ROLES,
+  DASHBOARD_FOLLOWUP_ROLES,
+  DASHBOARD_NEW_PATIENT_ROLES,
+} from '@/lib/permissions';
 
 interface StatCard {
   key: string;
@@ -31,14 +40,6 @@ interface StatCard {
   annotation?: string;
   annotationUrgent?: boolean;
 }
-
-const BILLING_ROLES  = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
-const OPS_ROLES      = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY', 'DOCTOR', 'NURSE']);
-const LAB_ROLES      = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'TECHNICIAN']);
-const WORKLOAD_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'TECHNICIAN']);
-const COMPLETED_ROLES   = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
-const FOLLOWUP_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY', 'DOCTOR', 'NURSE']);
-const NEW_PATIENT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
 
 const ALERT_LABS_THRESHOLD      = 10;
 const ALERT_RADIOLOGY_THRESHOLD = 10;
@@ -81,13 +82,13 @@ export default function DashboardPage() {
   const role = user?.role ?? '';
   const today = todayStr();
 
-  const canSeeBilling    = BILLING_ROLES.has(role);
-  const canSeeOps        = OPS_ROLES.has(role);
-  const canSeeLabs       = LAB_ROLES.has(role);
-  const canSeeWorkload   = WORKLOAD_ROLES.has(role);
-  const canSeeCompleted  = COMPLETED_ROLES.has(role);
-  const canSeeFollowUps  = FOLLOWUP_ROLES.has(role);
-  const canSeeNewPatients = NEW_PATIENT_ROLES.has(role);
+  const canSeeBilling    = DASHBOARD_BILLING_ROLES.has(role);
+  const canSeeOps        = DASHBOARD_OPS_ROLES.has(role);
+  const canSeeLabs       = DASHBOARD_LAB_ROLES.has(role);
+  const canSeeWorkload   = DASHBOARD_WORKLOAD_ROLES.has(role);
+  const canSeeCompleted  = DASHBOARD_COMPLETED_ROLES.has(role);
+  const canSeeFollowUps  = DASHBOARD_FOLLOWUP_ROLES.has(role);
+  const canSeeNewPatients = DASHBOARD_NEW_PATIENT_ROLES.has(role);
   const followUpsHref = role === 'DOCTOR' ? '/dashboard/my-follow-ups' : '/dashboard/follow-ups';
   const waitingHref          = role === 'DOCTOR' ? '/dashboard/doctor/queue' : '/dashboard/queue';
   const activeEncountersHref = role === 'DOCTOR' ? '/dashboard/doctor' : '/dashboard/queue';

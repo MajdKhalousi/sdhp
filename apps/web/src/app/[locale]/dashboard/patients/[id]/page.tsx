@@ -7,6 +7,14 @@ import { AlertTriangle, ArrowLeft, CalendarClock, UserPlus, Receipt } from 'luci
 import { useTranslations, useLocale } from 'next-intl';
 import { usePatient, useUpdatePatient, useDeletePatient } from '@/hooks/use-patient';
 import { useAuthStore } from '@/store/auth';
+import {
+  PATIENT_EDIT_ROLES,
+  PATIENT_ARCHIVE_ROLES,
+  CLINICAL_ROLES,
+  PATIENT_SAFETY_ALERT_ROLES,
+  RECEPTION_ACTION_ROLES,
+  INVOICE_CREATE_ROLES,
+} from '@/lib/permissions';
 import { useAllergies } from '@/hooks/use-allergies';
 import { usePatientLabOrders } from '@/hooks/use-labs';
 import { usePatientRadiologyOrders } from '@/hooks/use-radiology';
@@ -221,12 +229,6 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
   );
 }
 
-const PATIENT_EDIT_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
-const PATIENT_ARCHIVE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
-const CLINICAL_ROLES        = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE']);
-const SAFETY_ALERT_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY']);
-const RECEPTION_ACTION_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
-const INVOICE_CREATE_ROLES   = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
 const PENDING_LAB_STATUSES = new Set(['ORDERED', 'SAMPLE_COLLECTED', 'IN_PROGRESS']);
 const PENDING_RADIOLOGY_STATUSES = new Set(['ORDERED', 'SCHEDULED', 'IN_PROGRESS']);
 
@@ -240,11 +242,11 @@ export default function PatientPage({ params }: { params: { id: string } }) {
   const canEdit            = user ? PATIENT_EDIT_ROLES.has(user.role) : false;
   const canArchive         = user ? PATIENT_ARCHIVE_ROLES.has(user.role) : false;
   const hasClinicalRole    = user ? CLINICAL_ROLES.has(user.role) : false;
-  const canSeeSafetyAlerts = user ? SAFETY_ALERT_ROLES.has(user.role) : false;
+  const canSeeSafetyAlerts = user ? PATIENT_SAFETY_ALERT_ROLES.has(user.role) : false;
   const canBookAppointment = user ? RECEPTION_ACTION_ROLES.has(user.role) : false;
   const canCheckIn         = user ? RECEPTION_ACTION_ROLES.has(user.role) : false;
   const canCreateInvoice   = user ? INVOICE_CREATE_ROLES.has(user.role) : false;
-  const canSeeVisitStatus  = user ? SAFETY_ALERT_ROLES.has(user.role) : false;
+  const canSeeVisitStatus  = user ? PATIENT_SAFETY_ALERT_ROLES.has(user.role) : false;
   const [activeTab, setActiveTab] = useState(() => {
     const tab = searchParams.get('tab');
     return tab === 'timeline' || tab === 'medical-history' ? 'timeline'

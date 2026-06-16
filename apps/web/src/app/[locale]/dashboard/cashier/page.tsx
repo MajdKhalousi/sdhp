@@ -1,24 +1,24 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { CashierView } from '@/components/billing/cashier-view';
-
-const BILLING_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
+import { BILLING_ACCESS_ROLES } from '@/lib/permissions';
 
 export default function CashierPage() {
-  const t = useTranslations('cashier');
-  const tBilling = useTranslations('billingReports');
+  const router = useRouter();
   const { user } = useAuthStore();
-  const canView = user ? BILLING_ACCESS_ROLES.has(user.role) : false;
+  const t = useTranslations('cashier');
 
-  if (!canView) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 text-center">
-        <p className="text-sm text-muted-foreground">{tBilling('forbidden')}</p>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (user && !BILLING_ACCESS_ROLES.has(user.role)) {
+      router.replace('/dashboard');
+    }
+  }, [user, router]);
+
+  if (!user || !BILLING_ACCESS_ROLES.has(user.role)) return null;
 
   return (
     <div className="space-y-6">

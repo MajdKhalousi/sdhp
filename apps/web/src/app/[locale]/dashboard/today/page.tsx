@@ -17,29 +17,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatTimeDisplay } from '@/lib/format-date';
 import { Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-// Must match backend TODAY_HUB_BILLING_ROLES — ORG_ADMIN and ACCOUNTANT only.
-const BILLING_ROLES = new Set(['ORG_ADMIN', 'ACCOUNTANT']);
-
-// Roles that can open the encounter workspace (/dashboard/doctor/encounter/[id]).
-// API allows ORG_ADMIN + DOCTOR to read encounters; frontend page has no role guard.
-// NURSE/SECRETARY: API allows read but we hide the link (not their workflow surface).
-// ACCOUNTANT: encounters are clinical, never show.
-const ENCOUNTER_ROLES = new Set(['ORG_ADMIN', 'DOCTOR']);
-
-// Roles that see multiple doctors' schedules and can filter by doctor.
-// DOCTOR is scoped by backend to own rows regardless of query param.
-// NURSE/ACCOUNTANT have no cross-doctor scheduling context.
-const DOCTOR_FILTER_ROLES = new Set(['ORG_ADMIN', 'SECRETARY']);
-
-// Roles allowed to check patients in to the queue from Today Hub.
-const CHECK_IN_ROLES = new Set(['ORG_ADMIN', 'SECRETARY']);
-
-// Roles allowed to advance queue status from Today Hub.
-// Backend PATCH /v1/queue/:id allows: SUPER_ADMIN, ORG_ADMIN, DOCTOR, NURSE.
-// SECRETARY is excluded — backend returns 403 for SECRETARY on this endpoint.
-// DOCTOR excluded — Doctor Queue page is the correct surface for their workflow.
-const ADVANCE_ROLES = new Set(['ORG_ADMIN', 'NURSE']);
+import {
+  TODAY_BILLING_ROLES,
+  TODAY_ENCOUNTER_ROLES,
+  TODAY_DOCTOR_FILTER_ROLES,
+  TODAY_CHECK_IN_ROLES,
+  TODAY_ADVANCE_ROLES,
+} from '@/lib/permissions';
 
 function todayDamascus(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
@@ -106,11 +90,11 @@ export default function TodayPage() {
   const locale = useLocale();
   const { user } = useAuthStore();
   const role = user?.role ?? '';
-  const canSeeBilling = BILLING_ROLES.has(role);
-  const canOpenEncounter = ENCOUNTER_ROLES.has(role);
-  const canFilterByDoctor = DOCTOR_FILTER_ROLES.has(role);
-  const canCheckIn = CHECK_IN_ROLES.has(role);
-  const canAdvance = ADVANCE_ROLES.has(role);
+  const canSeeBilling = TODAY_BILLING_ROLES.has(role);
+  const canOpenEncounter = TODAY_ENCOUNTER_ROLES.has(role);
+  const canFilterByDoctor = TODAY_DOCTOR_FILTER_ROLES.has(role);
+  const canCheckIn = TODAY_CHECK_IN_ROLES.has(role);
+  const canAdvance = TODAY_ADVANCE_ROLES.has(role);
 
   const [date, setDate] = useState(todayDamascus());
   const [doctorId, setDoctorId] = useState<string | undefined>(undefined);

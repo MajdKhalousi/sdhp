@@ -5,8 +5,7 @@ import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { DoctorsList } from '@/components/doctors/doctors-list';
-
-const ALLOWED_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
+import { DOCTORS_PAGE_ROLES } from '@/lib/permissions';
 
 export default function DoctorsPage() {
   const t      = useTranslations('doctors.list');
@@ -14,12 +13,12 @@ export default function DoctorsPage() {
   const { user } = useAuthStore();
 
   useEffect(() => {
-    if (user && !ALLOWED_ROLES.has(user.role)) {
+    if (user && !DOCTORS_PAGE_ROLES.has(user.role)) {
       router.replace('/dashboard');
     }
   }, [user, router]);
 
-  if (!user || !ALLOWED_ROLES.has(user.role)) return null;
+  if (!user || !DOCTORS_PAGE_ROLES.has(user.role)) return null;
 
   return (
     <div className="space-y-6">

@@ -6,11 +6,11 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
+import { DOCTORS_PAGE_ROLES } from '@/lib/permissions';
 import { useDoctorsList } from '@/hooks/use-appointments';
 import { DoctorScheduleGrid } from '@/components/doctors/doctor-schedule-grid';
 import { ExceptionList } from '@/components/doctors/exception-list';
 
-const ALLOWED_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
 
 export default function DoctorSchedulePage() {
   const t      = useTranslations('doctors.schedule');
@@ -23,12 +23,12 @@ export default function DoctorSchedulePage() {
   const { data: doctorsData } = useDoctorsList();
 
   useEffect(() => {
-    if (user && !ALLOWED_ROLES.has(user.role)) {
+    if (user && !DOCTORS_PAGE_ROLES.has(user.role)) {
       router.replace('/dashboard');
     }
   }, [user, router]);
 
-  if (!user || !ALLOWED_ROLES.has(user.role)) return null;
+  if (!user || !DOCTORS_PAGE_ROLES.has(user.role)) return null;
 
   const doctor     = doctorsData?.data.find((d) => d.id === doctorId);
   const doctorName = doctor ? `${doctor.user.firstName} ${doctor.user.lastName}` : '—';

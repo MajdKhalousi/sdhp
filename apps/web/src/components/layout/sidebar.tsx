@@ -26,99 +26,50 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
+import {
+  NAV_DASHBOARD_ROLES,
+  NAV_TODAY_ROLES,
+  NAV_PATIENTS_ROLES,
+  NAV_APPOINTMENTS_ROLES,
+  NAV_QUEUE_ROLES,
+  NAV_DOCTOR_WORKSPACE_ROLES,
+  NAV_DOCTOR_QUEUE_ROLES,
+  NAV_MY_FOLLOW_UPS_ROLES,
+  NAV_TECHNICIAN_LABS_ROLES,
+  NAV_TECHNICIAN_RADIOLOGY_ROLES,
+  NAV_FOLLOW_UPS_ROLES,
+  NAV_CASHIER_ROLES,
+  NAV_INVOICES_ROLES,
+  NAV_BILLING_REPORTS_ROLES,
+  NAV_DOCTORS_ROLES,
+  NAV_SETTINGS_ROLES,
+  NAV_PROFILE_ROLES,
+} from '@/lib/permissions';
 
 type NavItem = {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
-  roles: string[];
+  roles: readonly string[];
 };
 
 const NAV_ITEMS: NavItem[] = [
-  {
-    href: '/dashboard',
-    icon: LayoutDashboard,
-    roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY', 'ACCOUNTANT', 'TECHNICIAN'],
-  },
-  {
-    href: '/dashboard/today',
-    icon: ListChecks,
-    roles: ['ORG_ADMIN', 'SECRETARY', 'DOCTOR', 'NURSE', 'ACCOUNTANT'],
-  },
-  {
-    href: '/dashboard/patients',
-    icon: Users,
-    roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY', 'ACCOUNTANT'],
-  },
-  {
-    href: '/dashboard/appointments',
-    icon: Calendar,
-    roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY'],
-  },
-  {
-    href: '/dashboard/queue',
-    icon: ListOrdered,
-    roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'NURSE', 'SECRETARY'],
-  },
-  {
-    href: '/dashboard/doctor',
-    icon: Stethoscope,
-    roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR'],
-  },
-  {
-    href: '/dashboard/doctor/queue',
-    icon: ClipboardList,
-    roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR'],
-  },
-  {
-    href: '/dashboard/my-follow-ups',
-    icon: BookMarked,
-    roles: ['DOCTOR'],
-  },
-  {
-    href: '/dashboard/technician/labs',
-    icon: FlaskConical,
-    roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'TECHNICIAN'],
-  },
-  {
-    href: '/dashboard/technician/radiology',
-    icon: ScanLine,
-    roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'TECHNICIAN'],
-  },
-  {
-    href: '/dashboard/follow-ups',
-    icon: CalendarClock,
-    roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'BRANCH_ADMIN', 'NURSE', 'SECRETARY'],
-  },
-  {
-    href: '/dashboard/cashier',
-    icon: CreditCard,
-    roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY'],
-  },
-  {
-    href: '/dashboard/invoices',
-    icon: Receipt,
-    roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY'],
-  },
-  {
-    href: '/dashboard/reports/billing',
-    icon: BarChart2,
-    roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT'],
-  },
-  {
-    href: '/dashboard/doctors',
-    icon: UserCog,
-    roles: ['SUPER_ADMIN', 'ORG_ADMIN'],
-  },
-  {
-    href: '/dashboard/settings/clinic',
-    icon: Settings,
-    roles: ['SUPER_ADMIN', 'ORG_ADMIN'],
-  },
-  {
-    href: '/dashboard/profile',
-    icon: CircleUser,
-    roles: ['SUPER_ADMIN', 'ORG_ADMIN', 'BRANCH_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY', 'ACCOUNTANT', 'TECHNICIAN'],
-  },
+  { href: '/dashboard',                      icon: LayoutDashboard, roles: NAV_DASHBOARD_ROLES },
+  { href: '/dashboard/today',                icon: ListChecks,      roles: NAV_TODAY_ROLES },
+  { href: '/dashboard/patients',             icon: Users,           roles: NAV_PATIENTS_ROLES },
+  { href: '/dashboard/appointments',         icon: Calendar,        roles: NAV_APPOINTMENTS_ROLES },
+  { href: '/dashboard/queue',                icon: ListOrdered,     roles: NAV_QUEUE_ROLES },
+  { href: '/dashboard/doctor',               icon: Stethoscope,     roles: NAV_DOCTOR_WORKSPACE_ROLES },
+  { href: '/dashboard/doctor/queue',         icon: ClipboardList,   roles: NAV_DOCTOR_QUEUE_ROLES },
+  { href: '/dashboard/my-follow-ups',        icon: BookMarked,      roles: NAV_MY_FOLLOW_UPS_ROLES },
+  { href: '/dashboard/technician/labs',      icon: FlaskConical,    roles: NAV_TECHNICIAN_LABS_ROLES },
+  { href: '/dashboard/technician/radiology', icon: ScanLine,        roles: NAV_TECHNICIAN_RADIOLOGY_ROLES },
+  { href: '/dashboard/follow-ups',           icon: CalendarClock,   roles: NAV_FOLLOW_UPS_ROLES },
+  { href: '/dashboard/cashier',              icon: CreditCard,      roles: NAV_CASHIER_ROLES },
+  { href: '/dashboard/invoices',             icon: Receipt,         roles: NAV_INVOICES_ROLES },
+  { href: '/dashboard/reports/billing',      icon: BarChart2,       roles: NAV_BILLING_REPORTS_ROLES },
+  { href: '/dashboard/doctors',              icon: UserCog,         roles: NAV_DOCTORS_ROLES },
+  { href: '/dashboard/settings/clinic',      icon: Settings,        roles: NAV_SETTINGS_ROLES },
+  { href: '/dashboard/profile',              icon: CircleUser,      roles: NAV_PROFILE_ROLES },
 ];
 
 interface SidebarProps {

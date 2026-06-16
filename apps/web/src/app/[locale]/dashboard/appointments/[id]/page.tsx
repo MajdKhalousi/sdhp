@@ -15,6 +15,7 @@ import { NoShowButton } from '@/components/appointments/no-show-button';
 import { CancelAppointmentDialog } from '@/components/appointments/cancel-appointment-dialog';
 import { RescheduleDialog } from '@/components/appointments/reschedule-dialog';
 import { useAuthStore } from '@/store/auth';
+import { APPOINTMENT_MUTATE_ROLES, INVOICE_CREATE_ROLES } from '@/lib/permissions';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AppointmentStatus } from '@/types/appointment';
 import { formatDateTimeDisplay } from '@/lib/format-date';
@@ -26,8 +27,6 @@ const RESCHEDULE_ELIGIBLE: AppointmentStatus[] = ['SCHEDULED', 'CONFIRMED'];
 const CANCEL_ELIGIBLE: AppointmentStatus[]     = ['SCHEDULED', 'CONFIRMED', 'CHECKED_IN', 'IN_QUEUE', 'IN_PROGRESS'];
 const INVOICE_ELIGIBLE: AppointmentStatus[]    = ['COMPLETED', 'IN_PROGRESS'];
 
-const APPOINTMENT_MUTATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
-const INVOICE_CREATE_ROLES     = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY', 'ACCOUNTANT']);
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (

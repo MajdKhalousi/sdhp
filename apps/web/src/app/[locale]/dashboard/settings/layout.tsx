@@ -5,8 +5,7 @@ import { usePathname, useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { Tabs, type TabItem } from '@/components/ui/tabs';
 import { useAuthStore } from '@/store/auth';
-
-const SETTINGS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
+import { SETTINGS_ACCESS_ROLES } from '@/lib/permissions';
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
   const t = useTranslations('settings');
@@ -15,12 +14,12 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   const { user } = useAuthStore();
 
   useEffect(() => {
-    if (user && !SETTINGS_ROLES.has(user.role)) {
+    if (user && !SETTINGS_ACCESS_ROLES.has(user.role)) {
       router.replace('/dashboard');
     }
   }, [user, router]);
 
-  if (!user || !SETTINGS_ROLES.has(user.role)) return null;
+  if (!user || !SETTINGS_ACCESS_ROLES.has(user.role)) return null;
 
   const activeTab = pathname.startsWith('/dashboard/settings/visit-types')
     ? 'visit-types'

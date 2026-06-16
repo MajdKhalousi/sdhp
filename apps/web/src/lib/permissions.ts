@@ -1,0 +1,102 @@
+// ─── Sidebar nav visibility ───────────────────────────────────────────────────
+// Exported as readonly string[] — sidebar uses .includes(role) to filter items.
+
+export const NAV_DASHBOARD_ROLES: readonly string[]           = ['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY', 'ACCOUNTANT', 'TECHNICIAN'];
+export const NAV_TODAY_ROLES: readonly string[]               = ['ORG_ADMIN', 'SECRETARY', 'DOCTOR', 'NURSE', 'ACCOUNTANT'];
+export const NAV_PATIENTS_ROLES: readonly string[]            = ['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY', 'ACCOUNTANT'];
+export const NAV_APPOINTMENTS_ROLES: readonly string[]        = ['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY'];
+export const NAV_QUEUE_ROLES: readonly string[]               = ['SUPER_ADMIN', 'ORG_ADMIN', 'NURSE', 'SECRETARY'];
+export const NAV_DOCTOR_WORKSPACE_ROLES: readonly string[]    = ['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR'];
+export const NAV_DOCTOR_QUEUE_ROLES: readonly string[]        = ['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR'];
+export const NAV_MY_FOLLOW_UPS_ROLES: readonly string[]       = ['DOCTOR'];
+export const NAV_TECHNICIAN_LABS_ROLES: readonly string[]     = ['SUPER_ADMIN', 'ORG_ADMIN', 'TECHNICIAN'];
+export const NAV_TECHNICIAN_RADIOLOGY_ROLES: readonly string[]= ['SUPER_ADMIN', 'ORG_ADMIN', 'TECHNICIAN'];
+export const NAV_FOLLOW_UPS_ROLES: readonly string[]          = ['SUPER_ADMIN', 'ORG_ADMIN', 'BRANCH_ADMIN', 'NURSE', 'SECRETARY'];
+export const NAV_CASHIER_ROLES: readonly string[]             = ['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY'];
+export const NAV_INVOICES_ROLES: readonly string[]            = ['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY'];
+export const NAV_BILLING_REPORTS_ROLES: readonly string[]     = ['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT'];
+export const NAV_DOCTORS_ROLES: readonly string[]             = ['SUPER_ADMIN', 'ORG_ADMIN'];
+export const NAV_SETTINGS_ROLES: readonly string[]            = ['SUPER_ADMIN', 'ORG_ADMIN'];
+export const NAV_PROFILE_ROLES: readonly string[]             = ['SUPER_ADMIN', 'ORG_ADMIN', 'BRANCH_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY', 'ACCOUNTANT', 'TECHNICIAN'];
+
+// ─── Settings & admin page guards ────────────────────────────────────────────
+
+export const SETTINGS_ACCESS_ROLES  = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
+export const DOCTORS_PAGE_ROLES     = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
+
+// ─── Doctor workspace page access ────────────────────────────────────────────
+// Mirrors NAV_DOCTOR_WORKSPACE_ROLES and NAV_DOCTOR_QUEUE_ROLES.
+
+export const DOCTOR_WORKSPACE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR']);
+
+// ─── My Follow-ups page access ────────────────────────────────────────────────
+// Mirrors NAV_MY_FOLLOW_UPS_ROLES.
+
+export const MY_FOLLOW_UPS_ROLES    = new Set(['DOCTOR']);
+
+// ─── Follow-ups page access ───────────────────────────────────────────────────
+// DOCTOR is separately redirected to /my-follow-ups; all others not in this set
+// receive the forbidden message.
+
+export const FOLLOW_UP_PAGE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'BRANCH_ADMIN', 'NURSE', 'SECRETARY']);
+
+// ─── Dashboard overview card visibility ──────────────────────────────────────
+
+export const DASHBOARD_BILLING_ROLES      = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
+export const DASHBOARD_OPS_ROLES          = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY', 'DOCTOR', 'NURSE']);
+export const DASHBOARD_LAB_ROLES          = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'TECHNICIAN']);
+export const DASHBOARD_WORKLOAD_ROLES     = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'TECHNICIAN']);
+export const DASHBOARD_COMPLETED_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+export const DASHBOARD_FOLLOWUP_ROLES     = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY', 'DOCTOR', 'NURSE']);
+export const DASHBOARD_NEW_PATIENT_ROLES  = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+
+// ─── Today Hub action gates ───────────────────────────────────────────────────
+// TODAY_BILLING_ROLES must match backend TODAY_HUB_BILLING_ROLES — ORG_ADMIN
+// and ACCOUNTANT only (SUPER_ADMIN is excluded by the backend /today endpoint).
+//
+// TODAY_ENCOUNTER_ROLES: API allows ORG_ADMIN + DOCTOR to read encounters;
+// NURSE/SECRETARY can read but the encounter workspace is not their surface.
+//
+// TODAY_ADVANCE_ROLES: backend PATCH /v1/queue/:id allows SUPER_ADMIN, ORG_ADMIN,
+// DOCTOR, NURSE — SECRETARY is excluded. DOCTOR uses Doctor Queue page instead.
+
+export const TODAY_BILLING_ROLES         = new Set(['ORG_ADMIN', 'ACCOUNTANT']);
+export const TODAY_ENCOUNTER_ROLES       = new Set(['ORG_ADMIN', 'DOCTOR']);
+export const TODAY_DOCTOR_FILTER_ROLES   = new Set(['ORG_ADMIN', 'SECRETARY']);
+export const TODAY_CHECK_IN_ROLES        = new Set(['ORG_ADMIN', 'SECRETARY']);
+export const TODAY_ADVANCE_ROLES         = new Set(['ORG_ADMIN', 'NURSE']);
+
+// ─── Patients page action gates ───────────────────────────────────────────────
+
+export const PATIENT_EDIT_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+export const PATIENT_ARCHIVE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
+export const PATIENT_BOOK_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+export const PATIENT_INVOICE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
+
+// ─── Appointments page action gates ──────────────────────────────────────────
+
+export const APPOINTMENT_CREATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+export const APPOINTMENT_MUTATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+
+// ─── Invoice creation gates ───────────────────────────────────────────────────
+
+export const INVOICE_CREATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
+
+// ─── Patient detail page ──────────────────────────────────────────────────────
+
+export const CLINICAL_ROLES            = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE']);
+export const PATIENT_SAFETY_ALERT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY']);
+export const RECEPTION_ACTION_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+
+// ─── Technician worklist pages ────────────────────────────────────────────────
+
+export const TECHNICIAN_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'TECHNICIAN']);
+
+// ─── Billing & cashier page access ───────────────────────────────────────────
+
+export const BILLING_ACCESS_ROLES        = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
+export const BILLING_REPORT_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
+
+// ─── Queue page action gates ──────────────────────────────────────────────────
+
+export const QUEUE_CREATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);

@@ -1,23 +1,24 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { LabWorklistPanel } from '@/components/technician/lab-worklist-panel';
-
-const TECHNICIAN_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'TECHNICIAN']);
+import { TECHNICIAN_ACCESS_ROLES } from '@/lib/permissions';
 
 export default function TechnicianLabsPage() {
-  const t = useTranslations('technicianLabs');
+  const router = useRouter();
   const { user } = useAuthStore();
-  const canView = user ? TECHNICIAN_ACCESS_ROLES.has(user.role) : false;
+  const t = useTranslations('technicianLabs');
 
-  if (!canView) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 text-center">
-        <p className="text-sm text-muted-foreground">{t('forbidden')}</p>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (user && !TECHNICIAN_ACCESS_ROLES.has(user.role)) {
+      router.replace('/dashboard');
+    }
+  }, [user, router]);
+
+  if (!user || !TECHNICIAN_ACCESS_ROLES.has(user.role)) return null;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">

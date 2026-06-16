@@ -5,8 +5,7 @@ import { Link } from '@/i18n/navigation';
 import { UserPlus } from 'lucide-react';
 import { QueueBoard } from '@/components/queue/queue-board';
 import { useAuthStore } from '@/store/auth';
-
-const QUEUE_CREATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+import { QUEUE_CREATE_ROLES } from '@/lib/permissions';
 
 export default function QueuePage() {
   const t = useTranslations('queue.board');

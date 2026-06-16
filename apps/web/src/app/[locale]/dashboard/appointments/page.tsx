@@ -5,8 +5,7 @@ import { Link } from '@/i18n/navigation';
 import { Plus } from 'lucide-react';
 import { AppointmentList } from '@/components/appointments/appointment-list';
 import { useAuthStore } from '@/store/auth';
-
-const APPOINTMENT_CREATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+import { APPOINTMENT_CREATE_ROLES } from '@/lib/permissions';
 
 export default function AppointmentsPage() {
   const t = useTranslations('appointment.list');

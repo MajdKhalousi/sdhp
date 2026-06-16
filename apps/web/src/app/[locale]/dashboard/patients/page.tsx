@@ -15,13 +15,14 @@ import { DiscardConfirm } from '@/components/patients/discard-confirm';
 import { useAuthStore } from '@/store/auth';
 import { useUnsavedGuardStore } from '@/store/unsaved-guard';
 import { formatDateDisplay } from '@/lib/format-date';
+import {
+  PATIENT_EDIT_ROLES,
+  PATIENT_ARCHIVE_ROLES,
+  PATIENT_BOOK_ROLES,
+  PATIENT_INVOICE_ROLES,
+} from '@/lib/permissions';
 
 const PAGE_LIMIT = 25;
-
-const PATIENT_EDIT_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
-const PATIENT_ARCHIVE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
-const PATIENT_BOOK_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
-const PATIENT_INVOICE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
 
 function computeAge(dob: string | null | undefined): number | null {
   if (!dob) return null;

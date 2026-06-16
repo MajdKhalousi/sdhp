@@ -1,16 +1,15 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Link } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { Banknote, Wallet, TrendingUp, FileText, Users } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { useBillingReport, useOutstandingPatients } from '@/hooks/use-invoices';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateDisplay } from '@/lib/format-date';
-
-const BILLING_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
+import { BILLING_REPORT_ACCESS_ROLES } from '@/lib/permissions';
 
 type Preset = 'today' | 'thisMonth' | 'custom';
 
@@ -54,13 +53,15 @@ function getDaysOutstanding(dateStr: string | null): number {
 }
 
 export default function BillingReportsPage() {
+  const router = useRouter();
+  const { user } = useAuthStore();
   const t = useTranslations('billingReports');
   const tCommon = useTranslations('common');
   const locale = useLocale();
-  const { user } = useAuthStore();
-  const canView = BILLING_ROLES.has(user?.role ?? '');
-
   const searchParams = useSearchParams();
+
+  const canAccess = !!user && BILLING_REPORT_ACCESS_ROLES.has(user.role);
+
   const initialPreset = (searchParams.get('preset') as Preset | null) ?? 'thisMonth';
   const [preset, setPreset] = useState<Preset>(
     PRESET_ORDER.includes(initialPreset as Preset) ? initialPreset : 'thisMonth',
@@ -80,21 +81,21 @@ export default function BillingReportsPage() {
 
   const { data: report, isLoading: reportLoading, isError: reportError } = useBillingReport(
     { from, to },
-    canView && !customDatesIncomplete,
+    canAccess && !customDatesIncomplete,
   );
 
   const { data: outstandingData, isLoading: outstandingLoading } = useOutstandingPatients(
     { page, limit: LIMIT },
-    canView,
+    canAccess,
   );
 
-  if (!canView) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 text-center">
-        <p className="text-sm text-muted-foreground">{t('forbidden')}</p>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (user && !BILLING_REPORT_ACCESS_ROLES.has(user.role)) {
+      router.replace('/dashboard');
+    }
+  }, [user, router]);
+
+  if (!canAccess) return null;
 
   const presetLabels: Record<Preset, string> = {
     today: t('today'),

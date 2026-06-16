@@ -40,6 +40,7 @@ export interface StaffUser {
   lastLoginAt: string | null;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string | null;
 }
 
 export interface CreateStaffDto {

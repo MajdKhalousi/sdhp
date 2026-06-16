@@ -14,12 +14,15 @@ function normalizeList<T>(raw: MaybeList<T>): T[] {
   return [];
 }
 
-export function useStaff() {
+export function useStaff(includeDeleted = false) {
   return useQuery({
-    queryKey: ['staff'],
+    queryKey: ['staff', includeDeleted],
     queryFn: async () =>
       normalizeList(
-        await api.get<MaybeList<StaffUser>>('/v1/users', { limit: 100 }),
+        await api.get<MaybeList<StaffUser>>('/v1/users', {
+          limit: 100,
+          ...(includeDeleted ? { includeDeleted: 'true' } : {}),
+        }),
       ),
     staleTime: 30_000,
   });
@@ -50,6 +53,16 @@ export function useDeleteStaff() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api.delete<void>(`/v1/users/${id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['staff'] });
+    },
+  });
+}
+
+export function useRestoreStaff() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.patch<StaffUser>(`/v1/users/${id}/restore`, {}),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['staff'] });
     },

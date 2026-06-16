@@ -2191,9 +2191,14 @@
       "subtitle": "Manage staff members and their access",
       "newStaff": "New Staff Member",
       "showInactive": "Show inactive",
+      "showInactiveDeactivated": "Show inactive / deactivated",
       "deactivate": "Deactivate",
       "deactivating": "Deactivating…",
       "deactivateConfirm": "Deactivate this staff member? They will lose access to the system.",
+      "restore": "Restore",
+      "restoring": "Restoring…",
+      "confirmRestore": "Restore this staff account? They will regain access to the system.",
+      "restoreSuccess": "Staff account restored.",
       "columns": {
         "name": "Name",
         "phone": "Phone",
@@ -2258,7 +2263,8 @@
       "tempPasswordSuccess": "Temporary password set. Ask the staff member to sign in and change it from My Profile.",
       "status": {
         "active": "Active",
-        "inactive": "Inactive"
+        "inactive": "Inactive",
+        "deactivated": "Deactivated"
       },
       "empty": {
         "heading": "No staff members yet",
@@ -2268,6 +2274,7 @@
         "loadFailed": "Failed to load staff",
         "saveFailed": "Failed to save staff member",
         "deleteFailed": "Failed to deactivate staff member",
+        "restoreFailed": "Failed to restore staff account.",
         "phoneConflict": "Phone or email is already in use.",
         "emailConflict": "Phone or email is already in use."
       },

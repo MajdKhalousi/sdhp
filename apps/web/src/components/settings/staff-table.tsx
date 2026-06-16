@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Fragment } from 'react';
-import { Plus, Pencil, UserX, Users } from 'lucide-react';
+import { Plus, Pencil, UserX, Users, RotateCcw } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import {
@@ -9,6 +9,7 @@ import {
   useCreateStaff,
   useUpdateStaff,
   useDeleteStaff,
+  useRestoreStaff,
 } from '@/hooks/use-staff';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -430,6 +431,9 @@ export function StaffTable() {
   const [expandedId, setExpandedId]     = useState<string | 'new' | null>(null);
   const [deletingId, setDeletingId]     = useState<string | null>(null);
   const [deleteError, setDeleteError]   = useState<string | null>(null);
+  const [restoringId, setRestoringId]   = useState<string | null>(null);
+  const [restoreError, setRestoreError] = useState<string | null>(null);
+  const [restoreSuccessMsg, setRestoreSuccessMsg] = useState<string | null>(null);
   const [doctorHint, setDoctorHint]     = useState(false);
 
   useEffect(() => {
@@ -438,8 +442,15 @@ export function StaffTable() {
     return () => clearTimeout(id);
   }, [doctorHint]);
 
-  const { data: allStaff, isLoading, isError, error, refetch } = useStaff();
-  const deleteStaff = useDeleteStaff();
+  useEffect(() => {
+    if (!restoreSuccessMsg) return;
+    const id = setTimeout(() => setRestoreSuccessMsg(null), 5_000);
+    return () => clearTimeout(id);
+  }, [restoreSuccessMsg]);
+
+  const { data: allStaff, isLoading, isError, error, refetch } = useStaff(showInactive);
+  const deleteStaff  = useDeleteStaff();
+  const restoreStaff = useRestoreStaff();
 
   async function handleDeactivate(id: string) {
     setDeleteError(null);
@@ -451,7 +462,20 @@ export function StaffTable() {
     }
   }
 
-  const items = (allStaff ?? []).filter((u) => showInactive || u.isActive);
+  async function handleRestore(id: string) {
+    setRestoreError(null);
+    try {
+      await restoreStaff.mutateAsync(id);
+      setRestoringId(null);
+      setRestoreSuccessMsg(t('restoreSuccess'));
+    } catch (err) {
+      setRestoreError(err instanceof Error ? err.message : t('error.restoreFailed'));
+    }
+  }
+
+  const items = showInactive
+    ? (allStaff ?? [])
+    : (allStaff ?? []).filter((u) => u.isActive);
 
   const toolbar = (
     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -462,10 +486,10 @@ export function StaffTable() {
           onChange={(e) => setShowInactive(e.target.checked)}
           className="h-4 w-4 rounded border-input accent-primary"
         />
-        {t('showInactive')}
+        {t('showInactiveDeactivated')}
       </label>
       <button
-        onClick={() => { setExpandedId('new'); setDeletingId(null); }}
+        onClick={() => { setExpandedId('new'); setDeletingId(null); setRestoringId(null); }}
         disabled={expandedId === 'new'}
         className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
       >
@@ -554,10 +578,23 @@ export function StaffTable() {
     </div>
   ) : null;
 
+  const restoreSuccessBanner = restoreSuccessMsg ? (
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-green-500/20 bg-green-500/5 px-4 py-3 text-sm">
+      <p className="text-green-700 dark:text-green-400">{restoreSuccessMsg}</p>
+      <button
+        onClick={() => setRestoreSuccessMsg(null)}
+        className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+      >
+        ✕
+      </button>
+    </div>
+  ) : null;
+
   if (items.length === 0 && expandedId !== 'new') {
     return (
       <div className="space-y-3">
         {doctorHintBanner}
+        {restoreSuccessBanner}
         {toolbar}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-12 text-center">
           <Users className="h-8 w-8 text-muted-foreground/50" />
@@ -571,6 +608,7 @@ export function StaffTable() {
   return (
     <div className="space-y-3">
       {doctorHintBanner}
+      {restoreSuccessBanner}
       {toolbar}
 
       <div className="overflow-hidden rounded-xl border border-border">
@@ -593,122 +631,177 @@ export function StaffTable() {
                 </tr>
               )}
 
-              {items.map((member) => (
-                <Fragment key={member.id}>
-                  <tr className={`border-t border-border transition-colors hover:bg-muted/20 ${!member.isActive ? 'opacity-50' : ''}`}>
+              {items.map((member) => {
+                const isDeactivated = !!member.deletedAt;
+                const statusBadge = isDeactivated ? (
+                  <Badge variant="danger">{t('status.deactivated')}</Badge>
+                ) : member.isActive ? (
+                  <Badge variant="success">{t('status.active')}</Badge>
+                ) : (
+                  <Badge variant="outline">{t('status.inactive')}</Badge>
+                );
 
-                    <td className="px-4 py-3">
-                      <p className="text-sm font-medium">
-                        {member.firstName} {member.lastName}
-                      </p>
-                      {(member.firstNameAr || member.lastNameAr) && (
-                        <p className="text-xs text-muted-foreground" dir="rtl">
-                          {[member.firstNameAr, member.lastNameAr].filter(Boolean).join(' ')}
+                return (
+                  <Fragment key={member.id}>
+                    <tr className={`border-t border-border transition-colors hover:bg-muted/20 ${!member.isActive ? 'opacity-60' : ''}`}>
+
+                      <td className="px-4 py-3">
+                        <p className="text-sm font-medium">
+                          {member.firstName} {member.lastName}
                         </p>
-                      )}
-                    </td>
-
-                    <td className="px-4 py-3">
-                      <span className="text-sm" dir="ltr">{member.phone}</span>
-                    </td>
-
-                    <td className="px-4 py-3">
-                      {member.email ? (
-                        <span className="text-sm" dir="ltr">{member.email}</span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
-                      )}
-                    </td>
-
-                    <td className="px-4 py-3">
-                      <span className="text-sm">
-                        <RoleLabel role={member.role} t={t} />
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-3">
-                      <Badge variant={member.isActive ? 'success' : 'outline'}>
-                        {member.isActive ? t('status.active') : t('status.inactive')}
-                      </Badge>
-                    </td>
-
-                    <td className="px-4 py-3">
-                      {canManageRow(member, user) ? (
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => {
-                              setExpandedId(expandedId === member.id ? null : member.id);
-                              setDeletingId(null);
-                            }}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
-                            aria-label="Edit"
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setDeletingId(deletingId === member.id ? null : member.id);
-                              setExpandedId(null);
-                              setDeleteError(null);
-                            }}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-destructive/30 text-destructive transition-colors hover:bg-destructive/10"
-                            aria-label="Deactivate"
-                          >
-                            <UserX className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      ) : (
-                        <Badge variant="outline">{t('protectedAccount')}</Badge>
-                      )}
-                    </td>
-
-                  </tr>
-
-                  {expandedId === member.id && canManageRow(member, user) && (
-                    <tr className="border-t border-border bg-muted/10">
-                      <td colSpan={COL_COUNT} className="p-4">
-                        <p className="mb-3 text-sm font-semibold">{t('form.editTitle')}</p>
-                        <StaffForm
-                          mode="edit"
-                          initial={member}
-                          onDone={() => setExpandedId(null)}
-                          roleOptions={roleOptions}
-                        />
+                        {(member.firstNameAr || member.lastNameAr) && (
+                          <p className="text-xs text-muted-foreground" dir="rtl">
+                            {[member.firstNameAr, member.lastNameAr].filter(Boolean).join(' ')}
+                          </p>
+                        )}
                       </td>
-                    </tr>
-                  )}
 
-                  {deletingId === member.id && canManageRow(member, user) && (
-                    <tr className="border-t border-border bg-destructive/5">
-                      <td colSpan={COL_COUNT} className="px-4 py-2.5">
-                        <div className="flex flex-wrap items-center gap-3">
-                          <p className="text-sm text-destructive">{t('deactivateConfirm')}</p>
-                          {deleteError && deletingId === member.id && (
-                            <p className="text-xs text-destructive">{deleteError}</p>
-                          )}
-                          <div className="flex items-center gap-2">
+                      <td className="px-4 py-3">
+                        <span className="text-sm" dir="ltr">{member.phone}</span>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        {member.email ? (
+                          <span className="text-sm" dir="ltr">{member.email}</span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <span className="text-sm">
+                          <RoleLabel role={member.role} t={t} />
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        {statusBadge}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        {canManageRow(member, user) ? (
+                          isDeactivated ? (
                             <button
-                              onClick={() => handleDeactivate(member.id)}
-                              disabled={deleteStaff.isPending}
-                              className="h-7 rounded-md border border-destructive/40 bg-destructive/10 px-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/20 disabled:opacity-50"
+                              onClick={() => {
+                                setRestoringId(restoringId === member.id ? null : member.id);
+                                setExpandedId(null);
+                                setDeletingId(null);
+                                setRestoreError(null);
+                              }}
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-primary/30 text-primary transition-colors hover:bg-primary/10"
+                              aria-label="Restore"
                             >
-                              {deleteStaff.isPending ? t('deactivating') : t('deactivate')}
+                              <RotateCcw className="h-3.5 w-3.5" />
                             </button>
-                            <button
-                              onClick={() => { setDeletingId(null); setDeleteError(null); }}
-                              disabled={deleteStaff.isPending}
-                              className="h-7 rounded-md border border-border bg-background px-3 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
-                            >
-                              {tCommon('actions.cancel')}
-                            </button>
+                          ) : (
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => {
+                                  setExpandedId(expandedId === member.id ? null : member.id);
+                                  setDeletingId(null);
+                                  setRestoringId(null);
+                                }}
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
+                                aria-label="Edit"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setDeletingId(deletingId === member.id ? null : member.id);
+                                  setExpandedId(null);
+                                  setRestoringId(null);
+                                  setDeleteError(null);
+                                }}
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-destructive/30 text-destructive transition-colors hover:bg-destructive/10"
+                                aria-label="Deactivate"
+                              >
+                                <UserX className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          )
+                        ) : (
+                          <Badge variant="outline">{t('protectedAccount')}</Badge>
+                        )}
+                      </td>
+
+                    </tr>
+
+                    {expandedId === member.id && canManageRow(member, user) && !isDeactivated && (
+                      <tr className="border-t border-border bg-muted/10">
+                        <td colSpan={COL_COUNT} className="p-4">
+                          <p className="mb-3 text-sm font-semibold">{t('form.editTitle')}</p>
+                          <StaffForm
+                            mode="edit"
+                            initial={member}
+                            onDone={() => setExpandedId(null)}
+                            roleOptions={roleOptions}
+                          />
+                        </td>
+                      </tr>
+                    )}
+
+                    {deletingId === member.id && canManageRow(member, user) && !isDeactivated && (
+                      <tr className="border-t border-border bg-destructive/5">
+                        <td colSpan={COL_COUNT} className="px-4 py-2.5">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <p className="text-sm text-destructive">{t('deactivateConfirm')}</p>
+                            {deleteError && deletingId === member.id && (
+                              <p className="text-xs text-destructive">{deleteError}</p>
+                            )}
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleDeactivate(member.id)}
+                                disabled={deleteStaff.isPending}
+                                className="h-7 rounded-md border border-destructive/40 bg-destructive/10 px-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/20 disabled:opacity-50"
+                              >
+                                {deleteStaff.isPending ? t('deactivating') : t('deactivate')}
+                              </button>
+                              <button
+                                onClick={() => { setDeletingId(null); setDeleteError(null); }}
+                                disabled={deleteStaff.isPending}
+                                className="h-7 rounded-md border border-border bg-background px-3 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
+                              >
+                                {tCommon('actions.cancel')}
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
+                        </td>
+                      </tr>
+                    )}
 
-                </Fragment>
-              ))}
+                    {restoringId === member.id && canManageRow(member, user) && isDeactivated && (
+                      <tr className="border-t border-border bg-primary/5">
+                        <td colSpan={COL_COUNT} className="px-4 py-2.5">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <p className="text-sm text-foreground">{t('confirmRestore')}</p>
+                            {restoreError && restoringId === member.id && (
+                              <p className="text-xs text-destructive">{restoreError}</p>
+                            )}
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleRestore(member.id)}
+                                disabled={restoreStaff.isPending}
+                                className="h-7 rounded-md border border-primary/40 bg-primary/10 px-3 text-sm font-medium text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
+                              >
+                                {restoreStaff.isPending ? t('restoring') : t('restore')}
+                              </button>
+                              <button
+                                onClick={() => { setRestoringId(null); setRestoreError(null); }}
+                                disabled={restoreStaff.isPending}
+                                className="h-7 rounded-md border border-border bg-background px-3 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
+                              >
+                                {tCommon('actions.cancel')}
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+
+                  </Fragment>
+                );
+              })}
 
             </tbody>
           </table>

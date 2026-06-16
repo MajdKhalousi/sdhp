@@ -55,6 +55,8 @@ interface StaffFormState {
   password: string;
   role: string;
   isActive: boolean;
+  temporaryPassword: string;
+  confirmTemporaryPassword: string;
 }
 
 interface StaffFormErrors {
@@ -64,6 +66,8 @@ interface StaffFormErrors {
   password?: string;
   role?: string;
   email?: string;
+  temporaryPassword?: string;
+  confirmTemporaryPassword?: string;
 }
 
 interface StaffFormProps {
@@ -81,23 +85,27 @@ function StaffForm({ mode, initial, onDone, onCreated, roleOptions }: StaffFormP
   const update  = useUpdateStaff();
 
   const [values, setValues] = useState<StaffFormState>({
-    firstName:   initial?.firstName   ?? '',
-    lastName:    initial?.lastName    ?? '',
-    firstNameAr: initial?.firstNameAr ?? '',
-    lastNameAr:  initial?.lastNameAr  ?? '',
-    phone:       initial?.phone       ?? '',
-    email:       initial?.email       ?? '',
-    password:    '',
-    role:        initial?.role        ?? '',
-    isActive:    initial?.isActive    ?? true,
+    firstName:               initial?.firstName   ?? '',
+    lastName:                initial?.lastName    ?? '',
+    firstNameAr:             initial?.firstNameAr ?? '',
+    lastNameAr:              initial?.lastNameAr  ?? '',
+    phone:                   initial?.phone       ?? '',
+    email:                   initial?.email       ?? '',
+    password:                '',
+    role:                    initial?.role        ?? '',
+    isActive:                initial?.isActive    ?? true,
+    temporaryPassword:       '',
+    confirmTemporaryPassword: '',
   });
-  const [errors, setErrors]       = useState<StaffFormErrors>({});
-  const [saveError, setSaveError] = useState<string | null>(null);
+  const [errors, setErrors]         = useState<StaffFormErrors>({});
+  const [saveError, setSaveError]   = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
 
   function set(field: keyof StaffFormState, value: string | boolean) {
     setValues((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => ({ ...prev, [field]: undefined }));
     setSaveError(null);
+    setSaveSuccess(null);
   }
 
   function validate(): StaffFormErrors {
@@ -113,6 +121,21 @@ function StaffForm({ mode, initial, onDone, onCreated, roleOptions }: StaffFormP
         errs.password = t('form.validation.passwordFormat');
       }
     }
+    if (mode === 'edit') {
+      const tp  = values.temporaryPassword;
+      const ctp = values.confirmTemporaryPassword;
+      if (tp || ctp) {
+        if (!tp) {
+          errs.temporaryPassword = t('form.validation.tempPasswordRequired');
+        } else if (!ctp) {
+          errs.confirmTemporaryPassword = t('form.validation.tempPasswordRequired');
+        } else if (tp !== ctp) {
+          errs.confirmTemporaryPassword = t('form.validation.passwordMismatch');
+        } else if (tp.length < 10 || !/(?=.*[A-Za-z])/.test(tp) || !/(?=.*\d)/.test(tp)) {
+          errs.temporaryPassword = t('form.validation.tempPasswordFormat');
+        }
+      }
+    }
     if (values.email.trim() && !EMAIL_RE.test(values.email.trim()))
       errs.email = t('form.validation.emailFormat');
     return errs;
@@ -123,6 +146,7 @@ function StaffForm({ mode, initial, onDone, onCreated, roleOptions }: StaffFormP
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setSaveError(null);
+    setSaveSuccess(null);
     try {
       if (mode === 'create') {
         const dto: CreateStaffDto = {
@@ -138,7 +162,9 @@ function StaffForm({ mode, initial, onDone, onCreated, roleOptions }: StaffFormP
         };
         await create.mutateAsync(dto);
         onCreated?.(values.role);
+        onDone();
       } else if (initial) {
+        const hasPassword = values.temporaryPassword.trim().length > 0;
         const dto: UpdateStaffDto = {
           firstName:   values.firstName.trim(),
           lastName:    values.lastName.trim(),
@@ -149,9 +175,17 @@ function StaffForm({ mode, initial, onDone, onCreated, roleOptions }: StaffFormP
           role:        values.role,
           isActive:    values.isActive,
         };
+        if (hasPassword) {
+          dto.password = values.temporaryPassword;
+        }
         await update.mutateAsync({ id: initial.id, dto });
+        if (hasPassword) {
+          setSaveSuccess(t('tempPasswordSuccess'));
+          setValues((prev) => ({ ...prev, temporaryPassword: '', confirmTemporaryPassword: '' }));
+        } else {
+          onDone();
+        }
       }
-      onDone();
     } catch (err) {
       if (err instanceof Error && err.name === 'ConflictError') {
         setSaveError(t('error.phoneConflict'));
@@ -293,8 +327,48 @@ function StaffForm({ mode, initial, onDone, onCreated, roleOptions }: StaffFormP
 
       </div>
 
+      {mode === 'edit' && (
+        <div className="border-t border-border pt-4">
+          <p className="mb-3 text-sm font-semibold text-foreground">
+            {t('form.fields.temporaryPasswordSection')}
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <FieldLabel>{t('form.fields.temporaryPassword')}</FieldLabel>
+              <input
+                type="password"
+                value={values.temporaryPassword}
+                onChange={(e) => set('temporaryPassword', e.target.value)}
+                className={inputClass(!!errors.temporaryPassword)}
+                disabled={isPending}
+                autoComplete="new-password"
+                dir="ltr"
+              />
+              <FieldError message={errors.temporaryPassword} />
+            </div>
+            <div>
+              <FieldLabel>{t('form.fields.confirmTemporaryPassword')}</FieldLabel>
+              <input
+                type="password"
+                value={values.confirmTemporaryPassword}
+                onChange={(e) => set('confirmTemporaryPassword', e.target.value)}
+                className={inputClass(!!errors.confirmTemporaryPassword)}
+                disabled={isPending}
+                autoComplete="new-password"
+                dir="ltr"
+              />
+              <FieldError message={errors.confirmTemporaryPassword} />
+            </div>
+          </div>
+        </div>
+      )}
+
       {saveError && (
         <p className="text-sm text-destructive">{saveError}</p>
+      )}
+
+      {saveSuccess && (
+        <p className="text-sm text-green-700 dark:text-green-400">{saveSuccess}</p>
       )}
 
       <div className="flex items-center gap-2">

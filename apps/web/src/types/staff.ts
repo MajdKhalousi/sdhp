@@ -63,4 +63,5 @@ export interface UpdateStaffDto {
   email?: string;
   role?: string;
   isActive?: boolean;
+  password?: string;
 }

@@ -2214,7 +2214,10 @@
           "email": "Email",
           "password": "Password",
           "role": "Role",
-          "isActive": "Active"
+          "isActive": "Active",
+          "temporaryPasswordSection": "Set Temporary Password",
+          "temporaryPassword": "Temporary Password",
+          "confirmTemporaryPassword": "Confirm Temporary Password"
         },
         "placeholders": {
           "phone": "e.g. +963912345678",
@@ -2228,7 +2231,10 @@
           "passwordRequired": "Password is required (min. 10 characters).",
           "passwordFormat": "Password must contain at least one letter and one number.",
           "roleRequired": "Role is required.",
-          "emailFormat": "Enter a valid email address."
+          "emailFormat": "Enter a valid email address.",
+          "passwordMismatch": "Passwords do not match.",
+          "tempPasswordRequired": "Password is required when setting a temporary password.",
+          "tempPasswordFormat": "Password must be at least 10 characters and include at least one letter and one number."
         },
         "actions": {
           "create": "Create",
@@ -2249,6 +2255,7 @@
         "TECHNICIAN": "Technician"
       },
       "protectedAccount": "Protected",
+      "tempPasswordSuccess": "Temporary password set. Ask the staff member to sign in and change it from My Profile.",
       "status": {
         "active": "Active",
         "inactive": "Inactive"

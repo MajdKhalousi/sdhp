@@ -2214,7 +2214,10 @@
           "email": "البريد الإلكتروني",
           "password": "كلمة المرور",
           "role": "الدور",
-          "isActive": "نشط"
+          "isActive": "نشط",
+          "temporaryPasswordSection": "تعيين كلمة مرور مؤقتة",
+          "temporaryPassword": "كلمة المرور المؤقتة",
+          "confirmTemporaryPassword": "تأكيد كلمة المرور المؤقتة"
         },
         "placeholders": {
           "phone": "مثال: 963912345678+",
@@ -2228,7 +2231,10 @@
           "passwordRequired": "كلمة المرور مطلوبة (10 أحرف على الأقل).",
           "passwordFormat": "يجب أن تحتوي كلمة المرور على حرف ورقم على الأقل.",
           "roleRequired": "الدور مطلوب.",
-          "emailFormat": "أدخل عنوان بريد إلكتروني صحيح."
+          "emailFormat": "أدخل عنوان بريد إلكتروني صحيح.",
+          "passwordMismatch": "كلمتا المرور غير متطابقتين.",
+          "tempPasswordRequired": "كلمة المرور مطلوبة عند تعيين كلمة مرور مؤقتة.",
+          "tempPasswordFormat": "يجب أن تكون كلمة المرور 10 أحرف على الأقل وتحتوي على حرف ورقم على الأقل."
         },
         "actions": {
           "create": "إنشاء",
@@ -2249,6 +2255,7 @@
         "TECHNICIAN": "تقني"
       },
       "protectedAccount": "محمي",
+      "tempPasswordSuccess": "تم تعيين كلمة المرور المؤقتة. اطلب من الموظف تسجيل الدخول وتغييرها من ملفه الشخصي.",
       "status": {
         "active": "نشط",
         "inactive": "غير نشط"

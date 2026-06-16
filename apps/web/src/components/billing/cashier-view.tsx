@@ -629,24 +629,11 @@ export function CashierView() {
     return sum + Math.max(0, total - paid);
   }, 0);
 
-  if (invoices.length === 0) {
-    return (
-      <div className="space-y-4">
-        {tabToggle}
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
-          <Receipt className="h-8 w-8 text-muted-foreground/50" />
-          <p className="text-sm font-medium">{t('noInvoices')}</p>
-          <p className="text-xs text-muted-foreground">{t('noInvoicesHint')}</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
       {tabToggle}
 
-      {/* Today summary */}
+      {/* Today summary — always visible for authorized roles */}
       <div className="rounded-xl border border-border bg-muted/40 px-4 py-3 space-y-3">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -709,30 +696,40 @@ export function CashierView() {
         )}
       </div>
 
-      <InvoiceGroup
-        title={t('groups.pending')}
-        invoices={pending}
-        activeId={activeId}
-        setActiveId={setActiveId}
-        onSuccess={() => refetch()}
-        visitTypes={visitTypes}
-      />
-      <InvoiceGroup
-        title={t('groups.partial')}
-        invoices={partial}
-        activeId={activeId}
-        setActiveId={setActiveId}
-        onSuccess={() => refetch()}
-        visitTypes={visitTypes}
-      />
-      <InvoiceGroup
-        title={t('groups.collected')}
-        invoices={collected}
-        activeId={activeId}
-        setActiveId={setActiveId}
-        onSuccess={() => refetch()}
-        visitTypes={visitTypes}
-      />
+      {invoices.length === 0 ? (
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
+          <Receipt className="h-8 w-8 text-muted-foreground/50" />
+          <p className="text-sm font-medium">{t('noInvoices')}</p>
+          <p className="text-xs text-muted-foreground">{t('noInvoicesHint')}</p>
+        </div>
+      ) : (
+        <>
+          <InvoiceGroup
+            title={t('groups.pending')}
+            invoices={pending}
+            activeId={activeId}
+            setActiveId={setActiveId}
+            onSuccess={() => refetch()}
+            visitTypes={visitTypes}
+          />
+          <InvoiceGroup
+            title={t('groups.partial')}
+            invoices={partial}
+            activeId={activeId}
+            setActiveId={setActiveId}
+            onSuccess={() => refetch()}
+            visitTypes={visitTypes}
+          />
+          <InvoiceGroup
+            title={t('groups.collected')}
+            invoices={collected}
+            activeId={activeId}
+            setActiveId={setActiveId}
+            onSuccess={() => refetch()}
+            visitTypes={visitTypes}
+          />
+        </>
+      )}
     </div>
   );
 }

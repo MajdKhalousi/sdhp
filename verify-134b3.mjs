@@ -100,10 +100,11 @@ if (!doctorsRes.body?.data?.length) {
 const doctor = doctorsRes.body.data[0];
 console.log(`  Doctor: ${doctor.user.firstName} ${doctor.user.lastName} (${doctor.id})`);
 
-// Schedule at 10:00 AM Damascus time tomorrow (UTC+3 → 07:00 UTC)
-// Ensures time is within working hours (08:00–17:00) regardless of when test runs.
+// Schedule at 10:00 AM Damascus time 2 days from now (UTC+3 → 07:00 UTC)
+// Uses +2 days so re-runs on consecutive days don't hit double-booking conflicts
+// from the previous run's test appointments.
 const damascusTomorrow = new Date();
-damascusTomorrow.setUTCDate(damascusTomorrow.getUTCDate() + 1);
+damascusTomorrow.setUTCDate(damascusTomorrow.getUTCDate() + 2);
 damascusTomorrow.setUTCHours(7, 0, 0, 0); // 07:00 UTC = 10:00 Damascus
 const scheduledAt = damascusTomorrow.toISOString();
 const apptRes = await request('POST', '/appointments', orgAdminToken, {

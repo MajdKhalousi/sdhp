@@ -151,6 +151,24 @@ export class EncountersService {
       if (existing) return existing;
     }
 
+    // Prefill vitals and chief complaint from nurse triage data when the DTO omits them.
+    let triageVitals: Prisma.InputJsonValue | undefined;
+    let triageChiefComplaint: string | undefined;
+    if (appointmentId) {
+      const queueEntry = await this.prisma.queueEntry.findUnique({
+        where: { appointmentId },
+        select: { triageVitals: true, chiefComplaintDraft: true },
+      });
+      if (queueEntry) {
+        if (queueEntry.triageVitals !== null) {
+          triageVitals = queueEntry.triageVitals as Prisma.InputJsonValue;
+        }
+        if (queueEntry.chiefComplaintDraft) {
+          triageChiefComplaint = queueEntry.chiefComplaintDraft;
+        }
+      }
+    }
+
     try {
       const encounter = await this.prisma.$transaction(async (tx) => {
         const created = await tx.encounter.create({
@@ -160,7 +178,7 @@ export class EncountersService {
             doctorId,
             appointmentId,
             branchId: dto.branchId,
-            chiefComplaint: dto.chiefComplaint,
+            chiefComplaint: dto.chiefComplaint !== undefined ? dto.chiefComplaint : triageChiefComplaint,
             historyOfPresentIllness: dto.historyOfPresentIllness,
             notes: dto.notes,
             patientInstructions: dto.patientInstructions,
@@ -168,7 +186,7 @@ export class EncountersService {
             diagnosisCode: dto.diagnosisCode,
             treatmentPlan: dto.treatmentPlan,
             followUpDate: dto.followUpDate ? new Date(dto.followUpDate) : undefined,
-            vitals: dto.vitals !== undefined ? (dto.vitals as Prisma.InputJsonValue) : undefined,
+            vitals: dto.vitals !== undefined ? (dto.vitals as Prisma.InputJsonValue) : triageVitals,
             endedAt: dto.endedAt ? new Date(dto.endedAt) : undefined,
           },
           select: SELECT,

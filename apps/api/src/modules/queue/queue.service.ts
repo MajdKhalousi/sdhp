@@ -11,6 +11,7 @@ import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { CreateQueueEntryDto } from './dto/create-queue-entry.dto';
 import { UpdateQueueEntryDto } from './dto/update-queue-entry.dto';
+import { TriageQueueEntryDto } from './dto/triage-queue-entry.dto';
 import { QueueQueryDto } from './dto/queue-query.dto';
 import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
 import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
@@ -64,6 +65,8 @@ const SELECT = {
   status: true,
   calledAt: true,
   completedAt: true,
+  triageVitals: true,
+  chiefComplaintDraft: true,
   createdAt: true,
   updatedAt: true,
   appointment: { select: APPOINTMENT_SELECT },
@@ -283,6 +286,29 @@ export class QueueService {
         where: { id },
         select: SELECT,
       });
+    });
+  }
+
+  async triage(id: string, dto: TriageQueueEntryDto, caller: JwtPayload) {
+    const entry = await this.prisma.queueEntry.findFirst({
+      where: { id, deletedAt: null },
+      select: { id: true, appointment: { select: { organizationId: true } } },
+    });
+
+    if (!entry) throw new NotFoundException('Queue entry not found');
+    this.assertOwnership(entry.appointment.organizationId, caller);
+
+    return this.prisma.queueEntry.update({
+      where: { id },
+      data: {
+        ...(dto.triageVitals !== undefined && {
+          triageVitals: dto.triageVitals as Prisma.InputJsonValue,
+        }),
+        ...(dto.chiefComplaintDraft !== undefined && {
+          chiefComplaintDraft: dto.chiefComplaintDraft,
+        }),
+      },
+      select: SELECT,
     });
   }
 

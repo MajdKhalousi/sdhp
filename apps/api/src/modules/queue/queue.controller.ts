@@ -24,6 +24,7 @@ import { QueueService } from './queue.service';
 import { QueueQueryDto } from './dto/queue-query.dto';
 import { CreateQueueEntryDto } from './dto/create-queue-entry.dto';
 import { UpdateQueueEntryDto } from './dto/update-queue-entry.dto';
+import { TriageQueueEntryDto } from './dto/triage-queue-entry.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
@@ -65,6 +66,22 @@ export class QueueController {
   @ApiConflictResponse({ description: 'Queue entry already exists for this appointment' })
   create(@Body() dto: CreateQueueEntryDto, @CurrentUser() user: JwtPayload) {
     return this.service.create(dto, user);
+  }
+
+  @Patch(':id/triage')
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.NURSE)
+  @ApiOperation({
+    summary:
+      'Record nurse pre-encounter triage data (vitals + chief complaint draft) on a queue entry. Does NOT change queue status or trigger invoice.',
+  })
+  @ApiNotFoundResponse({ description: 'Queue entry not found' })
+  triage(
+    @Param('id') id: string,
+    @Body() dto: TriageQueueEntryDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.service.triage(id, dto, user);
   }
 
   @Patch(':id')

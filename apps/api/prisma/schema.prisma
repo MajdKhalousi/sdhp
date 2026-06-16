@@ -490,16 +490,18 @@ model Appointment {
 }
 
 model QueueEntry {
-  id             String      @id @default(cuid())
-  appointmentId  String      @unique
-  organizationId String
-  businessDate   String // YYYY-MM-DD in Asia/Damascus — used for daily ticket reset
-  ticketNumber   Int
-  status         QueueStatus @default(WAITING)
-  calledAt       DateTime?
-  completedAt    DateTime?
-  deletedAt      DateTime?
-  deletedBy      String?
+  id                  String      @id @default(cuid())
+  appointmentId       String      @unique
+  organizationId      String
+  businessDate        String // YYYY-MM-DD in Asia/Damascus — used for daily ticket reset
+  ticketNumber        Int
+  status              QueueStatus @default(WAITING)
+  calledAt            DateTime?
+  completedAt         DateTime?
+  triageVitals        Json?
+  chiefComplaintDraft String?
+  deletedAt           DateTime?
+  deletedBy           String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

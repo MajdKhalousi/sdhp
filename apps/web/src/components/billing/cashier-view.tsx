@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { CheckCircle2, CreditCard, Printer, Receipt } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { useInvoices, useBillingReport } from '@/hooks/use-invoices';
+import { useInvoices, useCashierSummary, type PaymentMethodKey } from '@/hooks/use-invoices';
 import { useAppointments, useVisitTypesList } from '@/hooks/use-appointments';
 import { useAuthStore } from '@/store/auth';
 import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
@@ -17,7 +17,7 @@ import type { Invoice } from '@/types/invoice';
 import type { Appointment } from '@/types/appointment';
 import type { VisitType } from '@/types/clinic-settings';
 
-const BILLING_REPORT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
+const CASHIER_SUMMARY_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
 
 function formatAmount(value: string, locale: string): string {
   const num = parseFloat(value);
@@ -364,7 +364,7 @@ export function CashierView() {
   const tCommon = useTranslations('common');
   const locale = useLocale();
   const user = useAuthStore((s) => s.user);
-  const canSeeBillingReport = BILLING_REPORT_ROLES.has(user?.role ?? '');
+  const canSeeSummary = CASHIER_SUMMARY_ROLES.has(user?.role ?? '');
 
   const [tab, setTab] = useState<'today' | 'outstanding' | 'unbilled'>('today');
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -374,7 +374,7 @@ export function CashierView() {
 
   // Today data — always enabled
   const { data, isLoading, isError, error, refetch } = useInvoices({ from, to, limit: 50 });
-  const { data: billingReport } = useBillingReport({ from, to }, canSeeBillingReport);
+  const { data: cashierSummary } = useCashierSummary(dateStr, canSeeSummary);
 
   // Outstanding data — two queries, enabled when tab is 'outstanding'
   const outstandingEnabled = tab === 'outstanding';
@@ -646,25 +646,67 @@ export function CashierView() {
     <div className="space-y-4">
       {tabToggle}
 
-      {/* Today summary bar */}
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border border-border bg-muted/40 px-4 py-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {t('todaySummary.title')}
-        </p>
-        {billingReport && (
-          <span className="text-sm">
-            <span className="text-muted-foreground">{t('todaySummary.collected')}:</span>{' '}
-            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-              {formatAmount(String(billingReport.totalCollected), locale)}
+      {/* Today summary */}
+      <div className="rounded-xl border border-border bg-muted/40 px-4 py-3 space-y-3">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {t('todaySummary.title')}
+          </p>
+          {cashierSummary ? (
+            <>
+              <span className="text-sm">
+                <span className="text-muted-foreground">{t('todaySummary.collected')}:</span>{' '}
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                  {formatAmount(String(cashierSummary.totalCollected), locale)}
+                </span>
+              </span>
+              <span className="text-sm">
+                <span className="text-muted-foreground">{t('todaySummary.totalInvoiced')}:</span>{' '}
+                <span className="font-semibold">
+                  {formatAmount(String(cashierSummary.totalInvoiced), locale)}
+                </span>
+              </span>
+              <span className="text-sm">
+                <span className="text-muted-foreground">{t('todaySummary.pending')}:</span>{' '}
+                <span className={`font-semibold ${pendingToday > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`}>
+                  {formatAmount(String(pendingToday), locale)}
+                </span>
+              </span>
+              {cashierSummary.totalInvoiced > 0 && (
+                <span className="text-sm">
+                  <span className="text-muted-foreground">{t('todaySummary.collectionRate')}:</span>{' '}
+                  <span className="font-semibold">{cashierSummary.collectionRate.toFixed(1)}%</span>
+                </span>
+              )}
+            </>
+          ) : (
+            <span className="text-sm">
+              <span className="text-muted-foreground">{t('todaySummary.pending')}:</span>{' '}
+              <span className={`font-semibold ${pendingToday > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`}>
+                {formatAmount(String(pendingToday), locale)}
+              </span>
             </span>
-          </span>
+          )}
+        </div>
+
+        {cashierSummary && cashierSummary.totalCollected > 0 && (
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-border pt-2.5">
+            <p className="text-xs font-medium text-muted-foreground">{t('todaySummary.paymentBreakdown')}:</p>
+            {(Object.entries(cashierSummary.paymentsByMethod) as [PaymentMethodKey, { count: number; amount: number }][])
+              .filter(([, v]) => v.amount > 0)
+              .map(([method, v]) => (
+                <span key={method} className="text-xs">
+                  <span className="text-muted-foreground">
+                    {t(`todaySummary.method.${method}` as Parameters<typeof t>[0])}:
+                  </span>{' '}
+                  <span className="font-medium" dir="ltr">{formatAmount(String(v.amount), locale)}</span>
+                  {v.count > 1 && (
+                    <span className="text-muted-foreground/60 ms-0.5">({v.count})</span>
+                  )}
+                </span>
+              ))}
+          </div>
         )}
-        <span className="text-sm">
-          <span className="text-muted-foreground">{t('todaySummary.pending')}:</span>{' '}
-          <span className={`font-semibold ${pendingToday > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`}>
-            {formatAmount(String(pendingToday), locale)}
-          </span>
-        </span>
       </div>
 
       <InvoiceGroup

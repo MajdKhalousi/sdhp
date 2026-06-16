@@ -9,8 +9,11 @@ import {
   Patch,
   Post,
   Query,
+  Res,
+  StreamableFile,
   Version,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import {
   ApiBearerAuth,
   ApiConflictResponse,
@@ -24,6 +27,7 @@ import {
 } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { BillingService } from './billing.service';
+import { PdfService, type InvoicePdfData } from '../pdf/pdf.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { AddInvoiceItemDto } from './dto/add-invoice-item.dto';
@@ -41,7 +45,10 @@ import { JwtPayload } from '../../common/types/jwt-payload.type';
 @ApiBearerAuth()
 @Controller('invoices')
 export class BillingController {
-  constructor(private readonly service: BillingService) {}
+  constructor(
+    private readonly service: BillingService,
+    private readonly pdfService: PdfService,
+  ) {}
 
   @Post()
   @Version('1')
@@ -91,6 +98,71 @@ export class BillingController {
   @ApiForbiddenResponse({ description: 'Cross-org access denied' })
   findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.service.findOne(id, user);
+  }
+
+  @Get(':id/pdf')
+  @Version('1')
+  @Roles(
+    UserRole.SUPER_ADMIN,
+    UserRole.ORG_ADMIN,
+    UserRole.DOCTOR,
+    UserRole.NURSE,
+    UserRole.SECRETARY,
+    UserRole.ACCOUNTANT,
+  )
+  @ApiOperation({ summary: 'Download invoice as PDF. Same access as GET :id.' })
+  @ApiOkResponse({ description: 'PDF file stream' })
+  @ApiNotFoundResponse({ description: 'Invoice not found' })
+  @ApiForbiddenResponse({ description: 'Cross-org access denied' })
+  async getInvoicePdf(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    const result = await this.service.getInvoiceForPdf(id, user);
+    const data: InvoicePdfData = {
+      invoiceNumber: result.invoiceNumber,
+      status: result.status,
+      issuedAt: result.issuedAt,
+      createdAt: result.createdAt,
+      dueDate: result.dueDate,
+      subtotal: result.subtotal.toNumber(),
+      discountAmount: result.discountAmount.toNumber(),
+      totalAmount: result.totalAmount.toNumber(),
+      paidAmount: result.paidAmount.toNumber(),
+      notes: result.notes ?? null,
+      cancelReason: result.cancelReason ?? null,
+      patient: {
+        firstName: result.patient.firstName,
+        lastName: result.patient.lastName,
+        mrn: result.patient.mrn,
+      },
+      createdByName: `${result.createdBy.firstName} ${result.createdBy.lastName}`,
+      items: result.items.map((item) => ({
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice.toNumber(),
+        discount: item.discount.toNumber(),
+        totalPrice: item.totalPrice.toNumber(),
+      })),
+      payments: result.payments.map((p) => ({
+        amount: p.amount.toNumber(),
+        method: p.method,
+        paidAt: p.paidAt,
+        referenceNumber: p.referenceNumber ?? null,
+        receivedByName: `${p.receivedBy.firstName} ${p.receivedBy.lastName}`,
+        voidedAt: p.voidedAt ?? null,
+        voidReason: p.voidReason ?? null,
+      })),
+      orgName: result.orgName,
+      orgNameAr: result.orgNameAr,
+    };
+    const buffer = await this.pdfService.generateInvoicePdf(data);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="invoice-${result.invoiceNumber}.pdf"`,
+    });
+    return new StreamableFile(buffer);
   }
 
   @Patch(':id')

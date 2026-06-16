@@ -1,28 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import puppeteer from 'puppeteer-core';
 import {
   buildClinicalReportHtml,
   type ClinicalReportPdfData,
 } from './templates/clinical-report.template';
+import { buildInvoiceHtml, type InvoicePdfData } from './templates/invoice.template';
 
-export type { ClinicalReportPdfData };
+export type { ClinicalReportPdfData, InvoicePdfData };
 
 @Injectable()
 export class PdfService {
   constructor(private config: ConfigService) {}
 
-  async generateClinicalReportPdf(data: ClinicalReportPdfData): Promise<Buffer> {
-    const executablePath = this.config.get<string>('CHROMIUM_EXECUTABLE_PATH');
-    if (!executablePath) {
-      throw new Error(
-        'CHROMIUM_EXECUTABLE_PATH environment variable is required for PDF generation. ' +
-        'Set it to your Chromium/Chrome executable path.',
+  private getExecutablePath(): string {
+    const path = this.config.get<string>('CHROMIUM_EXECUTABLE_PATH');
+    if (!path) {
+      throw new ServiceUnavailableException(
+        'PDF generation is not available — CHROMIUM_EXECUTABLE_PATH is not configured.',
       );
     }
+    return path;
+  }
 
-    const html = buildClinicalReportHtml(data);
-
+  private async renderHtmlToPdf(html: string): Promise<Buffer> {
+    const executablePath = this.getExecutablePath();
     const browser = await puppeteer.launch({
       executablePath,
       headless: true,
@@ -34,7 +36,6 @@ export class PdfService {
         '--no-first-run',
       ],
     });
-
     try {
       const page = await browser.newPage();
       try {
@@ -51,5 +52,15 @@ export class PdfService {
     } finally {
       await browser.close();
     }
+  }
+
+  async generateClinicalReportPdf(data: ClinicalReportPdfData): Promise<Buffer> {
+    const html = buildClinicalReportHtml(data);
+    return this.renderHtmlToPdf(html);
+  }
+
+  async generateInvoicePdf(data: InvoicePdfData): Promise<Buffer> {
+    const html = buildInvoiceHtml(data);
+    return this.renderHtmlToPdf(html);
   }
 }

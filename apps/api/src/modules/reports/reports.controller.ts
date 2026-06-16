@@ -9,6 +9,7 @@ import {
 import { UserRole } from '@prisma/client';
 import { ReportsService } from './reports.service';
 import { ReportQueryDto } from './dto/report-query.dto';
+import { CashierSummaryQueryDto } from './dto/cashier-summary-query.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
@@ -76,5 +77,18 @@ export class ReportsController {
   @ApiForbiddenResponse({ description: 'Cross-org access denied or insufficient role' })
   getBillingReport(@Query() query: ReportQueryDto, @CurrentUser() user: JwtPayload) {
     return this.service.getBillingReport(query, user);
+  }
+
+  @Get('cashier-summary')
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ACCOUNTANT, UserRole.SECRETARY)
+  @ApiOperation({
+    summary:
+      'Daily cashier reconciliation — invoice counts by status, totals, collection rate, and payment breakdown by method for a given date (Asia/Damascus, UTC+3). Defaults to today.',
+  })
+  @ApiOkResponse({ description: 'Cashier daily summary' })
+  @ApiForbiddenResponse({ description: 'Cross-org access denied or insufficient role' })
+  getCashierSummary(@Query() query: CashierSummaryQueryDto, @CurrentUser() user: JwtPayload) {
+    return this.service.getCashierSummary(query, user);
   }
 }

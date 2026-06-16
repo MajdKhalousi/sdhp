@@ -4,10 +4,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { AppointmentStatus, InvoiceStatus, QueueStatus, UserRole } from '@prisma/client';
+import { AppointmentStatus, InvoiceStatus, PaymentMethod, QueueStatus, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { ReportQueryDto } from './dto/report-query.dto';
+import { CashierSummaryQueryDto } from './dto/cashier-summary-query.dto';
 
 @Injectable()
 export class ReportsService {
@@ -329,6 +330,132 @@ export class ReportsService {
     };
   }
 
+  async getCashierSummary(query: CashierSummaryQueryDto, caller: JwtPayload) {
+    // Resolve org scope
+    let orgId: string | undefined;
+    if (caller.role === UserRole.SUPER_ADMIN) {
+      orgId = query.organizationId;
+    } else {
+      if (query.organizationId && query.organizationId !== caller.organizationId) {
+        throw new ForbiddenException('Cannot access reports for another organization');
+      }
+      orgId = caller.organizationId;
+    }
+
+    const dateStr = query.date ?? this.todayDateStr();
+    const { start, end } = this.dateToUtcRange(dateStr);
+
+    const baseWhere = {
+      ...(orgId ? { organizationId: orgId } : {}),
+      deletedAt: null as null,
+    };
+
+    const paymentInvoiceWhere = {
+      ...(orgId ? { organizationId: orgId } : {}),
+      deletedAt: null as null,
+    };
+
+    const [invoiceGroups, draftCount, payments, voidedAgg] = await Promise.all([
+      // Non-cancelled invoices issued today, grouped by status
+      this.prisma.invoice.groupBy({
+        by: ['status'],
+        where: {
+          ...baseWhere,
+          status: {
+            in: [
+              InvoiceStatus.ISSUED,
+              InvoiceStatus.PARTIALLY_PAID,
+              InvoiceStatus.PAID,
+              InvoiceStatus.CANCELLED,
+            ],
+          },
+          issuedAt: { gte: start, lte: end },
+        },
+        _count: { _all: true },
+        _sum: { totalAmount: true, paidAmount: true },
+      }),
+      // DRAFT invoices created today
+      this.prisma.invoice.count({
+        where: { ...baseWhere, status: InvoiceStatus.DRAFT, createdAt: { gte: start, lte: end } },
+      }),
+      // Non-voided payments collected today
+      this.prisma.payment.findMany({
+        where: {
+          voidedAt: null,
+          paidAt: { gte: start, lte: end },
+          invoice: paymentInvoiceWhere,
+        },
+        select: { amount: true, method: true },
+      }),
+      // Voided payments that were voided today
+      this.prisma.payment.aggregate({
+        where: {
+          voidedAt: { gte: start, lte: end },
+          invoice: paymentInvoiceWhere,
+        },
+        _sum: { amount: true },
+      }),
+    ]);
+
+    const byStatus = new Map(invoiceGroups.map((g) => [g.status, g]));
+    const issuedGrp = byStatus.get(InvoiceStatus.ISSUED);
+    const partialGrp = byStatus.get(InvoiceStatus.PARTIALLY_PAID);
+    const paidGrp = byStatus.get(InvoiceStatus.PAID);
+    const cancelledGrp = byStatus.get(InvoiceStatus.CANCELLED);
+
+    const activeGroups = [issuedGrp, partialGrp, paidGrp];
+    const invoicesIssued = activeGroups.reduce((s, g) => s + (g?._count._all ?? 0), 0);
+    const cancelledCount = cancelledGrp?._count._all ?? 0;
+    const paidCount = paidGrp?._count._all ?? 0;
+    const partiallyPaidCount = partialGrp?._count._all ?? 0;
+    const unpaidCount = issuedGrp?._count._all ?? 0;
+
+    const totalInvoiced = activeGroups.reduce(
+      (s, g) => s + (g?._sum.totalAmount?.toNumber() ?? 0),
+      0,
+    );
+    const totalOutstanding = [issuedGrp, partialGrp].reduce((s, g) => {
+      const tot = g?._sum.totalAmount?.toNumber() ?? 0;
+      const paid = g?._sum.paidAmount?.toNumber() ?? 0;
+      return s + Math.max(0, tot - paid);
+    }, 0);
+
+    const totalCollected = payments.reduce((s, p) => s + p.amount.toNumber(), 0);
+    const totalVoided = voidedAgg._sum.amount?.toNumber() ?? 0;
+    const collectionRate =
+      totalInvoiced === 0 ? 0 : Math.round((totalCollected / totalInvoiced) * 10000) / 100;
+
+    const methods = [
+      PaymentMethod.CASH,
+      PaymentMethod.CARD,
+      PaymentMethod.BANK_TRANSFER,
+      PaymentMethod.INSURANCE,
+      PaymentMethod.OTHER,
+    ] as const;
+    const paymentsByMethod = Object.fromEntries(
+      methods.map((method) => {
+        const mp = payments.filter((p) => p.method === method);
+        return [method, { count: mp.length, amount: mp.reduce((s, p) => s + p.amount.toNumber(), 0) }];
+      }),
+    ) as Record<PaymentMethod, { count: number; amount: number }>;
+
+    return {
+      date: dateStr,
+      invoicesIssued,
+      draftCount,
+      paidCount,
+      partiallyPaidCount,
+      unpaidCount,
+      cancelledCount,
+      totalInvoiced,
+      totalCollected,
+      totalOutstanding,
+      totalVoided,
+      collectionRate,
+      paymentsByMethod,
+    };
+  }
+
   // ── Private helpers ────────────────────────────────────────────────────────
 
   private async buildContext(query: ReportQueryDto, caller: JwtPayload) {
@@ -435,5 +562,23 @@ export class ReportsService {
     if (!branch) {
       throw new BadRequestException('Branch does not belong to this organization or does not exist');
     }
+  }
+
+  // Asia/Damascus = UTC+3, no DST since 2022 — hardcoded offset is correct.
+  private todayDateStr(): string {
+    const now = new Date();
+    const damascusNow = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+    const y = damascusNow.getUTCFullYear();
+    const m = String(damascusNow.getUTCMonth() + 1).padStart(2, '0');
+    const d = String(damascusNow.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  private dateToUtcRange(dateStr: string): { start: Date; end: Date } {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const offsetMs = 3 * 60 * 60 * 1000; // UTC+3 → subtract to get UTC
+    const start = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0) - offsetMs);
+    const end = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999) - offsetMs);
+    return { start, end };
   }
 }

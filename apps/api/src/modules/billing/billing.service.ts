@@ -276,6 +276,16 @@ export class BillingService {
     return invoice;
   }
 
+  async getInvoiceForPdf(id: string, caller: JwtPayload) {
+    const invoice = await this.fetchInvoice(id);
+    this.assertOrgAccess(invoice, caller);
+    const org = await this.prisma.organization.findUnique({
+      where: { id: invoice.organizationId },
+      select: { name: true, nameAr: true },
+    });
+    return { ...invoice, orgName: org?.name ?? '', orgNameAr: org?.nameAr ?? null };
+  }
+
   async update(id: string, dto: UpdateInvoiceDto, caller: JwtPayload) {
     const invoice = await this.fetchInvoice(id);
     this.assertOrgAccess(invoice, caller);

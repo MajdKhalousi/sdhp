@@ -235,3 +235,33 @@ export function useOutstandingPatients(params: OutstandingPatientsParams = {}, e
     enabled,
   });
 }
+
+export type PaymentMethodKey = 'CASH' | 'CARD' | 'BANK_TRANSFER' | 'INSURANCE' | 'OTHER';
+
+export interface CashierSummary {
+  date: string;
+  invoicesIssued: number;
+  draftCount: number;
+  paidCount: number;
+  partiallyPaidCount: number;
+  unpaidCount: number;
+  cancelledCount: number;
+  totalInvoiced: number;
+  totalCollected: number;
+  totalOutstanding: number;
+  totalVoided: number;
+  collectionRate: number;
+  paymentsByMethod: Record<PaymentMethodKey, { count: number; amount: number }>;
+}
+
+export function useCashierSummary(date?: string, enabled = true) {
+  return useQuery({
+    queryKey: ['cashier-summary', date],
+    queryFn: () =>
+      api.get<CashierSummary>('/v1/reports/cashier-summary', {
+        ...(date ? { date } : {}),
+      }),
+    staleTime: 30_000,
+    enabled,
+  });
+}

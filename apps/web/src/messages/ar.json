@@ -1833,7 +1833,10 @@
       "cancelReasonPlaceholder": "سبب اختياري للإلغاء",
       "cancelConfirm": "هل تريد إلغاء هذه الفاتورة؟ لا يمكن التراجع عن هذا الإجراء.",
       "cancelSubmit": "تأكيد الإلغاء",
-      "openAppointment": "فتح الموعد"
+      "openAppointment": "فتح الموعد",
+      "downloadPdf": "تنزيل PDF",
+      "downloading": "جارٍ التنزيل…",
+      "downloadFailed": "فشل تنزيل PDF"
     },
     "form": {
       "title": "فاتورة جديدة",
@@ -2516,7 +2519,17 @@
     "todaySummary": {
       "title": "ملخص اليوم",
       "collected": "محصل اليوم",
-      "pending": "بانتظار التحصيل"
+      "pending": "بانتظار التحصيل",
+      "totalInvoiced": "إجمالي المحاسبة",
+      "collectionRate": "نسبة التحصيل",
+      "paymentBreakdown": "تفاصيل المدفوعات",
+      "method": {
+        "CASH": "نقداً",
+        "CARD": "بطاقة",
+        "BANK_TRANSFER": "تحويل بنكي",
+        "INSURANCE": "تأمين",
+        "OTHER": "أخرى"
+      }
     }
   },
   "followups": {

@@ -93,6 +93,46 @@ async function request<T>(
   return JSON.parse(text) as T;
 }
 
+async function requestBlob(
+  path: string,
+  params?: Record<string, unknown>,
+): Promise<Blob> {
+  const { token, logout } = useAuthStore.getState();
+
+  if (token && isTokenExpired(token)) {
+    logout();
+    redirectToLogin();
+    throw new Error('Session expired. Please sign in again.');
+  }
+
+  const url = buildUrl(path, params);
+
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+  } catch {
+    throw new Error('Network error — check your connection and try again.');
+  }
+
+  if (!res.ok) {
+    if (res.status === 401 && path !== '/v1/auth/login') {
+      logout();
+      redirectToLogin();
+      throw new Error('Session expired. Please sign in again.');
+    }
+    if (res.status === 403) throw new Error('You do not have permission to perform this action.');
+    if (res.status >= 500) throw new Error('Server error — please try again later.');
+    throw new Error(`HTTP ${res.status}`);
+  }
+
+  return res.blob();
+}
+
 export const api = {
   get: <T>(path: string, params?: Record<string, unknown>) =>
     request<T>('GET', path, { params }),
@@ -104,4 +144,6 @@ export const api = {
     request<T>('PATCH', path, { body }),
   delete: <T>(path: string) =>
     request<T>('DELETE', path),
+  blob: (path: string, params?: Record<string, unknown>) =>
+    requestBlob(path, params),
 };

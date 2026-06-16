@@ -2,7 +2,8 @@
 
 import { useState, Fragment } from 'react';
 import { Link } from '@/i18n/navigation';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Download, Plus } from 'lucide-react';
+import { api } from '@/lib/api';
 import { useTranslations, useLocale } from 'next-intl';
 import { useInvoice, useIssueInvoice, useVoidPayment } from '@/hooks/use-invoices';
 import { useVisitTypesList } from '@/hooks/use-appointments';
@@ -338,6 +339,9 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
   const { user } = useAuthStore();
   const { data: visitTypes } = useVisitTypesList();
 
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState('');
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -374,6 +378,26 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
       <p className="py-16 text-center text-sm text-muted-foreground">{t('notFound')}</p>
     );
   }
+
+  const handleDownloadPdf = async () => {
+    try {
+      setIsDownloading(true);
+      setDownloadError('');
+      const blob = await api.blob(`/v1/invoices/${invoice.id}/pdf`);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `invoice-${invoice.invoiceNumber}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setDownloadError(e instanceof Error ? e.message : tActions('downloadFailed'));
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const remaining = parseFloat(invoice.totalAmount) - parseFloat(invoice.paidAmount);
   const remainingStr =
@@ -443,6 +467,17 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
           >
             {invoice.status === 'PAID' ? tPrint('printReceipt') : tPrint('printInvoice')}
           </a>
+          <button
+            onClick={handleDownloadPdf}
+            disabled={isDownloading}
+            className="inline-flex h-9 items-center gap-1.5 rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Download className="h-4 w-4" />
+            {isDownloading ? tActions('downloading') : tActions('downloadPdf')}
+          </button>
+          {downloadError && (
+            <p className="w-full text-xs text-destructive">{downloadError}</p>
+          )}
         </div>
       </div>
 

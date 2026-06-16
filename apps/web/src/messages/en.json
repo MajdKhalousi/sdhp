@@ -1833,7 +1833,10 @@
       "cancelReasonPlaceholder": "Optional reason for cancellation",
       "cancelConfirm": "Cancel this invoice? This action cannot be undone.",
       "cancelSubmit": "Confirm Cancellation",
-      "openAppointment": "Open Appointment"
+      "openAppointment": "Open Appointment",
+      "downloadPdf": "Download PDF",
+      "downloading": "Downloading…",
+      "downloadFailed": "PDF download failed"
     },
     "form": {
       "title": "New Invoice",
@@ -2516,7 +2519,17 @@
     "todaySummary": {
       "title": "Today Summary",
       "collected": "Collected today",
-      "pending": "Pending"
+      "pending": "Pending",
+      "totalInvoiced": "Total invoiced",
+      "collectionRate": "Collection rate",
+      "paymentBreakdown": "Payment breakdown",
+      "method": {
+        "CASH": "Cash",
+        "CARD": "Card",
+        "BANK_TRANSFER": "Bank Transfer",
+        "INSURANCE": "Insurance",
+        "OTHER": "Other"
+      }
     }
   },
   "followups": {

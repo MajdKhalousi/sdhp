@@ -134,7 +134,7 @@ export class UsersService {
   async update(id: string, dto: UpdateUserDto, user: JwtPayload) {
     const found = await this.prisma.user.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true, organizationId: true },
+      select: { id: true, organizationId: true, role: true },
     });
 
     if (!found) throw new NotFoundException('User not found');
@@ -144,9 +144,13 @@ export class UsersService {
       if (id === user.sub) {
         if (dto.role !== undefined) throw new ForbiddenException('Cannot change your own role');
         if (dto.isActive !== undefined) throw new ForbiddenException('Cannot change your own active status');
+        if (dto.password !== undefined) throw new ForbiddenException('Cannot reset your own password here');
       }
       if (dto.role !== undefined && !ORG_ADMIN_ALLOWED_ROLES.includes(dto.role)) {
         throw new ForbiddenException('Cannot assign this role');
+      }
+      if (dto.password !== undefined && !ORG_ADMIN_ALLOWED_ROLES.includes(found.role)) {
+        throw new ForbiddenException('Cannot reset password for this user');
       }
     }
 

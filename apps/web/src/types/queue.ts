@@ -43,6 +43,8 @@ export interface QueueEntry {
   status: QueueStatus;
   calledAt: string | null;
   completedAt: string | null;
+  triageVitals?: Record<string, string> | null;
+  chiefComplaintDraft?: string | null;
   createdAt: string;
   updatedAt: string;
   appointment: AppointmentRef;
@@ -64,6 +66,11 @@ export interface CreateQueueEntryDto {
 
 export interface UpdateQueueEntryDto {
   status: QueueStatus;
+}
+
+export interface TriageQueueEntryDto {
+  triageVitals?: Record<string, string>;
+  chiefComplaintDraft?: string;
 }
 
 export interface QueueResponse {

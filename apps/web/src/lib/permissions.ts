@@ -99,4 +99,5 @@ export const BILLING_REPORT_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 
 
 // ─── Queue page action gates ──────────────────────────────────────────────────
 
-export const QUEUE_CREATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+export const QUEUE_CREATE_ROLES  = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+export const QUEUE_TRIAGE_ROLES  = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'NURSE']);

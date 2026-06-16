@@ -3,19 +3,23 @@
 import { useState, useMemo } from 'react';
 import { RefreshCw, Inbox } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
-import { useQueue, useUpdateQueueEntry } from '@/hooks/use-queue';
+import { useQueue, useUpdateQueueEntry, useTriageQueueEntry } from '@/hooks/use-queue';
 import { useDoctorsList, useVisitTypesList } from '@/hooks/use-appointments';
 import { useAuthStore } from '@/store/auth';
 import { useInvoices } from '@/hooks/use-invoices';
 import { QueueTicket } from './queue-ticket';
 import { AdvanceQueueButton } from './advance-queue-button';
 import { SkipQueueButton } from './skip-queue-button';
+import { VitalsForm } from '@/components/encounters/vitals-form';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { QueueStatus } from '@/types/queue';
+import { QUEUE_TRIAGE_ROLES } from '@/lib/permissions';
+import type { QueueStatus, QueueEntry } from '@/types/queue';
 import type { Invoice, InvoiceStatus } from '@/types/invoice';
+import type { VitalsPayload } from '@/types/encounter';
 import { formatTimeDisplay } from '@/lib/format-date';
 
 const SKIPPABLE: QueueStatus[] = ['WAITING', 'CALLED'];
+const TRIAGE_STATUSES: QueueStatus[] = ['WAITING', 'CALLED', 'IN_PROGRESS'];
 
 const QUEUE_OPERATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY']);
 const QUEUE_MARK_DONE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY', 'NURSE']);
@@ -56,6 +60,13 @@ export function QueueBoard() {
   const [todayOnly, setTodayOnly] = useState(true);
   const [doctorId, setDoctorId] = useState('');
 
+  // Triage inline form state
+  const [activeTriageId, setActiveTriageId] = useState<string | null>(null);
+  const [triageVitals, setTriageVitals] = useState<VitalsPayload>({});
+  const [triageChiefComplaint, setTriageChiefComplaint] = useState('');
+  const [triageSaved, setTriageSaved] = useState(false);
+  const [triageError, setTriageError] = useState('');
+
   const date = todayOnly ? todayDate() : '';
 
   const { data, isLoading, isError, error, refetch, isFetching, dataUpdatedAt } = useQueue({
@@ -68,9 +79,11 @@ export function QueueBoard() {
   const { data: doctorsData } = useDoctorsList();
   const { data: visitTypesData } = useVisitTypesList();
   const { mutate: markDone, isPending: markingDone } = useUpdateQueueEntry();
+  const { mutate: saveTriage, isPending: savingTriage } = useTriageQueueEntry();
   const role = useAuthStore((state) => state.user?.role);
   const canOperateQueue = role ? QUEUE_OPERATE_ROLES.has(role) : false;
   const canMarkDone = role ? QUEUE_MARK_DONE_ROLES.has(role) : false;
+  const canTriage = role ? QUEUE_TRIAGE_ROLES.has(role) : false;
   const activeDoctors = (doctorsData?.data ?? []).filter((d) => d.isActive !== false);
   const getVisitTypeName = (visitTypeId?: string | null) => {
     if (!visitTypeId) return undefined;
@@ -91,6 +104,42 @@ export function QueueBoard() {
     }
     return map;
   }, [invoicesData]);
+
+  function openTriage(entry: QueueEntry) {
+    setActiveTriageId(entry.id);
+    setTriageVitals((entry.triageVitals ?? {}) as VitalsPayload);
+    setTriageChiefComplaint(entry.chiefComplaintDraft ?? '');
+    setTriageSaved(false);
+    setTriageError('');
+  }
+
+  function closeTriage() {
+    setActiveTriageId(null);
+    setTriageSaved(false);
+    setTriageError('');
+  }
+
+  function handleTriageSave(entryId: string) {
+    setTriageError('');
+    saveTriage(
+      {
+        id: entryId,
+        dto: {
+          triageVitals: triageVitals as Record<string, string>,
+          chiefComplaintDraft: triageChiefComplaint,
+        },
+      },
+      {
+        onSuccess: () => {
+          setTriageSaved(true);
+          setTimeout(() => closeTriage(), 2000);
+        },
+        onError: () => {
+          setTriageError(t('triage.error'));
+        },
+      },
+    );
+  }
 
   const filters = (
     <div className="flex flex-wrap items-center gap-2">
@@ -250,6 +299,64 @@ export function QueueBoard() {
                 >
                   {markingDone ? '…' : t('advance.done')}
                 </button>
+              </div>
+            )}
+            {canTriage && TRIAGE_STATUSES.includes(entry.status) && activeTriageId !== entry.id && (
+              <div className="flex items-center justify-end px-1">
+                <button
+                  onClick={() => openTriage(entry)}
+                  className="h-6 rounded border border-sky-400/40 px-2 text-xs font-medium text-sky-700 transition-colors hover:bg-sky-50 dark:border-sky-700/40 dark:text-sky-400 dark:hover:bg-sky-950/30"
+                >
+                  {t('triage.trigger')}
+                </button>
+              </div>
+            )}
+            {activeTriageId === entry.id && (
+              <div className="space-y-3 rounded-xl border border-border bg-card px-5 py-4">
+                <p className="text-sm font-semibold">{t('triage.title')}</p>
+                {entry.status === 'IN_PROGRESS' && (
+                  <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-400">
+                    {t('triage.lateEditNote')}
+                  </div>
+                )}
+                <VitalsForm vitals={triageVitals} onChange={setTriageVitals} disabled={savingTriage} />
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    {t('triage.chiefComplaintLabel')}
+                  </label>
+                  <textarea
+                    value={triageChiefComplaint}
+                    onChange={(e) => setTriageChiefComplaint(e.target.value)}
+                    placeholder={t('triage.chiefComplaintPlaceholder')}
+                    disabled={savingTriage}
+                    rows={2}
+                    dir="auto"
+                    className="w-full resize-none rounded-md border bg-background px-2.5 py-1.5 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
+                  />
+                </div>
+                {triageError && <p className="text-xs text-destructive">{triageError}</p>}
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    onClick={closeTriage}
+                    disabled={savingTriage}
+                    className="h-7 rounded border px-3 text-xs transition-colors hover:bg-accent disabled:opacity-60"
+                  >
+                    {t('triage.cancel')}
+                  </button>
+                  {triageSaved ? (
+                    <span className="inline-flex h-7 items-center rounded bg-green-50 px-3 text-xs font-medium text-green-700 dark:bg-green-950/30 dark:text-green-400">
+                      {t('triage.saved')}
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => handleTriageSave(entry.id)}
+                      disabled={savingTriage}
+                      className="h-7 rounded bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+                    >
+                      {savingTriage ? t('triage.saving') : t('triage.save')}
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>

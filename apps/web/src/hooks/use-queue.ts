@@ -6,6 +6,7 @@ import type {
   QueueResponse,
   CreateQueueEntryDto,
   UpdateQueueEntryDto,
+  TriageQueueEntryDto,
 } from '@/types/queue';
 
 export function useQueue(query: QueueQuery = {}) {
@@ -52,6 +53,18 @@ export function useUpdateQueueEntry() {
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateQueueEntryDto }) =>
       api.patch<QueueEntry>(`/v1/queue/${id}`, dto),
+    onSuccess: (_, { id }) => {
+      qc.invalidateQueries({ queryKey: ['queue'] });
+      qc.invalidateQueries({ queryKey: ['queue-entry', id] });
+    },
+  });
+}
+
+export function useTriageQueueEntry() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, dto }: { id: string; dto: TriageQueueEntryDto }) =>
+      api.patch<QueueEntry>(`/v1/queue/${id}/triage`, dto),
     onSuccess: (_, { id }) => {
       qc.invalidateQueries({ queryKey: ['queue'] });
       qc.invalidateQueries({ queryKey: ['queue-entry', id] });

@@ -34,7 +34,7 @@ SIZE="$(du -sh "$BACKUP_DIR/$FILENAME" | cut -f1)"
 echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] Backup saved: $BACKUP_DIR/$FILENAME ($SIZE)"
 
 # Verify backup is readable
-docker exec sdhp_postgres pg_restore \
+docker exec -i sdhp_postgres pg_restore \
   --list \
   --format=custom \
   < "$BACKUP_DIR/$FILENAME" > /dev/null \

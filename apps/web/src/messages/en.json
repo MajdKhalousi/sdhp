@@ -1537,7 +1537,9 @@
     },
     "card": {
       "orderedAt": "Ordered {date}",
-      "clinicalInfo": "Clinical info"
+      "clinicalInfo": "Clinical info",
+      "orderedBy": "Ordered by",
+      "notes": "Notes"
     },
     "priority": {
       "ROUTINE": "Routine",
@@ -1622,7 +1624,9 @@
     },
     "card": {
       "orderedAt": "Ordered {date}",
-      "clinicalInfo": "Clinical info"
+      "clinicalInfo": "Clinical info",
+      "orderedBy": "Ordered by",
+      "notes": "Notes"
     },
     "modality": {
       "X-RAY": "X-Ray",

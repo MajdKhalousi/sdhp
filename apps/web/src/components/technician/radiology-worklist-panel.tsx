@@ -267,6 +267,16 @@ function RadiologyOrderCard({ order }: { order: RadiologyOrder }) {
               {t('card.clinicalInfo')}: <bdi>{order.clinicalInfo}</bdi>
             </p>
           )}
+          {order.orderedBy?.user && (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {t('card.orderedBy')}: {order.orderedBy.user.firstName} {order.orderedBy.user.lastName}
+            </p>
+          )}
+          {order.notes && (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {t('card.notes')}: <bdi>{order.notes}</bdi>
+            </p>
+          )}
         </div>
 
         {/* Action button only for ORDERED and SCHEDULED */}

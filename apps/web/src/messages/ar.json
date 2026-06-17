@@ -1537,7 +1537,9 @@
     },
     "card": {
       "orderedAt": "طُلب {date}",
-      "clinicalInfo": "المعلومات السريرية"
+      "clinicalInfo": "المعلومات السريرية",
+      "orderedBy": "الطبيب",
+      "notes": "ملاحظات"
     },
     "priority": {
       "ROUTINE": "روتيني",
@@ -1622,7 +1624,9 @@
     },
     "card": {
       "orderedAt": "طُلب {date}",
-      "clinicalInfo": "المعلومات السريرية"
+      "clinicalInfo": "المعلومات السريرية",
+      "orderedBy": "الطبيب",
+      "notes": "ملاحظات"
     },
     "modality": {
       "X-RAY": "أشعة سينية",

@@ -9,6 +9,7 @@ import { PatientCombobox } from '@/components/appointments/patient-combobox';
 
 interface WalkInWizardProps {
   initialPatientId?: string;
+  onClose?: () => void;
 }
 
 interface Step1Form {
@@ -33,7 +34,7 @@ const INITIAL: Step1Form = {
   visitTypeId: '',
 };
 
-export function WalkInWizard({ initialPatientId }: WalkInWizardProps = {}) {
+export function WalkInWizard({ initialPatientId, onClose }: WalkInWizardProps = {}) {
   const t = useTranslations('queue.walkIn');
   const tQueue = useTranslations('queue');
   const tCommon = useTranslations('common');
@@ -124,7 +125,7 @@ export function WalkInWizard({ initialPatientId }: WalkInWizardProps = {}) {
     checkIn(
       { appointmentId: createdAppointmentId },
       {
-        onSuccess: () => router.push('/dashboard/queue'),
+        onSuccess: () => onClose ? onClose() : router.push('/dashboard/queue'),
         onError: (e) => {
           if (e instanceof Error && e.name === 'ConflictError') {
             setCheckInConflict(true);
@@ -242,7 +243,7 @@ export function WalkInWizard({ initialPatientId }: WalkInWizardProps = {}) {
           </button>
           <button
             type="button"
-            onClick={() => router.push('/dashboard/queue')}
+            onClick={() => onClose ? onClose() : router.push('/dashboard/queue')}
             disabled={checkingIn}
             className="inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-60"
           >
@@ -390,7 +391,7 @@ export function WalkInWizard({ initialPatientId }: WalkInWizardProps = {}) {
         </button>
         <button
           type="button"
-          onClick={() => router.push('/dashboard/queue')}
+          onClick={() => onClose ? onClose() : router.push('/dashboard/queue')}
           disabled={creatingAppt}
           className="inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-60"
         >

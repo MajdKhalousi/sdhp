@@ -192,6 +192,8 @@ export class UsersService {
     const roleDemotion = dto.role !== undefined && dto.role !== UserRole.SUPER_ADMIN;
     const deactivation = dto.isActive === false;
     const targetIsActiveSuperAdmin = found.role === UserRole.SUPER_ADMIN && found.isActive === true;
+    const orgDemotion = dto.role !== undefined && dto.role !== UserRole.ORG_ADMIN;
+    const targetIsActiveOrgAdmin = found.role === UserRole.ORG_ADMIN && found.isActive === true;
 
     let result: UserRecord;
 
@@ -204,6 +206,17 @@ export class UsersService {
           if (activeCount <= 1) {
             if (roleDemotion) throw new ForbiddenException('Cannot demote the last active super admin');
             throw new ForbiddenException('Cannot deactivate the last active super admin');
+          }
+          return tx.user.update({ where: { id }, data, select: SELECT });
+        }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+      } else if (targetIsActiveOrgAdmin && (orgDemotion || deactivation)) {
+        result = await this.prisma.$transaction(async (tx) => {
+          const activeCount = await tx.user.count({
+            where: { role: UserRole.ORG_ADMIN, isActive: true, deletedAt: null, organizationId: found.organizationId },
+          });
+          if (activeCount <= 1) {
+            if (orgDemotion) throw new ForbiddenException('Cannot demote the last active org admin');
+            throw new ForbiddenException('Cannot deactivate the last active org admin');
           }
           return tx.user.update({ where: { id }, data, select: SELECT });
         }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
@@ -273,6 +286,19 @@ export class UsersService {
         });
         if (activeCount <= 1) {
           throw new ForbiddenException('Cannot deactivate the last active super admin');
+        }
+        await tx.user.update({
+          where: { id },
+          data: { deletedAt: new Date(), isActive: false },
+        });
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    } else if (found.role === UserRole.ORG_ADMIN && found.isActive === true) {
+      await this.prisma.$transaction(async (tx) => {
+        const activeCount = await tx.user.count({
+          where: { role: UserRole.ORG_ADMIN, isActive: true, deletedAt: null, organizationId: found.organizationId },
+        });
+        if (activeCount <= 1) {
+          throw new ForbiddenException('Cannot deactivate the last active org admin');
         }
         await tx.user.update({
           where: { id },

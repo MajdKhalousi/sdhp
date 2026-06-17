@@ -2241,7 +2241,8 @@
           "isActive": "نشط",
           "temporaryPasswordSection": "تعيين كلمة مرور مؤقتة",
           "temporaryPassword": "كلمة المرور المؤقتة",
-          "confirmTemporaryPassword": "تأكيد كلمة المرور المؤقتة"
+          "confirmTemporaryPassword": "تأكيد كلمة المرور المؤقتة",
+          "temporaryPasswordHelp": "سيؤدي ملء هذا الحقل إلى إعادة تعيين كلمة مرور المستخدم الحالية فورًا. اتركه فارغًا للاحتفاظ بكلمة المرور الحالية."
         },
         "placeholders": {
           "phone": "مثال: 963912345678+",
@@ -2279,6 +2280,9 @@
         "TECHNICIAN": "تقني"
       },
       "protectedAccount": "محمي",
+      "yourAccount": "حسابك",
+      "lastOrgAdmin": "آخر مدير",
+      "lastOrgAdminDeactivateTooltip": "هذا هو المدير النشط الأخير. يجب أن يبقى مدير واحد على الأقل نشطًا.",
       "tempPasswordSuccess": "تم تعيين كلمة المرور المؤقتة. اطلب من الموظف تسجيل الدخول وتغييرها من ملفه الشخصي.",
       "status": {
         "active": "نشط",

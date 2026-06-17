@@ -76,7 +76,11 @@ async function request<T>(
       throw new Error('Session expired. Please sign in again.');
     }
     if (res.status === 403) {
-      throw new Error('You do not have permission to perform this action.');
+      const errBody = await res.json().catch(() => null) as { message?: string | string[] } | null;
+      const msg = Array.isArray(errBody?.message)
+        ? errBody.message.join(', ')
+        : errBody?.message;
+      throw new Error(msg ?? 'You do not have permission to perform this action.');
     }
     if (res.status >= 500) {
       throw new Error('Server error — please try again later.');
@@ -125,7 +129,11 @@ async function requestBlob(
       redirectToLogin();
       throw new Error('Session expired. Please sign in again.');
     }
-    if (res.status === 403) throw new Error('You do not have permission to perform this action.');
+    if (res.status === 403) {
+      const errBody = await res.json().catch(() => null) as { message?: string | string[] } | null;
+      const msg = Array.isArray(errBody?.message) ? errBody.message.join(', ') : errBody?.message;
+      throw new Error(msg ?? 'You do not have permission to perform this action.');
+    }
     if (res.status >= 500) throw new Error('Server error — please try again later.');
     throw new Error(`HTTP ${res.status}`);
   }

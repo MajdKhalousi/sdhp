@@ -2241,7 +2241,8 @@
           "isActive": "Active",
           "temporaryPasswordSection": "Set Temporary Password",
           "temporaryPassword": "Temporary Password",
-          "confirmTemporaryPassword": "Confirm Temporary Password"
+          "confirmTemporaryPassword": "Confirm Temporary Password",
+          "temporaryPasswordHelp": "Filling this field will reset the user's current password immediately. Leave blank to keep the existing password."
         },
         "placeholders": {
           "phone": "e.g. +963912345678",
@@ -2279,6 +2280,9 @@
         "TECHNICIAN": "Technician"
       },
       "protectedAccount": "Protected",
+      "yourAccount": "Your Account",
+      "lastOrgAdmin": "Last Org Admin",
+      "lastOrgAdminDeactivateTooltip": "This is the last active org admin. At least one org admin must remain active.",
       "tempPasswordSuccess": "Temporary password set. Ask the staff member to sign in and change it from My Profile.",
       "status": {
         "active": "Active",

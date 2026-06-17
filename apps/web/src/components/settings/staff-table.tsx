@@ -333,6 +333,9 @@ function StaffForm({ mode, initial, onDone, onCreated, roleOptions }: StaffFormP
           <p className="mb-3 text-sm font-semibold text-foreground">
             {t('form.fields.temporaryPasswordSection')}
           </p>
+          <p className="mb-3 text-xs text-muted-foreground">
+            {t('form.fields.temporaryPasswordHelp')}
+          </p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <FieldLabel>{t('form.fields.temporaryPassword')}</FieldLabel>
@@ -409,10 +412,31 @@ function RoleLabel({ role, t }: { role: string; t: ReturnType<typeof useTranslat
 }
 
 function canManageRow(member: StaffUser, currentUser: AuthUser | null): boolean {
-  if (!currentUser || currentUser.role !== 'ORG_ADMIN') return true;
+  if (!currentUser) return false;
   if (member.id === currentUser.id) return false;
+  if (currentUser.role !== 'ORG_ADMIN') return true;
   if (PROTECTED_ROLES.has(member.role)) return false;
   return true;
+}
+
+function protectedLabel(
+  member: StaffUser,
+  currentUser: AuthUser | null,
+  t: ReturnType<typeof useTranslations<'settings.staff'>>,
+): React.ReactNode {
+  if (currentUser && member.id === currentUser.id) {
+    return <Badge variant="outline">{t('yourAccount')}</Badge>;
+  }
+  if (member.role === 'SUPER_ADMIN') {
+    return <Badge variant="outline">{t('roles.SUPER_ADMIN')}</Badge>;
+  }
+  if (member.role === 'ORG_ADMIN') {
+    return <Badge variant="outline">{t('roles.ORG_ADMIN')}</Badge>;
+  }
+  if (member.role === 'BRANCH_ADMIN') {
+    return <Badge variant="outline">{t('roles.BRANCH_ADMIN')}</Badge>;
+  }
+  return <Badge variant="outline">{t('protectedAccount')}</Badge>;
 }
 
 // ─── Staff Table ──────────────────────────────────────────────────────────────
@@ -470,6 +494,16 @@ export function StaffTable() {
       setRestoreSuccessMsg(t('restoreSuccess'));
     } catch (err) {
       setRestoreError(err instanceof Error ? err.message : t('error.restoreFailed'));
+    }
+  }
+
+  const activeOrgAdminCountByOrg = new Map<string, number>();
+  for (const u of allStaff ?? []) {
+    if (u.role === 'ORG_ADMIN' && u.isActive && !u.deletedAt) {
+      activeOrgAdminCountByOrg.set(
+        u.organizationId,
+        (activeOrgAdminCountByOrg.get(u.organizationId) ?? 0) + 1,
+      );
     }
   }
 
@@ -633,6 +667,11 @@ export function StaffTable() {
 
               {items.map((member) => {
                 const isDeactivated = !!member.deletedAt;
+                const isLastOrgAdmin =
+                  member.role === 'ORG_ADMIN' &&
+                  member.isActive &&
+                  !member.deletedAt &&
+                  (activeOrgAdminCountByOrg.get(member.organizationId) ?? 0) === 1;
                 const statusBadge = isDeactivated ? (
                   <Badge variant="danger">{t('status.deactivated')}</Badge>
                 ) : member.isActive ? (
@@ -675,7 +714,12 @@ export function StaffTable() {
                       </td>
 
                       <td className="px-4 py-3">
-                        {statusBadge}
+                        <div className="flex flex-col gap-1">
+                          {statusBadge}
+                          {isLastOrgAdmin && (
+                            <Badge variant="warning">{t('lastOrgAdmin')}</Badge>
+                          )}
+                        </div>
                       </td>
 
                       <td className="px-4 py-3">
@@ -708,12 +752,17 @@ export function StaffTable() {
                               </button>
                               <button
                                 onClick={() => {
+                                  if (isLastOrgAdmin) return;
                                   setDeletingId(deletingId === member.id ? null : member.id);
                                   setExpandedId(null);
                                   setRestoringId(null);
                                   setDeleteError(null);
                                 }}
-                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-destructive/30 text-destructive transition-colors hover:bg-destructive/10"
+                                disabled={isLastOrgAdmin}
+                                title={isLastOrgAdmin ? t('lastOrgAdminDeactivateTooltip') : undefined}
+                                className={isLastOrgAdmin
+                                  ? 'inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground opacity-40 cursor-not-allowed'
+                                  : 'inline-flex h-7 w-7 items-center justify-center rounded-md border border-destructive/30 text-destructive transition-colors hover:bg-destructive/10'}
                                 aria-label="Deactivate"
                               >
                                 <UserX className="h-3.5 w-3.5" />
@@ -721,7 +770,7 @@ export function StaffTable() {
                             </div>
                           )
                         ) : (
-                          <Badge variant="outline">{t('protectedAccount')}</Badge>
+                          protectedLabel(member, user, t)
                         )}
                       </td>
 
@@ -741,7 +790,7 @@ export function StaffTable() {
                       </tr>
                     )}
 
-                    {deletingId === member.id && canManageRow(member, user) && !isDeactivated && (
+                    {deletingId === member.id && canManageRow(member, user) && !isDeactivated && !isLastOrgAdmin && (
                       <tr className="border-t border-border bg-destructive/5">
                         <td colSpan={COL_COUNT} className="px-4 py-2.5">
                           <div className="flex flex-wrap items-center gap-3">

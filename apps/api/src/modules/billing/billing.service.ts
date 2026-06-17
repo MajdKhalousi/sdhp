@@ -218,7 +218,9 @@ export class BillingService {
           ]);
         }
 
-        return this.fetchInvoice(invoice.id);
+        const result = await this.fetchInvoice(invoice.id);
+        await this.auditWriter.log({ caller, action: 'INVOICE_CREATED', resource: 'invoice', resourceId: result.id });
+        return result;
       } catch (err) {
         if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
           // Sequence number collided with a legacy count-based invoice — increment again.

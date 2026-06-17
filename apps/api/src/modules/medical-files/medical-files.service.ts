@@ -15,6 +15,7 @@ import { CreateMedicalFileDto } from './dto/create-medical-file.dto';
 import { UpdateMedicalFileDto } from './dto/update-medical-file.dto';
 import { MedicalFileQueryDto } from './dto/medical-file-query.dto';
 import { UploadUrlRequestDto } from './dto/upload-url-request.dto';
+import { AuditLogsWriterService } from '../audit-logs/audit-logs-writer.service';
 
 // ── Select constants ───────────────────────────────────────────────────────
 
@@ -62,6 +63,7 @@ export class MedicalFilesService {
     private prisma: PrismaService,
     private timelineWriter: MedicalTimelineWriterService,
     private storage: StorageService,
+    private auditWriter: AuditLogsWriterService,
   ) {}
 
   async create(dto: CreateMedicalFileDto, caller: JwtPayload) {
@@ -209,6 +211,14 @@ export class MedicalFilesService {
 
     const downloadUrl = await this.storage.presignedGetUrl(file.storageKey);
 
+    await this.auditWriter.log({
+      caller,
+      action: 'FILE_DOWNLOADED',
+      resource: 'medical_file',
+      resourceId: file.id,
+      newData: { patientId: file.patientId, fileName: file.fileName, mimeType: file.mimeType },
+    });
+
     return {
       downloadUrl,
       expiresIn: 300,
@@ -222,6 +232,15 @@ export class MedicalFilesService {
     const file = await this.fetchFile(id);
     this.assertOrgAccess(file, caller);
     const buffer = await this.storage.getObject(file.storageKey);
+
+    await this.auditWriter.log({
+      caller,
+      action: 'FILE_DOWNLOADED',
+      resource: 'medical_file',
+      resourceId: file.id,
+      newData: { patientId: file.patientId, fileName: file.fileName, mimeType: file.mimeType },
+    });
+
     return {
       buffer,
       fileName: file.fileName,

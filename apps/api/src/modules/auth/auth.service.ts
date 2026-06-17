@@ -6,6 +6,7 @@ import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { LoginDto } from './dto/login.dto';
 import { LoginResponseDto } from './dto/auth-response.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { AuditLogsWriterService } from '../audit-logs/audit-logs-writer.service';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +15,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
+    private auditWriter: AuditLogsWriterService,
   ) {}
 
   async login(dto: LoginDto): Promise<LoginResponseDto> {
@@ -54,6 +56,8 @@ export class AuthService {
       branchId: user.branchId,
     };
 
+    await this.auditWriter.log({ caller: payload, action: 'LOGIN', resource: 'auth', resourceId: user.id });
+
     return {
       accessToken: this.jwt.sign(payload),
       user: {
@@ -74,6 +78,7 @@ export class AuthService {
     // The client MUST discard the token immediately on receiving this response.
     // Current JWT lifetime is 24 h in production (see JWT_EXPIRES_IN in env).
     this.logger.log(`Logout — userId=${caller.sub}`);
+    void this.auditWriter.log({ caller, action: 'LOGOUT', resource: 'auth', resourceId: caller.sub });
   }
 
   async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {

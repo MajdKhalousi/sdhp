@@ -97,6 +97,10 @@ export const TECHNICIAN_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'TEC
 export const BILLING_ACCESS_ROLES        = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
 export const BILLING_REPORT_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
 
+// Read-only invoice access: patient-scoped endpoints only (invoices tab + outstanding balance on patient profile).
+// Global /invoices list remains gated on BILLING_ACCESS_ROLES (org-wide, not doctor-scoped).
+export const INVOICE_READ_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY', 'DOCTOR']);
+
 // ─── Queue page action gates ──────────────────────────────────────────────────
 
 export const QUEUE_CREATE_ROLES  = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);

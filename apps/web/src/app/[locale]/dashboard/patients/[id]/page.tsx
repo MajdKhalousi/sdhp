@@ -14,6 +14,7 @@ import {
   PATIENT_SAFETY_ALERT_ROLES,
   RECEPTION_ACTION_ROLES,
   INVOICE_CREATE_ROLES,
+  INVOICE_READ_ROLES,
 } from '@/lib/permissions';
 import { useAllergies } from '@/hooks/use-allergies';
 import { usePatientLabOrders } from '@/hooks/use-labs';
@@ -245,8 +246,9 @@ export default function PatientPage({ params }: { params: { id: string } }) {
   const canSeeSafetyAlerts = user ? PATIENT_SAFETY_ALERT_ROLES.has(user.role) : false;
   const canBookAppointment = user ? RECEPTION_ACTION_ROLES.has(user.role) : false;
   const canCheckIn         = user ? RECEPTION_ACTION_ROLES.has(user.role) : false;
-  const canCreateInvoice   = user ? INVOICE_CREATE_ROLES.has(user.role) : false;
-  const canSeeVisitStatus  = user ? PATIENT_SAFETY_ALERT_ROLES.has(user.role) : false;
+  const canCreateInvoice       = user ? INVOICE_CREATE_ROLES.has(user.role) : false;
+  const canViewPatientInvoices = user ? INVOICE_READ_ROLES.has(user.role) : false;
+  const canSeeVisitStatus      = user ? PATIENT_SAFETY_ALERT_ROLES.has(user.role) : false;
   const [activeTab, setActiveTab] = useState(() => {
     const tab = searchParams.get('tab');
     return tab === 'timeline' || tab === 'medical-history' ? 'timeline'
@@ -469,7 +471,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
                 overdueFollowUpDate={overdueFollowUpDate}
               />
             )}
-            {patient && canCreateInvoice && (
+            {patient && canViewPatientInvoices && (
               <PatientOutstandingBalance
                 patientId={id}
                 onViewInvoices={() => handleTabChange('invoices')}

@@ -16,11 +16,13 @@ export const NAV_CASHIER_ROLES: readonly string[]             = ['SUPER_ADMIN', 
 export const NAV_INVOICES_ROLES: readonly string[]            = ['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY'];
 export const NAV_BILLING_REPORTS_ROLES: readonly string[]     = ['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT'];
 export const NAV_DOCTORS_ROLES: readonly string[]             = ['SUPER_ADMIN', 'ORG_ADMIN'];
+export const NAV_PLATFORM_ROLES: readonly string[]            = ['SUPER_ADMIN'];
 export const NAV_SETTINGS_ROLES: readonly string[]            = ['SUPER_ADMIN', 'ORG_ADMIN'];
 export const NAV_PROFILE_ROLES: readonly string[]             = ['SUPER_ADMIN', 'ORG_ADMIN', 'BRANCH_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY', 'ACCOUNTANT', 'TECHNICIAN'];
 
 // ─── Settings & admin page guards ────────────────────────────────────────────
 
+export const PLATFORM_ACCESS_ROLES  = new Set(['SUPER_ADMIN']);
 export const SETTINGS_ACCESS_ROLES  = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
 export const DOCTORS_PAGE_ROLES     = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
 

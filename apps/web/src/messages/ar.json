@@ -65,6 +65,7 @@
       "billingReports": "تقارير الفوترة",
       "settings": "الإعدادات",
       "doctors": "الأطباء",
+      "platform": "المنصة",
       "followUps": "المراجعات",
       "myFollowUps": "مراجعاتي",
       "today": "اليوم",
@@ -2689,6 +2690,26 @@
     "forbidden": "لا تملك صلاحية عرض تقارير الفوترة",
     "customRangePrompt": "اختر تاريخ البداية والنهاية لعرض التقرير لفترة مخصصة.",
     "clearDates": "مسح التواريخ"
+  },
+  "platform": {
+    "organizations": {
+      "title": "المنظمات",
+      "subtitle": "جميع المنظمات المسجلة في المنصة",
+      "loading": "جارٍ تحميل المنظمات…",
+      "error": "فشل تحميل المنظمات.",
+      "empty": "لا توجد منظمات مسجلة بعد.",
+      "columns": {
+        "name": "الاسم",
+        "type": "النوع",
+        "contact": "التواصل",
+        "status": "الحالة",
+        "createdAt": "تاريخ التسجيل"
+      },
+      "status": {
+        "active": "نشطة",
+        "inactive": "غير نشطة"
+      }
+    }
   },
   "error": {
     "notFound": {

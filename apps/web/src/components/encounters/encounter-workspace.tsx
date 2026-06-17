@@ -331,7 +331,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
     /مراجعة|متابعة/.test(appointmentVisitType?.nameAr ?? '');
   const invoiceCreateHref = encounter.appointmentId
     ? `/dashboard/invoices/new?appointmentId=${encounter.appointmentId}&patientId=${patient.id}`
-    : `/dashboard/invoices`;
+    : `/dashboard/invoices/new?patientId=${patient.id}&encounterId=${encounter.id}`;
   const severeAllergies = allergies.filter((a) => a.severity === 'SEVERE');
   const otherAllergies = allergies.filter((a) => a.severity !== 'SEVERE');
   const selectedIcdEntry = ICD_CODES.find((e) => e.code === form.diagnosisCode.trim()) ?? null;

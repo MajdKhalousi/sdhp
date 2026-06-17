@@ -4,13 +4,13 @@ import { getTranslations } from 'next-intl/server';
 import { CreateInvoiceForm } from '@/components/billing/create-invoice-form';
 
 interface Props {
-  searchParams: Promise<{ appointmentId?: string; patientId?: string }>;
+  searchParams: Promise<{ appointmentId?: string; patientId?: string; encounterId?: string }>;
 }
 
 export default async function NewInvoicePage({ searchParams }: Props) {
   const t = await getTranslations('invoice.form');
   const tDetail = await getTranslations('invoice.detail');
-  const { appointmentId, patientId } = await searchParams;
+  const { appointmentId, patientId, encounterId } = await searchParams;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -32,6 +32,7 @@ export default async function NewInvoicePage({ searchParams }: Props) {
         <CreateInvoiceForm
           initialPatientId={patientId}
           appointmentId={appointmentId}
+          encounterId={encounterId}
         />
       </div>
     </div>

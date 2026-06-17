@@ -12,9 +12,10 @@ import type { CreateInvoiceDto } from '@/types/invoice';
 interface Props {
   initialPatientId?: string;
   appointmentId?: string;
+  encounterId?: string;
 }
 
-export function CreateInvoiceForm({ initialPatientId, appointmentId }: Props = {}) {
+export function CreateInvoiceForm({ initialPatientId, appointmentId, encounterId }: Props = {}) {
   const t = useTranslations('invoice.form');
   const tCommon = useTranslations('common');
   const router = useRouter();
@@ -67,6 +68,7 @@ export function CreateInvoiceForm({ initialPatientId, appointmentId }: Props = {
     const dto: CreateInvoiceDto = {
       patientId,
       ...(appointmentId ? { appointmentId } : {}),
+      ...(encounterId && !appointmentId ? { encounterId } : {}),
       ...(dueDate ? { dueDate: `${dueDate}T00:00:00.000Z` } : {}),
       ...(notes.trim() ? { notes: notes.trim() } : {}),
     };

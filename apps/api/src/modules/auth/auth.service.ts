@@ -81,13 +81,13 @@ export class AuthService {
     void this.auditWriter.log({ caller, action: 'LOGOUT', resource: 'auth', resourceId: caller.sub });
   }
 
-  async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {
+  async changePassword(caller: JwtPayload, dto: ChangePasswordDto): Promise<void> {
     if (dto.newPassword !== dto.confirmPassword) {
       throw new BadRequestException('New password and confirmation do not match');
     }
 
     const user = await this.prisma.user.findUnique({
-      where: { id: userId, deletedAt: null },
+      where: { id: caller.sub, deletedAt: null },
       select: { id: true, passwordHash: true },
     });
 
@@ -109,12 +109,18 @@ export class AuthService {
     const newHash = await bcrypt.hash(dto.newPassword, BCRYPT_ROUNDS);
 
     await this.prisma.user.update({
-      where: { id: userId },
+      where: { id: caller.sub },
       data: { passwordHash: newHash },
       select: { id: true },
     });
 
-    this.logger.log(`Password changed — userId=${userId}`);
+    this.logger.log(`Password changed — userId=${caller.sub}`);
+    await this.auditWriter.log({
+      caller,
+      action: 'PASSWORD_CHANGED',
+      resource: 'user',
+      resourceId: caller.sub,
+    });
   }
 
   async getMe(userId: string) {

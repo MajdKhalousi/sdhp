@@ -42,7 +42,7 @@ export class AuthController {
     @CurrentUser() user: JwtPayload,
     @Body() dto: ChangePasswordDto,
   ): Promise<void> {
-    return this.authService.changePassword(user.sub, dto);
+    return this.authService.changePassword(user, dto);
   }
 
   @Post('logout')

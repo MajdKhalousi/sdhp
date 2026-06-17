@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { Organization } from '@/types/organization';
+import type { Branch } from '@/types/branch';
 
 type MaybeList<T> = T[] | { data: T[] } | { items: T[] } | null | undefined;
 
@@ -14,22 +14,13 @@ function normalizeList<T>(raw: MaybeList<T>): T[] {
   return [];
 }
 
-export function useOrganizations() {
+export function useBranches() {
   return useQuery({
-    queryKey: ['organizations'],
+    queryKey: ['branches'],
     queryFn: async () =>
       normalizeList(
-        await api.get<MaybeList<Organization>>('/v1/organizations', { limit: 100 }),
+        await api.get<MaybeList<Branch>>('/v1/branches', { limit: 100 }),
       ),
     staleTime: 60_000,
-  });
-}
-
-export function useOrganization(id: string) {
-  return useQuery({
-    queryKey: ['organizations', id],
-    queryFn: async () => api.get<Organization>(`/v1/organizations/${id}`),
-    staleTime: 60_000,
-    enabled: !!id,
   });
 }

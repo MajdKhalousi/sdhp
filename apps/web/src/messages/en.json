@@ -2703,12 +2703,65 @@
         "type": "Type",
         "contact": "Contact",
         "status": "Status",
-        "createdAt": "Registered"
+        "createdAt": "Registered",
+        "view": "View"
       },
       "status": {
         "active": "Active",
         "inactive": "Inactive"
       }
+    },
+    "organizationDetail": {
+      "back": "← Organizations",
+      "loading": "Loading organization…",
+      "notFound": "Organization not found or inaccessible.",
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "userStatus": {
+        "deactivated": "Deactivated"
+      },
+      "sections": {
+        "profile": "Profile",
+        "branches": "Branches",
+        "admins": "Organization Admins",
+        "staff": "Staff"
+      },
+      "fields": {
+        "name": "Name",
+        "nameAr": "Arabic Name",
+        "type": "Type",
+        "phone": "Phone",
+        "email": "Email",
+        "address": "Address",
+        "registered": "Registered"
+      },
+      "stats": {
+        "branches": "Branches",
+        "totalUsers": "Total Users",
+        "orgAdmins": "Admins",
+        "activeStaff": "Active Staff"
+      },
+      "branchColumns": {
+        "name": "Name",
+        "phone": "Phone",
+        "address": "Address",
+        "status": "Status",
+        "createdAt": "Registered"
+      },
+      "userColumns": {
+        "name": "Name",
+        "role": "Role",
+        "phone": "Phone",
+        "email": "Email",
+        "status": "Status",
+        "lastLogin": "Last Login"
+      },
+      "noBranches": "No branches registered.",
+      "noAdmins": "No organization admins found.",
+      "noStaff": "No staff found.",
+      "limitNote": "Showing up to 100 records per category."
     }
   },
   "error": {

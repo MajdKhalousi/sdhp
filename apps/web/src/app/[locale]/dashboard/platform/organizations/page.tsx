@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { PLATFORM_ACCESS_ROLES } from '@/lib/permissions';
@@ -61,6 +61,7 @@ export default function PlatformOrganizationsPage() {
                 <th className="px-4 py-3 text-start font-medium text-muted-foreground">
                   {t('columns.createdAt')}
                 </th>
+                <th className="px-4 py-3 text-start font-medium text-muted-foreground"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -95,6 +96,14 @@ export default function PlatformOrganizationsPage() {
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {new Date(org.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/dashboard/platform/organizations/${org.id}`}
+                      className="text-sm font-medium text-primary hover:underline"
+                    >
+                      {t('columns.view')}
+                    </Link>
                   </td>
                 </tr>
               ))}

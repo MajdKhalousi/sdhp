@@ -2703,12 +2703,65 @@
         "type": "النوع",
         "contact": "التواصل",
         "status": "الحالة",
-        "createdAt": "تاريخ التسجيل"
+        "createdAt": "تاريخ التسجيل",
+        "view": "عرض"
       },
       "status": {
         "active": "نشطة",
         "inactive": "غير نشطة"
       }
+    },
+    "organizationDetail": {
+      "back": "← المنظمات",
+      "loading": "جارٍ تحميل المنظمة…",
+      "notFound": "المنظمة غير موجودة أو لا يمكن الوصول إليها.",
+      "status": {
+        "active": "نشطة",
+        "inactive": "غير نشطة"
+      },
+      "userStatus": {
+        "deactivated": "موقوف"
+      },
+      "sections": {
+        "profile": "الملف",
+        "branches": "الفروع",
+        "admins": "مشرفو المنظمة",
+        "staff": "الموظفون"
+      },
+      "fields": {
+        "name": "الاسم",
+        "nameAr": "الاسم بالعربية",
+        "type": "النوع",
+        "phone": "الهاتف",
+        "email": "البريد الإلكتروني",
+        "address": "العنوان",
+        "registered": "تاريخ التسجيل"
+      },
+      "stats": {
+        "branches": "الفروع",
+        "totalUsers": "إجمالي المستخدمين",
+        "orgAdmins": "المشرفون",
+        "activeStaff": "الموظفون النشطون"
+      },
+      "branchColumns": {
+        "name": "الاسم",
+        "phone": "الهاتف",
+        "address": "العنوان",
+        "status": "الحالة",
+        "createdAt": "تاريخ التسجيل"
+      },
+      "userColumns": {
+        "name": "الاسم",
+        "role": "الدور",
+        "phone": "الهاتف",
+        "email": "البريد الإلكتروني",
+        "status": "الحالة",
+        "lastLogin": "آخر دخول"
+      },
+      "noBranches": "لا توجد فروع مسجلة.",
+      "noAdmins": "لا يوجد مشرفو منظمة.",
+      "noStaff": "لا يوجد موظفون.",
+      "limitNote": "يعرض حتى 100 سجل لكل فئة."
     }
   },
   "error": {

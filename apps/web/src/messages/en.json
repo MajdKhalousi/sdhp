@@ -2770,7 +2770,21 @@
       "notFound": "Organization not found or inaccessible.",
       "status": {
         "active": "Active",
-        "inactive": "Inactive"
+        "inactive": "Inactive",
+        "sectionTitle": "Organization Status",
+        "currentlyActive": "This organization is currently active.",
+        "currentlyInactive": "This organization is currently suspended.",
+        "suspendButton": "Suspend Organization",
+        "suspendWarning": "Suspending an organization marks it inactive but does not yet block existing users from logging in. Full enforcement is planned separately.",
+        "confirmSuspendPrompt": "Are you sure you want to suspend this organization?",
+        "confirmSuspend": "Confirm Suspend",
+        "suspending": "Suspending…",
+        "cancel": "Cancel",
+        "activateButton": "Activate Organization",
+        "activating": "Activating…",
+        "error": {
+          "generic": "Failed to update organization status. Please try again."
+        }
       },
       "userStatus": {
         "deactivated": "Deactivated"
@@ -2789,6 +2803,32 @@
         "email": "Email",
         "address": "Address",
         "registered": "Registered"
+      },
+      "edit": {
+        "editButton": "Edit Organization",
+        "save": "Save",
+        "saving": "Saving…",
+        "cancel": "Cancel",
+        "fields": {
+          "name": "Name",
+          "nameAr": "Arabic Name",
+          "type": "Type",
+          "phone": "Phone",
+          "email": "Email",
+          "address": "Address"
+        },
+        "types": {
+          "HOSPITAL": "Hospital",
+          "CLINIC": "Clinic",
+          "POLYCLINIC": "Polyclinic"
+        },
+        "validation": {
+          "nameRequired": "Organization name is required.",
+          "emailFormat": "Invalid email format."
+        },
+        "error": {
+          "generic": "Failed to update organization. Please try again."
+        }
       },
       "stats": {
         "branches": "Branches",

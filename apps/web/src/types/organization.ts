@@ -51,3 +51,16 @@ export interface OnboardOrganizationResponse {
   branch: Branch;
   admin: StaffUser;
 }
+
+export interface UpdateOrganizationInput {
+  name?: string;
+  nameAr?: string;
+  type?: OrganizationType;
+  phone?: string;
+  email?: string;
+  address?: string;
+}
+
+export interface OrganizationStatusUpdateInput {
+  isActive: boolean;
+}

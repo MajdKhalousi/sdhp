@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { Organization, OnboardOrganizationDto, OnboardOrganizationResponse } from '@/types/organization';
+import type {
+  Organization,
+  OnboardOrganizationDto,
+  OnboardOrganizationResponse,
+  UpdateOrganizationInput,
+} from '@/types/organization';
 
 type MaybeList<T> = T[] | { data: T[] } | { items: T[] } | null | undefined;
 
@@ -41,6 +46,30 @@ export function useOnboardOrganization() {
       api.post<OnboardOrganizationResponse>('/v1/organizations/onboard', dto),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['organizations'] });
+    },
+  });
+}
+
+export function useUpdateOrganization() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, dto }: { id: string; dto: UpdateOrganizationInput }) =>
+      api.patch<Organization>(`/v1/organizations/${id}`, dto),
+    onSuccess: (_data, { id }) => {
+      qc.invalidateQueries({ queryKey: ['organizations'] });
+      qc.invalidateQueries({ queryKey: ['organizations', id] });
+    },
+  });
+}
+
+export function useToggleOrganizationStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
+      api.patch<Organization>(`/v1/organizations/${id}`, { isActive }),
+    onSuccess: (_data, { id }) => {
+      qc.invalidateQueries({ queryKey: ['organizations'] });
+      qc.invalidateQueries({ queryKey: ['organizations', id] });
     },
   });
 }

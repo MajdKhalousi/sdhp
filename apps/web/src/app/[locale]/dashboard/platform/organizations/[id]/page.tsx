@@ -1,14 +1,59 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { PLATFORM_ACCESS_ROLES } from '@/lib/permissions';
-import { useOrganization } from '@/hooks/use-organizations';
+import { useOrganization, useUpdateOrganization, useToggleOrganizationStatus } from '@/hooks/use-organizations';
 import { useBranches } from '@/hooks/use-branches';
 import { useStaff } from '@/hooks/use-staff';
+import type { OrganizationType } from '@/types/organization';
+
+function inputClass(hasError?: boolean): string {
+  const base =
+    'w-full rounded-lg border bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:outline-none focus:ring-2';
+  return hasError
+    ? `${base} border-destructive focus:ring-destructive/50`
+    : `${base} border-input focus:ring-ring`;
+}
+
+function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
+  return (
+    <label className="mb-1 block text-sm font-medium text-foreground">
+      {children}
+      {required && <span className="ms-1 text-destructive">*</span>}
+    </label>
+  );
+}
+
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return <p className="mt-1 text-xs text-destructive">{message}</p>;
+}
+
+const ORG_TYPES: OrganizationType[] = ['HOSPITAL', 'CLINIC', 'POLYCLINIC'];
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+interface EditFormState {
+  name: string;
+  nameAr: string;
+  type: OrganizationType;
+  phone: string;
+  email: string;
+  address: string;
+}
+
+interface EditFormErrors {
+  name?: string;
+  email?: string;
+}
+
+function trimmedOrUndefined(value: string): string | undefined {
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
 
 export default function PlatformOrganizationDetailPage() {
   const t = useTranslations('platform.organizationDetail');
@@ -34,7 +79,106 @@ export default function PlatformOrganizationDetailPage() {
   const { data: allBranches = [], isLoading: branchesLoading } = useBranches();
   const { data: allUsers = [], isLoading: usersLoading } = useStaff(true);
 
+  const updateOrganization = useUpdateOrganization();
+  const toggleStatus = useToggleOrganizationStatus();
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValues, setEditValues] = useState<EditFormState>({
+    name: '',
+    nameAr: '',
+    type: 'CLINIC',
+    phone: '',
+    email: '',
+    address: '',
+  });
+  const [editErrors, setEditErrors] = useState<EditFormErrors>({});
+  const [editSubmitError, setEditSubmitError] = useState<string | null>(null);
+
+  const [confirmingSuspend, setConfirmingSuspend] = useState(false);
+  const [statusError, setStatusError] = useState<string | null>(null);
+
   if (!user || !isSuperAdmin) return null;
+
+  function startEdit() {
+    if (!org) return;
+    setEditValues({
+      name: org.name,
+      nameAr: org.nameAr ?? '',
+      type: org.type,
+      phone: org.phone ?? '',
+      email: org.email ?? '',
+      address: org.address ?? '',
+    });
+    setEditErrors({});
+    setEditSubmitError(null);
+    setIsEditing(true);
+  }
+
+  function cancelEdit() {
+    setIsEditing(false);
+    setEditErrors({});
+    setEditSubmitError(null);
+  }
+
+  function setEditField(field: keyof EditFormState, value: string) {
+    setEditValues((prev) => ({ ...prev, [field]: value }));
+    setEditErrors((prev) => ({ ...prev, [field]: undefined }) as EditFormErrors);
+    setEditSubmitError(null);
+  }
+
+  function validateEdit(): EditFormErrors {
+    const errs: EditFormErrors = {};
+    if (!editValues.name.trim()) errs.name = t('edit.validation.nameRequired');
+    if (editValues.email.trim() && !EMAIL_RE.test(editValues.email.trim())) {
+      errs.email = t('edit.validation.emailFormat');
+    }
+    return errs;
+  }
+
+  async function handleEditSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const errs = validateEdit();
+    if (Object.keys(errs).length > 0) {
+      setEditErrors(errs);
+      return;
+    }
+    setEditSubmitError(null);
+    try {
+      await updateOrganization.mutateAsync({
+        id,
+        dto: {
+          name: editValues.name.trim(),
+          nameAr: trimmedOrUndefined(editValues.nameAr),
+          type: editValues.type,
+          phone: trimmedOrUndefined(editValues.phone),
+          email: trimmedOrUndefined(editValues.email),
+          address: trimmedOrUndefined(editValues.address),
+        },
+      });
+      setIsEditing(false);
+    } catch (err) {
+      setEditSubmitError(err instanceof Error ? err.message : t('edit.error.generic'));
+    }
+  }
+
+  async function handleSuspendConfirm() {
+    setStatusError(null);
+    try {
+      await toggleStatus.mutateAsync({ id, isActive: false });
+      setConfirmingSuspend(false);
+    } catch (err) {
+      setStatusError(err instanceof Error ? err.message : t('status.error.generic'));
+    }
+  }
+
+  async function handleActivate() {
+    setStatusError(null);
+    try {
+      await toggleStatus.mutateAsync({ id, isActive: true });
+    } catch (err) {
+      setStatusError(err instanceof Error ? err.message : t('status.error.generic'));
+    }
+  }
 
   const branches = allBranches.filter((b) => b.organizationId === id);
   const orgUsers = allUsers.filter((u) => u.organizationId === id);
@@ -98,47 +242,208 @@ export default function PlatformOrganizationDetailPage() {
 
           {/* Profile card */}
           <div className="rounded-lg border border-border bg-card p-4 space-y-3">
-            <h2 className="text-sm font-semibold text-foreground">{t('sections.profile')}</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-              <div>
-                <span className="text-muted-foreground">{t('fields.name')}: </span>
-                <span className="text-foreground">{org.name}</span>
-              </div>
-              {org.nameAr && (
-                <div>
-                  <span className="text-muted-foreground">{t('fields.nameAr')}: </span>
-                  <span className="text-foreground">{org.nameAr}</span>
-                </div>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-foreground">{t('sections.profile')}</h2>
+              {!isEditing && (
+                <button
+                  onClick={startEdit}
+                  className="h-7 rounded-md border border-input bg-background px-3 text-xs font-medium transition-colors hover:bg-accent"
+                >
+                  {t('edit.editButton')}
+                </button>
               )}
-              <div>
-                <span className="text-muted-foreground">{t('fields.type')}: </span>
-                <span className="text-foreground">{org.type}</span>
-              </div>
-              {org.phone && (
-                <div>
-                  <span className="text-muted-foreground">{t('fields.phone')}: </span>
-                  <span className="text-foreground">{org.phone}</span>
-                </div>
-              )}
-              {org.email && (
-                <div>
-                  <span className="text-muted-foreground">{t('fields.email')}: </span>
-                  <span className="text-foreground">{org.email}</span>
-                </div>
-              )}
-              {org.address && (
-                <div className="sm:col-span-2">
-                  <span className="text-muted-foreground">{t('fields.address')}: </span>
-                  <span className="text-foreground">{org.address}</span>
-                </div>
-              )}
-              <div>
-                <span className="text-muted-foreground">{t('fields.registered')}: </span>
-                <span className="text-foreground">
-                  {new Date(org.createdAt).toLocaleDateString()}
-                </span>
-              </div>
             </div>
+
+            {!isEditing ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                <div>
+                  <span className="text-muted-foreground">{t('fields.name')}: </span>
+                  <span className="text-foreground">{org.name}</span>
+                </div>
+                {org.nameAr && (
+                  <div>
+                    <span className="text-muted-foreground">{t('fields.nameAr')}: </span>
+                    <span className="text-foreground">{org.nameAr}</span>
+                  </div>
+                )}
+                <div>
+                  <span className="text-muted-foreground">{t('fields.type')}: </span>
+                  <span className="text-foreground">{org.type}</span>
+                </div>
+                {org.phone && (
+                  <div>
+                    <span className="text-muted-foreground">{t('fields.phone')}: </span>
+                    <span className="text-foreground">{org.phone}</span>
+                  </div>
+                )}
+                {org.email && (
+                  <div>
+                    <span className="text-muted-foreground">{t('fields.email')}: </span>
+                    <span className="text-foreground">{org.email}</span>
+                  </div>
+                )}
+                {org.address && (
+                  <div className="sm:col-span-2">
+                    <span className="text-muted-foreground">{t('fields.address')}: </span>
+                    <span className="text-foreground">{org.address}</span>
+                  </div>
+                )}
+                <div>
+                  <span className="text-muted-foreground">{t('fields.registered')}: </span>
+                  <span className="text-foreground">
+                    {new Date(org.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleEditSubmit} noValidate className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <FieldLabel required>{t('edit.fields.name')}</FieldLabel>
+                    <input
+                      type="text"
+                      value={editValues.name}
+                      onChange={(e) => setEditField('name', e.target.value)}
+                      className={inputClass(!!editErrors.name)}
+                      disabled={updateOrganization.isPending}
+                    />
+                    <FieldError message={editErrors.name} />
+                  </div>
+                  <div>
+                    <FieldLabel>{t('edit.fields.nameAr')}</FieldLabel>
+                    <input
+                      type="text"
+                      value={editValues.nameAr}
+                      onChange={(e) => setEditField('nameAr', e.target.value)}
+                      className={inputClass()}
+                      disabled={updateOrganization.isPending}
+                      dir="rtl"
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel required>{t('edit.fields.type')}</FieldLabel>
+                    <select
+                      value={editValues.type}
+                      onChange={(e) => setEditField('type', e.target.value)}
+                      className={inputClass()}
+                      disabled={updateOrganization.isPending}
+                    >
+                      {ORG_TYPES.map((ty) => (
+                        <option key={ty} value={ty}>
+                          {t(`edit.types.${ty}`)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <FieldLabel>{t('edit.fields.phone')}</FieldLabel>
+                    <input
+                      type="tel"
+                      value={editValues.phone}
+                      onChange={(e) => setEditField('phone', e.target.value)}
+                      className={inputClass()}
+                      disabled={updateOrganization.isPending}
+                      dir="ltr"
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel>{t('edit.fields.email')}</FieldLabel>
+                    <input
+                      type="email"
+                      value={editValues.email}
+                      onChange={(e) => setEditField('email', e.target.value)}
+                      className={inputClass(!!editErrors.email)}
+                      disabled={updateOrganization.isPending}
+                      dir="ltr"
+                    />
+                    <FieldError message={editErrors.email} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <FieldLabel>{t('edit.fields.address')}</FieldLabel>
+                    <input
+                      type="text"
+                      value={editValues.address}
+                      onChange={(e) => setEditField('address', e.target.value)}
+                      className={inputClass()}
+                      disabled={updateOrganization.isPending}
+                    />
+                  </div>
+                </div>
+
+                {editSubmitError && <p className="text-sm text-destructive">{editSubmitError}</p>}
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="submit"
+                    disabled={updateOrganization.isPending}
+                    className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+                  >
+                    {updateOrganization.isPending ? t('edit.saving') : t('edit.save')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelEdit}
+                    disabled={updateOrganization.isPending}
+                    className="h-8 rounded-md border border-input bg-background px-4 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
+                  >
+                    {t('edit.cancel')}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+
+          {/* Status control */}
+          <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+            <h2 className="text-sm font-semibold text-foreground">{t('status.sectionTitle')}</h2>
+            <p className="text-sm text-muted-foreground">
+              {org.isActive ? t('status.currentlyActive') : t('status.currentlyInactive')}
+            </p>
+
+            {statusError && <p className="text-sm text-destructive">{statusError}</p>}
+
+            {org.isActive ? (
+              !confirmingSuspend ? (
+                <button
+                  onClick={() => setConfirmingSuspend(true)}
+                  className="h-8 rounded-md border border-destructive/40 bg-destructive/10 px-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/20"
+                >
+                  {t('status.suspendButton')}
+                </button>
+              ) : (
+                <div className="space-y-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+                  <p className="text-sm text-foreground">{t('status.suspendWarning')}</p>
+                  <p className="text-sm font-medium text-destructive">{t('status.confirmSuspendPrompt')}</p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleSuspendConfirm}
+                      disabled={toggleStatus.isPending}
+                      className="h-7 rounded-md border border-destructive/40 bg-destructive/10 px-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/20 disabled:opacity-50"
+                    >
+                      {toggleStatus.isPending ? t('status.suspending') : t('status.confirmSuspend')}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setConfirmingSuspend(false);
+                        setStatusError(null);
+                      }}
+                      disabled={toggleStatus.isPending}
+                      className="h-7 rounded-md border border-border bg-background px-3 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
+                    >
+                      {t('status.cancel')}
+                    </button>
+                  </div>
+                </div>
+              )
+            ) : (
+              <button
+                onClick={handleActivate}
+                disabled={toggleStatus.isPending}
+                className="h-8 rounded-md border border-primary/40 bg-primary/10 px-3 text-sm font-medium text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
+              >
+                {toggleStatus.isPending ? t('status.activating') : t('status.activateButton')}
+              </button>
+            )}
           </div>
 
           {/* Summary cards */}

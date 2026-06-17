@@ -61,6 +61,9 @@ const ADMIN_SELECT = {
 
 const BCRYPT_ROUNDS = 12;
 
+// Basic (non-status) fields eligible for the ORGANIZATION_UPDATED audit diff.
+const BASIC_FIELDS = ['name', 'nameAr', 'type', 'phone', 'email', 'address', 'logoUrl'] as const;
+
 @Injectable()
 export class OrganizationsService {
   constructor(
@@ -203,17 +206,54 @@ export class OrganizationsService {
   async update(id: string, dto: UpdateOrganizationDto, user: JwtPayload) {
     this.assertAccess(id, user);
 
-    const exists = await this.prisma.organization.findFirst({
-      where: { id, deletedAt: null },
-      select: { id: true },
-    });
-    if (!exists) throw new NotFoundException('Organization not found');
+    if (dto.isActive !== undefined && user.role !== UserRole.SUPER_ADMIN) {
+      throw new ForbiddenException('Only SUPER_ADMIN can change organization status');
+    }
 
-    return this.prisma.organization.update({
+    const existing = await this.prisma.organization.findFirst({
+      where: { id, deletedAt: null },
+      select: SELECT,
+    });
+    if (!existing) throw new NotFoundException('Organization not found');
+
+    const updated = await this.prisma.organization.update({
       where: { id },
       data: dto,
       select: SELECT,
     });
+
+    const oldBasics: Record<string, unknown> = {};
+    const newBasics: Record<string, unknown> = {};
+    for (const field of BASIC_FIELDS) {
+      if (dto[field] !== undefined && existing[field] !== updated[field]) {
+        oldBasics[field] = existing[field];
+        newBasics[field] = updated[field];
+      }
+    }
+
+    if (Object.keys(newBasics).length > 0) {
+      await this.auditWriter.log({
+        caller: user,
+        action: 'ORGANIZATION_UPDATED',
+        resource: 'organization',
+        resourceId: updated.id,
+        oldData: toSnapshot(oldBasics),
+        newData: toSnapshot(newBasics),
+      });
+    }
+
+    if (dto.isActive !== undefined && existing.isActive !== updated.isActive) {
+      await this.auditWriter.log({
+        caller: user,
+        action: 'ORGANIZATION_STATUS_CHANGED',
+        resource: 'organization',
+        resourceId: updated.id,
+        oldData: toSnapshot({ isActive: existing.isActive }),
+        newData: toSnapshot({ isActive: updated.isActive }),
+      });
+    }
+
+    return updated;
   }
 
   async remove(id: string) {

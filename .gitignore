@@ -79,3 +79,15 @@ apps/web/pw-temp/
 apps/web/package-lock.json
 docker/nginx.local.http.conf
 *.sql.gz
+
+# Root-level QA / verification scripts generated during testing
+/verify-*.mjs
+/probe-*.mjs
+/sweep-*.mjs
+/prod-sweep-*.mjs
+/debug-*.mjs
+/reset-pw.js
+/verify-*-screenshots/
+/130a2_*.png
+/debug-*.png
+/prod-sweep-*.png

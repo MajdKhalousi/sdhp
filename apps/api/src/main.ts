@@ -38,21 +38,25 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const config = new DocumentBuilder()
-    .setTitle('Elaji Health API')
-    .setDescription('Elaji Health Platform — REST API')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Elaji Health API')
+      .setDescription('Elaji Health Platform — REST API')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
   const port = process.env.API_PORT || 3001;
   await app.listen(port);
 
   console.log(`\n🏥 Elaji Health API running on: http://localhost:${port}/api`);
-  console.log(`📖 API Docs:             http://localhost:${port}/api/docs\n`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`📖 API Docs:             http://localhost:${port}/api/docs\n`);
+  }
 }
 
 bootstrap();

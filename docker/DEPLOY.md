@@ -180,7 +180,7 @@ docker exec sdhp_minio mc mb local/sdhp-files --ignore-existing
 | URL | Expected |
 |---|---|
 | `https://YOUR_DOMAIN/` | Next.js login page (200) |
-| `https://YOUR_DOMAIN/api/docs` | Swagger UI (200) |
+| `https://YOUR_DOMAIN/api/docs` | 404 Not Found (Swagger disabled in production) |
 | `https://YOUR_DOMAIN/api/v1/auth/me` | `{"message":"Unauthorized",...}` (401) |
 | `http://YOUR_DOMAIN/` | 301 redirect to HTTPS |
 
@@ -188,6 +188,13 @@ docker exec sdhp_minio mc mb local/sdhp-files --ignore-existing
 # Quick API smoke test
 curl -s https://YOUR_DOMAIN/api/v1/auth/me | grep -q Unauthorized \
   && echo "API OK" || echo "API FAILED"
+
+# Confirm Swagger is NOT accessible in production
+curl -s -o /dev/null -w "%{http_code}" https://YOUR_DOMAIN/api/docs \
+  | grep -q 404 && echo "Swagger correctly disabled" || echo "WARNING: Swagger is exposed"
+
+# Confirm HSTS header is present
+curl -sI https://YOUR_DOMAIN/ | grep -i strict-transport-security
 ```
 
 ### 5.4 Load staging seed data (staging only, never in production with real patients)
@@ -228,7 +235,58 @@ To automate the nginx reload after renewal, add a cron job on the host:
 
 ---
 
-## 7. Updating the Application
+## 7. Scheduled Backups
+
+`docker/scripts/backup.sh` backs up the PostgreSQL database to the host
+at `docker/backups/`. It must be triggered by a host cron job — the
+backup script is not run automatically by any container.
+
+### 7.1 Add the backup cron job
+
+```sh
+# Edit the host crontab
+crontab -e
+```
+
+Add the following line (runs at 02:00 daily):
+
+```
+0 2 * * * /path/to/repo/docker/scripts/backup.sh >> /var/log/sdhp-backup.log 2>&1
+```
+
+Replace `/path/to/repo` with the absolute path to your cloned repository
+(e.g. `/srv/sdhp`).
+
+### 7.2 Verify backups are being created
+
+```sh
+# Run once manually to confirm it works
+bash docker/scripts/backup.sh
+
+# List backup files
+ls -lh docker/backups/
+
+# Confirm the most recent backup is valid
+docker/scripts/restore.sh --list 2>/dev/null || \
+  pg_restore --list $(ls -t docker/backups/*.dump 2>/dev/null | head -1)
+```
+
+### 7.3 Retention policy
+
+The default retention is 30 days (`RETENTION_DAYS=30` in `backup.sh`).
+Override by exporting the variable before calling the script:
+
+```sh
+RETENTION_DAYS=14 bash docker/scripts/backup.sh
+```
+
+> **Note:** MinIO medical file uploads are not yet included in the automated
+> backup. Back up the `docker/volumes/minio/` host volume separately or
+> configure `mc mirror` to a secondary location.
+
+---
+
+## 8. Updating the Application
 
 ```sh
 # Pull latest code
@@ -237,13 +295,40 @@ git pull origin master
 # Rebuild images (only changed layers are rebuilt)
 docker compose -f docker/docker-compose.prod.yml --env-file .env.production build
 
-# Restart services — Prisma migrations run automatically in the API entrypoint
+# Restart services
+# The API entrypoint runs `prisma migrate deploy` before starting the server.
+# Migration output appears in: docker logs sdhp_api --tail=20
 docker compose -f docker/docker-compose.prod.yml --env-file .env.production up -d
+```
+
+### Post-Update Verification
+
+```sh
+# 1. Confirm the correct commit is deployed
+git log -1 --oneline
+
+# 2. Check all containers are healthy
+docker compose -f docker/docker-compose.prod.yml --env-file .env.production ps
+
+# 3. Confirm migration deploy ran without errors
+docker logs sdhp_api 2>&1 | grep -E "\[entrypoint\]|Migration"
+
+# 4. Confirm Swagger is NOT accessible (should return 404)
+curl -s -o /dev/null -w "%{http_code}" https://YOUR_DOMAIN/api/docs
+
+# 5. Confirm auth rate limiting is configured in nginx
+docker exec sdhp_nginx nginx -T 2>/dev/null | grep limit_req
+
+# 6. Confirm login still works
+curl -s -X POST https://YOUR_DOMAIN/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"phone":"+963900000000","password":"wrong"}' | grep -q message \
+  && echo "Auth endpoint reachable" || echo "Auth endpoint FAILED"
 ```
 
 ---
 
-## 8. Rollback
+## 9. Rollback
 
 ```sh
 # Check out the previous stable tag
@@ -259,7 +344,7 @@ docker compose -f docker/docker-compose.prod.yml --env-file .env.production up -
 
 ---
 
-## 9. Healthcheck Verification
+## 10. Healthcheck Verification
 
 ```sh
 # Show live healthcheck status for all services
@@ -276,7 +361,7 @@ docker inspect --format='{{.Name}}: {{.State.Health.Status}}' \
 
 ---
 
-## 10. Stopping and Removing
+## 11. Stopping and Removing
 
 ```sh
 # Stop all services (data volumes are preserved)

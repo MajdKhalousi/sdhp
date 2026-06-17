@@ -149,7 +149,7 @@ export class UsersService {
   async update(id: string, dto: UpdateUserDto, user: JwtPayload) {
     const found = await this.prisma.user.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true, organizationId: true, role: true },
+      select: { id: true, organizationId: true, role: true, isActive: true },
     });
 
     if (!found) throw new NotFoundException('User not found');
@@ -169,6 +169,15 @@ export class UsersService {
       }
     }
 
+    if (user.role === UserRole.SUPER_ADMIN && id === user.sub) {
+      if (dto.role !== undefined && dto.role !== UserRole.SUPER_ADMIN)
+        throw new ForbiddenException('Cannot change your own role');
+      if (dto.isActive === false)
+        throw new ForbiddenException('Cannot deactivate your own account');
+      if (dto.password !== undefined)
+        throw new ForbiddenException('Cannot reset your own password via admin endpoint');
+    }
+
     if (dto.branchId) {
       await this.assertBranchBelongsToOrg(dto.branchId, found.organizationId);
     }
@@ -180,55 +189,72 @@ export class UsersService {
       data.passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
     }
 
+    const roleDemotion = dto.role !== undefined && dto.role !== UserRole.SUPER_ADMIN;
+    const deactivation = dto.isActive === false;
+    const targetIsActiveSuperAdmin = found.role === UserRole.SUPER_ADMIN && found.isActive === true;
+
+    let result: UserRecord;
+
     try {
-      const result = await this.prisma.user.update({
-        where: { id },
-        data,
-        select: SELECT,
-      });
-      if (password) {
-        await this.auditWriter.log({
-          caller: user,
-          action: 'PASSWORD_RESET_BY_ADMIN',
-          resource: 'user',
-          resourceId: id,
-        });
+      if (targetIsActiveSuperAdmin && (roleDemotion || deactivation)) {
+        result = await this.prisma.$transaction(async (tx) => {
+          const activeCount = await tx.user.count({
+            where: { role: UserRole.SUPER_ADMIN, isActive: true, deletedAt: null },
+          });
+          if (activeCount <= 1) {
+            if (roleDemotion) throw new ForbiddenException('Cannot demote the last active super admin');
+            throw new ForbiddenException('Cannot deactivate the last active super admin');
+          }
+          return tx.user.update({ where: { id }, data, select: SELECT });
+        }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+      } else {
+        result = await this.prisma.user.update({ where: { id }, data, select: SELECT });
       }
-      if (dto.role !== undefined && dto.role !== found.role) {
-        await this.auditWriter.log({
-          caller: user,
-          action: 'USER_ROLE_CHANGED',
-          resource: 'user',
-          resourceId: id,
-          oldData: { role: found.role },
-          newData: { role: dto.role },
-        });
-      }
-      if (!password && (dto.role === undefined || dto.role === found.role)) {
-        await this.auditWriter.log({
-          caller: user,
-          action: 'USER_UPDATED',
-          resource: 'user',
-          resourceId: id,
-        });
-      }
-      return result;
     } catch (e) {
+      if (e instanceof ForbiddenException) throw e;
       if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
         throw new ConflictException('A user with this phone or email already exists');
       }
       throw e;
     }
+
+    if (password) {
+      await this.auditWriter.log({
+        caller: user,
+        action: 'PASSWORD_RESET_BY_ADMIN',
+        resource: 'user',
+        resourceId: id,
+      });
+    }
+    if (dto.role !== undefined && dto.role !== found.role) {
+      await this.auditWriter.log({
+        caller: user,
+        action: 'USER_ROLE_CHANGED',
+        resource: 'user',
+        resourceId: id,
+        oldData: { role: found.role },
+        newData: { role: dto.role },
+      });
+    }
+    if (!password && (dto.role === undefined || dto.role === found.role)) {
+      await this.auditWriter.log({
+        caller: user,
+        action: 'USER_UPDATED',
+        resource: 'user',
+        resourceId: id,
+      });
+    }
+    return result;
   }
 
   async remove(id: string, user: JwtPayload) {
-    if (user.role === UserRole.ORG_ADMIN && id === user.sub) {
+    if (id === user.sub) {
       throw new ForbiddenException('Cannot deactivate your own account');
     }
 
     const found = await this.prisma.user.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true, organizationId: true, role: true },
+      select: { id: true, organizationId: true, role: true, isActive: true },
     });
 
     if (!found) throw new NotFoundException('User not found');
@@ -240,10 +266,26 @@ export class UsersService {
       }
     }
 
-    await this.prisma.user.update({
-      where: { id },
-      data: { deletedAt: new Date(), isActive: false },
-    });
+    if (found.role === UserRole.SUPER_ADMIN && found.isActive === true) {
+      await this.prisma.$transaction(async (tx) => {
+        const activeCount = await tx.user.count({
+          where: { role: UserRole.SUPER_ADMIN, isActive: true, deletedAt: null },
+        });
+        if (activeCount <= 1) {
+          throw new ForbiddenException('Cannot deactivate the last active super admin');
+        }
+        await tx.user.update({
+          where: { id },
+          data: { deletedAt: new Date(), isActive: false },
+        });
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    } else {
+      await this.prisma.user.update({
+        where: { id },
+        data: { deletedAt: new Date(), isActive: false },
+      });
+    }
+
     await this.auditWriter.log({
       caller: user,
       action: 'USER_DEACTIVATED',

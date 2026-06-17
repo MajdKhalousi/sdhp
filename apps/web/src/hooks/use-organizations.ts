@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { Organization } from '@/types/organization';
+import type { Organization, OnboardOrganizationDto, OnboardOrganizationResponse } from '@/types/organization';
 
 type MaybeList<T> = T[] | { data: T[] } | { items: T[] } | null | undefined;
 
@@ -31,5 +31,16 @@ export function useOrganization(id: string) {
     queryFn: async () => api.get<Organization>(`/v1/organizations/${id}`),
     staleTime: 60_000,
     enabled: !!id,
+  });
+}
+
+export function useOnboardOrganization() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (dto: OnboardOrganizationDto) =>
+      api.post<OnboardOrganizationResponse>('/v1/organizations/onboard', dto),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['organizations'] });
+    },
   });
 }

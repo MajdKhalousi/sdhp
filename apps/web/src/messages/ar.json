@@ -2709,6 +2709,59 @@
       "status": {
         "active": "نشطة",
         "inactive": "غير نشطة"
+      },
+      "newOrganization": "منظمة جديدة"
+    },
+    "organizationNew": {
+      "title": "منظمة جديدة",
+      "subtitle": "إنشاء منظمة جديدة مع فرع أولي وحساب مشرف",
+      "sections": {
+        "organization": "بيانات المنظمة",
+        "branch": "الفرع الأولي",
+        "admin": "حساب المشرف الأولي"
+      },
+      "fields": {
+        "name": "الاسم",
+        "nameAr": "الاسم بالعربية",
+        "type": "النوع",
+        "phone": "الهاتف",
+        "email": "البريد الإلكتروني",
+        "address": "العنوان",
+        "branchName": "اسم الفرع",
+        "branchNameAr": "اسم الفرع بالعربية",
+        "branchPhone": "هاتف الفرع",
+        "branchAddress": "عنوان الفرع",
+        "adminFirstName": "الاسم الأول",
+        "adminLastName": "اسم العائلة",
+        "adminFirstNameAr": "الاسم الأول (بالعربية)",
+        "adminLastNameAr": "اسم العائلة (بالعربية)",
+        "adminPhone": "الهاتف",
+        "adminEmail": "البريد الإلكتروني",
+        "adminPassword": "كلمة المرور المؤقتة",
+        "adminPasswordHint": "10 أحرف على الأقل، يجب أن تحتوي على أحرف وأرقام. شارك هذه الكلمة مع المشرف الجديد مباشرة — لن تظهر مرة أخرى."
+      },
+      "types": {
+        "HOSPITAL": "مشفى",
+        "CLINIC": "عيادة",
+        "POLYCLINIC": "مجمع طبي"
+      },
+      "validation": {
+        "nameRequired": "اسم المنظمة مطلوب.",
+        "emailFormat": "صيغة البريد الإلكتروني غير صحيحة.",
+        "branchNameRequired": "اسم الفرع مطلوب.",
+        "firstNameRequired": "الاسم الأول مطلوب.",
+        "lastNameRequired": "اسم العائلة مطلوب.",
+        "phoneRequired": "رقم الهاتف مطلوب.",
+        "passwordRequired": "يجب أن تتكون كلمة المرور من 10 أحرف على الأقل.",
+        "passwordFormat": "يجب أن تحتوي كلمة المرور على حرف واحد ورقم واحد على الأقل."
+      },
+      "error": {
+        "generic": "فشل إنشاء المنظمة. يرجى المحاولة مرة أخرى."
+      },
+      "actions": {
+        "create": "إنشاء المنظمة",
+        "creating": "جارٍ الإنشاء…",
+        "cancel": "إلغاء"
       }
     },
     "organizationDetail": {

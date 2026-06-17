@@ -17,6 +17,7 @@ import { OrganizationsService } from './organizations.service';
 import { OrganizationQueryDto } from './dto/organization-query.dto';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
+import { OnboardOrganizationDto } from './dto/onboard-organization.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
@@ -49,6 +50,16 @@ export class OrganizationsController {
   @ApiOperation({ summary: 'Create organization — SUPER_ADMIN only' })
   create(@Body() dto: CreateOrganizationDto) {
     return this.service.create(dto);
+  }
+
+  @Post('onboard')
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN)
+  @ApiOperation({
+    summary: 'Create organization + initial branch + initial ORG_ADMIN atomically — SUPER_ADMIN only',
+  })
+  onboard(@Body() dto: OnboardOrganizationDto, @CurrentUser() user: JwtPayload) {
+    return this.service.onboard(dto, user);
   }
 
   @Patch(':id')

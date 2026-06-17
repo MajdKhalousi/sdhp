@@ -2709,6 +2709,59 @@
       "status": {
         "active": "Active",
         "inactive": "Inactive"
+      },
+      "newOrganization": "New Organization"
+    },
+    "organizationNew": {
+      "title": "New Organization",
+      "subtitle": "Create a new organization with an initial branch and administrator account",
+      "sections": {
+        "organization": "Organization Details",
+        "branch": "Initial Branch",
+        "admin": "Initial Admin Account"
+      },
+      "fields": {
+        "name": "Name",
+        "nameAr": "Arabic Name",
+        "type": "Type",
+        "phone": "Phone",
+        "email": "Email",
+        "address": "Address",
+        "branchName": "Branch Name",
+        "branchNameAr": "Branch Arabic Name",
+        "branchPhone": "Branch Phone",
+        "branchAddress": "Branch Address",
+        "adminFirstName": "First Name",
+        "adminLastName": "Last Name",
+        "adminFirstNameAr": "First Name (Arabic)",
+        "adminLastNameAr": "Last Name (Arabic)",
+        "adminPhone": "Phone",
+        "adminEmail": "Email",
+        "adminPassword": "Temporary Password",
+        "adminPasswordHint": "Minimum 10 characters, must include letters and numbers. Share this with the new admin directly — it will not be shown again."
+      },
+      "types": {
+        "HOSPITAL": "Hospital",
+        "CLINIC": "Clinic",
+        "POLYCLINIC": "Polyclinic"
+      },
+      "validation": {
+        "nameRequired": "Organization name is required.",
+        "emailFormat": "Invalid email format.",
+        "branchNameRequired": "Branch name is required.",
+        "firstNameRequired": "First name is required.",
+        "lastNameRequired": "Last name is required.",
+        "phoneRequired": "Phone number is required.",
+        "passwordRequired": "Password must be at least 10 characters.",
+        "passwordFormat": "Password must contain at least one letter and one number."
+      },
+      "error": {
+        "generic": "Failed to create organization. Please try again."
+      },
+      "actions": {
+        "create": "Create Organization",
+        "creating": "Creating…",
+        "cancel": "Cancel"
       }
     },
     "organizationDetail": {

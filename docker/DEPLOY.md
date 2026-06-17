@@ -237,52 +237,137 @@ To automate the nginx reload after renewal, add a cron job on the host:
 
 ## 7. Scheduled Backups
 
-`docker/scripts/backup.sh` backs up the PostgreSQL database to the host
-at `docker/backups/`. It must be triggered by a host cron job — the
-backup script is not run automatically by any container.
+Two backup scripts cover all persistent data:
 
-### 7.1 Add the backup cron job
+| Script | Covers | Default output |
+|---|---|---|
+| `docker/scripts/backup.sh` | PostgreSQL database | `/var/backups/sdhp/sdhp_YYYYMMDD_HHMMSS.pgdump` |
+| `docker/scripts/backup-minio.sh` | MinIO medical file uploads | `/var/backups/sdhp/minio_YYYYMMDD_HHMMSS/` |
+
+Neither script runs automatically — both require a host cron job.
+
+### 7.1 Required env vars
+
+Both scripts read credentials from the environment. Export them before
+running manually, or source `.env.production` as shown in the cron
+examples below.
+
+| Variable | Used by | Source |
+|---|---|---|
+| `POSTGRES_USER` | `backup.sh` | `.env.production` |
+| `POSTGRES_DB` | `backup.sh` | `.env.production` |
+| `MINIO_ROOT_USER` | `backup-minio.sh` | `.env.production` |
+| `MINIO_ROOT_PASSWORD` | `backup-minio.sh` | `.env.production` |
+| `MINIO_BUCKET` | `backup-minio.sh` | `.env.production` (default: `sdhp-files`) |
+| `BACKUP_DIR` | both | set to `/var/backups/sdhp` or export before running |
+| `RETENTION_DAYS` | both | optional, default `30` |
+
+### 7.2 Set up the cron jobs
+
+Create `/etc/cron.d/sdhp-backup` on the host:
 
 ```sh
-# Edit the host crontab
-crontab -e
+sudo tee /etc/cron.d/sdhp-backup > /dev/null <<'EOF'
+SHELL=/bin/bash
+
+# PostgreSQL backup — 02:00 daily
+0 2 * * * root set -a; . /opt/sdhp/docker/.env.production; set +a; /opt/sdhp/docker/scripts/backup.sh >> /var/log/sdhp-backup-pg.log 2>&1
+
+# MinIO backup — 02:30 daily (offset to avoid concurrent I/O with postgres)
+30 2 * * * root set -a; . /opt/sdhp/docker/.env.production; set +a; /opt/sdhp/docker/scripts/backup-minio.sh >> /var/log/sdhp-backup-minio.log 2>&1
+
+# nginx cert reload — 03:15 daily
+15 3 * * * root docker exec sdhp_nginx nginx -s reload 2>/dev/null
+EOF
+sudo chmod 640 /etc/cron.d/sdhp-backup
 ```
 
-Add the following line (runs at 02:00 daily):
+Replace `/opt/sdhp` with the absolute path to the cloned repository on
+your server if it differs.
 
-```
-0 2 * * * /path/to/repo/docker/scripts/backup.sh >> /var/log/sdhp-backup.log 2>&1
-```
+The `set -a; . /opt/sdhp/docker/.env.production; set +a` pattern sources
+`.env.production` and exports every variable it sets into the environment
+of the child process (the backup script). Without `set -a`, sourced
+variables are shell-local and are not inherited by child scripts.
 
-Replace `/path/to/repo` with the absolute path to your cloned repository
-(e.g. `/srv/sdhp`).
-
-### 7.2 Verify backups are being created
+### 7.3 Manual backup (first run / smoke test)
 
 ```sh
-# Run once manually to confirm it works
-bash docker/scripts/backup.sh
+# Source credentials from .env.production, then run both scripts manually
+set -a; . /opt/sdhp/docker/.env.production; set +a
 
-# List backup files
-ls -lh docker/backups/
+bash /opt/sdhp/docker/scripts/backup.sh
+bash /opt/sdhp/docker/scripts/backup-minio.sh
 
-# Confirm the most recent backup is valid
-docker/scripts/restore.sh --list 2>/dev/null || \
-  pg_restore --list $(ls -t docker/backups/*.dump 2>/dev/null | head -1)
+# List all backups
+ls -lh /var/backups/sdhp/
 ```
 
-### 7.3 Retention policy
+### 7.4 Verify backups
 
-The default retention is 30 days (`RETENTION_DAYS=30` in `backup.sh`).
-Override by exporting the variable before calling the script:
+```sh
+# PostgreSQL — confirm latest dump is valid
+docker exec sdhp_postgres pg_restore --list \
+  < "$(ls -t /var/backups/sdhp/sdhp_*.pgdump | head -1)" | tail -5
+
+# MinIO — count objects in the latest backup vs running bucket
+LATEST_MINIO="$(ls -td /var/backups/sdhp/minio_[0-9]* | head -1)"
+echo "Latest MinIO backup: $LATEST_MINIO"
+find "$LATEST_MINIO" -type f | wc -l
+
+# Confirm both ran today
+find /var/backups/sdhp -name "sdhp_$(date +%Y%m%d)*.pgdump" | head -1
+find /var/backups/sdhp -maxdepth 1 -name "minio_$(date +%Y%m%d)*" -type d | head -1
+```
+
+### 7.5 Retention policy
+
+The default retention is 30 days for both scripts. Override by exporting
+`RETENTION_DAYS` before running:
 
 ```sh
 RETENTION_DAYS=14 bash docker/scripts/backup.sh
+RETENTION_DAYS=14 bash docker/scripts/backup-minio.sh
 ```
 
-> **Note:** MinIO medical file uploads are not yet included in the automated
-> backup. Back up the `docker/volumes/minio/` host volume separately or
-> configure `mc mirror` to a secondary location.
+### 7.6 PostgreSQL restore
+
+See `docker/scripts/restore.sh`. Takes the path to a `.pgdump` file:
+
+```sh
+set -a; . /opt/sdhp/docker/.env.production; set +a
+bash /opt/sdhp/docker/scripts/restore.sh /var/backups/sdhp/sdhp_YYYYMMDD_HHMMSS.pgdump
+```
+
+The script prompts for typed `yes` confirmation before dropping the
+database. After restore: `docker restart sdhp_api`.
+
+### 7.7 MinIO restore
+
+**Stop the API first** to prevent new uploads arriving during the restore:
+
+```sh
+docker stop sdhp_api
+```
+
+Run the restore script with the path to the backup directory to restore:
+
+```sh
+set -a; . /opt/sdhp/docker/.env.production; set +a
+bash /opt/sdhp/docker/scripts/restore-minio.sh /var/backups/sdhp/minio_YYYYMMDD_HHMMSS
+```
+
+The script prompts for typed `yes` confirmation, then uses `mc mirror
+--overwrite` to push backup objects back into the bucket. Objects present
+in the bucket but absent from the backup are left in place (they are not
+deleted).
+
+After restore:
+
+```sh
+docker start sdhp_api
+# Verify uploads and downloads work in the application
+```
 
 ---
 

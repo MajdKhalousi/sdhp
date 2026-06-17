@@ -13,6 +13,7 @@ import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { UserQueryDto } from './dto/user-query.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuditLogsWriterService } from '../audit-logs/audit-logs-writer.service';
 
 const SELECT = {
   id: true,
@@ -46,7 +47,10 @@ const ORG_ADMIN_ALLOWED_ROLES: UserRole[] = [
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditWriter: AuditLogsWriterService,
+  ) {}
 
   async findAll(query: UserQueryDto, user: JwtPayload): Promise<PaginatedResponse<UserRecord>> {
     const page = query.page ?? 1;
@@ -111,7 +115,7 @@ export class UsersService {
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
 
     try {
-      return await this.prisma.user.create({
+      const result = await this.prisma.user.create({
         data: {
           firstName: dto.firstName,
           lastName: dto.lastName,
@@ -127,6 +131,13 @@ export class UsersService {
         },
         select: SELECT,
       });
+      await this.auditWriter.log({
+        caller: user,
+        action: 'USER_CREATED',
+        resource: 'user',
+        resourceId: result.id,
+      });
+      return result;
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
         throw new ConflictException('A user with this phone or email already exists');
@@ -170,11 +181,38 @@ export class UsersService {
     }
 
     try {
-      return await this.prisma.user.update({
+      const result = await this.prisma.user.update({
         where: { id },
         data,
         select: SELECT,
       });
+      if (password) {
+        await this.auditWriter.log({
+          caller: user,
+          action: 'PASSWORD_RESET_BY_ADMIN',
+          resource: 'user',
+          resourceId: id,
+        });
+      }
+      if (dto.role !== undefined && dto.role !== found.role) {
+        await this.auditWriter.log({
+          caller: user,
+          action: 'USER_ROLE_CHANGED',
+          resource: 'user',
+          resourceId: id,
+          oldData: { role: found.role },
+          newData: { role: dto.role },
+        });
+      }
+      if (!password && (dto.role === undefined || dto.role === found.role)) {
+        await this.auditWriter.log({
+          caller: user,
+          action: 'USER_UPDATED',
+          resource: 'user',
+          resourceId: id,
+        });
+      }
+      return result;
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
         throw new ConflictException('A user with this phone or email already exists');
@@ -206,6 +244,12 @@ export class UsersService {
       where: { id },
       data: { deletedAt: new Date(), isActive: false },
     });
+    await this.auditWriter.log({
+      caller: user,
+      action: 'USER_DEACTIVATED',
+      resource: 'user',
+      resourceId: id,
+    });
   }
 
   async restore(id: string, user: JwtPayload) {
@@ -227,11 +271,18 @@ export class UsersService {
       }
     }
 
-    return await this.prisma.user.update({
+    const result = await this.prisma.user.update({
       where: { id },
       data: { isActive: true, deletedAt: null },
       select: SELECT,
     });
+    await this.auditWriter.log({
+      caller: user,
+      action: 'USER_ACTIVATED',
+      resource: 'user',
+      resourceId: id,
+    });
+    return result;
   }
 
   private assertOwnership(userOrgId: string, caller: JwtPayload): void {

@@ -3169,7 +3169,7 @@
       "title": "Platform Accounts",
       "subtitle": "Manage platform-level administrator accounts.",
       "loading": "Loading platform accounts…",
-      "error": "Failed to load platform accounts.",
+      "loadError": "Failed to load platform accounts.",
       "empty": "No platform accounts found.",
       "searchPlaceholder": "Search name, phone, or email…",
       "filters": {
@@ -3276,7 +3276,8 @@
         "saveFailed": "Failed to save platform account.",
         "deactivateFailed": "Failed to deactivate platform account.",
         "restoreFailed": "Failed to restore platform account.",
-        "phoneConflict": "Phone or email is already in use."
+        "phoneConflict": "Phone or email is already in use.",
+        "organizationsUnavailable": "Organization list is temporarily unavailable. Try again before creating a new account."
       },
       "selfProtection": "You cannot manage your own account from this page. Use My Profile instead.",
       "yourAccount": "Your Account",

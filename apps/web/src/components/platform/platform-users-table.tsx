@@ -84,9 +84,10 @@ interface PlatformAccountFormProps {
   initial?: StaffUser;
   onDone: () => void;
   organizations: { id: string; name: string }[];
+  organizationsUnavailable?: boolean;
 }
 
-function PlatformAccountForm({ mode, initial, onDone, organizations }: PlatformAccountFormProps) {
+function PlatformAccountForm({ mode, initial, onDone, organizations, organizationsUnavailable = false }: PlatformAccountFormProps) {
   const t = useTranslations('platform.users');
   const tCommon = useTranslations('common');
   const qc = useQueryClient();
@@ -298,7 +299,7 @@ function PlatformAccountForm({ mode, initial, onDone, organizations }: PlatformA
               value={values.organizationId}
               onChange={(e) => set('organizationId', e.target.value)}
               className={inputClass(!!errors.organizationId)}
-              disabled={isPending}
+              disabled={isPending || organizationsUnavailable}
             >
               <option value="">—</option>
               {organizations.map((org) => (
@@ -308,7 +309,11 @@ function PlatformAccountForm({ mode, initial, onDone, organizations }: PlatformA
               ))}
             </select>
             <FieldError message={errors.organizationId} />
-            <p className="mt-1 text-xs text-muted-foreground">{t('form.help.homeOrganization')}</p>
+            {organizationsUnavailable ? (
+              <p className="mt-1 text-xs text-destructive">{t('error.organizationsUnavailable')}</p>
+            ) : (
+              <p className="mt-1 text-xs text-muted-foreground">{t('form.help.homeOrganization')}</p>
+            )}
           </div>
         )}
 
@@ -424,7 +429,10 @@ export function PlatformUsersTable() {
 
   // Still needed for the create form's required "home organization" field —
   // the backend requires organizationId on create regardless of role.
-  const { data: organizations = [] } = useOrganizations();
+  // Its own loading/error state must never block this page: only the
+  // platform accounts list (usePlatformUsers below) gates the page-level
+  // loading/error UI.
+  const { data: organizations = [], isError: organizationsUnavailable } = useOrganizations();
 
   const { data: result, isLoading, isError, refetch } = usePlatformUsers({ limit: LIMIT, includeDeleted: true });
   const deleteStaff = useDeleteStaff();
@@ -563,7 +571,7 @@ export function PlatformUsersTable() {
       <div className="space-y-3">
         {toolbar}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-12 text-center">
-          <p className="text-sm font-medium text-destructive">{t('error')}</p>
+          <p className="text-sm font-medium text-destructive">{t('loadError')}</p>
           <button
             onClick={() => refetch()}
             className="mt-1 h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
@@ -619,6 +627,7 @@ export function PlatformUsersTable() {
                       mode="create"
                       onDone={() => setExpandedId(null)}
                       organizations={organizations}
+                      organizationsUnavailable={organizationsUnavailable}
                     />
                   </td>
                 </tr>

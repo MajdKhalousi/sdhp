@@ -69,7 +69,11 @@ async function request<T>(
     throw new Error('Network error — check your connection and try again.');
   }
 
-  if (!res.ok) {
+  // 304 Not Modified is a successful conditional-GET outcome, not an error —
+  // Response.ok is false for it (outside the 200-299 range), so it must be
+  // excluded here or every cached/revalidated response would be thrown as
+  // an HTTP error. It carries no body, same as 204, handled below.
+  if (!res.ok && res.status !== 304) {
     if (res.status === 401 && path !== '/v1/auth/login') {
       logout();
       redirectToLogin();
@@ -91,7 +95,7 @@ async function request<T>(
     throw e;
   }
 
-  if (res.status === 204) return undefined as T;
+  if (res.status === 204 || res.status === 304) return undefined as T;
   const text = await res.text();
   if (!text) return undefined as T;
   return JSON.parse(text) as T;

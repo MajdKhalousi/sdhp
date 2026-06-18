@@ -2899,7 +2899,8 @@
           "reference": "المرجع",
           "notes": "ملاحظات",
           "recordedBy": "سجّلها",
-          "recordedAt": "تاريخ التسجيل"
+          "recordedAt": "تاريخ التسجيل",
+          "actions": "إجراءات"
         },
         "methods": {
           "CASH": "نقدي",
@@ -2909,6 +2910,8 @@
           "ONLINE": "دفع إلكتروني",
           "OTHER": "أخرى"
         },
+        "editButton": "تعديل",
+        "deleteButton": "حذف",
         "addForm": {
           "title": "إضافة دفعة",
           "fields": {
@@ -2929,6 +2932,40 @@
           "saving": "جارٍ التسجيل…",
           "error": {
             "generic": "فشل تسجيل الدفعة. يرجى المحاولة مرة أخرى."
+          }
+        },
+        "editForm": {
+          "title": "تعديل الدفعة",
+          "fields": {
+            "amount": "المبلغ",
+            "currency": "العملة",
+            "method": "طريقة الدفع",
+            "paidAt": "تاريخ الدفع",
+            "periodStartAt": "بداية الفترة",
+            "periodEndAt": "نهاية الفترة",
+            "reference": "المرجع",
+            "notes": "ملاحظات"
+          },
+          "save": "حفظ",
+          "saving": "جارٍ الحفظ…",
+          "cancel": "إلغاء",
+          "validation": {
+            "amountRequired": "يجب أن يكون المبلغ أكبر من 0.",
+            "currencyFormat": "يجب أن تكون العملة مكوّنة من 3 أحرف، مثل SYP.",
+            "paidAtRequired": "تاريخ الدفع مطلوب."
+          },
+          "error": {
+            "generic": "فشل تحديث الدفعة. يرجى المحاولة مرة أخرى."
+          }
+        },
+        "delete": {
+          "confirmTitle": "حذف هذه الدفعة؟",
+          "warning": "سيؤدي هذا إلى إزالة الدفعة من السجل. لا يمكن التراجع عن هذا من الواجهة.",
+          "confirmButton": "تأكيد الحذف",
+          "cancel": "إلغاء",
+          "deleting": "جارٍ الحذف…",
+          "error": {
+            "generic": "فشل حذف الدفعة. يرجى المحاولة مرة أخرى."
           }
         }
       }

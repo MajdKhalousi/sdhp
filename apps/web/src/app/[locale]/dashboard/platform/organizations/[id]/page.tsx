@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
@@ -14,10 +14,15 @@ import {
 } from '@/hooks/use-organizations';
 import { useBranches } from '@/hooks/use-branches';
 import { useStaff } from '@/hooks/use-staff';
-import { useSubscriptionPayments, useCreateSubscriptionPayment } from '@/hooks/use-subscription-payments';
+import {
+  useSubscriptionPayments,
+  useCreateSubscriptionPayment,
+  useUpdateSubscriptionPayment,
+  useDeleteSubscriptionPayment,
+} from '@/hooks/use-subscription-payments';
 import { isDemoOrganization } from '@/lib/demo-organizations';
 import type { OrganizationType, SubscriptionStatus } from '@/types/organization';
-import type { SubscriptionPaymentMethod } from '@/types/subscription-payment';
+import type { SubscriptionPayment, SubscriptionPaymentMethod } from '@/types/subscription-payment';
 
 function inputClass(hasError?: boolean): string {
   const base =
@@ -83,6 +88,7 @@ interface PaymentFormState {
 interface PaymentFormErrors {
   amount?: string;
   currency?: string;
+  paidAt?: string;
 }
 
 function todayForInput(): string {
@@ -126,6 +132,19 @@ function dateInputToIso(value: string): string | null {
 // not "clear" — there is nothing to clear yet.
 function optionalDateInputToIso(value: string): string | undefined {
   return value ? `${value}T00:00:00.000Z` : undefined;
+}
+
+function paymentToFormState(payment: SubscriptionPayment): PaymentFormState {
+  return {
+    amount: payment.amount,
+    currency: payment.currency,
+    method: payment.method,
+    paidAt: isoDateForInput(payment.paidAt),
+    periodStartAt: isoDateForInput(payment.periodStartAt),
+    periodEndAt: isoDateForInput(payment.periodEndAt),
+    reference: payment.reference ?? '',
+    notes: payment.notes ?? '',
+  };
 }
 
 function subscriptionBadgeClass(status: SubscriptionStatus): string {
@@ -177,6 +196,8 @@ export default function PlatformOrganizationDetailPage() {
   const toggleStatus = useToggleOrganizationStatus();
   const updateSubscription = useUpdateOrganizationSubscription();
   const createPayment = useCreateSubscriptionPayment(id);
+  const updatePayment = useUpdateSubscriptionPayment(id);
+  const deletePayment = useDeleteSubscriptionPayment(id);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editValues, setEditValues] = useState<EditFormState>({
@@ -206,6 +227,14 @@ export default function PlatformOrganizationDetailPage() {
   const [paymentValues, setPaymentValues] = useState<PaymentFormState>(defaultPaymentForm());
   const [paymentErrors, setPaymentErrors] = useState<PaymentFormErrors>({});
   const [paymentSubmitError, setPaymentSubmitError] = useState<string | null>(null);
+
+  const [editingPaymentId, setEditingPaymentId] = useState<string | null>(null);
+  const [editPaymentValues, setEditPaymentValues] = useState<PaymentFormState>(defaultPaymentForm());
+  const [editPaymentErrors, setEditPaymentErrors] = useState<PaymentFormErrors>({});
+  const [editPaymentSubmitError, setEditPaymentSubmitError] = useState<string | null>(null);
+
+  const [confirmingDeletePaymentId, setConfirmingDeletePaymentId] = useState<string | null>(null);
+  const [deletePaymentError, setDeletePaymentError] = useState<string | null>(null);
 
   if (!user || !isSuperAdmin) return null;
 
@@ -375,6 +404,92 @@ export default function PlatformOrganizationDetailPage() {
       setPaymentErrors({});
     } catch (err) {
       setPaymentSubmitError(err instanceof Error ? err.message : t('subscriptionPayments.addForm.error.generic'));
+    }
+  }
+
+  function startEditPayment(payment: SubscriptionPayment) {
+    setConfirmingDeletePaymentId(null);
+    setDeletePaymentError(null);
+    setEditingPaymentId(payment.id);
+    setEditPaymentValues(paymentToFormState(payment));
+    setEditPaymentErrors({});
+    setEditPaymentSubmitError(null);
+  }
+
+  function cancelEditPayment() {
+    setEditingPaymentId(null);
+    setEditPaymentErrors({});
+    setEditPaymentSubmitError(null);
+  }
+
+  function setEditPaymentField(field: keyof PaymentFormState, value: string) {
+    setEditPaymentValues((prev) => ({ ...prev, [field]: value }));
+    setEditPaymentErrors((prev) => ({ ...prev, [field]: undefined }) as PaymentFormErrors);
+    setEditPaymentSubmitError(null);
+  }
+
+  function validateEditPayment(): PaymentFormErrors {
+    const errs: PaymentFormErrors = {};
+    const amountNum = Number(editPaymentValues.amount);
+    if (!editPaymentValues.amount.trim() || Number.isNaN(amountNum) || amountNum <= 0) {
+      errs.amount = t('subscriptionPayments.editForm.validation.amountRequired');
+    }
+    const currency = editPaymentValues.currency.trim().toUpperCase();
+    if (!CURRENCY_RE.test(currency)) {
+      errs.currency = t('subscriptionPayments.editForm.validation.currencyFormat');
+    }
+    if (!editPaymentValues.paidAt.trim()) {
+      errs.paidAt = t('subscriptionPayments.editForm.validation.paidAtRequired');
+    }
+    return errs;
+  }
+
+  async function handleEditPaymentSubmit(e: React.FormEvent, paymentId: string) {
+    e.preventDefault();
+    const errs = validateEditPayment();
+    if (Object.keys(errs).length > 0) {
+      setEditPaymentErrors(errs);
+      return;
+    }
+    setEditPaymentSubmitError(null);
+    try {
+      await updatePayment.mutateAsync({
+        paymentId,
+        dto: {
+          amount: Number(editPaymentValues.amount),
+          currency: editPaymentValues.currency.trim().toUpperCase(),
+          method: editPaymentValues.method,
+          paidAt: dateInputToIso(editPaymentValues.paidAt) as string,
+          periodStartAt: dateInputToIso(editPaymentValues.periodStartAt),
+          periodEndAt: dateInputToIso(editPaymentValues.periodEndAt),
+          reference: trimmedOrNull(editPaymentValues.reference),
+          notes: trimmedOrNull(editPaymentValues.notes),
+        },
+      });
+      setEditingPaymentId(null);
+    } catch (err) {
+      setEditPaymentSubmitError(err instanceof Error ? err.message : t('subscriptionPayments.editForm.error.generic'));
+    }
+  }
+
+  function startDeletePayment(paymentId: string) {
+    setEditingPaymentId(null);
+    setDeletePaymentError(null);
+    setConfirmingDeletePaymentId(paymentId);
+  }
+
+  function cancelDeletePayment() {
+    setConfirmingDeletePaymentId(null);
+    setDeletePaymentError(null);
+  }
+
+  async function handleConfirmDeletePayment(paymentId: string) {
+    setDeletePaymentError(null);
+    try {
+      await deletePayment.mutateAsync(paymentId);
+      setConfirmingDeletePaymentId(null);
+    } catch (err) {
+      setDeletePaymentError(err instanceof Error ? err.message : t('subscriptionPayments.delete.error.generic'));
     }
   }
 
@@ -824,28 +939,220 @@ export default function PlatformOrganizationDetailPage() {
                       <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('subscriptionPayments.columns.notes')}</th>
                       <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('subscriptionPayments.columns.recordedBy')}</th>
                       <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('subscriptionPayments.columns.recordedAt')}</th>
+                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('subscriptionPayments.columns.actions')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {payments.map((payment) => (
-                      <tr key={payment.id} className="bg-background">
-                        <td className="px-4 py-3 text-foreground">
-                          {new Date(payment.paidAt).toLocaleDateString()}
-                        </td>
-                        <td className="px-4 py-3 text-foreground">
-                          {payment.amount} {payment.currency}
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">
-                          {t(`subscriptionPayments.methods.${payment.method}`)}
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">{formatPeriod(payment)}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{payment.reference ?? '—'}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{payment.notes ?? '—'}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{recordedByName(payment.createdByUserId)}</td>
-                        <td className="px-4 py-3 text-muted-foreground">
-                          {new Date(payment.createdAt).toLocaleDateString()}
-                        </td>
-                      </tr>
+                      <Fragment key={payment.id}>
+                        <tr className="bg-background">
+                          <td className="px-4 py-3 text-foreground">
+                            {new Date(payment.paidAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-3 text-foreground">
+                            {payment.amount} {payment.currency}
+                          </td>
+                          <td className="px-4 py-3 text-muted-foreground">
+                            {t(`subscriptionPayments.methods.${payment.method}`)}
+                          </td>
+                          <td className="px-4 py-3 text-muted-foreground">{formatPeriod(payment)}</td>
+                          <td className="px-4 py-3 text-muted-foreground">{payment.reference ?? '—'}</td>
+                          <td className="px-4 py-3 text-muted-foreground">{payment.notes ?? '—'}</td>
+                          <td className="px-4 py-3 text-muted-foreground">{recordedByName(payment.createdByUserId)}</td>
+                          <td className="px-4 py-3 text-muted-foreground">
+                            {new Date(payment.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => startEditPayment(payment)}
+                                className="h-7 rounded-md border border-input bg-background px-2.5 text-xs font-medium transition-colors hover:bg-accent"
+                              >
+                                {t('subscriptionPayments.editButton')}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => startDeletePayment(payment.id)}
+                                className="h-7 rounded-md border border-destructive/40 bg-destructive/10 px-2.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20"
+                              >
+                                {t('subscriptionPayments.deleteButton')}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+
+                        {editingPaymentId === payment.id && (
+                          <tr key={`${payment.id}-edit`} className="bg-muted/30">
+                            <td colSpan={9} className="px-4 py-4">
+                              <form
+                                onSubmit={(e) => handleEditPaymentSubmit(e, payment.id)}
+                                noValidate
+                                className="space-y-4"
+                              >
+                                <h3 className="text-sm font-semibold text-foreground">
+                                  {t('subscriptionPayments.editForm.title')}
+                                </h3>
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                                  <div>
+                                    <FieldLabel required>{t('subscriptionPayments.editForm.fields.amount')}</FieldLabel>
+                                    <input
+                                      type="number"
+                                      step="0.01"
+                                      min="0.01"
+                                      value={editPaymentValues.amount}
+                                      onChange={(e) => setEditPaymentField('amount', e.target.value)}
+                                      className={inputClass(!!editPaymentErrors.amount)}
+                                      disabled={updatePayment.isPending}
+                                    />
+                                    <FieldError message={editPaymentErrors.amount} />
+                                  </div>
+                                  <div>
+                                    <FieldLabel required>{t('subscriptionPayments.editForm.fields.currency')}</FieldLabel>
+                                    <input
+                                      type="text"
+                                      value={editPaymentValues.currency}
+                                      onChange={(e) => setEditPaymentField('currency', e.target.value)}
+                                      className={inputClass(!!editPaymentErrors.currency)}
+                                      disabled={updatePayment.isPending}
+                                      dir="ltr"
+                                    />
+                                    <FieldError message={editPaymentErrors.currency} />
+                                  </div>
+                                  <div>
+                                    <FieldLabel required>{t('subscriptionPayments.editForm.fields.method')}</FieldLabel>
+                                    <select
+                                      value={editPaymentValues.method}
+                                      onChange={(e) => setEditPaymentField('method', e.target.value)}
+                                      className={inputClass()}
+                                      disabled={updatePayment.isPending}
+                                    >
+                                      {PAYMENT_METHODS.map((m) => (
+                                        <option key={m} value={m}>
+                                          {t(`subscriptionPayments.methods.${m}`)}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                  <div>
+                                    <FieldLabel required>{t('subscriptionPayments.editForm.fields.paidAt')}</FieldLabel>
+                                    <input
+                                      type="date"
+                                      value={editPaymentValues.paidAt}
+                                      onChange={(e) => setEditPaymentField('paidAt', e.target.value)}
+                                      className={inputClass(!!editPaymentErrors.paidAt)}
+                                      disabled={updatePayment.isPending}
+                                    />
+                                    <FieldError message={editPaymentErrors.paidAt} />
+                                  </div>
+                                  <div>
+                                    <FieldLabel>{t('subscriptionPayments.editForm.fields.periodStartAt')}</FieldLabel>
+                                    <input
+                                      type="date"
+                                      value={editPaymentValues.periodStartAt}
+                                      onChange={(e) => setEditPaymentField('periodStartAt', e.target.value)}
+                                      className={inputClass()}
+                                      disabled={updatePayment.isPending}
+                                    />
+                                  </div>
+                                  <div>
+                                    <FieldLabel>{t('subscriptionPayments.editForm.fields.periodEndAt')}</FieldLabel>
+                                    <input
+                                      type="date"
+                                      value={editPaymentValues.periodEndAt}
+                                      onChange={(e) => setEditPaymentField('periodEndAt', e.target.value)}
+                                      className={inputClass()}
+                                      disabled={updatePayment.isPending}
+                                    />
+                                  </div>
+                                  <div>
+                                    <FieldLabel>{t('subscriptionPayments.editForm.fields.reference')}</FieldLabel>
+                                    <input
+                                      type="text"
+                                      value={editPaymentValues.reference}
+                                      onChange={(e) => setEditPaymentField('reference', e.target.value)}
+                                      className={inputClass()}
+                                      disabled={updatePayment.isPending}
+                                    />
+                                  </div>
+                                  <div className="sm:col-span-2 lg:col-span-4">
+                                    <FieldLabel>{t('subscriptionPayments.editForm.fields.notes')}</FieldLabel>
+                                    <textarea
+                                      value={editPaymentValues.notes}
+                                      onChange={(e) => setEditPaymentField('notes', e.target.value)}
+                                      className={inputClass()}
+                                      disabled={updatePayment.isPending}
+                                      rows={2}
+                                    />
+                                  </div>
+                                </div>
+
+                                {editPaymentSubmitError && (
+                                  <p className="text-sm text-destructive">{editPaymentSubmitError}</p>
+                                )}
+
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="submit"
+                                    disabled={updatePayment.isPending}
+                                    className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+                                  >
+                                    {updatePayment.isPending
+                                      ? t('subscriptionPayments.editForm.saving')
+                                      : t('subscriptionPayments.editForm.save')}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={cancelEditPayment}
+                                    disabled={updatePayment.isPending}
+                                    className="h-8 rounded-md border border-input bg-background px-4 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
+                                  >
+                                    {t('subscriptionPayments.editForm.cancel')}
+                                  </button>
+                                </div>
+                              </form>
+                            </td>
+                          </tr>
+                        )}
+
+                        {confirmingDeletePaymentId === payment.id && (
+                          <tr key={`${payment.id}-delete`} className="bg-destructive/5">
+                            <td colSpan={9} className="px-4 py-4">
+                              <div className="space-y-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+                                <p className="text-sm font-medium text-foreground">
+                                  {t('subscriptionPayments.delete.confirmTitle')}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {t('subscriptionPayments.delete.warning')}
+                                </p>
+                                {deletePaymentError && (
+                                  <p className="text-sm text-destructive">{deletePaymentError}</p>
+                                )}
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleConfirmDeletePayment(payment.id)}
+                                    disabled={deletePayment.isPending}
+                                    className="h-7 rounded-md border border-destructive/40 bg-destructive/10 px-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/20 disabled:opacity-50"
+                                  >
+                                    {deletePayment.isPending
+                                      ? t('subscriptionPayments.delete.deleting')
+                                      : t('subscriptionPayments.delete.confirmButton')}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={cancelDeletePayment}
+                                    disabled={deletePayment.isPending}
+                                    className="h-7 rounded-md border border-border bg-background px-3 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
+                                  >
+                                    {t('subscriptionPayments.delete.cancel')}
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
                     ))}
                   </tbody>
                 </table>

@@ -2899,7 +2899,8 @@
           "reference": "Reference",
           "notes": "Notes",
           "recordedBy": "Recorded By",
-          "recordedAt": "Recorded Date"
+          "recordedAt": "Recorded Date",
+          "actions": "Actions"
         },
         "methods": {
           "CASH": "Cash",
@@ -2909,6 +2910,8 @@
           "ONLINE": "Online",
           "OTHER": "Other"
         },
+        "editButton": "Edit",
+        "deleteButton": "Delete",
         "addForm": {
           "title": "Add Payment",
           "fields": {
@@ -2929,6 +2932,40 @@
           "saving": "Recording…",
           "error": {
             "generic": "Failed to record payment. Please try again."
+          }
+        },
+        "editForm": {
+          "title": "Edit Payment",
+          "fields": {
+            "amount": "Amount",
+            "currency": "Currency",
+            "method": "Method",
+            "paidAt": "Paid Date",
+            "periodStartAt": "Period Start",
+            "periodEndAt": "Period End",
+            "reference": "Reference",
+            "notes": "Notes"
+          },
+          "save": "Save",
+          "saving": "Saving…",
+          "cancel": "Cancel",
+          "validation": {
+            "amountRequired": "Amount must be greater than 0.",
+            "currencyFormat": "Currency must be a 3-letter code, e.g. SYP.",
+            "paidAtRequired": "Paid date is required."
+          },
+          "error": {
+            "generic": "Failed to update payment. Please try again."
+          }
+        },
+        "delete": {
+          "confirmTitle": "Delete this payment?",
+          "warning": "This will remove the payment from the history. This cannot be undone from the UI.",
+          "confirmButton": "Confirm Delete",
+          "cancel": "Cancel",
+          "deleting": "Deleting…",
+          "error": {
+            "generic": "Failed to delete payment. Please try again."
           }
         }
       }

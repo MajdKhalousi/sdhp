@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { Link, useRouter } from '@/i18n/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { PLATFORM_ACCESS_ROLES } from '@/lib/permissions';
 import { useOrganizations } from '@/hooks/use-organizations';
@@ -48,9 +48,28 @@ function currencyLines(totals: Record<string, number>): string[] {
   return entries.map(([currency, total]) => `${total.toFixed(2)} ${currency}`);
 }
 
+// Display-only shortening for long resource IDs in the audit table — the
+// full ID stays available via the title tooltip.
+function shortenId(id: string | null): string {
+  if (!id) return '—';
+  if (id.length <= 14) return id;
+  return `${id.slice(0, 8)}…${id.slice(-4)}`;
+}
+
+// numberingSystem: 'latn' avoids the mixed/awkward Eastern Arabic numeral
+// rendering Intl would otherwise pick for the 'ar' locale by default.
+function formatAuditDate(value: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    numberingSystem: 'latn',
+  }).format(new Date(value));
+}
+
 export default function PlatformOverviewPage() {
   const t = useTranslations('platform.overview');
   const tDemo = useTranslations('platform.demo');
+  const locale = useLocale();
   const router = useRouter();
   const { user } = useAuthStore();
 
@@ -484,9 +503,11 @@ export default function PlatformOverviewPage() {
                       <tr key={log.id} className="bg-background">
                         <td className="px-4 py-3 font-medium text-foreground">{log.action}</td>
                         <td className="px-4 py-3 text-muted-foreground">{log.resource}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{log.resourceId ?? '—'}</td>
                         <td className="px-4 py-3 text-muted-foreground">
-                          {new Date(log.createdAt).toLocaleString()}
+                          <span title={log.resourceId ?? undefined}>{shortenId(log.resourceId)}</span>
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {formatAuditDate(log.createdAt, locale)}
                         </td>
                       </tr>
                     ))}

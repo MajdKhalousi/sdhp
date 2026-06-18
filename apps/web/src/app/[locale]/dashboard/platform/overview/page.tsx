@@ -8,6 +8,7 @@ import { PLATFORM_ACCESS_ROLES } from '@/lib/permissions';
 import { useOrganizations } from '@/hooks/use-organizations';
 import { useStaff } from '@/hooks/use-staff';
 import { useRecentAuditLogs } from '@/hooks/use-audit-logs';
+import { isDemoOrganization } from '@/lib/demo-organizations';
 import type { SubscriptionStatus } from '@/types/organization';
 
 const SUBSCRIPTION_STATUSES: SubscriptionStatus[] = ['TRIAL', 'ACTIVE', 'SUSPENDED', 'EXPIRED', 'CANCELLED'];
@@ -31,6 +32,7 @@ function subscriptionBadgeClass(status: SubscriptionStatus): string {
 
 export default function PlatformOverviewPage() {
   const t = useTranslations('platform.overview');
+  const tDemo = useTranslations('platform.demo');
   const router = useRouter();
   const { user } = useAuthStore();
 
@@ -133,6 +135,7 @@ export default function PlatformOverviewPage() {
               </div>
             ))}
           </div>
+          <p className="text-xs text-muted-foreground">{tDemo('metricsNote')}</p>
 
           {/* Subscription distribution */}
           <div className="rounded-lg border border-border bg-card p-4 space-y-3">
@@ -170,7 +173,14 @@ export default function PlatformOverviewPage() {
                     {recentOrganizations.map((org) => (
                       <tr key={org.id} className="bg-background">
                         <td className="px-4 py-3">
-                          <p className="font-medium text-foreground">{org.name}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-foreground">{org.name}</p>
+                            {isDemoOrganization(org.id) && (
+                              <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+                                {tDemo('badge')}
+                              </span>
+                            )}
+                          </div>
                           {org.nameAr && (
                             <p className="mt-0.5 text-xs text-muted-foreground">{org.nameAr}</p>
                           )}

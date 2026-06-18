@@ -14,6 +14,7 @@ import {
 } from '@/hooks/use-organizations';
 import { useBranches } from '@/hooks/use-branches';
 import { useStaff } from '@/hooks/use-staff';
+import { isDemoOrganization } from '@/lib/demo-organizations';
 import type { OrganizationType, SubscriptionStatus } from '@/types/organization';
 
 function inputClass(hasError?: boolean): string {
@@ -101,6 +102,7 @@ function subscriptionBadgeClass(status: SubscriptionStatus): string {
 
 export default function PlatformOrganizationDetailPage() {
   const t = useTranslations('platform.organizationDetail');
+  const tDemo = useTranslations('platform.demo');
   const params = useParams();
   const id = typeof params.id === 'string' ? params.id : '';
   const router = useRouter();
@@ -323,6 +325,11 @@ export default function PlatformOrganizationDetailPage() {
               )}
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
+              {isDemoOrganization(org.id) && (
+                <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+                  {tDemo('badge')}
+                </span>
+              )}
               <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
                 {org.type}
               </span>

@@ -2944,6 +2944,10 @@
         }
       },
       "limitNote": "Showing up to 100 records."
+    },
+    "demo": {
+      "badge": "Demo",
+      "metricsNote": "Demo organizations are included in these totals."
     }
   },
   "error": {

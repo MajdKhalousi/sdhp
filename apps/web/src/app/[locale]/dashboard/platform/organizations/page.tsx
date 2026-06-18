@@ -7,9 +7,11 @@ import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { PLATFORM_ACCESS_ROLES } from '@/lib/permissions';
 import { useOrganizations } from '@/hooks/use-organizations';
+import { isDemoOrganization } from '@/lib/demo-organizations';
 
 export default function PlatformOrganizationsPage() {
   const t = useTranslations('platform.organizations');
+  const tDemo = useTranslations('platform.demo');
   const router = useRouter();
   const { user } = useAuthStore();
 
@@ -87,7 +89,14 @@ export default function PlatformOrganizationsPage() {
               {organizations.map((org) => (
                 <tr key={org.id} className="bg-background">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-foreground">{org.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-foreground">{org.name}</p>
+                      {isDemoOrganization(org.id) && (
+                        <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+                          {tDemo('badge')}
+                        </span>
+                      )}
+                    </div>
                     {org.nameAr && (
                       <p className="mt-0.5 text-xs text-muted-foreground">{org.nameAr}</p>
                     )}

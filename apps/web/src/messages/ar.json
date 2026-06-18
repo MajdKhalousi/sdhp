@@ -68,6 +68,7 @@
       "platform": "المنصة",
       "organizations": "المنظمات",
       "payments": "الدفعات",
+      "auditLogs": "سجل العمليات",
       "followUps": "المراجعات",
       "myFollowUps": "مراجعاتي",
       "today": "اليوم",
@@ -3123,6 +3124,44 @@
         "currencyAll": "جميع العملات",
         "dateFrom": "من",
         "dateTo": "إلى"
+      }
+    },
+    "auditLogs": {
+      "title": "سجل العمليات",
+      "subtitle": "سجل العمليات عبر عمليات المنصة",
+      "loading": "جارٍ تحميل سجل العمليات…",
+      "error": "فشل تحميل سجل العمليات.",
+      "empty": "لا توجد عمليات مسجلة.",
+      "filters": {
+        "searchPlaceholder": "البحث بالعملية أو المورد أو المعرّف أو المنظمة أو المستخدم…",
+        "action": "العملية",
+        "resource": "المورد",
+        "actionAll": "جميع العمليات",
+        "resourceAll": "جميع الموارد",
+        "dateFrom": "من",
+        "dateTo": "إلى",
+        "hasChanges": "التي تحتوي تغييرات فقط"
+      },
+      "columns": {
+        "time": "الوقت",
+        "action": "العملية",
+        "resource": "المورد",
+        "resourceId": "معرّف المورد",
+        "actor": "المستخدم",
+        "organization": "المنظمة",
+        "details": "التفاصيل"
+      },
+      "details": {
+        "viewLabel": "عرض التفاصيل",
+        "hideLabel": "إخفاء التفاصيل",
+        "oldData": "البيانات القديمة",
+        "newData": "البيانات الجديدة",
+        "noDetails": "لا توجد تفاصيل إضافية لهذه العملية."
+      },
+      "pagination": {
+        "previous": "السابق",
+        "next": "التالي",
+        "pageInfo": "صفحة {page} من {totalPages} / {total} إجمالاً"
       }
     }
   },

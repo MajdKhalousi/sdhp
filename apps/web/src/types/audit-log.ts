@@ -16,4 +16,8 @@ export interface AuditLog {
   resourceId: string | null;
   createdAt: string;
   user: AuditLogActor | null;
+  oldData?: unknown | null;
+  newData?: unknown | null;
+  ipAddress?: string | null;
+  userAgent?: string | null;
 }

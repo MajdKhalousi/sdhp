@@ -68,6 +68,7 @@
       "platform": "Platform",
       "organizations": "Organizations",
       "payments": "Payments",
+      "auditLogs": "Audit Logs",
       "followUps": "Follow-ups",
       "myFollowUps": "My Follow-ups",
       "today": "Today",
@@ -3123,6 +3124,44 @@
         "currencyAll": "All currencies",
         "dateFrom": "From",
         "dateTo": "To"
+      }
+    },
+    "auditLogs": {
+      "title": "Audit Logs",
+      "subtitle": "Audit events across platform operations",
+      "loading": "Loading audit logs…",
+      "error": "Failed to load audit logs.",
+      "empty": "No audit events found.",
+      "filters": {
+        "searchPlaceholder": "Search action, resource, ID, organization, or actor…",
+        "action": "Action",
+        "resource": "Resource",
+        "actionAll": "All actions",
+        "resourceAll": "All resources",
+        "dateFrom": "From",
+        "dateTo": "To",
+        "hasChanges": "Has changes only"
+      },
+      "columns": {
+        "time": "Time",
+        "action": "Action",
+        "resource": "Resource",
+        "resourceId": "Resource ID",
+        "actor": "Actor",
+        "organization": "Organization",
+        "details": "Details"
+      },
+      "details": {
+        "viewLabel": "View details",
+        "hideLabel": "Hide details",
+        "oldData": "Old Data",
+        "newData": "New Data",
+        "noDetails": "No additional details for this event."
+      },
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "pageInfo": "Page {page} of {totalPages} / {total} total"
       }
     }
   },

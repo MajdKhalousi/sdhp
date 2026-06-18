@@ -25,6 +25,7 @@ export const NAV_DOCTORS_ROLES: readonly string[]             = ['ORG_ADMIN'];
 export const NAV_PLATFORM_ROLES: readonly string[]            = ['SUPER_ADMIN'];
 export const NAV_PLATFORM_ORGANIZATIONS_ROLES: readonly string[] = ['SUPER_ADMIN'];
 export const NAV_PLATFORM_PAYMENTS_ROLES: readonly string[]   = ['SUPER_ADMIN'];
+export const NAV_PLATFORM_AUDIT_LOGS_ROLES: readonly string[] = ['SUPER_ADMIN'];
 export const NAV_SETTINGS_ROLES: readonly string[]            = ['ORG_ADMIN'];
 export const NAV_PROFILE_ROLES: readonly string[]             = ['SUPER_ADMIN', 'ORG_ADMIN', 'BRANCH_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY', 'ACCOUNTANT', 'TECHNICIAN'];
 

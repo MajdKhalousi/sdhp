@@ -22,6 +22,33 @@ function shortenId(id: string): string {
   return `${id.slice(0, 8)}…${id.slice(-4)}`;
 }
 
+// Locale-invariant numeric formatting — deliberately ignores the app locale
+// for the digits themselves (always en-GB → DD/MM/YYYY, Latin digits, no
+// month names) so the receipt never mixes Arabic month words with numerals.
+// Only the period's connector words vary by locale (see renderReceiptPeriod).
+function formatReceiptDate(iso: string): string {
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(new Date(iso));
+}
+
+function formatReceiptDateTime(iso: string): string {
+  const date = new Date(iso);
+  const datePart = formatReceiptDate(iso);
+  // hour12 explicitly requested — never rely on environment/locale defaults.
+  // Intl can render am/pm in lowercase depending on environment; normalize.
+  const timePart = new Intl.DateTimeFormat('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  })
+    .format(date)
+    .toUpperCase();
+  return `${datePart}, ${timePart}`;
+}
+
 export default function SubscriptionPaymentReceiptPage({ params }: Props) {
   const { organizationId, paymentId } = params;
   const t = useTranslations('platform.organizationDetail.subscriptionPayments');
@@ -29,8 +56,6 @@ export default function SubscriptionPaymentReceiptPage({ params }: Props) {
   const locale = useLocale();
   const router = useRouter();
   const { user } = useAuthStore();
-
-  const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-GB';
 
   useEffect(() => {
     if (user && !PLATFORM_ACCESS_ROLES.has(user.role)) {
@@ -64,34 +89,52 @@ export default function SubscriptionPaymentReceiptPage({ params }: Props) {
 
   if (!user || !isSuperAdmin) return null;
 
-  function formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString(displayLocale, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  }
-
-  const printTimestamp = new Intl.DateTimeFormat(displayLocale, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date());
+  const printTimestamp = formatReceiptDateTime(new Date().toISOString());
 
   function recordedByName(createdByUserId: string): string {
     const match = allUsers.find((candidate) => candidate.id === createdByUserId);
     return match ? `${match.firstName} ${match.lastName}` : '—';
   }
 
-  function formatPeriod(p: { periodStartAt: string | null; periodEndAt: string | null }): string {
-    const start = p.periodStartAt ? formatDate(p.periodStartAt) : null;
-    const end = p.periodEndAt ? formatDate(p.periodEndAt) : null;
-    if (start && end) return `${start} – ${end}`;
-    if (start) return start;
-    if (end) return end;
-    return '—';
+  // Bidi-safe period rendering — each date fragment is independently wrapped
+  // in dir="ltr" rather than forcing the whole sentence into one ltr span,
+  // which previously let an Arabic-bearing string visually reorder.
+  function renderReceiptPeriod(p: {
+    periodStartAt: string | null;
+    periodEndAt: string | null;
+  }): React.ReactNode {
+    const { periodStartAt: start, periodEndAt: end } = p;
+    if (!start && !end) return '—';
+
+    if (start && end) {
+      if (locale === 'ar') {
+        return (
+          <>
+            {t('receipt.periodFrom')} <span dir="ltr">{formatReceiptDate(start)}</span>{' '}
+            {t('receipt.periodTo')} <span dir="ltr">{formatReceiptDate(end)}</span>
+          </>
+        );
+      }
+      return (
+        <>
+          <span dir="ltr">{formatReceiptDate(start)}</span> – <span dir="ltr">{formatReceiptDate(end)}</span>
+        </>
+      );
+    }
+
+    if (start) {
+      return (
+        <>
+          {t('receipt.periodFrom')} <span dir="ltr">{formatReceiptDate(start)}</span>
+        </>
+      );
+    }
+
+    return (
+      <>
+        {t('receipt.periodUntil')} <span dir="ltr">{formatReceiptDate(end as string)}</span>
+      </>
+    );
   }
 
   if (isLoading) {
@@ -149,11 +192,11 @@ export default function SubscriptionPaymentReceiptPage({ params }: Props) {
         <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
           <div>
             <p className="text-xs text-muted-foreground">{t('receipt.paidAt')}</p>
-            <p dir="ltr">{formatDate(payment.paidAt)}</p>
+            <p dir="ltr">{formatReceiptDate(payment.paidAt)}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">{t('receipt.recordedAt')}</p>
-            <p dir="ltr">{formatDate(payment.createdAt)}</p>
+            <p dir="ltr">{formatReceiptDate(payment.createdAt)}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">{t('receipt.printedAt')}</p>
@@ -209,7 +252,7 @@ export default function SubscriptionPaymentReceiptPage({ params }: Props) {
             </div>
             <div>
               <span className="text-muted-foreground">{t('receipt.period')}: </span>
-              <span dir="ltr">{formatPeriod(payment)}</span>
+              <span dir="auto">{renderReceiptPeriod(payment)}</span>
             </div>
             <div>
               <span className="text-muted-foreground">{t('receipt.recordedBy')}: </span>

@@ -42,6 +42,17 @@ enum SubscriptionStatus {
   CANCELLED
 }
 
+// Platform-level SaaS subscription payment method — deliberately separate
+// from PaymentMethod (clinic patient billing). INSURANCE has no meaning here.
+enum SubscriptionPaymentMethod {
+  CASH
+  BANK_TRANSFER
+  CARD
+  CHEQUE
+  ONLINE
+  OTHER
+}
+
 enum AppointmentStatus {
   SCHEDULED
   CONFIRMED
@@ -205,8 +216,40 @@ model Organization {
   followUpReminders     FollowUpReminder[]
   billingPolicy         BillingPolicy?
   clinicPatients        ClinicPatient[]
+  subscriptionPayments  SubscriptionPayment[]
 
   @@map("organizations")
+}
+
+// Platform-level SaaS subscription payment history — between the platform
+// owner (SUPER_ADMIN) and a tenant Organization. Deliberately separate from
+// clinic patient billing (Invoice/Payment) — never reused or coupled with it.
+// Recording a payment here never auto-updates Organization.subscriptionStatus/
+// subscriptionStartAt/subscriptionEndAt/subscriptionPlan/subscriptionNotes —
+// those remain independent, manual controls (see Phase 133E/136A).
+model SubscriptionPayment {
+  id              String                    @id @default(cuid())
+  organizationId  String
+  amount          Decimal                   @db.Decimal(10, 2)
+  currency        String                    @default("SYP")
+  method          SubscriptionPaymentMethod
+  reference       String?
+  notes           String?
+  paidAt          DateTime                  @default(now())
+  periodStartAt   DateTime?
+  periodEndAt     DateTime?
+  createdByUserId String
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  createdBy    User         @relation(fields: [createdByUserId], references: [id])
+
+  @@index([organizationId])
+  @@index([paidAt])
+  @@map("subscription_payments")
 }
 
 model Branch {
@@ -268,6 +311,7 @@ model User {
   timelineEventsCreated  MedicalTimelineEvent[] @relation("TimelineEventsCreated")
   createdClinicalReports ClinicalReport[]
   linkedClinicPatients   ClinicPatient[]        @relation("ClinicPatientLinkedBy")
+  createdSubscriptionPayments SubscriptionPayment[]
 
   @@index([organizationId])
   @@map("users")

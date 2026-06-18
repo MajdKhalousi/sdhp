@@ -8,6 +8,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { envConfig } from './config/env.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { SubscriptionPaymentsModule } from './modules/subscription-payments/subscription-payments.module';
 import { BranchesModule } from './modules/branches/branches.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { UsersModule } from './modules/users/users.module';
@@ -45,6 +46,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     PrismaModule,
     AuthModule,
     OrganizationsModule,
+    SubscriptionPaymentsModule,
     BranchesModule,
     DepartmentsModule,
     UsersModule,

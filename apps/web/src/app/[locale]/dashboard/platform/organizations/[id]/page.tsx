@@ -6,10 +6,15 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { PLATFORM_ACCESS_ROLES } from '@/lib/permissions';
-import { useOrganization, useUpdateOrganization, useToggleOrganizationStatus } from '@/hooks/use-organizations';
+import {
+  useOrganization,
+  useUpdateOrganization,
+  useToggleOrganizationStatus,
+  useUpdateOrganizationSubscription,
+} from '@/hooks/use-organizations';
 import { useBranches } from '@/hooks/use-branches';
 import { useStaff } from '@/hooks/use-staff';
-import type { OrganizationType } from '@/types/organization';
+import type { OrganizationType, SubscriptionStatus } from '@/types/organization';
 
 function inputClass(hasError?: boolean): string {
   const base =
@@ -34,6 +39,7 @@ function FieldError({ message }: { message?: string }) {
 }
 
 const ORG_TYPES: OrganizationType[] = ['HOSPITAL', 'CLINIC', 'POLYCLINIC'];
+const SUBSCRIPTION_STATUSES: SubscriptionStatus[] = ['TRIAL', 'ACTIVE', 'SUSPENDED', 'EXPIRED', 'CANCELLED'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface EditFormState {
@@ -50,9 +56,47 @@ interface EditFormErrors {
   email?: string;
 }
 
+interface SubscriptionFormState {
+  status: SubscriptionStatus;
+  plan: string;
+  startAt: string;
+  endAt: string;
+  notes: string;
+}
+
 function trimmedOrUndefined(value: string): string | undefined {
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function trimmedOrNull(value: string): string | null {
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+// Backend returns ISO datetime strings; <input type="date"> needs YYYY-MM-DD.
+function isoDateForInput(value: string | null): string {
+  return value ? value.slice(0, 10) : '';
+}
+
+// Empty date input clears the field (null); a filled date is sent as UTC midnight.
+function dateInputToIso(value: string): string | null {
+  return value ? `${value}T00:00:00.000Z` : null;
+}
+
+function subscriptionBadgeClass(status: SubscriptionStatus): string {
+  switch (status) {
+    case 'ACTIVE':
+      return 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400';
+    case 'TRIAL':
+      return 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400';
+    case 'SUSPENDED':
+      return 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400';
+    case 'EXPIRED':
+      return 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400';
+    case 'CANCELLED':
+      return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
+  }
 }
 
 export default function PlatformOrganizationDetailPage() {
@@ -81,6 +125,7 @@ export default function PlatformOrganizationDetailPage() {
 
   const updateOrganization = useUpdateOrganization();
   const toggleStatus = useToggleOrganizationStatus();
+  const updateSubscription = useUpdateOrganizationSubscription();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editValues, setEditValues] = useState<EditFormState>({
@@ -96,6 +141,16 @@ export default function PlatformOrganizationDetailPage() {
 
   const [confirmingSuspend, setConfirmingSuspend] = useState(false);
   const [statusError, setStatusError] = useState<string | null>(null);
+
+  const [isEditingSubscription, setIsEditingSubscription] = useState(false);
+  const [subscriptionValues, setSubscriptionValues] = useState<SubscriptionFormState>({
+    status: 'ACTIVE',
+    plan: '',
+    startAt: '',
+    endAt: '',
+    notes: '',
+  });
+  const [subscriptionSubmitError, setSubscriptionSubmitError] = useState<string | null>(null);
 
   if (!user || !isSuperAdmin) return null;
 
@@ -177,6 +232,49 @@ export default function PlatformOrganizationDetailPage() {
       await toggleStatus.mutateAsync({ id, isActive: true });
     } catch (err) {
       setStatusError(err instanceof Error ? err.message : t('status.error.generic'));
+    }
+  }
+
+  function startSubscriptionEdit() {
+    if (!org) return;
+    setSubscriptionValues({
+      status: org.subscriptionStatus,
+      plan: org.subscriptionPlan ?? '',
+      startAt: isoDateForInput(org.subscriptionStartAt),
+      endAt: isoDateForInput(org.subscriptionEndAt),
+      notes: org.subscriptionNotes ?? '',
+    });
+    setSubscriptionSubmitError(null);
+    setIsEditingSubscription(true);
+  }
+
+  function cancelSubscriptionEdit() {
+    setIsEditingSubscription(false);
+    setSubscriptionSubmitError(null);
+  }
+
+  function setSubscriptionField(field: keyof SubscriptionFormState, value: string) {
+    setSubscriptionValues((prev) => ({ ...prev, [field]: value }));
+    setSubscriptionSubmitError(null);
+  }
+
+  async function handleSubscriptionSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubscriptionSubmitError(null);
+    try {
+      await updateSubscription.mutateAsync({
+        id,
+        dto: {
+          subscriptionStatus: subscriptionValues.status,
+          subscriptionPlan: trimmedOrNull(subscriptionValues.plan),
+          subscriptionStartAt: dateInputToIso(subscriptionValues.startAt),
+          subscriptionEndAt: dateInputToIso(subscriptionValues.endAt),
+          subscriptionNotes: trimmedOrNull(subscriptionValues.notes),
+        },
+      });
+      setIsEditingSubscription(false);
+    } catch (err) {
+      setSubscriptionSubmitError(err instanceof Error ? err.message : t('subscription.error.generic'));
     }
   }
 
@@ -443,6 +541,138 @@ export default function PlatformOrganizationDetailPage() {
               >
                 {toggleStatus.isPending ? t('status.activating') : t('status.activateButton')}
               </button>
+            )}
+          </div>
+
+          {/* Subscription card */}
+          <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-foreground">{t('subscription.sectionTitle')}</h2>
+              {!isEditingSubscription && (
+                <button
+                  onClick={startSubscriptionEdit}
+                  className="h-7 rounded-md border border-input bg-background px-3 text-xs font-medium transition-colors hover:bg-accent"
+                >
+                  {t('subscription.editButton')}
+                </button>
+              )}
+            </div>
+
+            {!isEditingSubscription ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                <div>
+                  <span className="text-muted-foreground">{t('subscription.fields.status')}: </span>
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${subscriptionBadgeClass(org.subscriptionStatus)}`}
+                  >
+                    {t(`subscription.statusValues.${org.subscriptionStatus}`)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t('subscription.fields.plan')}: </span>
+                  <span className="text-foreground">{org.subscriptionPlan ?? '—'}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t('subscription.fields.startAt')}: </span>
+                  <span className="text-foreground">
+                    {org.subscriptionStartAt ? new Date(org.subscriptionStartAt).toLocaleDateString() : '—'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t('subscription.fields.endAt')}: </span>
+                  <span className="text-foreground">
+                    {org.subscriptionEndAt ? new Date(org.subscriptionEndAt).toLocaleDateString() : '—'}
+                  </span>
+                </div>
+                <div className="sm:col-span-2">
+                  <span className="text-muted-foreground">{t('subscription.fields.notes')}: </span>
+                  <span className="text-foreground">{org.subscriptionNotes ?? '—'}</span>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubscriptionSubmit} noValidate className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <FieldLabel>{t('subscription.fields.status')}</FieldLabel>
+                    <select
+                      value={subscriptionValues.status}
+                      onChange={(e) => setSubscriptionField('status', e.target.value)}
+                      className={inputClass()}
+                      disabled={updateSubscription.isPending}
+                    >
+                      {SUBSCRIPTION_STATUSES.map((s) => (
+                        <option key={s} value={s}>
+                          {t(`subscription.statusValues.${s}`)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <FieldLabel>{t('subscription.fields.plan')}</FieldLabel>
+                    <input
+                      type="text"
+                      value={subscriptionValues.plan}
+                      onChange={(e) => setSubscriptionField('plan', e.target.value)}
+                      className={inputClass()}
+                      disabled={updateSubscription.isPending}
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel>{t('subscription.fields.startAt')}</FieldLabel>
+                    <input
+                      type="date"
+                      value={subscriptionValues.startAt}
+                      onChange={(e) => setSubscriptionField('startAt', e.target.value)}
+                      className={inputClass()}
+                      disabled={updateSubscription.isPending}
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel>{t('subscription.fields.endAt')}</FieldLabel>
+                    <input
+                      type="date"
+                      value={subscriptionValues.endAt}
+                      onChange={(e) => setSubscriptionField('endAt', e.target.value)}
+                      className={inputClass()}
+                      disabled={updateSubscription.isPending}
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <FieldLabel>{t('subscription.fields.notes')}</FieldLabel>
+                    <textarea
+                      value={subscriptionValues.notes}
+                      onChange={(e) => setSubscriptionField('notes', e.target.value)}
+                      className={inputClass()}
+                      disabled={updateSubscription.isPending}
+                      rows={3}
+                    />
+                  </div>
+                </div>
+
+                <p className="text-xs text-muted-foreground">{t('subscription.helperText')}</p>
+
+                {subscriptionSubmitError && (
+                  <p className="text-sm text-destructive">{subscriptionSubmitError}</p>
+                )}
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="submit"
+                    disabled={updateSubscription.isPending}
+                    className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+                  >
+                    {updateSubscription.isPending ? t('subscription.saving') : t('subscription.save')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelSubscriptionEdit}
+                    disabled={updateSubscription.isPending}
+                    className="h-8 rounded-md border border-input bg-background px-4 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
+                  >
+                    {t('subscription.cancel')}
+                  </button>
+                </div>
+              </form>
             )}
           </div>
 

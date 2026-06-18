@@ -3,6 +3,8 @@ import type { StaffUser } from './staff';
 
 export type OrganizationType = 'HOSPITAL' | 'CLINIC' | 'POLYCLINIC';
 
+export type SubscriptionStatus = 'TRIAL' | 'ACTIVE' | 'SUSPENDED' | 'EXPIRED' | 'CANCELLED';
+
 export interface Organization {
   id: string;
   name: string;
@@ -14,6 +16,11 @@ export interface Organization {
   logoUrl: string | null;
   isActive: boolean;
   settings: Record<string, unknown>;
+  subscriptionStatus: SubscriptionStatus;
+  subscriptionPlan: string | null;
+  subscriptionStartAt: string | null;
+  subscriptionEndAt: string | null;
+  subscriptionNotes: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -63,4 +70,12 @@ export interface UpdateOrganizationInput {
 
 export interface OrganizationStatusUpdateInput {
   isActive: boolean;
+}
+
+export interface OrganizationSubscriptionUpdateInput {
+  subscriptionStatus?: SubscriptionStatus;
+  subscriptionPlan?: string | null;
+  subscriptionStartAt?: string | null;
+  subscriptionEndAt?: string | null;
+  subscriptionNotes?: string | null;
 }

@@ -2854,7 +2854,32 @@
       "noBranches": "No branches registered.",
       "noAdmins": "No organization admins found.",
       "noStaff": "No staff found.",
-      "limitNote": "Showing up to 100 records per category."
+      "limitNote": "Showing up to 100 records per category.",
+      "subscription": {
+        "sectionTitle": "Subscription",
+        "editButton": "Edit Subscription",
+        "save": "Save",
+        "saving": "Saving…",
+        "cancel": "Cancel",
+        "helperText": "This is manual subscription metadata only. Enforcement is not active yet.",
+        "fields": {
+          "status": "Subscription Status",
+          "plan": "Plan",
+          "startAt": "Start Date",
+          "endAt": "End Date",
+          "notes": "Notes"
+        },
+        "statusValues": {
+          "TRIAL": "Trial",
+          "ACTIVE": "Active",
+          "SUSPENDED": "Suspended",
+          "EXPIRED": "Expired",
+          "CANCELLED": "Cancelled"
+        },
+        "error": {
+          "generic": "Failed to update subscription. Please try again."
+        }
+      }
     }
   },
   "error": {

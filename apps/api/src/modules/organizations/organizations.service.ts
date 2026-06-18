@@ -22,6 +22,11 @@ const SELECT = {
   logoUrl: true,
   isActive: true,
   settings: true,
+  subscriptionStatus: true,
+  subscriptionPlan: true,
+  subscriptionStartAt: true,
+  subscriptionEndAt: true,
+  subscriptionNotes: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -63,6 +68,26 @@ const BCRYPT_ROUNDS = 12;
 
 // Basic (non-status) fields eligible for the ORGANIZATION_UPDATED audit diff.
 const BASIC_FIELDS = ['name', 'nameAr', 'type', 'phone', 'email', 'address', 'logoUrl'] as const;
+
+// Subscription fields — SUPER_ADMIN only, eligible for the
+// ORGANIZATION_SUBSCRIPTION_UPDATED audit diff.
+const SUBSCRIPTION_FIELDS = [
+  'subscriptionStatus',
+  'subscriptionPlan',
+  'subscriptionStartAt',
+  'subscriptionEndAt',
+  'subscriptionNotes',
+] as const;
+
+// Normalizes a value for diff comparison only — Date objects from Prisma are
+// compared by reference, not value, so two Date instances for the same
+// instant would otherwise look "changed" on every update. Snapshots stored
+// in the audit log use the raw value via toSnapshot(), not this normalized form.
+function normalizeForDiff(value: unknown): string | null {
+  if (value === null || value === undefined) return null;
+  if (value instanceof Date) return value.toISOString();
+  return String(value);
+}
 
 @Injectable()
 export class OrganizationsService {
@@ -210,6 +235,11 @@ export class OrganizationsService {
       throw new ForbiddenException('Only SUPER_ADMIN can change organization status');
     }
 
+    const touchesSubscription = SUBSCRIPTION_FIELDS.some((field) => dto[field] !== undefined);
+    if (touchesSubscription && user.role !== UserRole.SUPER_ADMIN) {
+      throw new ForbiddenException('Only SUPER_ADMIN can change subscription fields');
+    }
+
     const existing = await this.prisma.organization.findFirst({
       where: { id, deletedAt: null },
       select: SELECT,
@@ -250,6 +280,27 @@ export class OrganizationsService {
         resourceId: updated.id,
         oldData: toSnapshot({ isActive: existing.isActive }),
         newData: toSnapshot({ isActive: updated.isActive }),
+      });
+    }
+
+    const oldSubscription: Record<string, unknown> = {};
+    const newSubscription: Record<string, unknown> = {};
+    for (const field of SUBSCRIPTION_FIELDS) {
+      if (dto[field] === undefined) continue;
+      if (normalizeForDiff(existing[field]) !== normalizeForDiff(updated[field])) {
+        oldSubscription[field] = existing[field];
+        newSubscription[field] = updated[field];
+      }
+    }
+
+    if (Object.keys(newSubscription).length > 0) {
+      await this.auditWriter.log({
+        caller: user,
+        action: 'ORGANIZATION_SUBSCRIPTION_UPDATED',
+        resource: 'organization',
+        resourceId: updated.id,
+        oldData: toSnapshot(oldSubscription),
+        newData: toSnapshot(newSubscription),
       });
     }
 

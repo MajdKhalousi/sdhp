@@ -2881,6 +2881,51 @@
         "error": {
           "generic": "Failed to update subscription. Please try again."
         }
+      },
+      "subscriptionPayments": {
+        "sectionTitle": "Subscription Payments",
+        "loading": "Loading payment history…",
+        "empty": "No subscription payments recorded yet.",
+        "columns": {
+          "paidAt": "Paid Date",
+          "amount": "Amount",
+          "method": "Method",
+          "period": "Period",
+          "reference": "Reference",
+          "notes": "Notes",
+          "recordedBy": "Recorded By",
+          "recordedAt": "Recorded Date"
+        },
+        "methods": {
+          "CASH": "Cash",
+          "BANK_TRANSFER": "Bank Transfer",
+          "CARD": "Card",
+          "CHEQUE": "Cheque",
+          "ONLINE": "Online",
+          "OTHER": "Other"
+        },
+        "addForm": {
+          "title": "Add Payment",
+          "fields": {
+            "amount": "Amount",
+            "currency": "Currency",
+            "method": "Method",
+            "paidAt": "Paid Date",
+            "periodStartAt": "Period Start",
+            "periodEndAt": "Period End",
+            "reference": "Reference",
+            "notes": "Notes"
+          },
+          "validation": {
+            "amountRequired": "Amount must be greater than 0.",
+            "currencyFormat": "Currency must be a 3-letter code, e.g. SYP."
+          },
+          "save": "Record Payment",
+          "saving": "Recording…",
+          "error": {
+            "generic": "Failed to record payment. Please try again."
+          }
+        }
       }
     },
     "overview": {

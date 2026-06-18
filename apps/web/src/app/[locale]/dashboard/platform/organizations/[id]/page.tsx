@@ -14,8 +14,10 @@ import {
 } from '@/hooks/use-organizations';
 import { useBranches } from '@/hooks/use-branches';
 import { useStaff } from '@/hooks/use-staff';
+import { useSubscriptionPayments, useCreateSubscriptionPayment } from '@/hooks/use-subscription-payments';
 import { isDemoOrganization } from '@/lib/demo-organizations';
 import type { OrganizationType, SubscriptionStatus } from '@/types/organization';
+import type { SubscriptionPaymentMethod } from '@/types/subscription-payment';
 
 function inputClass(hasError?: boolean): string {
   const base =
@@ -41,7 +43,9 @@ function FieldError({ message }: { message?: string }) {
 
 const ORG_TYPES: OrganizationType[] = ['HOSPITAL', 'CLINIC', 'POLYCLINIC'];
 const SUBSCRIPTION_STATUSES: SubscriptionStatus[] = ['TRIAL', 'ACTIVE', 'SUSPENDED', 'EXPIRED', 'CANCELLED'];
+const PAYMENT_METHODS: SubscriptionPaymentMethod[] = ['CASH', 'BANK_TRANSFER', 'CARD', 'CHEQUE', 'ONLINE', 'OTHER'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const CURRENCY_RE = /^[A-Z]{3}$/;
 
 interface EditFormState {
   name: string;
@@ -65,6 +69,39 @@ interface SubscriptionFormState {
   notes: string;
 }
 
+interface PaymentFormState {
+  amount: string;
+  currency: string;
+  method: SubscriptionPaymentMethod;
+  paidAt: string;
+  periodStartAt: string;
+  periodEndAt: string;
+  reference: string;
+  notes: string;
+}
+
+interface PaymentFormErrors {
+  amount?: string;
+  currency?: string;
+}
+
+function todayForInput(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function defaultPaymentForm(): PaymentFormState {
+  return {
+    amount: '',
+    currency: 'SYP',
+    method: 'CASH',
+    paidAt: todayForInput(),
+    periodStartAt: '',
+    periodEndAt: '',
+    reference: '',
+    notes: '',
+  };
+}
+
 function trimmedOrUndefined(value: string): string | undefined {
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : undefined;
@@ -83,6 +120,12 @@ function isoDateForInput(value: string | null): string {
 // Empty date input clears the field (null); a filled date is sent as UTC midnight.
 function dateInputToIso(value: string): string | null {
   return value ? `${value}T00:00:00.000Z` : null;
+}
+
+// For create only: an empty optional date means "not provided" (undefined),
+// not "clear" — there is nothing to clear yet.
+function optionalDateInputToIso(value: string): string | undefined {
+  return value ? `${value}T00:00:00.000Z` : undefined;
 }
 
 function subscriptionBadgeClass(status: SubscriptionStatus): string {
@@ -124,10 +167,16 @@ export default function PlatformOrganizationDetailPage() {
 
   const { data: allBranches = [], isLoading: branchesLoading } = useBranches();
   const { data: allUsers = [], isLoading: usersLoading } = useStaff(true);
+  const {
+    data: payments = [],
+    isLoading: paymentsLoading,
+    isError: paymentsError,
+  } = useSubscriptionPayments(id);
 
   const updateOrganization = useUpdateOrganization();
   const toggleStatus = useToggleOrganizationStatus();
   const updateSubscription = useUpdateOrganizationSubscription();
+  const createPayment = useCreateSubscriptionPayment(id);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editValues, setEditValues] = useState<EditFormState>({
@@ -153,6 +202,10 @@ export default function PlatformOrganizationDetailPage() {
     notes: '',
   });
   const [subscriptionSubmitError, setSubscriptionSubmitError] = useState<string | null>(null);
+
+  const [paymentValues, setPaymentValues] = useState<PaymentFormState>(defaultPaymentForm());
+  const [paymentErrors, setPaymentErrors] = useState<PaymentFormErrors>({});
+  const [paymentSubmitError, setPaymentSubmitError] = useState<string | null>(null);
 
   if (!user || !isSuperAdmin) return null;
 
@@ -278,6 +331,65 @@ export default function PlatformOrganizationDetailPage() {
     } catch (err) {
       setSubscriptionSubmitError(err instanceof Error ? err.message : t('subscription.error.generic'));
     }
+  }
+
+  function setPaymentField(field: keyof PaymentFormState, value: string) {
+    setPaymentValues((prev) => ({ ...prev, [field]: value }));
+    setPaymentErrors((prev) => ({ ...prev, [field]: undefined }) as PaymentFormErrors);
+    setPaymentSubmitError(null);
+  }
+
+  function validatePayment(): PaymentFormErrors {
+    const errs: PaymentFormErrors = {};
+    const amountNum = Number(paymentValues.amount);
+    if (!paymentValues.amount.trim() || Number.isNaN(amountNum) || amountNum <= 0) {
+      errs.amount = t('subscriptionPayments.addForm.validation.amountRequired');
+    }
+    const currency = paymentValues.currency.trim().toUpperCase();
+    if (!CURRENCY_RE.test(currency)) {
+      errs.currency = t('subscriptionPayments.addForm.validation.currencyFormat');
+    }
+    return errs;
+  }
+
+  async function handlePaymentSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const errs = validatePayment();
+    if (Object.keys(errs).length > 0) {
+      setPaymentErrors(errs);
+      return;
+    }
+    setPaymentSubmitError(null);
+    try {
+      await createPayment.mutateAsync({
+        amount: Number(paymentValues.amount),
+        currency: paymentValues.currency.trim().toUpperCase(),
+        method: paymentValues.method,
+        paidAt: optionalDateInputToIso(paymentValues.paidAt),
+        periodStartAt: optionalDateInputToIso(paymentValues.periodStartAt),
+        periodEndAt: optionalDateInputToIso(paymentValues.periodEndAt),
+        reference: trimmedOrUndefined(paymentValues.reference),
+        notes: trimmedOrUndefined(paymentValues.notes),
+      });
+      setPaymentValues(defaultPaymentForm());
+      setPaymentErrors({});
+    } catch (err) {
+      setPaymentSubmitError(err instanceof Error ? err.message : t('subscriptionPayments.addForm.error.generic'));
+    }
+  }
+
+  function formatPeriod(payment: { periodStartAt: string | null; periodEndAt: string | null }): string {
+    const start = payment.periodStartAt ? new Date(payment.periodStartAt).toLocaleDateString() : null;
+    const end = payment.periodEndAt ? new Date(payment.periodEndAt).toLocaleDateString() : null;
+    if (start && end) return `${start} – ${end}`;
+    if (start) return start;
+    if (end) return end;
+    return '—';
+  }
+
+  function recordedByName(createdByUserId: string): string {
+    const match = allUsers.find((candidate) => candidate.id === createdByUserId);
+    return match ? `${match.firstName} ${match.lastName}` : '—';
   }
 
   const branches = allBranches.filter((b) => b.organizationId === id);
@@ -681,6 +793,176 @@ export default function PlatformOrganizationDetailPage() {
                 </div>
               </form>
             )}
+          </div>
+
+          {/* Subscription Payments card */}
+          <div className="rounded-lg border border-border bg-card p-4 space-y-4">
+            <h2 className="text-sm font-semibold text-foreground">{t('subscriptionPayments.sectionTitle')}</h2>
+
+            {paymentsLoading && (
+              <p className="text-sm text-muted-foreground">{t('subscriptionPayments.loading')}</p>
+            )}
+
+            {!paymentsLoading && paymentsError && (
+              <p className="text-sm text-destructive">{t('subscriptionPayments.addForm.error.generic')}</p>
+            )}
+
+            {!paymentsLoading && !paymentsError && payments.length === 0 && (
+              <p className="text-sm text-muted-foreground">{t('subscriptionPayments.empty')}</p>
+            )}
+
+            {!paymentsLoading && !paymentsError && payments.length > 0 && (
+              <div className="overflow-x-auto rounded-lg border border-border">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('subscriptionPayments.columns.paidAt')}</th>
+                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('subscriptionPayments.columns.amount')}</th>
+                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('subscriptionPayments.columns.method')}</th>
+                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('subscriptionPayments.columns.period')}</th>
+                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('subscriptionPayments.columns.reference')}</th>
+                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('subscriptionPayments.columns.notes')}</th>
+                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('subscriptionPayments.columns.recordedBy')}</th>
+                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('subscriptionPayments.columns.recordedAt')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {payments.map((payment) => (
+                      <tr key={payment.id} className="bg-background">
+                        <td className="px-4 py-3 text-foreground">
+                          {new Date(payment.paidAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-3 text-foreground">
+                          {payment.amount} {payment.currency}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {t(`subscriptionPayments.methods.${payment.method}`)}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">{formatPeriod(payment)}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{payment.reference ?? '—'}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{payment.notes ?? '—'}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{recordedByName(payment.createdByUserId)}</td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {new Date(payment.createdAt).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div className="border-t border-border pt-4">
+              <h3 className="mb-3 text-sm font-semibold text-foreground">{t('subscriptionPayments.addForm.title')}</h3>
+              <form onSubmit={handlePaymentSubmit} noValidate className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <div>
+                    <FieldLabel required>{t('subscriptionPayments.addForm.fields.amount')}</FieldLabel>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      value={paymentValues.amount}
+                      onChange={(e) => setPaymentField('amount', e.target.value)}
+                      className={inputClass(!!paymentErrors.amount)}
+                      disabled={createPayment.isPending}
+                    />
+                    <FieldError message={paymentErrors.amount} />
+                  </div>
+                  <div>
+                    <FieldLabel required>{t('subscriptionPayments.addForm.fields.currency')}</FieldLabel>
+                    <input
+                      type="text"
+                      value={paymentValues.currency}
+                      onChange={(e) => setPaymentField('currency', e.target.value)}
+                      className={inputClass(!!paymentErrors.currency)}
+                      disabled={createPayment.isPending}
+                      dir="ltr"
+                    />
+                    <FieldError message={paymentErrors.currency} />
+                  </div>
+                  <div>
+                    <FieldLabel required>{t('subscriptionPayments.addForm.fields.method')}</FieldLabel>
+                    <select
+                      value={paymentValues.method}
+                      onChange={(e) => setPaymentField('method', e.target.value)}
+                      className={inputClass()}
+                      disabled={createPayment.isPending}
+                    >
+                      {PAYMENT_METHODS.map((m) => (
+                        <option key={m} value={m}>
+                          {t(`subscriptionPayments.methods.${m}`)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <FieldLabel>{t('subscriptionPayments.addForm.fields.paidAt')}</FieldLabel>
+                    <input
+                      type="date"
+                      value={paymentValues.paidAt}
+                      onChange={(e) => setPaymentField('paidAt', e.target.value)}
+                      className={inputClass()}
+                      disabled={createPayment.isPending}
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel>{t('subscriptionPayments.addForm.fields.periodStartAt')}</FieldLabel>
+                    <input
+                      type="date"
+                      value={paymentValues.periodStartAt}
+                      onChange={(e) => setPaymentField('periodStartAt', e.target.value)}
+                      className={inputClass()}
+                      disabled={createPayment.isPending}
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel>{t('subscriptionPayments.addForm.fields.periodEndAt')}</FieldLabel>
+                    <input
+                      type="date"
+                      value={paymentValues.periodEndAt}
+                      onChange={(e) => setPaymentField('periodEndAt', e.target.value)}
+                      className={inputClass()}
+                      disabled={createPayment.isPending}
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel>{t('subscriptionPayments.addForm.fields.reference')}</FieldLabel>
+                    <input
+                      type="text"
+                      value={paymentValues.reference}
+                      onChange={(e) => setPaymentField('reference', e.target.value)}
+                      className={inputClass()}
+                      disabled={createPayment.isPending}
+                    />
+                  </div>
+                  <div className="sm:col-span-2 lg:col-span-4">
+                    <FieldLabel>{t('subscriptionPayments.addForm.fields.notes')}</FieldLabel>
+                    <textarea
+                      value={paymentValues.notes}
+                      onChange={(e) => setPaymentField('notes', e.target.value)}
+                      className={inputClass()}
+                      disabled={createPayment.isPending}
+                      rows={2}
+                    />
+                  </div>
+                </div>
+
+                {paymentSubmitError && <p className="text-sm text-destructive">{paymentSubmitError}</p>}
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="submit"
+                    disabled={createPayment.isPending}
+                    className="h-8 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+                  >
+                    {createPayment.isPending
+                      ? t('subscriptionPayments.addForm.saving')
+                      : t('subscriptionPayments.addForm.save')}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
 
           {/* Summary cards */}

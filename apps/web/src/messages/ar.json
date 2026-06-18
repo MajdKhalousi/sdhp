@@ -2881,6 +2881,51 @@
         "error": {
           "generic": "فشل تحديث الاشتراك. يرجى المحاولة مرة أخرى."
         }
+      },
+      "subscriptionPayments": {
+        "sectionTitle": "دفعات الاشتراك",
+        "loading": "جارٍ تحميل سجل الدفعات…",
+        "empty": "لا توجد دفعات اشتراك مسجلة حتى الآن.",
+        "columns": {
+          "paidAt": "تاريخ الدفع",
+          "amount": "المبلغ",
+          "method": "طريقة الدفع",
+          "period": "الفترة",
+          "reference": "المرجع",
+          "notes": "ملاحظات",
+          "recordedBy": "سجّلها",
+          "recordedAt": "تاريخ التسجيل"
+        },
+        "methods": {
+          "CASH": "نقدي",
+          "BANK_TRANSFER": "حوالة بنكية",
+          "CARD": "بطاقة",
+          "CHEQUE": "شيك",
+          "ONLINE": "دفع إلكتروني",
+          "OTHER": "أخرى"
+        },
+        "addForm": {
+          "title": "إضافة دفعة",
+          "fields": {
+            "amount": "المبلغ",
+            "currency": "العملة",
+            "method": "طريقة الدفع",
+            "paidAt": "تاريخ الدفع",
+            "periodStartAt": "بداية الفترة",
+            "periodEndAt": "نهاية الفترة",
+            "reference": "المرجع",
+            "notes": "ملاحظات"
+          },
+          "validation": {
+            "amountRequired": "يجب أن يكون المبلغ أكبر من 0.",
+            "currencyFormat": "يجب أن تكون العملة مكوّنة من 3 أحرف، مثل SYP."
+          },
+          "save": "تسجيل الدفعة",
+          "saving": "جارٍ التسجيل…",
+          "error": {
+            "generic": "فشل تسجيل الدفعة. يرجى المحاولة مرة أخرى."
+          }
+        }
       }
     },
     "overview": {

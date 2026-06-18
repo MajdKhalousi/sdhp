@@ -1,23 +1,30 @@
 // ─── Sidebar nav visibility ───────────────────────────────────────────────────
 // Exported as readonly string[] — sidebar uses .includes(role) to filter items.
 
-export const NAV_DASHBOARD_ROLES: readonly string[]           = ['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY', 'ACCOUNTANT', 'TECHNICIAN'];
+// SUPER_ADMIN is intentionally excluded from every clinic-operational nav
+// role list below (134A) — SUPER_ADMIN is a platform operator, not a clinic
+// operator, and only sees Platform/Overview, Organizations, and My Profile
+// in the sidebar. This does not affect page-level access guards elsewhere
+// in this file, which still allow SUPER_ADMIN — direct clinic URL access
+// is unchanged and deferred to a future phase.
+export const NAV_DASHBOARD_ROLES: readonly string[]           = ['ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY', 'ACCOUNTANT', 'TECHNICIAN'];
 export const NAV_TODAY_ROLES: readonly string[]               = ['ORG_ADMIN', 'SECRETARY', 'DOCTOR', 'NURSE', 'ACCOUNTANT'];
-export const NAV_PATIENTS_ROLES: readonly string[]            = ['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY', 'ACCOUNTANT'];
-export const NAV_APPOINTMENTS_ROLES: readonly string[]        = ['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY'];
-export const NAV_QUEUE_ROLES: readonly string[]               = ['SUPER_ADMIN', 'ORG_ADMIN', 'NURSE', 'SECRETARY'];
-export const NAV_DOCTOR_WORKSPACE_ROLES: readonly string[]    = ['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR'];
-export const NAV_DOCTOR_QUEUE_ROLES: readonly string[]        = ['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR'];
+export const NAV_PATIENTS_ROLES: readonly string[]            = ['ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY', 'ACCOUNTANT'];
+export const NAV_APPOINTMENTS_ROLES: readonly string[]        = ['ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY'];
+export const NAV_QUEUE_ROLES: readonly string[]               = ['ORG_ADMIN', 'NURSE', 'SECRETARY'];
+export const NAV_DOCTOR_WORKSPACE_ROLES: readonly string[]    = ['ORG_ADMIN', 'DOCTOR'];
+export const NAV_DOCTOR_QUEUE_ROLES: readonly string[]        = ['ORG_ADMIN', 'DOCTOR'];
 export const NAV_MY_FOLLOW_UPS_ROLES: readonly string[]       = ['DOCTOR'];
-export const NAV_TECHNICIAN_LABS_ROLES: readonly string[]     = ['SUPER_ADMIN', 'ORG_ADMIN', 'TECHNICIAN'];
-export const NAV_TECHNICIAN_RADIOLOGY_ROLES: readonly string[]= ['SUPER_ADMIN', 'ORG_ADMIN', 'TECHNICIAN'];
-export const NAV_FOLLOW_UPS_ROLES: readonly string[]          = ['SUPER_ADMIN', 'ORG_ADMIN', 'BRANCH_ADMIN', 'NURSE', 'SECRETARY'];
-export const NAV_CASHIER_ROLES: readonly string[]             = ['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY'];
-export const NAV_INVOICES_ROLES: readonly string[]            = ['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY'];
-export const NAV_BILLING_REPORTS_ROLES: readonly string[]     = ['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT'];
-export const NAV_DOCTORS_ROLES: readonly string[]             = ['SUPER_ADMIN', 'ORG_ADMIN'];
+export const NAV_TECHNICIAN_LABS_ROLES: readonly string[]     = ['ORG_ADMIN', 'TECHNICIAN'];
+export const NAV_TECHNICIAN_RADIOLOGY_ROLES: readonly string[]= ['ORG_ADMIN', 'TECHNICIAN'];
+export const NAV_FOLLOW_UPS_ROLES: readonly string[]          = ['ORG_ADMIN', 'BRANCH_ADMIN', 'NURSE', 'SECRETARY'];
+export const NAV_CASHIER_ROLES: readonly string[]             = ['ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY'];
+export const NAV_INVOICES_ROLES: readonly string[]            = ['ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY'];
+export const NAV_BILLING_REPORTS_ROLES: readonly string[]     = ['ORG_ADMIN', 'ACCOUNTANT'];
+export const NAV_DOCTORS_ROLES: readonly string[]             = ['ORG_ADMIN'];
 export const NAV_PLATFORM_ROLES: readonly string[]            = ['SUPER_ADMIN'];
-export const NAV_SETTINGS_ROLES: readonly string[]            = ['SUPER_ADMIN', 'ORG_ADMIN'];
+export const NAV_PLATFORM_ORGANIZATIONS_ROLES: readonly string[] = ['SUPER_ADMIN'];
+export const NAV_SETTINGS_ROLES: readonly string[]            = ['ORG_ADMIN'];
 export const NAV_PROFILE_ROLES: readonly string[]             = ['SUPER_ADMIN', 'ORG_ADMIN', 'BRANCH_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY', 'ACCOUNTANT', 'TECHNICIAN'];
 
 // ─── Settings & admin page guards ────────────────────────────────────────────

@@ -1,7 +1,8 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import {
   Calendar, ListOrdered, CheckCircle2, Clock,
   Banknote, Wallet, Activity, CalendarClock,
@@ -78,9 +79,18 @@ export default function DashboardPage() {
   const tQueue = useTranslations('doctorQueue.card');
   const tDuration = useTranslations('timeline.cards.duration');
   const locale = useLocale();
+  const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const role = user?.role ?? '';
   const today = todayStr();
+
+  // SUPER_ADMIN is a platform operator, not a clinic operator (134A) — this
+  // page is clinic-operational, so SUPER_ADMIN never lands here.
+  useEffect(() => {
+    if (role === 'SUPER_ADMIN') {
+      router.replace('/dashboard/platform/overview');
+    }
+  }, [role, router]);
 
   const canSeeBilling    = DASHBOARD_BILLING_ROLES.has(role);
   const canSeeOps        = DASHBOARD_OPS_ROLES.has(role);
@@ -282,6 +292,8 @@ export default function DashboardPage() {
       });
     }
   }
+
+  if (role === 'SUPER_ADMIN') return null;
 
   return (
     <div className="space-y-6">

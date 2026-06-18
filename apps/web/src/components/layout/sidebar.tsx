@@ -24,6 +24,7 @@ import {
   BookMarked,
   CircleUser,
   Building2,
+  List,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
@@ -44,6 +45,7 @@ import {
   NAV_BILLING_REPORTS_ROLES,
   NAV_DOCTORS_ROLES,
   NAV_PLATFORM_ROLES,
+  NAV_PLATFORM_ORGANIZATIONS_ROLES,
   NAV_SETTINGS_ROLES,
   NAV_PROFILE_ROLES,
 } from '@/lib/permissions';
@@ -70,7 +72,8 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard/invoices',             icon: Receipt,         roles: NAV_INVOICES_ROLES },
   { href: '/dashboard/reports/billing',      icon: BarChart2,       roles: NAV_BILLING_REPORTS_ROLES },
   { href: '/dashboard/doctors',              icon: UserCog,         roles: NAV_DOCTORS_ROLES },
-  { href: '/dashboard/platform/overview',    icon: Building2,       roles: NAV_PLATFORM_ROLES },
+  { href: '/dashboard/platform/overview',      icon: Building2,     roles: NAV_PLATFORM_ROLES },
+  { href: '/dashboard/platform/organizations', icon: List,          roles: NAV_PLATFORM_ORGANIZATIONS_ROLES },
   { href: '/dashboard/settings/clinic',      icon: Settings,        roles: NAV_SETTINGS_ROLES },
   { href: '/dashboard/profile',              icon: CircleUser,      roles: NAV_PROFILE_ROLES },
 ];
@@ -125,6 +128,7 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
     '/dashboard/reports/billing':      t('items.billingReports'),
     '/dashboard/doctors':               t('items.doctors'),
     '/dashboard/platform/overview':    t('items.platform'),
+    '/dashboard/platform/organizations': t('items.organizations'),
     '/dashboard/settings/clinic':      t('items.settings'),
     '/dashboard/profile':              t('items.profile'),
   };
@@ -163,8 +167,6 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
                 : item.href === '/dashboard/doctor'
                 ? pathname === '/dashboard/doctor' ||
                   (pathname.startsWith('/dashboard/doctor/') && !pathname.startsWith('/dashboard/doctor/queue'))
-                : item.href === '/dashboard/platform/overview'
-                ? pathname.startsWith('/dashboard/platform/')
                 : item.href === '/dashboard/settings/clinic'
                 ? pathname.startsWith('/dashboard/settings/')
                 : pathname === item.href || pathname.startsWith(item.href + '/');

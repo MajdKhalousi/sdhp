@@ -2796,14 +2796,9 @@
           "generic": "فشل تحديث حالة المنظمة. يرجى المحاولة مرة أخرى."
         }
       },
-      "userStatus": {
-        "deactivated": "موقوف"
-      },
       "sections": {
         "profile": "الملف",
-        "branches": "الفروع",
-        "admins": "مشرفو المنظمة",
-        "staff": "الموظفون"
+        "branches": "الفروع"
       },
       "fields": {
         "name": "الاسم",
@@ -2853,18 +2848,116 @@
         "status": "الحالة",
         "createdAt": "تاريخ التسجيل"
       },
-      "userColumns": {
-        "name": "الاسم",
-        "role": "الدور",
-        "phone": "الهاتف",
-        "email": "البريد الإلكتروني",
-        "status": "الحالة",
-        "lastLogin": "آخر دخول"
-      },
       "noBranches": "لا توجد فروع مسجلة.",
-      "noAdmins": "لا يوجد مشرفو منظمة.",
-      "noStaff": "لا يوجد موظفون.",
       "limitNote": "يعرض حتى 100 سجل لكل فئة.",
+      "accounts": {
+        "sectionTitle": "الحسابات",
+        "subtitle": "إدارة حسابات المستخدمين لهذه المنظمة.",
+        "loading": "جارٍ تحميل الحسابات…",
+        "loadError": "فشل تحميل الحسابات.",
+        "empty": "لا توجد حسابات لهذه المنظمة.",
+        "searchPlaceholder": "البحث بالاسم أو الهاتف أو البريد الإلكتروني…",
+        "filters": {
+          "status": "الحالة",
+          "allStatuses": "جميع الحالات"
+        },
+        "count": "{count} حساب",
+        "columns": {
+          "name": "الاسم",
+          "phone": "الهاتف",
+          "email": "البريد الإلكتروني",
+          "role": "الدور",
+          "status": "الحالة",
+          "lastLogin": "آخر دخول",
+          "actions": "الإجراءات"
+        },
+        "status": {
+          "active": "نشط",
+          "inactive": "غير نشط",
+          "deactivated": "موقوف"
+        },
+        "actions": {
+          "create": "إضافة حساب",
+          "creating": "جارٍ الإنشاء…",
+          "edit": "تعديل",
+          "save": "حفظ",
+          "saving": "جارٍ الحفظ…",
+          "cancel": "إلغاء",
+          "deactivate": "تعطيل",
+          "deactivating": "جارٍ التعطيل…",
+          "restore": "استرجاع",
+          "restoring": "جارٍ الاسترجاع…",
+          "confirmDeactivate": "تعطيل هذا الحساب؟ سيخسر صاحبه الوصول إلى النظام.",
+          "confirmRestore": "استرجاع هذا الحساب؟ سيستعيد صاحبه الوصول إلى النظام."
+        },
+        "roles": {
+          "ORG_ADMIN": "مشرف",
+          "DOCTOR": "طبيب",
+          "NURSE": "ممرض",
+          "SECRETARY": "سكرتير",
+          "ACCOUNTANT": "محاسب",
+          "TECHNICIAN": "فني",
+          "BRANCH_ADMIN": "مشرف فرع"
+        },
+        "form": {
+          "createTitle": "إضافة حساب",
+          "editTitle": "تعديل الحساب",
+          "fields": {
+            "firstName": "الاسم الأول",
+            "lastName": "اسم العائلة",
+            "firstNameAr": "الاسم الأول (عربي)",
+            "lastNameAr": "اسم العائلة (عربي)",
+            "phone": "الهاتف",
+            "email": "البريد الإلكتروني",
+            "password": "كلمة المرور",
+            "role": "الدور",
+            "temporaryPasswordSection": "تعيين كلمة مرور مؤقتة",
+            "temporaryPassword": "كلمة المرور المؤقتة",
+            "confirmTemporaryPassword": "تأكيد كلمة المرور المؤقتة",
+            "temporaryPasswordHelp": "تعبئة هذا الحقل سيؤدي إلى إعادة تعيين كلمة مرور الحساب فوراً. اتركه فارغاً للحفاظ على كلمة المرور الحالية."
+          },
+          "placeholders": {
+            "phone": "مثال: +963912345678",
+            "email": "مثال: staff@example.com",
+            "password": "10 أحرف على الأقل"
+          },
+          "actions": {
+            "create": "إنشاء",
+            "creating": "جارٍ الإنشاء…",
+            "save": "حفظ",
+            "saving": "جارٍ الحفظ…",
+            "cancel": "إلغاء"
+          }
+        },
+        "validation": {
+          "firstNameRequired": "الاسم الأول مطلوب.",
+          "lastNameRequired": "اسم العائلة مطلوب.",
+          "phoneRequired": "الهاتف مطلوب.",
+          "roleRequired": "الدور مطلوب.",
+          "passwordRequired": "كلمة المرور مطلوبة (10 أحرف على الأقل).",
+          "passwordFormat": "يجب أن تحتوي كلمة المرور على حرف ورقم واحد على الأقل.",
+          "emailFormat": "أدخل بريداً إلكترونياً صحيحاً.",
+          "passwordMismatch": "كلمتا المرور غير متطابقتين.",
+          "tempPasswordRequired": "كلمة المرور مطلوبة عند تعيين كلمة مرور مؤقتة.",
+          "tempPasswordFormat": "يجب أن تتكون كلمة المرور من 10 أحرف على الأقل وتحتوي على حرف ورقم واحد على الأقل."
+        },
+        "success": {
+          "created": "تم إنشاء الحساب بنجاح.",
+          "updated": "تم تحديث الحساب بنجاح.",
+          "deactivated": "تم تعطيل الحساب.",
+          "restored": "تم استرجاع الحساب.",
+          "passwordReset": "تم تعيين كلمة مرور مؤقتة. اطلب من صاحب الحساب تسجيل الدخول وتغييرها من الملف الشخصي."
+        },
+        "error": {
+          "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+          "saveFailed": "فشل حفظ الحساب.",
+          "deactivateFailed": "فشل تعطيل الحساب.",
+          "restoreFailed": "فشل استرجاع الحساب.",
+          "phoneConflict": "الهاتف أو البريد الإلكتروني مستخدم مسبقاً."
+        },
+        "lastOrgAdmin": "آخر مشرف للمنظمة",
+        "lastOrgAdminTooltip": "هذا آخر مشرف نشط لهذه المنظمة. يجب أن يبقى مشرف واحد نشط على الأقل."
+      },
       "subscription": {
         "sectionTitle": "الاشتراك",
         "editButton": "تعديل الاشتراك",

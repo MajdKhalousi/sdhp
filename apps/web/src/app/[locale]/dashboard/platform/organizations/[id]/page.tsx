@@ -14,6 +14,7 @@ import {
 } from '@/hooks/use-organizations';
 import { useBranches } from '@/hooks/use-branches';
 import { useStaff } from '@/hooks/use-staff';
+import { OrganizationAccountsSection } from '@/components/platform/organization-accounts-section';
 import {
   useSubscriptionPayments,
   useCreateSubscriptionPayment,
@@ -1353,133 +1354,8 @@ export default function PlatformOrganizationDetailPage() {
             )}
           </section>
 
-          {/* Org admins table */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-foreground">{t('sections.admins')}</h2>
-            {orgAdmins.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t('noAdmins')}</p>
-            ) : (
-              <div className="overflow-x-auto rounded-lg border border-border">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50">
-                    <tr>
-                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('userColumns.name')}</th>
-                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('userColumns.phone')}</th>
-                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('userColumns.email')}</th>
-                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('userColumns.status')}</th>
-                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('userColumns.lastLogin')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {orgAdmins.map((admin) => (
-                      <tr key={admin.id} className={`bg-background ${admin.deletedAt ? 'opacity-50' : ''}`}>
-                        <td className="px-4 py-3">
-                          <p className="font-medium text-foreground">
-                            {admin.firstName} {admin.lastName}
-                          </p>
-                          {(admin.firstNameAr || admin.lastNameAr) && (
-                            <p className="mt-0.5 text-xs text-muted-foreground">
-                              {admin.firstNameAr} {admin.lastNameAr}
-                            </p>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">{admin.phone}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{admin.email ?? '—'}</td>
-                        <td className="px-4 py-3">
-                          {admin.deletedAt ? (
-                            <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                              {t('userStatus.deactivated')}
-                            </span>
-                          ) : (
-                            <span
-                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                                admin.isActive
-                                  ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-                                  : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                              }`}
-                            >
-                              {admin.isActive ? t('status.active') : t('status.inactive')}
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">
-                          {admin.lastLoginAt
-                            ? new Date(admin.lastLoginAt).toLocaleDateString()
-                            : '—'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
-
-          {/* Staff table */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-foreground">{t('sections.staff')}</h2>
-            {staffUsers.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t('noStaff')}</p>
-            ) : (
-              <div className="overflow-x-auto rounded-lg border border-border">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50">
-                    <tr>
-                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('userColumns.name')}</th>
-                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('userColumns.role')}</th>
-                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('userColumns.phone')}</th>
-                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('userColumns.status')}</th>
-                      <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('userColumns.lastLogin')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {staffUsers.map((staff) => (
-                      <tr key={staff.id} className={`bg-background ${staff.deletedAt ? 'opacity-50' : ''}`}>
-                        <td className="px-4 py-3">
-                          <p className="font-medium text-foreground">
-                            {staff.firstName} {staff.lastName}
-                          </p>
-                          {(staff.firstNameAr || staff.lastNameAr) && (
-                            <p className="mt-0.5 text-xs text-muted-foreground">
-                              {staff.firstNameAr} {staff.lastNameAr}
-                            </p>
-                          )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
-                            {staff.role}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">{staff.phone}</td>
-                        <td className="px-4 py-3">
-                          {staff.deletedAt ? (
-                            <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                              {t('userStatus.deactivated')}
-                            </span>
-                          ) : (
-                            <span
-                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                                staff.isActive
-                                  ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-                                  : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                              }`}
-                            >
-                              {staff.isActive ? t('status.active') : t('status.inactive')}
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">
-                          {staff.lastLoginAt
-                            ? new Date(staff.lastLoginAt).toLocaleDateString()
-                            : '—'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
+          {/* Accounts section */}
+          <OrganizationAccountsSection organizationId={id} />
 
           {/* Limit note */}
           <p className="text-xs text-muted-foreground">{t('limitNote')}</p>

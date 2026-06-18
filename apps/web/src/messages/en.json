@@ -2796,14 +2796,9 @@
           "generic": "Failed to update organization status. Please try again."
         }
       },
-      "userStatus": {
-        "deactivated": "Deactivated"
-      },
       "sections": {
         "profile": "Profile",
-        "branches": "Branches",
-        "admins": "Organization Admins",
-        "staff": "Staff"
+        "branches": "Branches"
       },
       "fields": {
         "name": "Name",
@@ -2853,18 +2848,116 @@
         "status": "Status",
         "createdAt": "Registered"
       },
-      "userColumns": {
-        "name": "Name",
-        "role": "Role",
-        "phone": "Phone",
-        "email": "Email",
-        "status": "Status",
-        "lastLogin": "Last Login"
-      },
       "noBranches": "No branches registered.",
-      "noAdmins": "No organization admins found.",
-      "noStaff": "No staff found.",
       "limitNote": "Showing up to 100 records per category.",
+      "accounts": {
+        "sectionTitle": "Accounts",
+        "subtitle": "Manage this organization's user accounts.",
+        "loading": "Loading accounts…",
+        "loadError": "Failed to load accounts.",
+        "empty": "No accounts found for this organization.",
+        "searchPlaceholder": "Search name, phone, or email…",
+        "filters": {
+          "status": "Status",
+          "allStatuses": "All statuses"
+        },
+        "count": "{count} accounts",
+        "columns": {
+          "name": "Name",
+          "phone": "Phone",
+          "email": "Email",
+          "role": "Role",
+          "status": "Status",
+          "lastLogin": "Last Login",
+          "actions": "Actions"
+        },
+        "status": {
+          "active": "Active",
+          "inactive": "Inactive",
+          "deactivated": "Deactivated"
+        },
+        "actions": {
+          "create": "Add account",
+          "creating": "Creating…",
+          "edit": "Edit",
+          "save": "Save",
+          "saving": "Saving…",
+          "cancel": "Cancel",
+          "deactivate": "Deactivate",
+          "deactivating": "Deactivating…",
+          "restore": "Restore",
+          "restoring": "Restoring…",
+          "confirmDeactivate": "Deactivate this account? They will lose access to the system.",
+          "confirmRestore": "Restore this account? They will regain access to the system."
+        },
+        "roles": {
+          "ORG_ADMIN": "Admin",
+          "DOCTOR": "Doctor",
+          "NURSE": "Nurse",
+          "SECRETARY": "Secretary",
+          "ACCOUNTANT": "Accountant",
+          "TECHNICIAN": "Technician",
+          "BRANCH_ADMIN": "Branch Admin"
+        },
+        "form": {
+          "createTitle": "Add Account",
+          "editTitle": "Edit Account",
+          "fields": {
+            "firstName": "First Name",
+            "lastName": "Last Name",
+            "firstNameAr": "First Name (Arabic)",
+            "lastNameAr": "Last Name (Arabic)",
+            "phone": "Phone",
+            "email": "Email",
+            "password": "Password",
+            "role": "Role",
+            "temporaryPasswordSection": "Set Temporary Password",
+            "temporaryPassword": "Temporary Password",
+            "confirmTemporaryPassword": "Confirm Temporary Password",
+            "temporaryPasswordHelp": "Filling this field will reset the account's current password immediately. Leave blank to keep the existing password."
+          },
+          "placeholders": {
+            "phone": "e.g. +963912345678",
+            "email": "e.g. staff@example.com",
+            "password": "Min. 10 characters"
+          },
+          "actions": {
+            "create": "Create",
+            "creating": "Creating…",
+            "save": "Save",
+            "saving": "Saving…",
+            "cancel": "Cancel"
+          }
+        },
+        "validation": {
+          "firstNameRequired": "First name is required.",
+          "lastNameRequired": "Last name is required.",
+          "phoneRequired": "Phone is required.",
+          "roleRequired": "Role is required.",
+          "passwordRequired": "Password is required (min. 10 characters).",
+          "passwordFormat": "Password must contain at least one letter and one number.",
+          "emailFormat": "Enter a valid email address.",
+          "passwordMismatch": "Passwords do not match.",
+          "tempPasswordRequired": "Password is required when setting a temporary password.",
+          "tempPasswordFormat": "Password must be at least 10 characters and include at least one letter and one number."
+        },
+        "success": {
+          "created": "Account created successfully.",
+          "updated": "Account updated successfully.",
+          "deactivated": "Account deactivated.",
+          "restored": "Account restored.",
+          "passwordReset": "Temporary password set. Ask the account holder to sign in and change it from My Profile."
+        },
+        "error": {
+          "generic": "Something went wrong. Please try again.",
+          "saveFailed": "Failed to save account.",
+          "deactivateFailed": "Failed to deactivate account.",
+          "restoreFailed": "Failed to restore account.",
+          "phoneConflict": "Phone or email is already in use."
+        },
+        "lastOrgAdmin": "Last Organization Admin",
+        "lastOrgAdminTooltip": "This is the last active admin for this organization. At least one organization admin must remain active."
+      },
       "subscription": {
         "sectionTitle": "Subscription",
         "editButton": "Edit Subscription",

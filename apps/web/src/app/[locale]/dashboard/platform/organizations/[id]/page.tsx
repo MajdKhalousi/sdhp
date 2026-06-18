@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Link, useRouter } from '@/i18n/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { PLATFORM_ACCESS_ROLES } from '@/lib/permissions';
 import {
@@ -165,6 +165,7 @@ function subscriptionBadgeClass(status: SubscriptionStatus): string {
 export default function PlatformOrganizationDetailPage() {
   const t = useTranslations('platform.organizationDetail');
   const tDemo = useTranslations('platform.demo');
+  const locale = useLocale();
   const params = useParams();
   const id = typeof params.id === 'string' ? params.id : '';
   const router = useRouter();
@@ -971,6 +972,14 @@ export default function PlatformOrganizationDetailPage() {
                               >
                                 {t('subscriptionPayments.editButton')}
                               </button>
+                              <a
+                                href={`/${locale}/subscription-payments/${id}/${payment.id}/print`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex h-7 items-center rounded-md border border-input bg-background px-2.5 text-xs font-medium transition-colors hover:bg-accent"
+                              >
+                                {t('subscriptionPayments.receiptButton')}
+                              </a>
                               <button
                                 type="button"
                                 onClick={() => startDeletePayment(payment.id)}

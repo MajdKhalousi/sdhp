@@ -2708,6 +2708,11 @@
         "createdAt": "Registered",
         "view": "View"
       },
+      "paymentColumns": {
+        "lastPaid": "Last Paid",
+        "totalPaid": "Total Paid",
+        "payments": "Payments"
+      },
       "status": {
         "active": "Active",
         "inactive": "Inactive"
@@ -2986,6 +2991,39 @@
           "name": "Name",
           "endDate": "End Date",
           "status": "Status"
+        }
+      },
+      "subscriptionPayments": {
+        "sectionTitle": "Subscription Payments",
+        "partialError": "Payment metrics partially unavailable — one or more organizations' payment data failed to load.",
+        "stats": {
+          "totalPaid": "Total Paid",
+          "paymentCount": "Payment Count",
+          "thisMonth": "This Month",
+          "thisYear": "This Year"
+        },
+        "recent": {
+          "title": "Recent Subscription Payments",
+          "empty": "No subscription payments recorded.",
+          "columns": {
+            "organization": "Organization",
+            "amount": "Amount",
+            "method": "Method",
+            "paidAt": "Paid Date"
+          }
+        },
+        "methods": {
+          "CASH": "Cash",
+          "BANK_TRANSFER": "Bank Transfer",
+          "CARD": "Card",
+          "CHEQUE": "Cheque",
+          "ONLINE": "Online",
+          "OTHER": "Other"
+        },
+        "noPayments": {
+          "title": "Organizations With No Payments",
+          "empty": "No organizations without payments.",
+          "view": "View"
         }
       },
       "limitNote": "Showing up to 100 records."

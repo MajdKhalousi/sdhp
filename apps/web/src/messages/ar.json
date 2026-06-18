@@ -2708,6 +2708,11 @@
         "createdAt": "تاريخ التسجيل",
         "view": "عرض"
       },
+      "paymentColumns": {
+        "lastPaid": "آخر دفعة",
+        "totalPaid": "إجمالي المدفوع",
+        "payments": "عدد الدفعات"
+      },
       "status": {
         "active": "نشطة",
         "inactive": "غير نشطة"
@@ -2986,6 +2991,39 @@
           "name": "الاسم",
           "endDate": "تاريخ الانتهاء",
           "status": "الحالة"
+        }
+      },
+      "subscriptionPayments": {
+        "sectionTitle": "دفعات الاشتراك",
+        "partialError": "بيانات دفعات بعض المنظمات غير متاحة حالياً — المقاييس قد تكون غير مكتملة.",
+        "stats": {
+          "totalPaid": "إجمالي المدفوع",
+          "paymentCount": "عدد الدفعات",
+          "thisMonth": "هذا الشهر",
+          "thisYear": "هذا العام"
+        },
+        "recent": {
+          "title": "أحدث دفعات الاشتراك",
+          "empty": "لا توجد دفعات اشتراك مسجلة.",
+          "columns": {
+            "organization": "المنظمة",
+            "amount": "المبلغ",
+            "method": "طريقة الدفع",
+            "paidAt": "تاريخ الدفع"
+          }
+        },
+        "methods": {
+          "CASH": "نقدي",
+          "BANK_TRANSFER": "حوالة بنكية",
+          "CARD": "بطاقة",
+          "CHEQUE": "شيك",
+          "ONLINE": "دفع إلكتروني",
+          "OTHER": "أخرى"
+        },
+        "noPayments": {
+          "title": "منظمات بدون دفعات",
+          "empty": "لا توجد منظمات بدون دفعات.",
+          "view": "عرض"
         }
       },
       "limitNote": "يعرض حتى 100 سجل."

@@ -7,7 +7,21 @@ import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { PLATFORM_ACCESS_ROLES } from '@/lib/permissions';
 import { useOrganizations } from '@/hooks/use-organizations';
+import { useAllSubscriptionPayments } from '@/hooks/use-subscription-payments';
 import { isDemoOrganization } from '@/lib/demo-organizations';
+import type { SubscriptionPayment } from '@/types/subscription-payment';
+
+// Never sum across currencies — joins each currency's total as its own
+// segment rather than merging unlike currencies into one number.
+function formatTotalsCompact(payments: SubscriptionPayment[]): string {
+  const totals: Record<string, number> = {};
+  for (const payment of payments) {
+    totals[payment.currency] = (totals[payment.currency] ?? 0) + Number(payment.amount);
+  }
+  const entries = Object.entries(totals);
+  if (entries.length === 0) return '—';
+  return entries.map(([currency, total]) => `${total.toFixed(2)} ${currency}`).join(' · ');
+}
 
 export default function PlatformOrganizationsPage() {
   const t = useTranslations('platform.organizations');
@@ -22,6 +36,13 @@ export default function PlatformOrganizationsPage() {
   }, [user, router]);
 
   const { data: organizations, isLoading, isError } = useOrganizations();
+
+  const organizationIds = (organizations ?? []).map((o) => o.id);
+  const paymentQueries = useAllSubscriptionPayments(organizationIds);
+  const paymentsByOrgId = new Map<string, SubscriptionPayment[]>();
+  organizationIds.forEach((orgId, index) => {
+    paymentsByOrgId.set(orgId, paymentQueries[index]?.data ?? []);
+  });
 
   if (!user || !PLATFORM_ACCESS_ROLES.has(user.role)) return null;
 
@@ -82,11 +103,28 @@ export default function PlatformOrganizationsPage() {
                 <th className="px-4 py-3 text-start font-medium text-muted-foreground">
                   {t('columns.createdAt')}
                 </th>
+                <th className="px-4 py-3 text-start font-medium text-muted-foreground">
+                  {t('paymentColumns.lastPaid')}
+                </th>
+                <th className="px-4 py-3 text-start font-medium text-muted-foreground">
+                  {t('paymentColumns.totalPaid')}
+                </th>
+                <th className="px-4 py-3 text-start font-medium text-muted-foreground">
+                  {t('paymentColumns.payments')}
+                </th>
                 <th className="px-4 py-3 text-start font-medium text-muted-foreground"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {organizations.map((org) => (
+              {organizations.map((org) => {
+                const payments = paymentsByOrgId.get(org.id) ?? [];
+                const lastPaidAt = payments.length
+                  ? payments.reduce(
+                      (latest, p) => (new Date(p.paidAt) > new Date(latest) ? p.paidAt : latest),
+                      payments[0].paidAt,
+                    )
+                  : null;
+                return (
                 <tr key={org.id} className="bg-background">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
@@ -125,6 +163,15 @@ export default function PlatformOrganizationsPage() {
                   <td className="px-4 py-3 text-muted-foreground">
                     {new Date(org.createdAt).toLocaleDateString()}
                   </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {lastPaidAt ? new Date(lastPaidAt).toLocaleDateString() : '—'}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {formatTotalsCompact(payments)}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {payments.length}
+                  </td>
                   <td className="px-4 py-3">
                     <Link
                       href={`/dashboard/platform/organizations/${org.id}`}
@@ -134,7 +181,8 @@ export default function PlatformOrganizationsPage() {
                     </Link>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

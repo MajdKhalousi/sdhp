@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import type { SubscriptionPayment, CreateSubscriptionPaymentInput } from '@/types/subscription-payment';
 
@@ -11,6 +11,23 @@ export function useSubscriptionPayments(organizationId: string) {
       ),
     staleTime: 30_000,
     enabled: !!organizationId,
+  });
+}
+
+// Fans out one request per organization, reusing the exact same query key as
+// useSubscriptionPayments — this shares the cache with the organization
+// detail page rather than maintaining a separate copy of the same data.
+export function useAllSubscriptionPayments(organizationIds: string[]) {
+  return useQueries({
+    queries: organizationIds.map((organizationId) => ({
+      queryKey: ['organization-subscription-payments', organizationId],
+      queryFn: () =>
+        api.get<SubscriptionPayment[]>(
+          `/v1/organizations/${organizationId}/subscription-payments`,
+        ),
+      staleTime: 30_000,
+      enabled: !!organizationId,
+    })),
   });
 }
 

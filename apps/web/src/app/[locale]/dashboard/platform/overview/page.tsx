@@ -8,8 +8,10 @@ import { PLATFORM_ACCESS_ROLES } from '@/lib/permissions';
 import { useOrganizations } from '@/hooks/use-organizations';
 import { useStaff } from '@/hooks/use-staff';
 import { useRecentAuditLogs } from '@/hooks/use-audit-logs';
+import { useAllSubscriptionPayments } from '@/hooks/use-subscription-payments';
 import { isDemoOrganization } from '@/lib/demo-organizations';
 import type { SubscriptionStatus } from '@/types/organization';
+import type { SubscriptionPayment } from '@/types/subscription-payment';
 
 const SUBSCRIPTION_STATUSES: SubscriptionStatus[] = ['TRIAL', 'ACTIVE', 'SUSPENDED', 'EXPIRED', 'CANCELLED'];
 const NEEDS_REVIEW_WINDOW_DAYS = 30;
@@ -30,6 +32,22 @@ function subscriptionBadgeClass(status: SubscriptionStatus): string {
   }
 }
 
+// Never sum across currencies — a payment row's currency is per-row, not
+// platform-wide, so totals are grouped, not merged.
+function sumByCurrency(payments: SubscriptionPayment[]): Record<string, number> {
+  const totals: Record<string, number> = {};
+  for (const payment of payments) {
+    totals[payment.currency] = (totals[payment.currency] ?? 0) + Number(payment.amount);
+  }
+  return totals;
+}
+
+function currencyLines(totals: Record<string, number>): string[] {
+  const entries = Object.entries(totals);
+  if (entries.length === 0) return ['—'];
+  return entries.map(([currency, total]) => `${total.toFixed(2)} ${currency}`);
+}
+
 export default function PlatformOverviewPage() {
   const t = useTranslations('platform.overview');
   const tDemo = useTranslations('platform.demo');
@@ -45,6 +63,9 @@ export default function PlatformOverviewPage() {
   const { data: organizations = [], isLoading: orgsLoading, isError: orgsError } = useOrganizations();
   const { data: users = [], isLoading: usersLoading, isError: usersError } = useStaff(true);
   const { data: auditLogs = [], isLoading: auditLoading, isError: auditError } = useRecentAuditLogs(5);
+
+  const organizationIds = organizations.map((o) => o.id);
+  const paymentQueries = useAllSubscriptionPayments(organizationIds);
 
   if (!user || !PLATFORM_ACCESS_ROLES.has(user.role)) return null;
 
@@ -90,6 +111,44 @@ export default function PlatformOverviewPage() {
     })
     .filter(({ daysUntilEnd }) => daysUntilEnd <= NEEDS_REVIEW_WINDOW_DAYS)
     .sort((a, b) => a.daysUntilEnd - b.daysUntilEnd);
+
+  // Payment metrics — frontend-only aggregation (Phase 136D). A failed
+  // organization's payments are treated as [] rather than failing the page.
+  const orgById = new Map(organizations.map((org) => [org.id, org]));
+  const paymentsByOrgId = new Map<string, SubscriptionPayment[]>();
+  let paymentsPartialError = false;
+  organizationIds.forEach((orgId, index) => {
+    const query = paymentQueries[index];
+    if (query?.isError) paymentsPartialError = true;
+    paymentsByOrgId.set(orgId, query?.data ?? []);
+  });
+  const paymentsLoading = paymentQueries.some((q) => q.isLoading);
+
+  const allPayments: SubscriptionPayment[] = [...paymentsByOrgId.values()].flat();
+
+  const thisMonthPayments = allPayments.filter((p) => {
+    const d = new Date(p.paidAt);
+    return d.getUTCFullYear() === now.getUTCFullYear() && d.getUTCMonth() === now.getUTCMonth();
+  });
+  const thisYearPayments = allPayments.filter(
+    (p) => new Date(p.paidAt).getUTCFullYear() === now.getUTCFullYear(),
+  );
+
+  const totalsByCurrency = sumByCurrency(allPayments);
+  const thisMonthTotalsByCurrency = sumByCurrency(thisMonthPayments);
+  const thisYearTotalsByCurrency = sumByCurrency(thisYearPayments);
+
+  const recentPayments = [...allPayments]
+    .sort((a, b) => {
+      const byPaidAt = new Date(b.paidAt).getTime() - new Date(a.paidAt).getTime();
+      if (byPaidAt !== 0) return byPaidAt;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    })
+    .slice(0, 5);
+
+  const organizationsWithNoPayments = organizations.filter(
+    (org) => (paymentsByOrgId.get(org.id)?.length ?? 0) === 0,
+  );
 
   return (
     <div className="space-y-6">
@@ -270,6 +329,130 @@ export default function PlatformOverviewPage() {
                   </tbody>
                 </table>
               </div>
+            )}
+          </section>
+
+          {/* Subscription payments — frontend-only metrics (Phase 136D), independent failure domain */}
+          <section className="space-y-3">
+            <h2 className="text-sm font-semibold text-foreground">{t('subscriptionPayments.sectionTitle')}</h2>
+
+            {paymentsPartialError && (
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                {t('subscriptionPayments.partialError')}
+              </p>
+            )}
+
+            {paymentsLoading ? (
+              <p className="text-sm text-muted-foreground">{t('loading')}</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[
+                    { label: t('subscriptionPayments.stats.totalPaid'), lines: currencyLines(totalsByCurrency) },
+                    { label: t('subscriptionPayments.stats.paymentCount'), lines: [String(allPayments.length)] },
+                    { label: t('subscriptionPayments.stats.thisMonth'), lines: currencyLines(thisMonthTotalsByCurrency) },
+                    { label: t('subscriptionPayments.stats.thisYear'), lines: currencyLines(thisYearTotalsByCurrency) },
+                  ].map(({ label, lines }) => (
+                    <div key={label} className="rounded-lg border border-border bg-card p-3 text-center">
+                      {lines.map((line) => (
+                        <p key={line} className="text-2xl font-bold text-foreground">{line}</p>
+                      ))}
+                      <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Recent subscription payments */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium text-foreground">{t('subscriptionPayments.recent.title')}</h3>
+                  {recentPayments.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">{t('subscriptionPayments.recent.empty')}</p>
+                  ) : (
+                    <div className="overflow-x-auto rounded-lg border border-border">
+                      <table className="w-full text-sm">
+                        <thead className="bg-muted/50">
+                          <tr>
+                            <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('subscriptionPayments.recent.columns.organization')}</th>
+                            <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('subscriptionPayments.recent.columns.amount')}</th>
+                            <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('subscriptionPayments.recent.columns.method')}</th>
+                            <th className="px-4 py-3 text-start font-medium text-muted-foreground">{t('subscriptionPayments.recent.columns.paidAt')}</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                          {recentPayments.map((payment) => {
+                            const org = orgById.get(payment.organizationId);
+                            return (
+                              <tr key={payment.id} className="bg-background">
+                                <td className="px-4 py-3">
+                                  <div className="flex items-center gap-2">
+                                    <Link
+                                      href={`/dashboard/platform/organizations/${payment.organizationId}`}
+                                      className="font-medium text-primary hover:underline"
+                                    >
+                                      {org?.name ?? payment.organizationId}
+                                    </Link>
+                                    {isDemoOrganization(payment.organizationId) && (
+                                      <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+                                        {tDemo('badge')}
+                                      </span>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3 text-foreground">
+                                  {payment.amount} {payment.currency}
+                                </td>
+                                <td className="px-4 py-3 text-muted-foreground">
+                                  {t(`subscriptionPayments.methods.${payment.method}`)}
+                                </td>
+                                <td className="px-4 py-3 text-muted-foreground">
+                                  {new Date(payment.paidAt).toLocaleDateString()}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+                {/* Organizations with no payments */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium text-foreground">{t('subscriptionPayments.noPayments.title')}</h3>
+                  {organizationsWithNoPayments.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">{t('subscriptionPayments.noPayments.empty')}</p>
+                  ) : (
+                    <div className="overflow-x-auto rounded-lg border border-border">
+                      <table className="w-full text-sm">
+                        <tbody className="divide-y divide-border">
+                          {organizationsWithNoPayments.map((org) => (
+                            <tr key={org.id} className="bg-background">
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium text-foreground">{org.name}</p>
+                                  {isDemoOrganization(org.id) && (
+                                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+                                      {tDemo('badge')}
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-end">
+                                <Link
+                                  href={`/dashboard/platform/organizations/${org.id}`}
+                                  className="text-sm font-medium text-primary hover:underline"
+                                >
+                                  {t('subscriptionPayments.noPayments.view')}
+                                </Link>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </section>
 

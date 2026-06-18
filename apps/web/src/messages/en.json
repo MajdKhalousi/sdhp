@@ -67,6 +67,7 @@
       "doctors": "Doctors",
       "platform": "Platform",
       "organizations": "Organizations",
+      "payments": "Payments",
       "followUps": "Follow-ups",
       "myFollowUps": "My Follow-ups",
       "today": "Today",
@@ -3095,6 +3096,34 @@
     "demo": {
       "badge": "Demo",
       "metricsNote": "Demo organizations are included in these totals."
+    },
+    "payments": {
+      "title": "Subscription Payments",
+      "subtitle": "All platform subscription payments across organizations",
+      "overviewLink": "← Overview",
+      "loading": "Loading payments…",
+      "error": "Failed to load payments.",
+      "partialError": "Some organizations' payments could not be loaded.",
+      "empty": "No subscription payments recorded yet.",
+      "columns": {
+        "paidAt": "Payment Date",
+        "organization": "Organization",
+        "amount": "Amount",
+        "method": "Method",
+        "period": "Period",
+        "reference": "Reference",
+        "notes": "Notes",
+        "recordedBy": "Recorded By",
+        "recordedAt": "Recorded Date",
+        "receipt": "Receipt"
+      },
+      "filters": {
+        "searchPlaceholder": "Search organization, reference, or notes…",
+        "methodAll": "All methods",
+        "currencyAll": "All currencies",
+        "dateFrom": "From",
+        "dateTo": "To"
+      }
     }
   },
   "error": {

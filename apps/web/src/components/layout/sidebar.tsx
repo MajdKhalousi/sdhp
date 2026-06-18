@@ -25,6 +25,7 @@ import {
   CircleUser,
   Building2,
   List,
+  Wallet,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
@@ -46,6 +47,7 @@ import {
   NAV_DOCTORS_ROLES,
   NAV_PLATFORM_ROLES,
   NAV_PLATFORM_ORGANIZATIONS_ROLES,
+  NAV_PLATFORM_PAYMENTS_ROLES,
   NAV_SETTINGS_ROLES,
   NAV_PROFILE_ROLES,
 } from '@/lib/permissions';
@@ -74,6 +76,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard/doctors',              icon: UserCog,         roles: NAV_DOCTORS_ROLES },
   { href: '/dashboard/platform/overview',      icon: Building2,     roles: NAV_PLATFORM_ROLES },
   { href: '/dashboard/platform/organizations', icon: List,          roles: NAV_PLATFORM_ORGANIZATIONS_ROLES },
+  { href: '/dashboard/platform/payments',      icon: Wallet,        roles: NAV_PLATFORM_PAYMENTS_ROLES },
   { href: '/dashboard/settings/clinic',      icon: Settings,        roles: NAV_SETTINGS_ROLES },
   { href: '/dashboard/profile',              icon: CircleUser,      roles: NAV_PROFILE_ROLES },
 ];
@@ -129,6 +132,7 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
     '/dashboard/doctors':               t('items.doctors'),
     '/dashboard/platform/overview':    t('items.platform'),
     '/dashboard/platform/organizations': t('items.organizations'),
+    '/dashboard/platform/payments':    t('items.payments'),
     '/dashboard/settings/clinic':      t('items.settings'),
     '/dashboard/profile':              t('items.profile'),
   };

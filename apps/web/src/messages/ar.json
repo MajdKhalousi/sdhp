@@ -67,6 +67,7 @@
       "doctors": "الأطباء",
       "platform": "المنصة",
       "organizations": "المنظمات",
+      "payments": "الدفعات",
       "followUps": "المراجعات",
       "myFollowUps": "مراجعاتي",
       "today": "اليوم",
@@ -3095,6 +3096,34 @@
     "demo": {
       "badge": "تجريبي",
       "metricsNote": "المنظمات التجريبية مشمولة في هذه الإحصائيات."
+    },
+    "payments": {
+      "title": "دفعات الاشتراك",
+      "subtitle": "جميع دفعات اشتراك المنصة عبر المنظمات",
+      "overviewLink": "← نظرة عامة",
+      "loading": "جارٍ تحميل الدفعات…",
+      "error": "فشل تحميل الدفعات.",
+      "partialError": "تعذر تحميل دفعات بعض المنظمات.",
+      "empty": "لا توجد دفعات اشتراك مسجلة بعد.",
+      "columns": {
+        "paidAt": "تاريخ الدفع",
+        "organization": "المنظمة",
+        "amount": "المبلغ",
+        "method": "طريقة الدفع",
+        "period": "الفترة",
+        "reference": "المرجع",
+        "notes": "ملاحظات",
+        "recordedBy": "سجّلها",
+        "recordedAt": "تاريخ التسجيل",
+        "receipt": "الإيصال"
+      },
+      "filters": {
+        "searchPlaceholder": "البحث بالمنظمة أو المرجع أو الملاحظات…",
+        "methodAll": "جميع طرق الدفع",
+        "currencyAll": "جميع العملات",
+        "dateFrom": "من",
+        "dateTo": "إلى"
+      }
     }
   },
   "error": {

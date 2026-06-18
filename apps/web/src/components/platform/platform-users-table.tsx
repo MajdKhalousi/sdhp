@@ -2,9 +2,8 @@
 
 import { useState, useEffect, Fragment } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, UserX, Users as UsersIcon, RotateCcw, Search } from 'lucide-react';
+import { Plus, Pencil, UserX, ShieldAlert, RotateCcw, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
 import {
   useCreateStaff,
   useUpdateStaff,
@@ -15,12 +14,14 @@ import {
 import { useOrganizations } from '@/hooks/use-organizations';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { STAFF_ROLES } from '@/types/staff';
-import type { StaffUser, CreateStaffDto, UpdateStaffDto, StaffRole } from '@/types/staff';
+import type { StaffUser, CreateStaffDto, UpdateStaffDto } from '@/types/staff';
 import { useAuthStore } from '@/store/auth';
 import type { AuthUser } from '@/store/auth';
 
-const LIMIT = 50;
+// This page is scoped to platform-tier accounts only (today: SUPER_ADMIN).
+// Organization staff are managed inside each organization's detail page
+// (Phase 141C) — this page intentionally has no organization filter/column.
+const LIMIT = 100;
 
 // ─── Field helpers — mirrors the established settings/staff form styling ──────
 
@@ -48,7 +49,11 @@ function FieldError({ message }: { message?: string }) {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// ─── Platform User Form ────────────────────────────────────────────────────────
+// ─── Platform Account Form ─────────────────────────────────────────────────────
+// Role is always SUPER_ADMIN here — there is no role selector. The backend
+// still requires organizationId on create (schema constraint, not changed in
+// this phase), so a minimal "home organization" field is kept with copy
+// clarifying it doesn't limit the account's platform-wide access.
 
 interface FormState {
   firstName: string;
@@ -58,7 +63,6 @@ interface FormState {
   phone: string;
   email: string;
   password: string;
-  role: string;
   organizationId: string;
   temporaryPassword: string;
   confirmTemporaryPassword: string;
@@ -69,37 +73,25 @@ interface FormErrors {
   lastName?: string;
   phone?: string;
   password?: string;
-  role?: string;
   organizationId?: string;
   email?: string;
   temporaryPassword?: string;
   confirmTemporaryPassword?: string;
 }
 
-interface PlatformUserFormProps {
+interface PlatformAccountFormProps {
   mode: 'create' | 'edit';
   initial?: StaffUser;
   onDone: () => void;
-  onCreated?: (role: string) => void;
   organizations: { id: string; name: string }[];
 }
 
-function PlatformUserForm({ mode, initial, onDone, onCreated, organizations }: PlatformUserFormProps) {
+function PlatformAccountForm({ mode, initial, onDone, organizations }: PlatformAccountFormProps) {
   const t = useTranslations('platform.users');
   const tCommon = useTranslations('common');
   const qc = useQueryClient();
   const create = useCreateStaff();
   const update = useUpdateStaff();
-
-  // The edit role dropdown must always include the row's current role even
-  // when it isn't normally assignable (e.g. an existing SUPER_ADMIN row),
-  // otherwise the <select> would silently mismatch — but new values can
-  // only ever be chosen from STAFF_ROLES, so promoting INTO SUPER_ADMIN or
-  // BRANCH_ADMIN from this page is never possible.
-  const roleOptions: string[] =
-    initial && !STAFF_ROLES.includes(initial.role as StaffRole)
-      ? [initial.role, ...STAFF_ROLES]
-      : STAFF_ROLES;
 
   const [values, setValues] = useState<FormState>({
     firstName: initial?.firstName ?? '',
@@ -109,7 +101,6 @@ function PlatformUserForm({ mode, initial, onDone, onCreated, organizations }: P
     phone: initial?.phone ?? '',
     email: initial?.email ?? '',
     password: '',
-    role: initial?.role ?? '',
     organizationId: initial?.organizationId ?? '',
     temporaryPassword: '',
     confirmTemporaryPassword: '',
@@ -130,7 +121,6 @@ function PlatformUserForm({ mode, initial, onDone, onCreated, organizations }: P
     if (!values.firstName.trim()) errs.firstName = t('validation.firstNameRequired');
     if (!values.lastName.trim()) errs.lastName = t('validation.lastNameRequired');
     if (!values.phone.trim()) errs.phone = t('validation.phoneRequired');
-    if (!values.role) errs.role = t('validation.roleRequired');
     if (mode === 'create') {
       if (!values.organizationId) errs.organizationId = t('validation.organizationRequired');
       if (values.password.length < 10) {
@@ -179,12 +169,11 @@ function PlatformUserForm({ mode, initial, onDone, onCreated, organizations }: P
           phone: values.phone.trim(),
           email: values.email.trim() || undefined,
           password: values.password,
-          role: values.role,
+          role: 'SUPER_ADMIN',
           organizationId: values.organizationId,
         };
         await create.mutateAsync(dto);
         await qc.invalidateQueries({ queryKey: ['platform-users'] });
-        onCreated?.(values.role);
         onDone();
       } else if (initial) {
         const hasPassword = values.temporaryPassword.trim().length > 0;
@@ -195,7 +184,6 @@ function PlatformUserForm({ mode, initial, onDone, onCreated, organizations }: P
           lastNameAr: values.lastNameAr.trim() || undefined,
           phone: values.phone.trim(),
           email: values.email.trim() || undefined,
-          role: values.role,
         };
         if (hasPassword) {
           dto.password = values.temporaryPassword;
@@ -222,6 +210,10 @@ function PlatformUserForm({ mode, initial, onDone, onCreated, organizations }: P
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-4">
+      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-400">
+        {t('fullAccessWarning')}
+      </div>
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <FieldLabel required>{t('form.fields.firstName')}</FieldLabel>
@@ -299,27 +291,9 @@ function PlatformUserForm({ mode, initial, onDone, onCreated, organizations }: P
           <FieldError message={errors.email} />
         </div>
 
-        <div>
-          <FieldLabel required>{t('form.fields.role')}</FieldLabel>
-          <select
-            value={values.role}
-            onChange={(e) => set('role', e.target.value)}
-            className={inputClass(!!errors.role)}
-            disabled={isPending}
-          >
-            <option value="">—</option>
-            {roleOptions.map((r) => (
-              <option key={r} value={r}>
-                {t(`roles.${r}` as Parameters<typeof t>[0])}
-              </option>
-            ))}
-          </select>
-          <FieldError message={errors.role} />
-        </div>
-
-        {mode === 'create' ? (
+        {mode === 'create' && (
           <div>
-            <FieldLabel required>{t('form.fields.organization')}</FieldLabel>
+            <FieldLabel required>{t('form.fields.homeOrganization')}</FieldLabel>
             <select
               value={values.organizationId}
               onChange={(e) => set('organizationId', e.target.value)}
@@ -334,13 +308,7 @@ function PlatformUserForm({ mode, initial, onDone, onCreated, organizations }: P
               ))}
             </select>
             <FieldError message={errors.organizationId} />
-          </div>
-        ) : (
-          <div>
-            <FieldLabel>{t('form.fields.organization')}</FieldLabel>
-            <p className="rounded-lg border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
-              {organizations.find((o) => o.id === values.organizationId)?.name ?? values.organizationId}
-            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{t('form.help.homeOrganization')}</p>
           </div>
         )}
 
@@ -360,13 +328,6 @@ function PlatformUserForm({ mode, initial, onDone, onCreated, organizations }: P
           </div>
         )}
       </div>
-
-      {values.role === 'DOCTOR' && (
-        <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
-          <p className="font-medium text-foreground">{t('doctorProfileHint.title')}</p>
-          <p className="mt-0.5 text-muted-foreground">{t('doctorProfileHint.body')}</p>
-        </div>
-      )}
 
       {mode === 'edit' && (
         <div className="border-t border-border pt-4">
@@ -431,9 +392,9 @@ function PlatformUserForm({ mode, initial, onDone, onCreated, organizations }: P
   );
 }
 
-// ─── Platform Users Table ──────────────────────────────────────────────────────
+// ─── Platform Accounts Table ────────────────────────────────────────────────────
 
-const COL_COUNT = 9;
+const COL_COUNT = 7;
 
 function canManageRow(member: StaffUser, currentUser: AuthUser | null): boolean {
   if (!currentUser) return false;
@@ -446,10 +407,7 @@ export function PlatformUsersTable() {
   const { user } = useAuthStore();
   const qc = useQueryClient();
 
-  const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
-  const [orgFilter, setOrgFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [expandedId, setExpandedId] = useState<string | 'new' | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -457,17 +415,6 @@ export function PlatformUsersTable() {
   const [restoringId, setRestoringId] = useState<string | null>(null);
   const [restoreError, setRestoreError] = useState<string | null>(null);
   const [restoreSuccessMsg, setRestoreSuccessMsg] = useState<string | null>(null);
-  const [doctorHint, setDoctorHint] = useState(false);
-
-  useEffect(() => {
-    setPage(1);
-  }, [searchTerm, roleFilter, orgFilter, statusFilter]);
-
-  useEffect(() => {
-    if (!doctorHint) return;
-    const id = setTimeout(() => setDoctorHint(false), 10_000);
-    return () => clearTimeout(id);
-  }, [doctorHint]);
 
   useEffect(() => {
     if (!restoreSuccessMsg) return;
@@ -475,36 +422,22 @@ export function PlatformUsersTable() {
     return () => clearTimeout(id);
   }, [restoreSuccessMsg]);
 
+  // Still needed for the create form's required "home organization" field —
+  // the backend requires organizationId on create regardless of role.
   const { data: organizations = [] } = useOrganizations();
-  const orgMap = new Map(organizations.map((o) => [o.id, o.name]));
 
-  const { data: result, isLoading, isError, refetch } = usePlatformUsers({ page, limit: LIMIT, includeDeleted: true });
+  const { data: result, isLoading, isError, refetch } = usePlatformUsers({ limit: LIMIT, includeDeleted: true });
   const deleteStaff = useDeleteStaff();
   const restoreStaff = useRestoreStaff();
 
-  const allRows = result?.data ?? [];
-  const total = result?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / LIMIT));
+  // This page is scoped to platform-tier accounts only — every other role
+  // (ORG_ADMIN, BRANCH_ADMIN, and all clinic staff roles) belongs to an
+  // organization and is out of scope here (see Phase 141C).
+  const platformAccounts = (result?.data ?? []).filter((u) => u.role === 'SUPER_ADMIN');
 
-  // Last-active-admin protection is computed only over the currently
-  // fetched page — the backend's transaction-guarded count check (per
-  // SUPER_ADMIN platform-wide, per ORG_ADMIN within its organization)
-  // remains the real authority regardless of pagination boundaries.
-  const activeSuperAdminCount = allRows.filter((u) => u.role === 'SUPER_ADMIN' && u.isActive && !u.deletedAt).length;
-  const activeOrgAdminCountByOrg = new Map<string, number>();
-  for (const u of allRows) {
-    if (u.role === 'ORG_ADMIN' && u.isActive && !u.deletedAt) {
-      activeOrgAdminCountByOrg.set(u.organizationId, (activeOrgAdminCountByOrg.get(u.organizationId) ?? 0) + 1);
-    }
-  }
+  const activeSuperAdminCount = platformAccounts.filter((u) => u.isActive && !u.deletedAt).length;
 
-  function organizationName(member: StaffUser): string {
-    return orgMap.get(member.organizationId) ?? member.organizationId;
-  }
-
-  const items = allRows.filter((member) => {
-    if (roleFilter && member.role !== roleFilter) return false;
-    if (orgFilter && member.organizationId !== orgFilter) return false;
+  const items = platformAccounts.filter((member) => {
     if (statusFilter === 'active' && !member.isActive) return false;
     if (statusFilter === 'inactive' && member.isActive) return false;
     if (searchTerm.trim()) {
@@ -561,32 +494,6 @@ export function PlatformUsersTable() {
       </div>
 
       <select
-        value={roleFilter}
-        onChange={(e) => setRoleFilter(e.target.value)}
-        className="h-9 rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring"
-      >
-        <option value="">{t('filters.allRoles')}</option>
-        {[...STAFF_ROLES, 'SUPER_ADMIN', 'BRANCH_ADMIN'].map((r) => (
-          <option key={r} value={r}>
-            {t(`roles.${r}` as Parameters<typeof t>[0])}
-          </option>
-        ))}
-      </select>
-
-      <select
-        value={orgFilter}
-        onChange={(e) => setOrgFilter(e.target.value)}
-        className="h-9 rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring"
-      >
-        <option value="">{t('filters.allOrganizations')}</option>
-        {organizations.map((org) => (
-          <option key={org.id} value={org.id}>
-            {org.name}
-          </option>
-        ))}
-      </select>
-
-      <select
         value={statusFilter}
         onChange={(e) => setStatusFilter(e.target.value)}
         className="h-9 rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring"
@@ -618,10 +525,8 @@ export function PlatformUsersTable() {
         <th className="px-4 py-3 text-start font-medium">{t('columns.phone')}</th>
         <th className="px-4 py-3 text-start font-medium">{t('columns.email')}</th>
         <th className="px-4 py-3 text-start font-medium">{t('columns.role')}</th>
-        <th className="px-4 py-3 text-start font-medium">{t('columns.organization')}</th>
         <th className="px-4 py-3 text-start font-medium">{t('columns.status')}</th>
         <th className="px-4 py-3 text-start font-medium">{t('columns.lastLogin')}</th>
-        <th className="px-4 py-3 text-start font-medium">{t('columns.createdAt')}</th>
         <th className="px-4 py-3 text-start font-medium">{t('columns.actions')}</th>
       </tr>
     </thead>
@@ -633,10 +538,10 @@ export function PlatformUsersTable() {
         {toolbar}
         <div className="overflow-hidden rounded-xl border border-border">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[960px]">
+            <table className="w-full min-w-[760px]">
               {thead}
               <tbody>
-                {Array.from({ length: 3 }).map((_, i) => (
+                {Array.from({ length: 2 }).map((_, i) => (
                   <tr key={i} className="border-t border-border">
                     {Array.from({ length: COL_COUNT }).map((__, j) => (
                       <td key={j} className="px-4 py-3">
@@ -670,19 +575,6 @@ export function PlatformUsersTable() {
     );
   }
 
-  const doctorHintBanner = doctorHint ? (
-    <div className="flex items-start justify-between gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
-      <p className="text-foreground">{t('doctorProfileHint.body')}</p>
-      <button
-        onClick={() => setDoctorHint(false)}
-        className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
-        aria-label="dismiss"
-      >
-        ✕
-      </button>
-    </div>
-  ) : null;
-
   const restoreSuccessBanner = restoreSuccessMsg ? (
     <div className="flex items-center justify-between gap-3 rounded-lg border border-green-500/20 bg-green-500/5 px-4 py-3 text-sm">
       <p className="text-green-700 dark:text-green-400">{restoreSuccessMsg}</p>
@@ -695,62 +587,37 @@ export function PlatformUsersTable() {
     </div>
   ) : null;
 
-  const pagination = (
-    <div className="flex items-center justify-between gap-3">
-      <p className="text-sm text-muted-foreground">{t('pagination.pageInfo', { page, totalPages, total })}</p>
-      <div className="flex gap-2">
-        <button
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-          disabled={page <= 1}
-          className="inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {t('pagination.previous')}
-        </button>
-        <button
-          onClick={() => setPage((p) => p + 1)}
-          disabled={page * LIMIT >= total}
-          className="inline-flex h-8 items-center rounded-md border px-3 text-sm font-medium transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {t('pagination.next')}
-        </button>
-      </div>
-    </div>
-  );
-
   if (items.length === 0 && expandedId !== 'new') {
     return (
       <div className="space-y-3">
-        {doctorHintBanner}
         {restoreSuccessBanner}
         {toolbar}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-12 text-center">
-          <UsersIcon className="h-8 w-8 text-muted-foreground/50" />
+          <ShieldAlert className="h-8 w-8 text-muted-foreground/50" />
           <p className="text-sm font-medium">{t('empty')}</p>
         </div>
-        {pagination}
       </div>
     );
   }
 
   return (
     <div className="space-y-3">
-      {doctorHintBanner}
       {restoreSuccessBanner}
       {toolbar}
+      <p className="text-sm text-muted-foreground">{t('count', { count: items.length })}</p>
 
       <div className="overflow-hidden rounded-xl border border-border">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[960px]">
+          <table className="w-full min-w-[760px]">
             {thead}
             <tbody>
               {expandedId === 'new' && (
                 <tr className="border-t border-border bg-muted/10">
                   <td colSpan={COL_COUNT} className="p-4">
                     <p className="mb-3 text-sm font-semibold">{t('form.createTitle')}</p>
-                    <PlatformUserForm
+                    <PlatformAccountForm
                       mode="create"
                       onDone={() => setExpandedId(null)}
-                      onCreated={(role) => setDoctorHint(role === 'DOCTOR')}
                       organizations={organizations}
                     />
                   </td>
@@ -759,14 +626,7 @@ export function PlatformUsersTable() {
 
               {items.map((member) => {
                 const isDeactivated = !!member.deletedAt;
-                const isLastSuperAdmin =
-                  member.role === 'SUPER_ADMIN' && member.isActive && !member.deletedAt && activeSuperAdminCount === 1;
-                const isLastOrgAdmin =
-                  member.role === 'ORG_ADMIN' &&
-                  member.isActive &&
-                  !member.deletedAt &&
-                  (activeOrgAdminCountByOrg.get(member.organizationId) ?? 0) === 1;
-                const isLastActiveAdmin = isLastSuperAdmin || isLastOrgAdmin;
+                const isLastSuperAdmin = member.isActive && !member.deletedAt && activeSuperAdminCount === 1;
                 const isSelf = !!user && member.id === user.id;
                 const canManage = canManageRow(member, user);
 
@@ -802,29 +662,17 @@ export function PlatformUsersTable() {
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-sm">{t(`roles.${member.role}` as Parameters<typeof t>[0])}</span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <Link
-                          href={`/dashboard/platform/organizations/${member.organizationId}`}
-                          className="text-sm text-primary hover:underline"
-                        >
-                          {organizationName(member)}
-                        </Link>
+                        <Badge variant="outline">{t('roles.SUPER_ADMIN')}</Badge>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1">
                           {statusBadge}
                           {isSelf && <Badge variant="outline">{t('yourAccount')}</Badge>}
                           {isLastSuperAdmin && <Badge variant="warning">{t('lastSuperAdmin')}</Badge>}
-                          {isLastOrgAdmin && <Badge variant="warning">{t('lastOrgAdmin')}</Badge>}
                         </div>
                       </td>
                       <td className="px-4 py-3 text-sm text-muted-foreground" dir="ltr">
                         {member.lastLoginAt ? new Date(member.lastLoginAt).toLocaleDateString() : '—'}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground" dir="ltr">
-                        {new Date(member.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-3">
                         {!canManage ? (
@@ -859,22 +707,16 @@ export function PlatformUsersTable() {
                             </button>
                             <button
                               onClick={() => {
-                                if (isLastActiveAdmin) return;
+                                if (isLastSuperAdmin) return;
                                 setDeletingId(deletingId === member.id ? null : member.id);
                                 setExpandedId(null);
                                 setRestoringId(null);
                                 setDeleteError(null);
                               }}
-                              disabled={isLastActiveAdmin}
-                              title={
-                                isLastSuperAdmin
-                                  ? t('lastSuperAdminTooltip')
-                                  : isLastOrgAdmin
-                                  ? t('lastOrgAdminTooltip')
-                                  : undefined
-                              }
+                              disabled={isLastSuperAdmin}
+                              title={isLastSuperAdmin ? t('lastSuperAdminTooltip') : undefined}
                               className={
-                                isLastActiveAdmin
+                                isLastSuperAdmin
                                   ? 'inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground opacity-40 cursor-not-allowed'
                                   : 'inline-flex h-7 w-7 items-center justify-center rounded-md border border-destructive/30 text-destructive transition-colors hover:bg-destructive/10'
                               }
@@ -891,7 +733,7 @@ export function PlatformUsersTable() {
                       <tr className="border-t border-border bg-muted/10">
                         <td colSpan={COL_COUNT} className="p-4">
                           <p className="mb-3 text-sm font-semibold">{t('form.editTitle')}</p>
-                          <PlatformUserForm
+                          <PlatformAccountForm
                             mode="edit"
                             initial={member}
                             onDone={() => setExpandedId(null)}
@@ -901,7 +743,7 @@ export function PlatformUsersTable() {
                       </tr>
                     )}
 
-                    {deletingId === member.id && canManage && !isDeactivated && !isLastActiveAdmin && (
+                    {deletingId === member.id && canManage && !isDeactivated && !isLastSuperAdmin && (
                       <tr className="border-t border-border bg-destructive/5">
                         <td colSpan={COL_COUNT} className="px-4 py-2.5">
                           <div className="flex flex-wrap items-center gap-3">
@@ -971,8 +813,6 @@ export function PlatformUsersTable() {
           </table>
         </div>
       </div>
-
-      {pagination}
     </div>
   );
 }

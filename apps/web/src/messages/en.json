@@ -69,7 +69,7 @@
       "organizations": "Organizations",
       "payments": "Payments",
       "auditLogs": "Audit Logs",
-      "users": "Users",
+      "users": "Platform Accounts",
       "followUps": "Follow-ups",
       "myFollowUps": "My Follow-ups",
       "today": "Today",
@@ -3166,26 +3166,22 @@
       }
     },
     "users": {
-      "title": "Users",
-      "subtitle": "Manage platform users across organizations.",
-      "loading": "Loading users…",
-      "error": "Failed to load users.",
-      "empty": "No users found.",
+      "title": "Platform Accounts",
+      "subtitle": "Manage platform-level administrator accounts.",
+      "loading": "Loading platform accounts…",
+      "error": "Failed to load platform accounts.",
+      "empty": "No platform accounts found.",
       "searchPlaceholder": "Search name, phone, or email…",
       "filters": {
-        "role": "Role",
-        "organization": "Organization",
         "status": "Status",
-        "allRoles": "All roles",
-        "allOrganizations": "All organizations",
         "allStatuses": "All statuses"
       },
+      "count": "{count} platform accounts",
       "columns": {
         "name": "Name",
         "phone": "Phone",
         "email": "Email",
         "role": "Role",
-        "organization": "Organization",
         "status": "Status",
         "lastLogin": "Last Login",
         "createdAt": "Created At",
@@ -3197,7 +3193,7 @@
         "deactivated": "Deactivated"
       },
       "actions": {
-        "create": "New User",
+        "create": "Add Platform Account",
         "creating": "Creating…",
         "edit": "Edit",
         "save": "Save",
@@ -3209,11 +3205,11 @@
         "restoring": "Restoring…",
         "resetPassword": "Reset Password",
         "setTemporaryPassword": "Set Temporary Password",
-        "confirmDeactivate": "Deactivate this user? They will lose access to the system.",
-        "confirmRestore": "Restore this user? They will regain access to the system."
+        "confirmDeactivate": "Deactivate this platform account? They will lose access to the system.",
+        "confirmRestore": "Restore this platform account? They will regain access to the system."
       },
       "roles": {
-        "SUPER_ADMIN": "Super Admin",
+        "SUPER_ADMIN": "Platform Administrator",
         "BRANCH_ADMIN": "Branch Admin",
         "ORG_ADMIN": "Admin",
         "SECRETARY": "Secretary",
@@ -3222,9 +3218,10 @@
         "ACCOUNTANT": "Accountant",
         "TECHNICIAN": "Technician"
       },
+      "fullAccessWarning": "This account has full access to the platform.",
       "form": {
-        "createTitle": "New User",
-        "editTitle": "Edit User",
+        "createTitle": "Add Platform Account",
+        "editTitle": "Edit Platform Account",
         "fields": {
           "firstName": "First Name",
           "lastName": "Last Name",
@@ -3233,16 +3230,18 @@
           "phone": "Phone",
           "email": "Email",
           "password": "Password",
-          "role": "Role",
-          "organization": "Organization",
+          "homeOrganization": "Home Organization",
           "temporaryPasswordSection": "Set Temporary Password",
           "temporaryPassword": "Temporary Password",
           "confirmTemporaryPassword": "Confirm Temporary Password",
-          "temporaryPasswordHelp": "Filling this field will reset the user's current password immediately. Leave blank to keep the existing password."
+          "temporaryPasswordHelp": "Filling this field will reset the account's current password immediately. Leave blank to keep the existing password."
+        },
+        "help": {
+          "homeOrganization": "Required by the system for record-keeping only. It does not limit this account's platform-wide access."
         },
         "placeholders": {
           "phone": "e.g. +963912345678",
-          "email": "e.g. user@clinic.com",
+          "email": "e.g. admin@elaji.health",
           "password": "Min. 10 characters"
         },
         "actions": {
@@ -3257,8 +3256,7 @@
         "firstNameRequired": "First name is required.",
         "lastNameRequired": "Last name is required.",
         "phoneRequired": "Phone is required.",
-        "roleRequired": "Role is required.",
-        "organizationRequired": "Organization is required.",
+        "organizationRequired": "Home organization is required.",
         "passwordRequired": "Password is required (min. 10 characters).",
         "passwordFormat": "Password must contain at least one letter and one number.",
         "emailFormat": "Enter a valid email address.",
@@ -3267,34 +3265,23 @@
         "tempPasswordFormat": "Password must be at least 10 characters and include at least one letter and one number."
       },
       "success": {
-        "created": "User created successfully.",
-        "updated": "User updated successfully.",
-        "deactivated": "User deactivated.",
-        "restored": "User restored.",
-        "passwordReset": "Temporary password set. Ask the user to sign in and change it from My Profile."
+        "created": "Platform account created successfully.",
+        "updated": "Platform account updated successfully.",
+        "deactivated": "Platform account deactivated.",
+        "restored": "Platform account restored.",
+        "passwordReset": "Temporary password set. Ask the account holder to sign in and change it from My Profile."
       },
       "error": {
         "generic": "Something went wrong. Please try again.",
-        "saveFailed": "Failed to save user.",
-        "deactivateFailed": "Failed to deactivate user.",
-        "restoreFailed": "Failed to restore user.",
+        "saveFailed": "Failed to save platform account.",
+        "deactivateFailed": "Failed to deactivate platform account.",
+        "restoreFailed": "Failed to restore platform account.",
         "phoneConflict": "Phone or email is already in use."
       },
       "selfProtection": "You cannot manage your own account from this page. Use My Profile instead.",
       "yourAccount": "Your Account",
-      "lastSuperAdmin": "Last Super Admin",
-      "lastSuperAdminTooltip": "This is the last active super admin. At least one super admin must remain active.",
-      "lastOrgAdmin": "Last Org Admin",
-      "lastOrgAdminTooltip": "This is the last active org admin for this organization. At least one org admin must remain active.",
-      "doctorProfileHint": {
-        "title": "Doctor account note",
-        "body": "Creating a doctor account here creates the user account only. Doctor clinical profile details should be completed separately by the organization admin."
-      },
-      "pagination": {
-        "previous": "Previous",
-        "next": "Next",
-        "pageInfo": "Page {page} of {totalPages} / {total} total"
-      }
+      "lastSuperAdmin": "Last Platform Admin",
+      "lastSuperAdminTooltip": "This is the last active platform administrator. At least one platform administrator must remain active."
     }
   },
   "error": {

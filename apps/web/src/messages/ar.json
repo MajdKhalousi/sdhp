@@ -2695,6 +2695,7 @@
     "organizations": {
       "title": "المنظمات",
       "subtitle": "جميع المنظمات المسجلة في المنصة",
+      "overviewLink": "← نظرة عامة",
       "loading": "جارٍ تحميل المنظمات…",
       "error": "فشل تحميل المنظمات.",
       "empty": "لا توجد منظمات مسجلة بعد.",
@@ -2880,6 +2881,68 @@
           "generic": "فشل تحديث الاشتراك. يرجى المحاولة مرة أخرى."
         }
       }
+    },
+    "overview": {
+      "title": "نظرة عامة على المنصة",
+      "subtitle": "رؤية عالية المستوى عبر جميع المنظمات في المنصة.",
+      "loading": "جارٍ تحميل نظرة عامة المنصة…",
+      "error": "فشل تحميل نظرة عامة المنصة.",
+      "organizationsLink": "المنظمات ←",
+      "status": {
+        "active": "نشطة",
+        "inactive": "غير نشطة"
+      },
+      "stats": {
+        "totalOrganizations": "إجمالي المنظمات",
+        "activeOrganizations": "المنظمات النشطة",
+        "inactiveOrganizations": "غير نشطة / موقوفة",
+        "totalUsers": "إجمالي المستخدمين",
+        "orgAdmins": "مشرفو المنظمات",
+        "activeStaff": "الموظفون النشطون"
+      },
+      "subscriptionDistribution": {
+        "title": "توزيع حالة الاشتراك",
+        "TRIAL": "تجريبي",
+        "ACTIVE": "نشط",
+        "SUSPENDED": "موقوف",
+        "EXPIRED": "منتهي",
+        "CANCELLED": "ملغى"
+      },
+      "recentOrganizations": {
+        "title": "المنظمات الأخيرة",
+        "empty": "لا توجد منظمات.",
+        "columns": {
+          "name": "الاسم",
+          "type": "النوع",
+          "status": "الحالة",
+          "createdAt": "تاريخ التسجيل",
+          "view": "عرض"
+        }
+      },
+      "recentAuditEvents": {
+        "title": "أحداث التدقيق الأخيرة",
+        "empty": "لا توجد أحداث تدقيق.",
+        "error": "تعذر تحميل أحداث التدقيق الأخيرة.",
+        "columns": {
+          "action": "الإجراء",
+          "resource": "المورد",
+          "resourceId": "رقم المورد",
+          "createdAt": "الوقت"
+        }
+      },
+      "needsReview": {
+        "title": "بحاجة لمراجعة — تواريخ الاشتراك",
+        "helperText": "هذه معلومات فقط ولا تغيّر حالة الاشتراك أو تمنع الوصول.",
+        "empty": "لا توجد منظمات بحاجة لمراجعة.",
+        "expired": "منتهي",
+        "expiringSoon": "ينتهي قريباً",
+        "columns": {
+          "name": "الاسم",
+          "endDate": "تاريخ الانتهاء",
+          "status": "الحالة"
+        }
+      },
+      "limitNote": "يعرض حتى 100 سجل."
     }
   },
   "error": {

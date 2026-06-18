@@ -2695,6 +2695,7 @@
     "organizations": {
       "title": "Organizations",
       "subtitle": "All registered organizations on the platform",
+      "overviewLink": "← Overview",
       "loading": "Loading organizations…",
       "error": "Failed to load organizations.",
       "empty": "No organizations registered yet.",
@@ -2880,6 +2881,68 @@
           "generic": "Failed to update subscription. Please try again."
         }
       }
+    },
+    "overview": {
+      "title": "Platform Overview",
+      "subtitle": "High-level visibility across all organizations on the platform.",
+      "loading": "Loading platform overview…",
+      "error": "Failed to load platform overview.",
+      "organizationsLink": "Organizations →",
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "stats": {
+        "totalOrganizations": "Total Organizations",
+        "activeOrganizations": "Active Organizations",
+        "inactiveOrganizations": "Inactive / Suspended",
+        "totalUsers": "Total Users",
+        "orgAdmins": "Org Admins",
+        "activeStaff": "Active Staff"
+      },
+      "subscriptionDistribution": {
+        "title": "Subscription Status Distribution",
+        "TRIAL": "Trial",
+        "ACTIVE": "Active",
+        "SUSPENDED": "Suspended",
+        "EXPIRED": "Expired",
+        "CANCELLED": "Cancelled"
+      },
+      "recentOrganizations": {
+        "title": "Recent Organizations",
+        "empty": "No organizations found.",
+        "columns": {
+          "name": "Name",
+          "type": "Type",
+          "status": "Status",
+          "createdAt": "Registered",
+          "view": "View"
+        }
+      },
+      "recentAuditEvents": {
+        "title": "Recent Audit Events",
+        "empty": "No audit events found.",
+        "error": "Unable to load recent audit events.",
+        "columns": {
+          "action": "Action",
+          "resource": "Resource",
+          "resourceId": "Resource ID",
+          "createdAt": "When"
+        }
+      },
+      "needsReview": {
+        "title": "Needs Review — Subscription Dates",
+        "helperText": "This is informational only and does not change subscription status or block access.",
+        "empty": "No organizations need review.",
+        "expired": "Expired",
+        "expiringSoon": "Expiring Soon",
+        "columns": {
+          "name": "Name",
+          "endDate": "End Date",
+          "status": "Status"
+        }
+      },
+      "limitNote": "Showing up to 100 records."
     }
   },
   "error": {

@@ -25,6 +25,15 @@ export default function PlatformOrganizationsPage() {
 
   return (
     <div className="space-y-6">
+      <div>
+        <Link
+          href="/dashboard/platform/overview"
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {t('overviewLink')}
+        </Link>
+      </div>
+
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>

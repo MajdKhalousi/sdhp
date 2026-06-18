@@ -1,16 +1,26 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { Plus } from 'lucide-react';
 import { AppointmentList } from '@/components/appointments/appointment-list';
 import { useAuthStore } from '@/store/auth';
-import { APPOINTMENT_CREATE_ROLES } from '@/lib/permissions';
+import { NAV_APPOINTMENTS_ROLES, APPOINTMENT_CREATE_ROLES } from '@/lib/permissions';
 
 export default function AppointmentsPage() {
   const t = useTranslations('appointment.list');
+  const router = useRouter();
   const { user } = useAuthStore();
   const canCreate = user ? APPOINTMENT_CREATE_ROLES.has(user.role) : false;
+
+  useEffect(() => {
+    if (user && !NAV_APPOINTMENTS_ROLES.includes(user.role)) {
+      router.replace('/dashboard');
+    }
+  }, [user, router]);
+
+  if (!user || !NAV_APPOINTMENTS_ROLES.includes(user.role)) return null;
 
   return (
     <div className="space-y-6">

@@ -1,7 +1,7 @@
 'use client';
 
-import { Fragment, useState } from 'react';
-import { Link } from '@/i18n/navigation';
+import { Fragment, useState, useEffect } from 'react';
+import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { useTodayHub, type TodayHubEntry } from '@/hooks/use-today-hub';
@@ -18,6 +18,7 @@ import { formatTimeDisplay } from '@/lib/format-date';
 import { Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
+  NAV_TODAY_ROLES,
   TODAY_BILLING_ROLES,
   TODAY_ENCOUNTER_ROLES,
   TODAY_DOCTOR_FILTER_ROLES,
@@ -88,6 +89,7 @@ export default function TodayPage() {
   const t = useTranslations('dashboard.today');
   const tCommon = useTranslations('common');
   const locale = useLocale();
+  const router = useRouter();
   const { user } = useAuthStore();
   const role = user?.role ?? '';
   const canSeeBilling = TODAY_BILLING_ROLES.has(role);
@@ -95,6 +97,12 @@ export default function TodayPage() {
   const canFilterByDoctor = TODAY_DOCTOR_FILTER_ROLES.has(role);
   const canCheckIn = TODAY_CHECK_IN_ROLES.has(role);
   const canAdvance = TODAY_ADVANCE_ROLES.has(role);
+
+  useEffect(() => {
+    if (user && !NAV_TODAY_ROLES.includes(user.role)) {
+      router.replace('/dashboard');
+    }
+  }, [user, router]);
 
   const [date, setDate] = useState(todayDamascus());
   const [doctorId, setDoctorId] = useState<string | undefined>(undefined);
@@ -133,6 +141,8 @@ export default function TodayPage() {
       { key: 'partialPaid', value: summary?.partialPaid ?? 0, color: 'text-amber-600 dark:text-amber-400' },
     ] : []),
   ];
+
+  if (!user || !NAV_TODAY_ROLES.includes(user.role)) return null;
 
   return (
     <div className="space-y-6">

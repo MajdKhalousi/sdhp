@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter, Link } from '@/i18n/navigation';
 import { AlertTriangle, ArrowLeft, CalendarClock, UserPlus, Receipt } from 'lucide-react';
@@ -8,6 +8,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { usePatient, useUpdatePatient, useDeletePatient } from '@/hooks/use-patient';
 import { useAuthStore } from '@/store/auth';
 import {
+  NAV_PATIENTS_ROLES,
   PATIENT_EDIT_ROLES,
   PATIENT_ARCHIVE_ROLES,
   CLINICAL_ROLES,
@@ -249,6 +250,13 @@ export default function PatientPage({ params }: { params: { id: string } }) {
   const canCreateInvoice       = user ? INVOICE_CREATE_ROLES.has(user.role) : false;
   const canViewPatientInvoices = user ? INVOICE_READ_ROLES.has(user.role) : false;
   const canSeeVisitStatus      = user ? PATIENT_SAFETY_ALERT_ROLES.has(user.role) : false;
+
+  useEffect(() => {
+    if (user && !NAV_PATIENTS_ROLES.includes(user.role)) {
+      router.replace('/dashboard');
+    }
+  }, [user, router]);
+
   const [activeTab, setActiveTab] = useState(() => {
     const tab = searchParams.get('tab');
     return tab === 'timeline' || tab === 'medical-history' ? 'timeline'
@@ -319,6 +327,8 @@ export default function PatientPage({ params }: { params: { id: string } }) {
     { value: 'reports',       label: t('detail.tabs.reports')       },
     { value: 'invoices',      label: t('detail.tabs.invoices')      },
   ];
+
+  if (!user || !NAV_PATIENTS_ROLES.includes(user.role)) return null;
 
   return (
     <div className="space-y-4">

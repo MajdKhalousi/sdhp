@@ -16,6 +16,7 @@ import { useAuthStore } from '@/store/auth';
 import { useUnsavedGuardStore } from '@/store/unsaved-guard';
 import { formatDateDisplay } from '@/lib/format-date';
 import {
+  NAV_PATIENTS_ROLES,
   PATIENT_EDIT_ROLES,
   PATIENT_ARCHIVE_ROLES,
   PATIENT_BOOK_ROLES,
@@ -104,6 +105,12 @@ export default function PatientsPage() {
   const { toast } = useToast();
   const guard = useUnsavedGuardStore();
   const router = useRouter();
+
+  useEffect(() => {
+    if (user && !NAV_PATIENTS_ROLES.includes(user.role)) {
+      router.replace('/dashboard');
+    }
+  }, [user, router]);
 
   const patients = data?.data ?? [];
   const totalPages = data ? Math.ceil(data.total / PAGE_LIMIT) : 1;
@@ -253,6 +260,8 @@ export default function PatientsPage() {
       setArchiveConfirmId(null);
     }
   }
+
+  if (!user || !NAV_PATIENTS_ROLES.includes(user.role)) return null;
 
   return (
     <div className="space-y-6">

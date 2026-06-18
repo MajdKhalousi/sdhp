@@ -6,13 +6,21 @@ import { UserPlus } from 'lucide-react';
 import { QueueBoard } from '@/components/queue/queue-board';
 import { WalkInWizard } from '@/components/queue/walk-in-wizard';
 import { useAuthStore } from '@/store/auth';
-import { QUEUE_CREATE_ROLES } from '@/lib/permissions';
+import { useRouter } from '@/i18n/navigation';
+import { NAV_QUEUE_ROLES, QUEUE_CREATE_ROLES } from '@/lib/permissions';
 
 export default function QueuePage() {
   const t = useTranslations('queue.board');
+  const router = useRouter();
   const { user } = useAuthStore();
   const canCheckIn = user ? QUEUE_CREATE_ROLES.has(user.role) : false;
   const [isCheckInOpen, setIsCheckInOpen] = useState(false);
+
+  useEffect(() => {
+    if (user && !NAV_QUEUE_ROLES.includes(user.role)) {
+      router.replace('/dashboard');
+    }
+  }, [user, router]);
 
   useEffect(() => {
     if (isCheckInOpen) {
@@ -31,6 +39,8 @@ export default function QueuePage() {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [isCheckInOpen]);
+
+  if (!user || !NAV_QUEUE_ROLES.includes(user.role)) return null;
 
   return (
     <div className="space-y-6">

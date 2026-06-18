@@ -1,5 +1,6 @@
 import { DashboardShell } from '@/components/layout/dashboard-shell';
 import { AuthGuard } from '@/components/layout/auth-guard';
+import { PlatformOnlyGuard } from '@/components/layout/platform-only-guard';
 import { Toaster } from '@/components/ui/toast';
 
 export default function DashboardLayout({
@@ -9,7 +10,9 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthGuard>
-      <DashboardShell>{children}</DashboardShell>
+      <DashboardShell>
+        <PlatformOnlyGuard>{children}</PlatformOnlyGuard>
+      </DashboardShell>
       <Toaster />
     </AuthGuard>
   );

@@ -27,6 +27,23 @@ export const NAV_PLATFORM_ORGANIZATIONS_ROLES: readonly string[] = ['SUPER_ADMIN
 export const NAV_SETTINGS_ROLES: readonly string[]            = ['ORG_ADMIN'];
 export const NAV_PROFILE_ROLES: readonly string[]             = ['SUPER_ADMIN', 'ORG_ADMIN', 'BRANCH_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY', 'ACCOUNTANT', 'TECHNICIAN'];
 
+// ─── Super admin platform-only route hardening (134B) ────────────────────────
+// SUPER_ADMIN is a platform operator, not a clinic operator. PlatformOnlyGuard
+// (components/layout/platform-only-guard.tsx) redirects SUPER_ADMIN away from
+// any /dashboard/* route that isn't covered by this allow-list. Default-deny:
+// any new clinic route added in the future is blocked automatically without
+// needing to update this list. Paths are locale-stripped, matching what
+// usePathname() from '@/i18n/navigation' already returns everywhere else in
+// this codebase (see sidebar.tsx, settings/layout.tsx for the same pattern).
+// Note: the bare '/dashboard' route is handled separately in the guard itself
+// (exact match, not a prefix) — it already redirects via its own page-level
+// effect from Phase 134A, which this guard's redirect harmlessly overlaps with.
+
+export const SUPER_ADMIN_ALLOWED_PATH_PREFIXES: readonly string[] = [
+  '/dashboard/platform',
+  '/dashboard/profile',
+];
+
 // ─── Settings & admin page guards ────────────────────────────────────────────
 
 export const PLATFORM_ACCESS_ROLES  = new Set(['SUPER_ADMIN']);

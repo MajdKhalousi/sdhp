@@ -69,6 +69,7 @@
       "organizations": "Organizations",
       "payments": "Payments",
       "auditLogs": "Audit Logs",
+      "users": "Users",
       "followUps": "Follow-ups",
       "myFollowUps": "My Follow-ups",
       "today": "Today",
@@ -3157,6 +3158,137 @@
         "oldData": "Old Data",
         "newData": "New Data",
         "noDetails": "No additional details for this event."
+      },
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "pageInfo": "Page {page} of {totalPages} / {total} total"
+      }
+    },
+    "users": {
+      "title": "Users",
+      "subtitle": "Manage platform users across organizations.",
+      "loading": "Loading users…",
+      "error": "Failed to load users.",
+      "empty": "No users found.",
+      "searchPlaceholder": "Search name, phone, or email…",
+      "filters": {
+        "role": "Role",
+        "organization": "Organization",
+        "status": "Status",
+        "allRoles": "All roles",
+        "allOrganizations": "All organizations",
+        "allStatuses": "All statuses"
+      },
+      "columns": {
+        "name": "Name",
+        "phone": "Phone",
+        "email": "Email",
+        "role": "Role",
+        "organization": "Organization",
+        "status": "Status",
+        "lastLogin": "Last Login",
+        "createdAt": "Created At",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "deactivated": "Deactivated"
+      },
+      "actions": {
+        "create": "New User",
+        "creating": "Creating…",
+        "edit": "Edit",
+        "save": "Save",
+        "saving": "Saving…",
+        "cancel": "Cancel",
+        "deactivate": "Deactivate",
+        "deactivating": "Deactivating…",
+        "restore": "Restore",
+        "restoring": "Restoring…",
+        "resetPassword": "Reset Password",
+        "setTemporaryPassword": "Set Temporary Password",
+        "confirmDeactivate": "Deactivate this user? They will lose access to the system.",
+        "confirmRestore": "Restore this user? They will regain access to the system."
+      },
+      "roles": {
+        "SUPER_ADMIN": "Super Admin",
+        "BRANCH_ADMIN": "Branch Admin",
+        "ORG_ADMIN": "Admin",
+        "SECRETARY": "Secretary",
+        "DOCTOR": "Doctor",
+        "NURSE": "Nurse",
+        "ACCOUNTANT": "Accountant",
+        "TECHNICIAN": "Technician"
+      },
+      "form": {
+        "createTitle": "New User",
+        "editTitle": "Edit User",
+        "fields": {
+          "firstName": "First Name",
+          "lastName": "Last Name",
+          "firstNameAr": "First Name (Arabic)",
+          "lastNameAr": "Last Name (Arabic)",
+          "phone": "Phone",
+          "email": "Email",
+          "password": "Password",
+          "role": "Role",
+          "organization": "Organization",
+          "temporaryPasswordSection": "Set Temporary Password",
+          "temporaryPassword": "Temporary Password",
+          "confirmTemporaryPassword": "Confirm Temporary Password",
+          "temporaryPasswordHelp": "Filling this field will reset the user's current password immediately. Leave blank to keep the existing password."
+        },
+        "placeholders": {
+          "phone": "e.g. +963912345678",
+          "email": "e.g. user@clinic.com",
+          "password": "Min. 10 characters"
+        },
+        "actions": {
+          "create": "Create",
+          "creating": "Creating…",
+          "save": "Save",
+          "saving": "Saving…",
+          "cancel": "Cancel"
+        }
+      },
+      "validation": {
+        "firstNameRequired": "First name is required.",
+        "lastNameRequired": "Last name is required.",
+        "phoneRequired": "Phone is required.",
+        "roleRequired": "Role is required.",
+        "organizationRequired": "Organization is required.",
+        "passwordRequired": "Password is required (min. 10 characters).",
+        "passwordFormat": "Password must contain at least one letter and one number.",
+        "emailFormat": "Enter a valid email address.",
+        "passwordMismatch": "Passwords do not match.",
+        "tempPasswordRequired": "Password is required when setting a temporary password.",
+        "tempPasswordFormat": "Password must be at least 10 characters and include at least one letter and one number."
+      },
+      "success": {
+        "created": "User created successfully.",
+        "updated": "User updated successfully.",
+        "deactivated": "User deactivated.",
+        "restored": "User restored.",
+        "passwordReset": "Temporary password set. Ask the user to sign in and change it from My Profile."
+      },
+      "error": {
+        "generic": "Something went wrong. Please try again.",
+        "saveFailed": "Failed to save user.",
+        "deactivateFailed": "Failed to deactivate user.",
+        "restoreFailed": "Failed to restore user.",
+        "phoneConflict": "Phone or email is already in use."
+      },
+      "selfProtection": "You cannot manage your own account from this page. Use My Profile instead.",
+      "yourAccount": "Your Account",
+      "lastSuperAdmin": "Last Super Admin",
+      "lastSuperAdminTooltip": "This is the last active super admin. At least one super admin must remain active.",
+      "lastOrgAdmin": "Last Org Admin",
+      "lastOrgAdminTooltip": "This is the last active org admin for this organization. At least one org admin must remain active.",
+      "doctorProfileHint": {
+        "title": "Doctor account note",
+        "body": "Creating a doctor account here creates the user account only. Doctor clinical profile details should be completed separately by the organization admin."
       },
       "pagination": {
         "previous": "Previous",

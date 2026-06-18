@@ -69,6 +69,7 @@
       "organizations": "المنظمات",
       "payments": "الدفعات",
       "auditLogs": "سجل العمليات",
+      "users": "المستخدمون",
       "followUps": "المراجعات",
       "myFollowUps": "مراجعاتي",
       "today": "اليوم",
@@ -3157,6 +3158,137 @@
         "oldData": "البيانات القديمة",
         "newData": "البيانات الجديدة",
         "noDetails": "لا توجد تفاصيل إضافية لهذه العملية."
+      },
+      "pagination": {
+        "previous": "السابق",
+        "next": "التالي",
+        "pageInfo": "صفحة {page} من {totalPages} / {total} إجمالاً"
+      }
+    },
+    "users": {
+      "title": "المستخدمون",
+      "subtitle": "إدارة مستخدمي المنصة عبر المنظمات.",
+      "loading": "جارٍ تحميل المستخدمين…",
+      "error": "فشل تحميل المستخدمين.",
+      "empty": "لا يوجد مستخدمون.",
+      "searchPlaceholder": "البحث بالاسم أو الهاتف أو البريد الإلكتروني…",
+      "filters": {
+        "role": "الدور",
+        "organization": "المنظمة",
+        "status": "الحالة",
+        "allRoles": "جميع الأدوار",
+        "allOrganizations": "جميع المنظمات",
+        "allStatuses": "جميع الحالات"
+      },
+      "columns": {
+        "name": "الاسم",
+        "phone": "الهاتف",
+        "email": "البريد الإلكتروني",
+        "role": "الدور",
+        "organization": "المنظمة",
+        "status": "الحالة",
+        "lastLogin": "آخر تسجيل دخول",
+        "createdAt": "تاريخ الإنشاء",
+        "actions": "إجراءات"
+      },
+      "status": {
+        "active": "نشط",
+        "inactive": "غير نشط",
+        "deactivated": "معطّل"
+      },
+      "actions": {
+        "create": "مستخدم جديد",
+        "creating": "جارٍ الإنشاء…",
+        "edit": "تعديل",
+        "save": "حفظ",
+        "saving": "جارٍ الحفظ…",
+        "cancel": "إلغاء",
+        "deactivate": "تعطيل",
+        "deactivating": "جارٍ التعطيل…",
+        "restore": "استرجاع",
+        "restoring": "جارٍ الاسترجاع…",
+        "resetPassword": "إعادة تعيين كلمة المرور",
+        "setTemporaryPassword": "تعيين كلمة مرور مؤقتة",
+        "confirmDeactivate": "تعطيل هذا المستخدم؟ سيفقد إمكانية الوصول إلى النظام.",
+        "confirmRestore": "استرجاع هذا المستخدم؟ سيستعيد إمكانية الوصول إلى النظام."
+      },
+      "roles": {
+        "SUPER_ADMIN": "مدير عام",
+        "BRANCH_ADMIN": "مدير فرع",
+        "ORG_ADMIN": "مدير",
+        "SECRETARY": "سكرتير",
+        "DOCTOR": "طبيب",
+        "NURSE": "ممرض",
+        "ACCOUNTANT": "محاسب",
+        "TECHNICIAN": "فني"
+      },
+      "form": {
+        "createTitle": "مستخدم جديد",
+        "editTitle": "تعديل المستخدم",
+        "fields": {
+          "firstName": "الاسم الأول",
+          "lastName": "اسم العائلة",
+          "firstNameAr": "الاسم الأول (عربي)",
+          "lastNameAr": "اسم العائلة (عربي)",
+          "phone": "الهاتف",
+          "email": "البريد الإلكتروني",
+          "password": "كلمة المرور",
+          "role": "الدور",
+          "organization": "المنظمة",
+          "temporaryPasswordSection": "تعيين كلمة مرور مؤقتة",
+          "temporaryPassword": "كلمة المرور المؤقتة",
+          "confirmTemporaryPassword": "تأكيد كلمة المرور المؤقتة",
+          "temporaryPasswordHelp": "تعبئة هذا الحقل ستعيد تعيين كلمة مرور المستخدم فوراً. اتركه فارغاً للحفاظ على كلمة المرور الحالية."
+        },
+        "placeholders": {
+          "phone": "مثال: +963912345678",
+          "email": "مثال: user@clinic.com",
+          "password": "10 أحرف على الأقل"
+        },
+        "actions": {
+          "create": "إنشاء",
+          "creating": "جارٍ الإنشاء…",
+          "save": "حفظ",
+          "saving": "جارٍ الحفظ…",
+          "cancel": "إلغاء"
+        }
+      },
+      "validation": {
+        "firstNameRequired": "الاسم الأول مطلوب.",
+        "lastNameRequired": "اسم العائلة مطلوب.",
+        "phoneRequired": "الهاتف مطلوب.",
+        "roleRequired": "الدور مطلوب.",
+        "organizationRequired": "المنظمة مطلوبة.",
+        "passwordRequired": "كلمة المرور مطلوبة (10 أحرف على الأقل).",
+        "passwordFormat": "يجب أن تحتوي كلمة المرور على حرف ورقم واحد على الأقل.",
+        "emailFormat": "أدخل بريداً إلكترونياً صحيحاً.",
+        "passwordMismatch": "كلمتا المرور غير متطابقتين.",
+        "tempPasswordRequired": "كلمة المرور مطلوبة عند تعيين كلمة مرور مؤقتة.",
+        "tempPasswordFormat": "يجب أن تكون كلمة المرور 10 أحرف على الأقل وتحتوي على حرف ورقم واحد على الأقل."
+      },
+      "success": {
+        "created": "تم إنشاء المستخدم بنجاح.",
+        "updated": "تم تحديث المستخدم بنجاح.",
+        "deactivated": "تم تعطيل المستخدم.",
+        "restored": "تم استرجاع المستخدم.",
+        "passwordReset": "تم تعيين كلمة مرور مؤقتة. اطلب من المستخدم تسجيل الدخول وتغييرها من الملف الشخصي."
+      },
+      "error": {
+        "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+        "saveFailed": "فشل حفظ المستخدم.",
+        "deactivateFailed": "فشل تعطيل المستخدم.",
+        "restoreFailed": "فشل استرجاع المستخدم.",
+        "phoneConflict": "الهاتف أو البريد الإلكتروني مستخدم مسبقاً."
+      },
+      "selfProtection": "لا يمكنك إدارة حسابك الخاص من هذه الصفحة. استخدم الملف الشخصي بدلاً من ذلك.",
+      "yourAccount": "حسابك",
+      "lastSuperAdmin": "آخر مدير عام",
+      "lastSuperAdminTooltip": "هذا هو آخر مدير عام نشط. يجب أن يبقى مدير عام واحد نشطاً على الأقل.",
+      "lastOrgAdmin": "آخر مدير للمنظمة",
+      "lastOrgAdminTooltip": "هذا هو آخر مدير نشط لهذه المنظمة. يجب أن يبقى مدير واحد نشطاً على الأقل.",
+      "doctorProfileHint": {
+        "title": "ملاحظة حول حساب الطبيب",
+        "body": "إنشاء حساب طبيب هنا يُنشئ حساب المستخدم فقط. يجب إكمال تفاصيل الملف السريري للطبيب بشكل منفصل من قبل مدير المنظمة."
       },
       "pagination": {
         "previous": "السابق",

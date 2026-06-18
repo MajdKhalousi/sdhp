@@ -53,6 +53,11 @@ export interface CreateStaffDto {
   password: string;
   role: string;
   isActive?: boolean;
+  // Required when a SUPER_ADMIN creates a user (selects the target
+  // organization); ignored by the backend for ORG_ADMIN callers, whose own
+  // organization is used automatically. Optional here so the existing
+  // ORG_ADMIN staff form's payload shape is unaffected.
+  organizationId?: string;
 }
 
 export interface UpdateStaffDto {

@@ -68,3 +68,30 @@ export function useRestoreStaff() {
     },
   });
 }
+
+export interface PlatformUsersParams {
+  page?: number;
+  limit?: number;
+  includeDeleted?: boolean;
+}
+
+export interface PlatformUsersResult {
+  data: StaffUser[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+// Platform-wide, cross-organization users browser for SUPER_ADMIN — distinct
+// query key and paginated return shape from useStaff (which stays unchanged
+// for the org-scoped settings/staff page and discards total/page via a flat
+// limit=100 fetch).
+export function usePlatformUsers(params: PlatformUsersParams = {}) {
+  const { page = 1, limit = 20, includeDeleted = true } = params;
+  return useQuery({
+    queryKey: ['platform-users', { page, limit, includeDeleted }],
+    queryFn: () =>
+      api.get<PlatformUsersResult>('/v1/users', { page, limit, includeDeleted }),
+    staleTime: 30_000,
+  });
+}

@@ -27,6 +27,7 @@ import { UpdateQueueEntryDto } from './dto/update-queue-entry.dto';
 import { TriageQueueEntryDto } from './dto/triage-queue-entry.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { RequiresActiveSubscription } from '../../common/decorators/requires-active-subscription.decorator';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 
 @ApiTags('Queue')
@@ -58,6 +59,7 @@ export class QueueController {
   @Post()
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY)
+  @RequiresActiveSubscription()
   @ApiOperation({
     summary:
       'Check patient in — creates queue entry from an existing appointment. Ticket number auto-generated. Appointment status updated to IN_QUEUE.',

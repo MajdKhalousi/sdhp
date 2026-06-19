@@ -26,6 +26,7 @@ import { UpsertRadiologyReportDto } from './dto/upsert-radiology-report.dto';
 import { RadiologyQueryDto } from './dto/radiology-query.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { RequiresActiveSubscription } from '../../common/decorators/requires-active-subscription.decorator';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 
 @ApiTags('Radiology')
@@ -37,6 +38,7 @@ export class RadiologyController {
   @Post()
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
+  @RequiresActiveSubscription()
   @ApiOperation({ summary: 'Create a radiology order. orderedById auto-resolved for DOCTOR.' })
   @ApiCreatedResponse({ description: 'Radiology order created' })
   @ApiForbiddenResponse({ description: 'Cross-org access denied or insufficient role' })

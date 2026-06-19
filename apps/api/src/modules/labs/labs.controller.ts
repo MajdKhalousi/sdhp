@@ -26,6 +26,7 @@ import { UpsertLabResultDto } from './dto/upsert-lab-result.dto';
 import { LabQueryDto } from './dto/lab-query.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { RequiresActiveSubscription } from '../../common/decorators/requires-active-subscription.decorator';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 
 @ApiTags('Labs')
@@ -37,6 +38,7 @@ export class LabsController {
   @Post()
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
+  @RequiresActiveSubscription()
   @ApiOperation({ summary: 'Create a lab order. orderedById auto-resolved for DOCTOR.' })
   @ApiCreatedResponse({ description: 'Lab order created' })
   @ApiForbiddenResponse({ description: 'Cross-org access denied or insufficient role' })

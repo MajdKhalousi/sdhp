@@ -26,6 +26,7 @@ import { CreateEncounterDto } from './dto/create-encounter.dto';
 import { UpdateEncounterDto } from './dto/update-encounter.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { RequiresActiveSubscription } from '../../common/decorators/requires-active-subscription.decorator';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 
 @ApiTags('Encounters')
@@ -57,6 +58,7 @@ export class EncountersController {
   @Post()
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
+  @RequiresActiveSubscription()
   @ApiOperation({
     summary:
       'Create encounter — DOCTOR callers must use their own doctorId. Links to appointment trigger status updates (appointment→IN_PROGRESS, queue→IN_PROGRESS).',
@@ -70,6 +72,7 @@ export class EncountersController {
   @Patch(':id')
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
+  @RequiresActiveSubscription()
   @ApiOperation({
     summary:
       'Update encounter — DOCTOR can only update their own encounters. organizationId/patientId/doctorId/appointmentId cannot be changed.',

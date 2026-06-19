@@ -25,6 +25,7 @@ import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { RequiresActiveSubscription } from '../../common/decorators/requires-active-subscription.decorator';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 
 @ApiTags('Appointments')
@@ -56,6 +57,7 @@ export class AppointmentsController {
   @Post()
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY)
+  @RequiresActiveSubscription()
   @ApiOperation({
     summary:
       'Create appointment — patientId and doctorId must belong to the same org. SUPER_ADMIN must supply organizationId.',
@@ -67,6 +69,7 @@ export class AppointmentsController {
   @Patch(':id')
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY)
+  @RequiresActiveSubscription()
   @ApiOperation({
     summary:
       'Update appointment — organizationId/patientId/doctorId cannot be changed. Setting status to CANCELLED auto-sets cancelledAt.',

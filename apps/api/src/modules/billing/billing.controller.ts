@@ -39,6 +39,7 @@ import { UpdateBillingPolicyDto } from './dto/update-billing-policy.dto';
 import { OutstandingPatientsQueryDto } from './dto/outstanding-patients-query.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { RequiresActiveSubscription } from '../../common/decorators/requires-active-subscription.decorator';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 
 @ApiTags('Billing')
@@ -58,6 +59,7 @@ export class BillingController {
     UserRole.SECRETARY,
     UserRole.ACCOUNTANT,
   )
+  @RequiresActiveSubscription()
   @ApiOperation({ summary: 'Create a new invoice in DRAFT status. discountAmount must be 0 or omitted.' })
   @ApiCreatedResponse({ description: 'Invoice created' })
   @ApiForbiddenResponse({ description: 'Cross-org access denied or insufficient role' })
@@ -214,6 +216,7 @@ export class BillingController {
   @Patch(':id/issue')
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY, UserRole.ACCOUNTANT)
+  @RequiresActiveSubscription()
   @ApiOperation({ summary: 'Issue a DRAFT invoice. Requires at least one item. Sets issuedAt.' })
   @ApiOkResponse({ description: 'Invoice issued' })
   @ApiNotFoundResponse({ description: 'Invoice not found' })
@@ -240,6 +243,7 @@ export class BillingController {
   @Post(':id/payments')
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY, UserRole.ACCOUNTANT)
+  @RequiresActiveSubscription()
   @ApiOperation({ summary: 'Record a payment on ISSUED or PARTIALLY_PAID invoice. Atomic paidAmount update.' })
   @ApiCreatedResponse({ description: 'Payment recorded, invoice status updated' })
   @ApiNotFoundResponse({ description: 'Invoice not found' })

@@ -2708,6 +2708,7 @@
         "type": "Type",
         "contact": "Contact",
         "status": "Status",
+        "subscriptionStatus": "Subscription",
         "createdAt": "Registered",
         "view": "View"
       },
@@ -2719,6 +2720,19 @@
       "status": {
         "active": "Active",
         "inactive": "Inactive"
+      },
+      "subscriptionStatus": {
+        "TRIAL": "Trial",
+        "ACTIVE": "Active",
+        "SUSPENDED": "Suspended",
+        "EXPIRED": "Expired",
+        "CANCELLED": "Cancelled"
+      },
+      "filters": {
+        "orgStatusLabel": "Organization Status",
+        "subscriptionStatusLabel": "Subscription Status",
+        "all": "All",
+        "needsReviewOnly": "Needs review only"
       },
       "newOrganization": "New Organization"
     },
@@ -2979,6 +2993,15 @@
           "EXPIRED": "Expired",
           "CANCELLED": "Cancelled"
         },
+        "health": {
+          "label": "Health",
+          "healthy": "Healthy",
+          "endsSoon": "Ends Soon",
+          "expired": "Expired",
+          "suspended": "Suspended",
+          "cancelled": "Cancelled",
+          "inactive": "Organization Inactive"
+        },
         "error": {
           "generic": "Failed to update subscription. Please try again."
         }
@@ -3142,11 +3165,14 @@
         }
       },
       "needsReview": {
-        "title": "Needs Review — Subscription Dates",
+        "title": "Needs Review",
         "helperText": "This is informational only and does not change subscription status or block access.",
         "empty": "No organizations need review.",
         "expired": "Expired",
-        "expiringSoon": "Expiring Soon",
+        "expiringSoon": "Ends Soon",
+        "suspended": "Suspended",
+        "cancelled": "Cancelled",
+        "organizationInactive": "Organization Inactive",
         "columns": {
           "name": "Name",
           "endDate": "End Date",

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
@@ -9,7 +9,12 @@ import { PLATFORM_ACCESS_ROLES } from '@/lib/permissions';
 import { useOrganizations } from '@/hooks/use-organizations';
 import { useAllSubscriptionPayments } from '@/hooks/use-subscription-payments';
 import { isDemoOrganization } from '@/lib/demo-organizations';
+import { isOrganizationNeedsReview, subscriptionStatusBadgeClass } from '@/lib/subscription-health';
+import type { Organization, SubscriptionStatus } from '@/types/organization';
 import type { SubscriptionPayment } from '@/types/subscription-payment';
+
+type OrgStatusFilter = 'all' | 'active' | 'inactive';
+type SubscriptionStatusFilter = 'all' | SubscriptionStatus;
 
 // Never sum across currencies — joins each currency's total as its own
 // segment rather than merging unlike currencies into one number.
@@ -43,6 +48,20 @@ export default function PlatformOrganizationsPage() {
   organizationIds.forEach((orgId, index) => {
     paymentsByOrgId.set(orgId, paymentQueries[index]?.data ?? []);
   });
+
+  const [orgStatusFilter, setOrgStatusFilter] = useState<OrgStatusFilter>('all');
+  const [subscriptionStatusFilter, setSubscriptionStatusFilter] = useState<SubscriptionStatusFilter>('all');
+  const [needsReviewOnly, setNeedsReviewOnly] = useState(false);
+
+  const filteredOrganizations = useMemo(() => {
+    return (organizations ?? []).filter((org: Organization) => {
+      if (orgStatusFilter === 'active' && !org.isActive) return false;
+      if (orgStatusFilter === 'inactive' && org.isActive) return false;
+      if (subscriptionStatusFilter !== 'all' && org.subscriptionStatus !== subscriptionStatusFilter) return false;
+      if (needsReviewOnly && !isOrganizationNeedsReview(org)) return false;
+      return true;
+    });
+  }, [organizations, orgStatusFilter, subscriptionStatusFilter, needsReviewOnly]);
 
   if (!user || !PLATFORM_ACCESS_ROLES.has(user.role)) return null;
 
@@ -84,6 +103,53 @@ export default function PlatformOrganizationsPage() {
       )}
 
       {!isLoading && !isError && organizations && organizations.length > 0 && (
+        <>
+          <div className="flex flex-wrap items-end gap-3">
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">
+                {t('filters.orgStatusLabel')}
+              </label>
+              <select
+                value={orgStatusFilter}
+                onChange={(e) => setOrgStatusFilter(e.target.value as OrgStatusFilter)}
+                className="h-9 rounded-md border border-border bg-background px-2 text-sm"
+              >
+                <option value="all">{t('filters.all')}</option>
+                <option value="active">{t('status.active')}</option>
+                <option value="inactive">{t('status.inactive')}</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">
+                {t('filters.subscriptionStatusLabel')}
+              </label>
+              <select
+                value={subscriptionStatusFilter}
+                onChange={(e) => setSubscriptionStatusFilter(e.target.value as SubscriptionStatusFilter)}
+                className="h-9 rounded-md border border-border bg-background px-2 text-sm"
+              >
+                <option value="all">{t('filters.all')}</option>
+                <option value="TRIAL">{t('subscriptionStatus.TRIAL')}</option>
+                <option value="ACTIVE">{t('subscriptionStatus.ACTIVE')}</option>
+                <option value="SUSPENDED">{t('subscriptionStatus.SUSPENDED')}</option>
+                <option value="EXPIRED">{t('subscriptionStatus.EXPIRED')}</option>
+                <option value="CANCELLED">{t('subscriptionStatus.CANCELLED')}</option>
+              </select>
+            </div>
+            <label className="flex h-9 items-center gap-2 text-sm text-foreground">
+              <input
+                type="checkbox"
+                checked={needsReviewOnly}
+                onChange={(e) => setNeedsReviewOnly(e.target.checked)}
+                className="h-4 w-4 rounded border-border"
+              />
+              {t('filters.needsReviewOnly')}
+            </label>
+          </div>
+
+          {filteredOrganizations.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t('empty')}</p>
+          ) : (
         <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
@@ -101,6 +167,9 @@ export default function PlatformOrganizationsPage() {
                   {t('columns.status')}
                 </th>
                 <th className="px-4 py-3 text-start font-medium text-muted-foreground">
+                  {t('columns.subscriptionStatus')}
+                </th>
+                <th className="px-4 py-3 text-start font-medium text-muted-foreground">
                   {t('columns.createdAt')}
                 </th>
                 <th className="px-4 py-3 text-start font-medium text-muted-foreground">
@@ -116,7 +185,7 @@ export default function PlatformOrganizationsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {organizations.map((org) => {
+              {filteredOrganizations.map((org) => {
                 const payments = paymentsByOrgId.get(org.id) ?? [];
                 const lastPaidAt = payments.length
                   ? payments.reduce(
@@ -160,6 +229,13 @@ export default function PlatformOrganizationsPage() {
                       {org.isActive ? t('status.active') : t('status.inactive')}
                     </span>
                   </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${subscriptionStatusBadgeClass(org.subscriptionStatus)}`}
+                    >
+                      {t(`subscriptionStatus.${org.subscriptionStatus}`)}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {new Date(org.createdAt).toLocaleDateString()}
                   </td>
@@ -186,6 +262,8 @@ export default function PlatformOrganizationsPage() {
             </tbody>
           </table>
         </div>
+          )}
+        </>
       )}
     </div>
   );

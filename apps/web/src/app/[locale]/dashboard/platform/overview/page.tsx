@@ -10,27 +10,28 @@ import { useStaff } from '@/hooks/use-staff';
 import { useRecentAuditLogs } from '@/hooks/use-audit-logs';
 import { useAllSubscriptionPayments } from '@/hooks/use-subscription-payments';
 import { isDemoOrganization } from '@/lib/demo-organizations';
+import {
+  getOrganizationSubscriptionHealth,
+  isOrganizationNeedsReview,
+  subscriptionHealthBadgeClass,
+  subscriptionStatusBadgeClass,
+  type SubscriptionHealth,
+} from '@/lib/subscription-health';
 import type { SubscriptionStatus } from '@/types/organization';
 import type { SubscriptionPayment } from '@/types/subscription-payment';
 
 const SUBSCRIPTION_STATUSES: SubscriptionStatus[] = ['TRIAL', 'ACTIVE', 'SUSPENDED', 'EXPIRED', 'CANCELLED'];
-const NEEDS_REVIEW_WINDOW_DAYS = 30;
-const MS_PER_DAY = 86_400_000;
 
-function subscriptionBadgeClass(status: SubscriptionStatus): string {
-  switch (status) {
-    case 'ACTIVE':
-      return 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400';
-    case 'TRIAL':
-      return 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400';
-    case 'SUSPENDED':
-      return 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400';
-    case 'EXPIRED':
-      return 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400';
-    case 'CANCELLED':
-      return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
-  }
-}
+// Maps a computed health to its platform.overview.needsReview.* i18n key.
+// 'healthy' never appears here since it's filtered out of the needs-review list.
+const NEEDS_REVIEW_LABEL_KEY: Record<SubscriptionHealth, string> = {
+  inactive: 'organizationInactive',
+  expired: 'expired',
+  suspended: 'suspended',
+  cancelled: 'cancelled',
+  endsSoon: 'expiringSoon',
+  healthy: 'expiringSoon',
+};
 
 // Never sum across currencies — a payment row's currency is per-row, not
 // platform-wide, so totals are grouped, not merged.
@@ -118,18 +119,33 @@ export default function PlatformOverviewPage() {
     .slice(0, 5);
 
   const now = new Date();
-  const today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
 
-  // Display-only — never reads or infers subscriptionStatus, only subscriptionEndAt.
+  // Display-only — uses the same status-aware health logic as the
+  // organizations list and org detail pages. Never mutates subscriptionStatus
+  // or subscriptionEndAt; status always takes priority over date (see
+  // getOrganizationSubscriptionHealth).
+  const HEALTH_SEVERITY_RANK: Record<SubscriptionHealth, number> = {
+    inactive: 0,
+    expired: 1,
+    suspended: 2,
+    cancelled: 3,
+    endsSoon: 4,
+    healthy: 5,
+  };
   const needsReview = organizations
-    .filter((o) => !!o.subscriptionEndAt)
-    .map((o) => {
-      const end = new Date(o.subscriptionEndAt as string);
-      const daysUntilEnd = Math.floor((end.getTime() - today.getTime()) / MS_PER_DAY);
-      return { org: o, daysUntilEnd };
-    })
-    .filter(({ daysUntilEnd }) => daysUntilEnd <= NEEDS_REVIEW_WINDOW_DAYS)
-    .sort((a, b) => a.daysUntilEnd - b.daysUntilEnd);
+    .filter((o) => isOrganizationNeedsReview(o))
+    .map((o) => ({
+      org: o,
+      health: getOrganizationSubscriptionHealth(o),
+      daysUntilEnd: o.subscriptionEndAt
+        ? Math.floor((new Date(o.subscriptionEndAt).getTime() - now.getTime()) / 86_400_000)
+        : null,
+    }))
+    .sort((a, b) => {
+      const rankDiff = HEALTH_SEVERITY_RANK[a.health] - HEALTH_SEVERITY_RANK[b.health];
+      if (rankDiff !== 0) return rankDiff;
+      return (a.daysUntilEnd ?? 0) - (b.daysUntilEnd ?? 0);
+    });
 
   // Payment metrics — frontend-only aggregation (Phase 136D). A failed
   // organization's payments are treated as [] rather than failing the page.
@@ -222,7 +238,7 @@ export default function PlatformOverviewPage() {
               {SUBSCRIPTION_STATUSES.map((status) => (
                 <span
                   key={status}
-                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${subscriptionBadgeClass(status)}`}
+                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${subscriptionStatusBadgeClass(status)}`}
                 >
                   {t(`subscriptionDistribution.${status}`)}: {subscriptionCounts[status]}
                 </span>
@@ -316,7 +332,7 @@ export default function PlatformOverviewPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {needsReview.map(({ org, daysUntilEnd }) => (
+                    {needsReview.map(({ org, health }) => (
                       <tr key={org.id} className="bg-background">
                         <td className="px-4 py-3">
                           <p className="font-medium text-foreground">{org.name}</p>
@@ -326,13 +342,9 @@ export default function PlatformOverviewPage() {
                         </td>
                         <td className="px-4 py-3">
                           <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                              daysUntilEnd < 0
-                                ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400'
-                                : 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400'
-                            }`}
+                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${subscriptionHealthBadgeClass(health)}`}
                           >
-                            {daysUntilEnd < 0 ? t('needsReview.expired') : t('needsReview.expiringSoon')}
+                            {t(`needsReview.${NEEDS_REVIEW_LABEL_KEY[health]}`)}
                           </span>
                         </td>
                         <td className="px-4 py-3">

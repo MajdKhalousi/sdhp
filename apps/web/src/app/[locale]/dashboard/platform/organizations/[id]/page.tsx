@@ -22,6 +22,11 @@ import {
   useDeleteSubscriptionPayment,
 } from '@/hooks/use-subscription-payments';
 import { isDemoOrganization } from '@/lib/demo-organizations';
+import {
+  getOrganizationSubscriptionHealth,
+  subscriptionHealthBadgeClass,
+  subscriptionStatusBadgeClass,
+} from '@/lib/subscription-health';
 import type { OrganizationType, SubscriptionStatus } from '@/types/organization';
 import type { SubscriptionPayment, SubscriptionPaymentMethod } from '@/types/subscription-payment';
 
@@ -148,20 +153,6 @@ function paymentToFormState(payment: SubscriptionPayment): PaymentFormState {
   };
 }
 
-function subscriptionBadgeClass(status: SubscriptionStatus): string {
-  switch (status) {
-    case 'ACTIVE':
-      return 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400';
-    case 'TRIAL':
-      return 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400';
-    case 'SUSPENDED':
-      return 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400';
-    case 'EXPIRED':
-      return 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400';
-    case 'CANCELLED':
-      return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
-  }
-}
 
 export default function PlatformOrganizationDetailPage() {
   const t = useTranslations('platform.organizationDetail');
@@ -796,10 +787,18 @@ export default function PlatformOrganizationDetailPage() {
 
             {!isEditingSubscription ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                <div className="sm:col-span-2">
+                  <span className="text-muted-foreground">{t('subscription.health.label')}: </span>
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${subscriptionHealthBadgeClass(getOrganizationSubscriptionHealth(org))}`}
+                  >
+                    {t(`subscription.health.${getOrganizationSubscriptionHealth(org)}`)}
+                  </span>
+                </div>
                 <div>
                   <span className="text-muted-foreground">{t('subscription.fields.status')}: </span>
                   <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${subscriptionBadgeClass(org.subscriptionStatus)}`}
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${subscriptionStatusBadgeClass(org.subscriptionStatus)}`}
                   >
                     {t(`subscription.statusValues.${org.subscriptionStatus}`)}
                   </span>

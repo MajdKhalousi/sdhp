@@ -2708,6 +2708,7 @@
         "type": "النوع",
         "contact": "التواصل",
         "status": "الحالة",
+        "subscriptionStatus": "الاشتراك",
         "createdAt": "تاريخ التسجيل",
         "view": "عرض"
       },
@@ -2719,6 +2720,19 @@
       "status": {
         "active": "نشطة",
         "inactive": "غير نشطة"
+      },
+      "subscriptionStatus": {
+        "TRIAL": "تجريبي",
+        "ACTIVE": "نشط",
+        "SUSPENDED": "موقوف",
+        "EXPIRED": "منتهي",
+        "CANCELLED": "ملغى"
+      },
+      "filters": {
+        "orgStatusLabel": "حالة المنظمة",
+        "subscriptionStatusLabel": "حالة الاشتراك",
+        "all": "الكل",
+        "needsReviewOnly": "تحتاج مراجعة فقط"
       },
       "newOrganization": "منظمة جديدة"
     },
@@ -2979,6 +2993,15 @@
           "EXPIRED": "منتهي",
           "CANCELLED": "ملغى"
         },
+        "health": {
+          "label": "الحالة الصحية",
+          "healthy": "سليم",
+          "endsSoon": "ينتهي قريبًا",
+          "expired": "منتهي",
+          "suspended": "موقوف",
+          "cancelled": "ملغى",
+          "inactive": "المؤسسة غير نشطة"
+        },
         "error": {
           "generic": "فشل تحديث الاشتراك. يرجى المحاولة مرة أخرى."
         }
@@ -3142,11 +3165,14 @@
         }
       },
       "needsReview": {
-        "title": "بحاجة لمراجعة — تواريخ الاشتراك",
+        "title": "بحاجة لمراجعة",
         "helperText": "هذه معلومات فقط ولا تغيّر حالة الاشتراك أو تمنع الوصول.",
         "empty": "لا توجد منظمات بحاجة لمراجعة.",
         "expired": "منتهي",
         "expiringSoon": "ينتهي قريباً",
+        "suspended": "موقوف",
+        "cancelled": "ملغى",
+        "organizationInactive": "المؤسسة غير نشطة",
         "columns": {
           "name": "الاسم",
           "endDate": "تاريخ الانتهاء",

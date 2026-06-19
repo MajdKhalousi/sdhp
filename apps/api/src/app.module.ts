@@ -36,6 +36,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { SubscriptionGuard } from './common/guards/subscription.guard';
+import { SubscriptionAccessModule } from './common/subscription/subscription-access.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { SubscriptionGuard } from './common/guards/subscription.guard';
     DoctorSchedulesModule,
     FollowupsModule,
     DashboardModule,
+    SubscriptionAccessModule,
   ],
   controllers: [AppController],
   providers: [

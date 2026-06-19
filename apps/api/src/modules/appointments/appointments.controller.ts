@@ -69,10 +69,10 @@ export class AppointmentsController {
   @Patch(':id')
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY)
-  @RequiresActiveSubscription()
   @ApiOperation({
     summary:
-      'Update appointment — organizationId/patientId/doctorId cannot be changed. Setting status to CANCELLED auto-sets cancelledAt.',
+      'Update appointment — organizationId/patientId/doctorId cannot be changed. Setting status to CANCELLED auto-sets cancelledAt. ' +
+      'Subscription-blocked orgs may still cancel/confirm/mark no-show (status-only); rescheduling or other field changes are blocked (see AppointmentsService.update).',
   })
   @ApiNotFoundResponse({ description: 'Appointment not found' })
   update(

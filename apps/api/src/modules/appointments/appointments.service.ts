@@ -19,6 +19,7 @@ import { MedicalTimelineEventType } from '@prisma/client';
 import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
 import { DoctorSchedulesService } from '../doctor-schedules/doctor-schedules.service';
 import { BillingService } from '../billing/billing.service';
+import { SubscriptionAccessService } from '../../common/subscription/subscription-access.service';
 
 const PATIENT_SELECT = {
   id: true,
@@ -79,6 +80,25 @@ const VALID_TRANSITIONS: Record<AppointmentStatus, AppointmentStatus[]> = {
   [AppointmentStatus.NO_SHOW]:    [AppointmentStatus.SCHEDULED],
 };
 
+// PATCH /appointments/:id is shared by reschedule (new/changed obligation) and
+// cancel/confirm/no-show (correction/cleanup of existing work). Only a pure
+// status-only update to one of these three values is exempt from the
+// subscription write block — any other field, or any other status
+// (including a direct CHECKED_IN attempt), still requires an active subscription.
+const OBLIGATION_CHANGING_FIELDS = [
+  'scheduledAt',
+  'durationMin',
+  'branchId',
+  'visitTypeId',
+  'sourceEncounterId',
+] as const;
+
+const SUBSCRIPTION_EXEMPT_STATUSES: AppointmentStatus[] = [
+  AppointmentStatus.CANCELLED,
+  AppointmentStatus.CONFIRMED,
+  AppointmentStatus.NO_SHOW,
+];
+
 @Injectable()
 export class AppointmentsService {
   private readonly logger = new Logger(AppointmentsService.name);
@@ -89,6 +109,7 @@ export class AppointmentsService {
     private auditWriter: AuditLogsWriterService,
     private doctorSchedulesService: DoctorSchedulesService,
     private billingService: BillingService,
+    private subscriptionAccess: SubscriptionAccessService,
   ) {}
 
   async findAll(query: AppointmentQueryDto, caller: JwtPayload): Promise<PaginatedResponse<AppointmentRecord>> {
@@ -234,6 +255,13 @@ export class AppointmentsService {
 
     if (!appt) throw new NotFoundException('Appointment not found');
     this.assertOwnership(appt.organizationId, caller);
+
+    if (this.isObligationChangingUpdate(dto)) {
+      await this.subscriptionAccess.assertWriteAllowed(caller, {
+        resource: 'appointments',
+        resourceId: id,
+      });
+    }
 
     if (dto.status && dto.status !== appt.status) {
       const allowed = VALID_TRANSITIONS[appt.status];
@@ -427,6 +455,16 @@ export class AppointmentsService {
     const start = new Date(new Date(`${date}T00:00:00.000Z`).getTime() - TZ_OFFSET_MS);
     const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
     return { gte: start, lt: end };
+  }
+
+  private isObligationChangingUpdate(dto: UpdateAppointmentDto): boolean {
+    const hasObligationField = OBLIGATION_CHANGING_FIELDS.some(
+      (field) => dto[field] !== undefined,
+    );
+    if (hasObligationField) return true;
+
+    if (dto.status === undefined) return false;
+    return !SUBSCRIPTION_EXEMPT_STATUSES.includes(dto.status);
   }
 
   private assertOwnership(apptOrgId: string, caller: JwtPayload): void {

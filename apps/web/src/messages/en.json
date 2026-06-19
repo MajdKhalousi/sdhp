@@ -3439,5 +3439,14 @@
         "generic": "Failed to change password. Please try again."
       }
     }
+  },
+  "subscriptionBanner": {
+    "trial": "Your organization is on a trial plan (ends {endDate}). Access is not currently affected.",
+    "trialEndingSoon": "Your trial is ending soon. Please contact platform administration to continue uninterrupted access.",
+    "activeEndingSoon": "Your subscription ends soon (on {endDate}). Access is not affected yet — please contact platform administration to renew.",
+    "expired": "Your organization's subscription has expired. Access has not been blocked yet, but please contact platform administration as soon as possible.",
+    "suspended": "Your organization's subscription is suspended. Access is not blocked yet — please contact platform administration.",
+    "cancelled": "Your organization's subscription has been cancelled. Please contact platform administration for assistance.",
+    "inactive": "Your organization needs attention. Please contact platform administration."
   }
 }

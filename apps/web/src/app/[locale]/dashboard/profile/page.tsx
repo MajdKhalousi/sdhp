@@ -23,7 +23,16 @@ interface MeResponse {
   createdAt: string;
   organizationId: string;
   branchId: string | null;
-  organization: { id: string; name: string; type: string } | null;
+  organization: {
+    id: string;
+    name: string;
+    type: string;
+    isActive: boolean;
+    subscriptionStatus: 'TRIAL' | 'ACTIVE' | 'SUSPENDED' | 'EXPIRED' | 'CANCELLED';
+    subscriptionStartAt: string | null;
+    subscriptionEndAt: string | null;
+    subscriptionPlan: string | null;
+  } | null;
   branch: { id: string; name: string } | null;
 }
 

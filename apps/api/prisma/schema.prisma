@@ -217,6 +217,7 @@ model Organization {
   billingPolicy         BillingPolicy?
   clinicPatients        ClinicPatient[]
   subscriptionPayments  SubscriptionPayment[]
+  employeeProfiles      EmployeeProfile[]
 
   @@map("organizations")
 }
@@ -265,13 +266,14 @@ model Branch {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization    Organization     @relation(fields: [organizationId], references: [id])
-  users           User[]
-  departments     Department[]
-  appointments    Appointment[]
-  labOrders       LabOrder[]
-  radiologyOrders RadiologyOrder[]
-  invoices        Invoice[]
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  users            User[]
+  departments      Department[]
+  appointments     Appointment[]
+  labOrders        LabOrder[]
+  radiologyOrders  RadiologyOrder[]
+  invoices         Invoice[]
+  employeeProfiles EmployeeProfile[]
 
   @@index([organizationId])
   @@map("branches")
@@ -312,6 +314,8 @@ model User {
   createdClinicalReports ClinicalReport[]
   linkedClinicPatients   ClinicPatient[]        @relation("ClinicPatientLinkedBy")
   createdSubscriptionPayments SubscriptionPayment[]
+  employeeProfile             EmployeeProfile?
+  uploadedEmployeeDocuments   EmployeeDocument[]
 
   @@index([organizationId])
   @@map("users")
@@ -334,10 +338,11 @@ model Department {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  branch       Branch?      @relation(fields: [branchId], references: [id])
-  doctors      Doctor[]
-  services     Service[]
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  branch           Branch?           @relation(fields: [branchId], references: [id])
+  doctors          Doctor[]
+  services         Service[]
+  employeeProfiles EmployeeProfile[]
 
   @@index([organizationId])
   @@map("departments")
@@ -370,6 +375,99 @@ model Doctor {
   scheduleExceptions       DoctorScheduleException[]
 
   @@map("doctors")
+}
+
+// ─────────────────────────────────────────────
+// EMPLOYEE / HR PROFILES
+// ─────────────────────────────────────────────
+
+enum EmploymentStatus {
+  ACTIVE
+  ON_LEAVE
+  TERMINATED
+}
+
+enum EmployeeDocumentCategory {
+  PHOTO
+  ID_DOCUMENT
+  CONTRACT
+  CERTIFICATE
+  OTHER
+}
+
+// HR/payroll record, deliberately separate from User (login/auth identity).
+// userId is optional+unique: an Employee may have no login (HR-only record),
+// and a User may have no Employee record (e.g. SUPER_ADMIN platform accounts).
+// At most one EmployeeProfile may link to a given User at a time.
+model EmployeeProfile {
+  id             String  @id @default(cuid())
+  organizationId String
+  userId         String? @unique
+  branchId       String?
+  departmentId   String?
+
+  firstName          String
+  lastName           String
+  firstNameAr        String?
+  lastNameAr         String?
+  jobTitle           String?
+  departmentFreeText String?
+
+  phone       String?
+  email       String?
+  nationalId  String?
+  dateOfBirth DateTime?
+  gender      Gender?
+  address     String?
+
+  hireDate         DateTime?
+  contractStartAt  DateTime?
+  contractEndAt    DateTime?
+  employmentStatus EmploymentStatus @default(ACTIVE)
+
+  baseSalary Decimal? @db.Decimal(10, 2)
+  currency   String   @default("SYP")
+
+  notes String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  organization Organization       @relation(fields: [organizationId], references: [id])
+  user         User?              @relation(fields: [userId], references: [id])
+  branch       Branch?            @relation(fields: [branchId], references: [id])
+  department   Department?        @relation(fields: [departmentId], references: [id])
+  documents    EmployeeDocument[]
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([branchId])
+  @@index([departmentId])
+  @@map("employee_profiles")
+}
+
+// Foundation only — no upload endpoint yet (see Phase 144C). Mirrors the
+// MedicalFile/StorageService presigned-URL pattern that will be reused later.
+model EmployeeDocument {
+  id                String                   @id @default(cuid())
+  employeeProfileId String
+  category          EmployeeDocumentCategory
+  fileName          String
+  mimeType          String
+  sizeBytes         Int
+  storageKey        String                   @unique
+  uploadedById      String
+
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+
+  employeeProfile EmployeeProfile @relation(fields: [employeeProfileId], references: [id])
+  uploadedBy      User            @relation(fields: [uploadedById], references: [id])
+
+  @@index([employeeProfileId])
+  @@index([uploadedById])
+  @@map("employee_documents")
 }
 
 // ─────────────────────────────────────────────

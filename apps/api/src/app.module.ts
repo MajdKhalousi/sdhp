@@ -13,6 +13,7 @@ import { BranchesModule } from './modules/branches/branches.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { UsersModule } from './modules/users/users.module';
 import { DoctorsModule } from './modules/doctors/doctors.module';
+import { EmployeesModule } from './modules/employees/employees.module';
 import { PatientsModule } from './modules/patients/patients.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { QueueModule } from './modules/queue/queue.module';
@@ -53,6 +54,7 @@ import { SubscriptionAccessModule } from './common/subscription/subscription-acc
     DepartmentsModule,
     UsersModule,
     DoctorsModule,
+    EmployeesModule,
     PatientsModule,
     AppointmentsModule,
     QueueModule,

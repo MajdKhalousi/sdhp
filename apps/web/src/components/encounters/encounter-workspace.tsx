@@ -20,6 +20,7 @@ import { IcdCodeCombobox } from './icd-code-combobox';
 import { ICD_CODES } from '@/lib/icd-codes';
 import { FollowUpBookingPanel } from './follow-up-booking-panel';
 import { EndEncounterButton } from './end-encounter-button';
+import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { VitalsPayload, UpdateEncounterPayload } from '@/types/encounter';
@@ -147,6 +148,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
   const t = useTranslations('encounter');
   const tCommon = useTranslations('common');
   const tPatient = useTranslations('patient');
+  const tRoot = useTranslations();
   const locale = useLocale();
   const { user } = useAuthStore();
   const canSeeBilling = user ? BILLING_ROLES.has(user.role) : false;
@@ -252,7 +254,7 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
           setSavedAt(formatTimeDisplay(new Date()));
           onSaved?.();
         },
-        onError: (e) => setSaveError(e instanceof Error ? e.message : 'Save failed'),
+        onError: (e) => setSaveError(getFriendlyApiErrorMessage(e, tRoot)),
       },
     );
   }

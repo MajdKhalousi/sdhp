@@ -2,6 +2,26 @@ import { useAuthStore } from '@/store/auth';
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
 
+// Preserves backend error metadata (code, statusCode) that a plain Error
+// would otherwise drop. Still satisfies `instanceof Error` everywhere.
+export class ApiError extends Error {
+  code?: string;
+  statusCode?: number;
+
+  constructor(message: string, options?: { code?: string; statusCode?: number }) {
+    super(message);
+    this.name = 'ApiError';
+    this.code = options?.code;
+    this.statusCode = options?.statusCode;
+  }
+}
+
+interface BackendErrorBody {
+  message?: string | string[];
+  code?: string;
+  statusCode?: number;
+}
+
 function buildUrl(path: string, params?: Record<string, unknown>): string {
   const url = new URL(`${BASE}${path}`);
   if (params) {
@@ -80,11 +100,14 @@ async function request<T>(
       throw new Error('Session expired. Please sign in again.');
     }
     if (res.status === 403) {
-      const errBody = await res.json().catch(() => null) as { message?: string | string[] } | null;
+      const errBody = await res.json().catch(() => null) as BackendErrorBody | null;
       const msg = Array.isArray(errBody?.message)
         ? errBody.message.join(', ')
         : errBody?.message;
-      throw new Error(msg ?? 'You do not have permission to perform this action.');
+      throw new ApiError(msg ?? 'You do not have permission to perform this action.', {
+        code: errBody?.code,
+        statusCode: errBody?.statusCode,
+      });
     }
     if (res.status >= 500) {
       throw new Error('Server error — please try again later.');
@@ -134,9 +157,12 @@ async function requestBlob(
       throw new Error('Session expired. Please sign in again.');
     }
     if (res.status === 403) {
-      const errBody = await res.json().catch(() => null) as { message?: string | string[] } | null;
+      const errBody = await res.json().catch(() => null) as BackendErrorBody | null;
       const msg = Array.isArray(errBody?.message) ? errBody.message.join(', ') : errBody?.message;
-      throw new Error(msg ?? 'You do not have permission to perform this action.');
+      throw new ApiError(msg ?? 'You do not have permission to perform this action.', {
+        code: errBody?.code,
+        statusCode: errBody?.statusCode,
+      });
     }
     if (res.status >= 500) throw new Error('Server error — please try again later.');
     throw new Error(`HTTP ${res.status}`);

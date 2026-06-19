@@ -16,6 +16,7 @@ import {
 } from '@/hooks/use-labs';
 import type { LabOrderStatus } from '@/types/timeline';
 import { formatDateDisplay } from '@/lib/format-date';
+import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
 
 const STATUS_VARIANT: Record<LabOrderStatus, BadgeProps['variant']> = {
   ORDERED:          'default',
@@ -172,6 +173,7 @@ interface Props {
 export function LabOrderPanel({ patientId, encounterId, readOnly }: Props) {
   const tLab = useTranslations('encounter');
   const tCommon = useTranslations('common');
+  const tRoot = useTranslations();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<Form>(EMPTY_FORM);
   const [formError, setFormError] = useState('');
@@ -213,7 +215,7 @@ export function LabOrderPanel({ patientId, encounterId, readOnly }: Props) {
         setShowForm(false);
         setFormError('');
       },
-      onError: (e) => setFormError(e instanceof Error ? e.message : tLab('labOrders.error.addFailed')),
+      onError: (e) => setFormError(getFriendlyApiErrorMessage(e, tRoot)),
     });
   }
 

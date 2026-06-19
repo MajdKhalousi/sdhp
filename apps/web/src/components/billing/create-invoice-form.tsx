@@ -7,6 +7,7 @@ import { useCreateInvoice } from '@/hooks/use-invoices';
 import { usePatientsList, useAppointment, useVisitTypesList } from '@/hooks/use-appointments';
 import { useBillingPolicy } from '@/hooks/use-billing-policy';
 import { PatientCombobox } from '@/components/appointments/patient-combobox';
+import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
 import type { CreateInvoiceDto } from '@/types/invoice';
 
 interface Props {
@@ -18,6 +19,7 @@ interface Props {
 export function CreateInvoiceForm({ initialPatientId, appointmentId, encounterId }: Props = {}) {
   const t = useTranslations('invoice.form');
   const tCommon = useTranslations('common');
+  const tRoot = useTranslations();
   const router = useRouter();
 
   const [patientId, setPatientId] = useState(initialPatientId ?? '');
@@ -80,7 +82,7 @@ export function CreateInvoiceForm({ initialPatientId, appointmentId, encounterId
     });
   }
 
-  const apiError = mutationError instanceof Error ? mutationError.message : null;
+  const apiError = mutationError ? getFriendlyApiErrorMessage(mutationError, tRoot) : null;
   const displayError = validationError || apiError;
 
   return (

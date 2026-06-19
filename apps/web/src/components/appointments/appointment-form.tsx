@@ -7,6 +7,7 @@ import { useCreateAppointment, usePatientsList, useDoctorsList, useVisitTypesLis
 import { VisitTypeSelect } from './visit-type-select';
 import { AvailableSlotsPicker } from './available-slots-picker';
 import { PatientCombobox } from './patient-combobox';
+import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
 import type { VisitType } from '@/types/clinic-settings';
 
 interface FormState {
@@ -45,6 +46,7 @@ export function AppointmentForm({
   const t = useTranslations('appointment.form');
   const tAppt = useTranslations('appointment');
   const tCommon = useTranslations('common');
+  const tRoot = useTranslations();
   const router = useRouter();
 
   const [form, setForm] = useState<FormState>({
@@ -140,7 +142,7 @@ export function AppointmentForm({
     );
   }
 
-  const apiError = mutationError instanceof Error ? mutationError.message : null;
+  const apiError = mutationError ? getFriendlyApiErrorMessage(mutationError, tRoot) : null;
   const displayError = validationError || apiError;
 
   return (

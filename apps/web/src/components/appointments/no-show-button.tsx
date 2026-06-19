@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useUpdateAppointment } from '@/hooks/use-appointments';
+import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
 
 export function NoShowButton({ appointmentId }: { appointmentId: string }) {
   const t = useTranslations('appointment.noShow');
+  const tRoot = useTranslations();
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState('');
   const { mutate, isPending } = useUpdateAppointment();
@@ -16,7 +18,7 @@ export function NoShowButton({ appointmentId }: { appointmentId: string }) {
       { id: appointmentId, dto: { status: 'NO_SHOW' } },
       {
         onSuccess: () => setConfirming(false),
-        onError: (e) => setError(e instanceof Error ? e.message : t('error')),
+        onError: (e) => setError(getFriendlyApiErrorMessage(e, tRoot)),
       },
     );
   }

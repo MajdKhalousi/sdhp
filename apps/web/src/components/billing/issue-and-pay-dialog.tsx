@@ -5,6 +5,7 @@ import { X } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useIssueInvoice, useRecordPayment } from '@/hooks/use-invoices';
 import { useToast } from '@/hooks/use-toast';
+import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
 import type { Invoice, PaymentMethod } from '@/types/invoice';
 
 const PAYMENT_METHODS: PaymentMethod[] = ['CASH', 'CARD', 'BANK_TRANSFER', 'INSURANCE', 'OTHER'];
@@ -30,6 +31,7 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
   const tDetail = useTranslations('invoice.detail');
   const tPrint = useTranslations('invoice.print');
   const tCommon = useTranslations('common');
+  const tRoot = useTranslations();
   const locale = useLocale();
 
   const remaining = Math.max(0, parseFloat(invoice.totalAmount) - parseFloat(invoice.paidAmount));
@@ -146,7 +148,7 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
         setSubmitError(
           isDraft
             ? t('paymentError')
-            : (err instanceof Error ? err.message : tCommon('states.error')),
+            : getFriendlyApiErrorMessage(err, tRoot),
         );
       }
     } finally {

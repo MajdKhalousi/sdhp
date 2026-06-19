@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useUpdateAppointment } from '@/hooks/use-appointments';
+import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
 
 export function ConfirmButton({ appointmentId }: { appointmentId: string }) {
   const t = useTranslations('appointment.confirm');
+  const tRoot = useTranslations();
   const [error, setError] = useState('');
   const { mutate, isPending } = useUpdateAppointment();
 
@@ -13,7 +15,7 @@ export function ConfirmButton({ appointmentId }: { appointmentId: string }) {
     setError('');
     mutate(
       { id: appointmentId, dto: { status: 'CONFIRMED' } },
-      { onError: (e) => setError(e instanceof Error ? e.message : t('error')) },
+      { onError: (e) => setError(getFriendlyApiErrorMessage(e, tRoot)) },
     );
   }
 

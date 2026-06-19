@@ -16,6 +16,7 @@ import {
 } from '@/hooks/use-radiology';
 import type { RadiologyOrderStatus } from '@/types/timeline';
 import { formatDateDisplay } from '@/lib/format-date';
+import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
 
 const STATUS_VARIANT: Record<RadiologyOrderStatus, BadgeProps['variant']> = {
   ORDERED:     'default',
@@ -180,6 +181,7 @@ interface Props {
 export function RadiologyOrderPanel({ patientId, encounterId, readOnly }: Props) {
   const tRad = useTranslations('encounter');
   const tCommon = useTranslations('common');
+  const tRoot = useTranslations();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<Form>(EMPTY_FORM);
   const [formError, setFormError] = useState('');
@@ -221,7 +223,7 @@ export function RadiologyOrderPanel({ patientId, encounterId, readOnly }: Props)
         setShowForm(false);
         setFormError('');
       },
-      onError: (e) => setFormError(e instanceof Error ? e.message : tRad('radiologyOrders.error.addFailed')),
+      onError: (e) => setFormError(getFriendlyApiErrorMessage(e, tRoot)),
     });
   }
 

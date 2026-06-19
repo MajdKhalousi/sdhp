@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useUpdateAppointment } from '@/hooks/use-appointments';
+import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
 
 export function CancelAppointmentDialog({ appointmentId }: { appointmentId: string }) {
   const t = useTranslations('appointment.cancel');
+  const tRoot = useTranslations();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState('');
   const [error, setError] = useState('');
@@ -23,7 +25,7 @@ export function CancelAppointmentDialog({ appointmentId }: { appointmentId: stri
       },
       {
         onSuccess: () => { setOpen(false); setReason(''); },
-        onError: (e) => setError(e instanceof Error ? e.message : t('error')),
+        onError: (e) => setError(getFriendlyApiErrorMessage(e, tRoot)),
       },
     );
   }

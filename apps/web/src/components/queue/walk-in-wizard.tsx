@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useCreateAppointment, usePatientsList, useDoctorsList, useVisitTypesList } from '@/hooks/use-appointments';
 import { useCheckIn } from '@/hooks/use-queue';
 import { PatientCombobox } from '@/components/appointments/patient-combobox';
+import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
 
 interface WalkInWizardProps {
   initialPatientId?: string;
@@ -38,6 +39,7 @@ export function WalkInWizard({ initialPatientId, onClose }: WalkInWizardProps = 
   const t = useTranslations('queue.walkIn');
   const tQueue = useTranslations('queue');
   const tCommon = useTranslations('common');
+  const tRoot = useTranslations();
   const router = useRouter();
   const locale = useLocale();
   const [step, setStep] = useState<1 | 2>(1);
@@ -135,9 +137,9 @@ export function WalkInWizard({ initialPatientId, onClose }: WalkInWizardProps = 
     );
   }
 
-  const apptApiError = apptError instanceof Error ? apptError.message : null;
+  const apptApiError = apptError ? getFriendlyApiErrorMessage(apptError, tRoot) : null;
   const checkInApiError =
-    checkInError instanceof Error && !checkInConflict ? checkInError.message : null;
+    checkInError && !checkInConflict ? getFriendlyApiErrorMessage(checkInError, tRoot) : null;
   const apiError = apptApiError || checkInApiError;
   const displayError = validationError || apiError;
 

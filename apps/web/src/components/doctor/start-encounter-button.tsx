@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { useStartEncounter } from '@/hooks/use-encounters';
+import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
 
 interface StartEncounterButtonProps {
   patientId: string;
@@ -14,6 +15,7 @@ interface StartEncounterButtonProps {
 
 export function StartEncounterButton({ patientId, doctorId, appointmentId, appointmentStatus }: StartEncounterButtonProps) {
   const t = useTranslations('doctorQueue');
+  const tRoot = useTranslations();
   const router = useRouter();
   const [error, setError] = useState('');
   const { mutate, isPending } = useStartEncounter();
@@ -27,7 +29,7 @@ export function StartEncounterButton({ patientId, doctorId, appointmentId, appoi
           router.push(`/dashboard/doctor/encounter/${encounter.id}`);
         },
         onError: (e) => {
-          setError(e instanceof Error ? e.message : t('actions.startFailed'));
+          setError(getFriendlyApiErrorMessage(e, tRoot));
         },
       },
     );

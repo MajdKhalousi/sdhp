@@ -3474,5 +3474,10 @@
     "suspended": "Your organization's subscription is suspended. Access is not blocked yet — please contact platform administration.",
     "cancelled": "Your organization's subscription has been cancelled. Please contact platform administration for assistance.",
     "inactive": "Your organization needs attention. Please contact platform administration."
+  },
+  "subscription": {
+    "errors": {
+      "writeBlocked": "This action is unavailable because your organization's subscription needs attention. Please contact platform administration."
+    }
   }
 }

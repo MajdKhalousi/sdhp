@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useUpdateAppointment } from '@/hooks/use-appointments';
 import { VisitTypeSelect } from './visit-type-select';
 import { AvailableSlotsPicker } from './available-slots-picker';
+import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
 import type { Appointment } from '@/types/appointment';
 import type { VisitType } from '@/types/clinic-settings';
 
@@ -23,6 +24,7 @@ const INITIAL: FormState = { date: '', visitTypeId: '', selectedSlot: '' };
 
 export function RescheduleDialog({ appointment, onClose }: Props) {
   const t = useTranslations('appointment.reschedule');
+  const tRoot = useTranslations();
 
   const [form, setForm] = useState<FormState>(INITIAL);
   const [selectedVisitType, setSelectedVisitType] = useState<VisitType | null>(null);
@@ -71,7 +73,7 @@ export function RescheduleDialog({ appointment, onClose }: Props) {
     );
   }
 
-  const apiError = mutationError instanceof Error ? mutationError.message : null;
+  const apiError = mutationError ? getFriendlyApiErrorMessage(mutationError, tRoot) : null;
   const displayError = validationError || apiError;
 
   return (

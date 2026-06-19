@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useCheckIn } from '@/hooks/use-queue';
+import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
 
 interface CheckInButtonProps {
   appointmentId: string;
@@ -12,6 +13,7 @@ interface CheckInButtonProps {
 
 export function CheckInButton({ appointmentId, onSuccess }: CheckInButtonProps) {
   const t = useTranslations('queue.checkIn');
+  const tRoot = useTranslations();
   const [error, setError] = useState('');
   const [isDuplicate, setIsDuplicate] = useState(false);
   const { mutate, isPending } = useCheckIn();
@@ -27,7 +29,7 @@ export function CheckInButton({ appointmentId, onSuccess }: CheckInButtonProps) 
           if (e instanceof Error && e.name === 'ConflictError') {
             setIsDuplicate(true);
           } else {
-            setError(e instanceof Error ? e.message : t('error'));
+            setError(getFriendlyApiErrorMessage(e, tRoot));
           }
         },
       },

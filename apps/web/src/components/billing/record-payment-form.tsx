@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRecordPayment } from '@/hooks/use-invoices';
 import { useToast } from '@/hooks/use-toast';
+import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
 import type { PaymentMethod } from '@/types/invoice';
 
 const PAYMENT_METHODS: PaymentMethod[] = ['CASH', 'CARD', 'BANK_TRANSFER', 'INSURANCE', 'OTHER'];
@@ -38,6 +39,7 @@ export function RecordPaymentForm({ invoiceId, remaining, onCancel, onSuccess }:
   const t = useTranslations('invoice.payment');
   const tPayments = useTranslations('invoice.payments');
   const tCommon = useTranslations('common');
+  const tRoot = useTranslations();
   const locale = useLocale();
 
   const [form, setForm] = useState<FormState>({
@@ -105,7 +107,7 @@ export function RecordPaymentForm({ invoiceId, remaining, onCancel, onSuccess }:
     );
   }
 
-  const apiError = mutationError instanceof Error ? mutationError.message : null;
+  const apiError = mutationError ? getFriendlyApiErrorMessage(mutationError, tRoot) : null;
   const displayError = validationError || apiError;
 
   return (

@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useUpdateEncounter } from '@/hooks/use-encounters';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCompletionChecklist } from '@/hooks/use-completion-checklist';
+import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
 import type { ChecklistItem } from '@/hooks/use-completion-checklist';
 
 export interface CompletionContext {
@@ -44,6 +45,7 @@ export function EndEncounterButton({
 }: EndEncounterButtonProps) {
   const t = useTranslations('encounter');
   const tCommon = useTranslations('common');
+  const tRoot = useTranslations();
   const router = useRouter();
   const [internalConfirming, setInternalConfirming] = useState(false);
   const confirming = !!confirmOpen || internalConfirming;
@@ -86,7 +88,7 @@ export function EndEncounterButton({
         onError: (e) => {
           setInternalConfirming(false);
           onConfirmClose?.();
-          setError(e instanceof Error ? e.message : t('close.failed'));
+          setError(getFriendlyApiErrorMessage(e, tRoot));
         },
       },
     );

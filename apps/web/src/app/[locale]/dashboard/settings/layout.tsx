@@ -31,6 +31,8 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
     ? 'departments'
     : pathname.startsWith('/dashboard/settings/staff')
     ? 'staff'
+    : pathname.startsWith('/dashboard/settings/employees')
+    ? 'employees'
     : 'clinic';
 
   const TABS: TabItem[] = [
@@ -40,6 +42,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
     { value: 'billing',      label: t('tabs.billing') },
     { value: 'departments',  label: t('tabs.departments') },
     { value: 'staff',        label: t('tabs.staff') },
+    { value: 'employees',    label: t('tabs.employees') },
   ];
 
   return (

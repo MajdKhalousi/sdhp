@@ -1935,7 +1935,8 @@
       "services": "Services",
       "billing": "Billing",
       "departments": "Departments",
-      "staff": "Staff"
+      "staff": "Staff",
+      "employees": "Employees"
     },
     "clinic": {
       "title": "Clinic Settings",
@@ -2310,6 +2311,92 @@
         "message": "Doctor user created. Go to Doctors to create a doctor profile for this account.",
         "action": "Go to Doctors",
         "dismiss": "Dismiss"
+      }
+    },
+    "employees": {
+      "title": "Employees",
+      "subtitle": "Manage HR employee profiles, separate from system accounts",
+      "newEmployee": "New Employee",
+      "showDeactivated": "Show deactivated",
+      "deactivate": "Deactivate",
+      "deactivating": "Deactivating…",
+      "deactivateConfirm": "Deactivate this employee profile? It will be hidden from the default list.",
+      "deactivatedNote": "Deactivated",
+      "noLinkedAccount": "No login account",
+      "columns": {
+        "name": "Name",
+        "jobTitle": "Job Title",
+        "employmentStatus": "Status",
+        "linkedAccount": "Linked Account",
+        "baseSalary": "Base Salary",
+        "actions": "Actions"
+      },
+      "form": {
+        "createTitle": "New Employee",
+        "editTitle": "Edit Employee",
+        "noLoginAccount": "No login account",
+        "inactiveSuffix": "Inactive",
+        "userIdHelp": "Optionally link this employee to an existing staff account. Leave as \"No login account\" for HR-only employees.",
+        "fields": {
+          "firstName": "First Name",
+          "lastName": "Last Name",
+          "firstNameAr": "First Name (Arabic)",
+          "lastNameAr": "Last Name (Arabic)",
+          "phone": "Phone",
+          "email": "Email",
+          "nationalId": "National ID",
+          "dateOfBirth": "Date of Birth",
+          "gender": "Gender",
+          "address": "Address",
+          "jobTitle": "Job Title",
+          "departmentFreeText": "Department (free text)",
+          "branchId": "Branch",
+          "departmentId": "Department",
+          "hireDate": "Hire Date",
+          "contractStartAt": "Contract Start",
+          "contractEndAt": "Contract End",
+          "employmentStatus": "Employment Status",
+          "baseSalary": "Base Salary",
+          "currency": "Currency",
+          "notes": "Notes",
+          "userId": "Linked Account"
+        },
+        "placeholders": {
+          "departmentFreeText": "e.g. Front Desk"
+        },
+        "validation": {
+          "firstNameRequired": "First name is required.",
+          "lastNameRequired": "Last name is required.",
+          "emailFormat": "Enter a valid email address.",
+          "baseSalaryFormat": "Enter a valid non-negative amount."
+        },
+        "genderOptions": {
+          "MALE": "Male",
+          "FEMALE": "Female"
+        },
+        "employmentStatusOptions": {
+          "ACTIVE": "Active",
+          "ON_LEAVE": "On Leave",
+          "TERMINATED": "Terminated"
+        },
+        "actions": {
+          "create": "Create",
+          "creating": "Creating…",
+          "save": "Save",
+          "saving": "Saving…"
+        }
+      },
+      "status": {
+        "deactivated": "Deactivated"
+      },
+      "empty": {
+        "heading": "No employee profiles yet",
+        "subtext": "Add employee profiles to track HR records, separate from login accounts."
+      },
+      "error": {
+        "loadFailed": "Failed to load employee profiles",
+        "saveFailed": "Failed to save employee profile",
+        "deleteFailed": "Failed to deactivate employee profile"
       }
     }
   },

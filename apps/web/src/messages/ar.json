@@ -1935,7 +1935,8 @@
       "services": "الخدمات",
       "billing": "الفواتير",
       "departments": "الأقسام",
-      "staff": "الموظفون"
+      "staff": "الموظفون",
+      "employees": "السجلات الوظيفية"
     },
     "clinic": {
       "title": "إعدادات العيادة",
@@ -2310,6 +2311,92 @@
         "message": "تم إنشاء حساب الطبيب. انتقل إلى صفحة الأطباء لإنشاء ملف طبيب لهذا الحساب.",
         "action": "الانتقال إلى الأطباء",
         "dismiss": "إغلاق"
+      }
+    },
+    "employees": {
+      "title": "السجلات الوظيفية",
+      "subtitle": "إدارة السجلات الوظيفية للموظفين، بشكل مستقل عن حسابات النظام",
+      "newEmployee": "سجل وظيفي جديد",
+      "showDeactivated": "إظهار المعطّل",
+      "deactivate": "تعطيل",
+      "deactivating": "جارٍ التعطيل…",
+      "deactivateConfirm": "تعطيل هذا السجل الوظيفي؟ سيتم إخفاؤه من القائمة الافتراضية.",
+      "deactivatedNote": "معطّل",
+      "noLinkedAccount": "بلا حساب تسجيل دخول",
+      "columns": {
+        "name": "الاسم",
+        "jobTitle": "المسمى الوظيفي",
+        "employmentStatus": "الحالة",
+        "linkedAccount": "الحساب المرتبط",
+        "baseSalary": "الراتب الأساسي",
+        "actions": "إجراءات"
+      },
+      "form": {
+        "createTitle": "سجل وظيفي جديد",
+        "editTitle": "تعديل السجل الوظيفي",
+        "noLoginAccount": "بلا حساب تسجيل دخول",
+        "inactiveSuffix": "غير نشط",
+        "userIdHelp": "يمكنك اختياريًا ربط هذا الموظف بحساب موجود. اترك الخيار على \"بلا حساب تسجيل دخول\" للموظفين الذين لا يحتاجون إلى تسجيل دخول.",
+        "fields": {
+          "firstName": "الاسم الأول",
+          "lastName": "اسم العائلة",
+          "firstNameAr": "الاسم الأول (عربي)",
+          "lastNameAr": "اسم العائلة (عربي)",
+          "phone": "الهاتف",
+          "email": "البريد الإلكتروني",
+          "nationalId": "الرقم الوطني",
+          "dateOfBirth": "تاريخ الميلاد",
+          "gender": "الجنس",
+          "address": "العنوان",
+          "jobTitle": "المسمى الوظيفي",
+          "departmentFreeText": "القسم (نص حر)",
+          "branchId": "الفرع",
+          "departmentId": "القسم",
+          "hireDate": "تاريخ التعيين",
+          "contractStartAt": "بداية العقد",
+          "contractEndAt": "نهاية العقد",
+          "employmentStatus": "حالة العمل",
+          "baseSalary": "الراتب الأساسي",
+          "currency": "العملة",
+          "notes": "ملاحظات",
+          "userId": "الحساب المرتبط"
+        },
+        "placeholders": {
+          "departmentFreeText": "مثال: الاستقبال"
+        },
+        "validation": {
+          "firstNameRequired": "الاسم الأول مطلوب.",
+          "lastNameRequired": "اسم العائلة مطلوب.",
+          "emailFormat": "أدخل بريدًا إلكترونيًا صحيحًا.",
+          "baseSalaryFormat": "أدخل قيمة صحيحة غير سالبة."
+        },
+        "genderOptions": {
+          "MALE": "ذكر",
+          "FEMALE": "أنثى"
+        },
+        "employmentStatusOptions": {
+          "ACTIVE": "نشط",
+          "ON_LEAVE": "في إجازة",
+          "TERMINATED": "منتهي الخدمة"
+        },
+        "actions": {
+          "create": "إنشاء",
+          "creating": "جارٍ الإنشاء…",
+          "save": "حفظ",
+          "saving": "جارٍ الحفظ…"
+        }
+      },
+      "status": {
+        "deactivated": "معطّل"
+      },
+      "empty": {
+        "heading": "لا توجد سجلات وظيفية حتى الآن",
+        "subtext": "أضف سجلات وظيفية لتتبع بيانات الموارد البشرية، بشكل مستقل عن حسابات تسجيل الدخول."
+      },
+      "error": {
+        "loadFailed": "فشل تحميل السجلات الوظيفية",
+        "saveFailed": "فشل حفظ السجل الوظيفي",
+        "deleteFailed": "فشل تعطيل السجل الوظيفي"
       }
     }
   },

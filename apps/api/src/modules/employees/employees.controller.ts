@@ -71,9 +71,11 @@ export class EmployeesController {
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
   @ApiOperation({
     summary:
-      'Create employee profile — userId optional (omit for HR-only employees with no login access). SUPER_ADMIN must supply organizationId.',
+      'Create employee profile — accountMode: NONE (default, no login), LINK_EXISTING (provide userId), ' +
+      'or CREATE_NEW (provide account; creates the User and EmployeeProfile atomically). ' +
+      'Omitting accountMode infers it from userId for backward compatibility. SUPER_ADMIN must supply organizationId.',
   })
-  @ApiConflictResponse({ description: 'Linked user is already linked to another employee profile' })
+  @ApiConflictResponse({ description: 'Linked user already linked to another employee profile, or duplicate phone/email on account creation' })
   create(@Body() dto: CreateEmployeeDto, @CurrentUser() user: JwtPayload) {
     return this.service.create(dto, user);
   }

@@ -9,10 +9,11 @@ import { Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { PaginatedResponse } from '../../common/types/paginated-response.type';
-import { CreateEmployeeDto } from './dto/create-employee.dto';
+import { CreateEmployeeDto, CreateEmployeeAccountDto, EmployeeAccountMode } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { EmployeeQueryDto } from './dto/employee-query.dto';
 import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
+import { UsersService } from '../users/users.service';
 
 // Never select passwordHash — only the minimal fields a staff/HR screen needs
 // to display "this profile is linked to account X".
@@ -67,6 +68,7 @@ export class EmployeesService {
   constructor(
     private prisma: PrismaService,
     private auditWriter: AuditLogsWriterService,
+    private usersService: UsersService,
   ) {}
 
   async findAll(query: EmployeeQueryDto, caller: JwtPayload): Promise<PaginatedResponse<EmployeeRecord>> {
@@ -113,11 +115,42 @@ export class EmployeesService {
       await this.assertDepartmentBelongsToOrg(dto.departmentId, organizationId);
     }
 
-    const linkUserId = dto.userId ?? undefined;
-    if (linkUserId) {
-      await this.assertUserLinkable(linkUserId, organizationId);
+    const accountMode = this.resolveAccountMode(dto);
+
+    if (accountMode === EmployeeAccountMode.NONE) {
+      if (dto.userId) throw new BadRequestException('userId must not be provided when accountMode is NONE');
+      if (dto.account) throw new BadRequestException('account must not be provided when accountMode is NONE');
+      return this.createProfileOnly(dto, caller, organizationId, undefined);
     }
 
+    if (accountMode === EmployeeAccountMode.LINK_EXISTING) {
+      if (!dto.userId) throw new BadRequestException('userId is required when accountMode is LINK_EXISTING');
+      if (dto.account) throw new BadRequestException('account must not be provided when accountMode is LINK_EXISTING');
+      await this.assertUserLinkable(dto.userId, organizationId);
+      return this.createProfileOnly(dto, caller, organizationId, dto.userId);
+    }
+
+    // CREATE_NEW
+    if (dto.userId) throw new BadRequestException('userId must not be provided when accountMode is CREATE_NEW');
+    if (!dto.account) throw new BadRequestException('account is required when accountMode is CREATE_NEW');
+    return this.createProfileWithNewAccount(dto, caller, organizationId, dto.account);
+  }
+
+  // Backward-compatible inference: existing callers never send accountMode.
+  // userId present -> LINK_EXISTING (today's behavior); no userId -> NONE
+  // (today's behavior). An explicit accountMode always wins.
+  private resolveAccountMode(dto: CreateEmployeeDto): EmployeeAccountMode {
+    if (dto.accountMode) return dto.accountMode;
+    return dto.userId ? EmployeeAccountMode.LINK_EXISTING : EmployeeAccountMode.NONE;
+  }
+
+  // NONE and LINK_EXISTING — identical to the pre-146B create() body.
+  private async createProfileOnly(
+    dto: CreateEmployeeDto,
+    caller: JwtPayload,
+    organizationId: string,
+    linkUserId: string | undefined,
+  ) {
     try {
       const result = await this.prisma.employeeProfile.create({
         data: {
@@ -179,6 +212,109 @@ export class EmployeesService {
       }
       throw e;
     }
+  }
+
+  // CREATE_NEW — User and EmployeeProfile created in one Prisma transaction.
+  // If the User insert fails (e.g. duplicate phone/email), the transaction
+  // never reaches the EmployeeProfile insert. If the EmployeeProfile insert
+  // fails for any reason, the User insert rolls back too — no orphan User
+  // can result from this path. Audit logs are written only after the
+  // transaction has committed, so a rolled-back attempt never produces a
+  // log claiming something was created.
+  private async createProfileWithNewAccount(
+    dto: CreateEmployeeDto,
+    caller: JwtPayload,
+    organizationId: string,
+    account: CreateEmployeeAccountDto,
+  ) {
+    const { profile, newUser } = await this.prisma.$transaction(async (tx) => {
+      let createdUser;
+      try {
+        createdUser = await this.usersService.createForEmployeeLink(
+          account,
+          caller,
+          organizationId,
+          {
+            firstName: dto.firstName,
+            lastName: dto.lastName,
+            firstNameAr: dto.firstNameAr,
+            lastNameAr: dto.lastNameAr,
+          },
+          tx,
+        );
+      } catch (e) {
+        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+          throw new ConflictException('A user with this phone or email already exists');
+        }
+        throw e;
+      }
+
+      try {
+        const createdProfile = await tx.employeeProfile.create({
+          data: {
+            organizationId,
+            userId: createdUser.id,
+            branchId: dto.branchId,
+            departmentId: dto.departmentId,
+            firstName: dto.firstName,
+            lastName: dto.lastName,
+            firstNameAr: dto.firstNameAr,
+            lastNameAr: dto.lastNameAr,
+            jobTitle: dto.jobTitle,
+            departmentFreeText: dto.departmentFreeText,
+            phone: dto.phone,
+            email: dto.email,
+            nationalId: dto.nationalId,
+            dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
+            gender: dto.gender,
+            address: dto.address,
+            hireDate: dto.hireDate ? new Date(dto.hireDate) : undefined,
+            contractStartAt: dto.contractStartAt ? new Date(dto.contractStartAt) : undefined,
+            contractEndAt: dto.contractEndAt ? new Date(dto.contractEndAt) : undefined,
+            employmentStatus: dto.employmentStatus,
+            baseSalary: dto.baseSalary,
+            currency: dto.currency,
+            notes: dto.notes,
+          },
+          select: SELECT,
+        });
+        return { profile: createdProfile, newUser: createdUser };
+      } catch (e) {
+        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+          throw new ConflictException('This user is already linked to another employee profile');
+        }
+        throw e;
+      }
+    });
+
+    await this.auditWriter.log({
+      caller,
+      action: 'USER_CREATED',
+      resource: 'user',
+      resourceId: newUser.id,
+    });
+    await this.auditWriter.log({
+      caller,
+      action: 'EMPLOYEE_PROFILE_CREATED',
+      resource: 'employee_profile',
+      resourceId: profile.id,
+      newData: toSnapshot({
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        jobTitle: profile.jobTitle,
+        employmentStatus: profile.employmentStatus,
+        userId: profile.userId,
+      }),
+    });
+    await this.auditWriter.log({
+      caller,
+      action: 'EMPLOYEE_PROFILE_LINKED_TO_USER',
+      resource: 'employee_profile',
+      resourceId: profile.id,
+      newData: toSnapshot({ userId: profile.userId }),
+    });
+
+    return profile;
   }
 
   async update(id: string, dto: UpdateEmployeeDto, caller: JwtPayload) {

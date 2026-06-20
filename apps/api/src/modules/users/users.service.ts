@@ -14,6 +14,7 @@ import { UserQueryDto } from './dto/user-query.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuditLogsWriterService } from '../audit-logs/audit-logs-writer.service';
+import { CreateEmployeeAccountDto } from '../employees/dto/create-employee.dto';
 
 const SELECT = {
   id: true,
@@ -144,6 +145,53 @@ export class UsersService {
       }
       throw e;
     }
+  }
+
+  // Additive — used only by EmployeesService's CREATE_NEW account-mode flow
+  // (146B), inside its own Prisma $transaction. Mirrors create()'s role
+  // validation and password hashing exactly, but:
+  //   - takes the already-resolved organizationId from the caller instead of
+  //     re-deriving it, since the EmployeeProfile being created in the same
+  //     transaction has already gone through that resolution and the new
+  //     User must land in that exact same org;
+  //   - writes via the passed `tx` instead of this.prisma, so the insert is
+  //     part of the caller's transaction and rolls back with it;
+  //   - does NOT write an audit log itself — AuditLogsWriterService always
+  //     uses the raw (non-transactional) PrismaService, so logging here
+  //     would commit immediately even if the surrounding transaction later
+  //     rolls back, producing a misleading "USER_CREATED" log for a user
+  //     that no longer exists. The caller logs USER_CREATED only after its
+  //     transaction has actually committed.
+  // create() itself is completely untouched — existing Settings Staff
+  // behavior is unaffected.
+  async createForEmployeeLink(
+    dto: CreateEmployeeAccountDto,
+    caller: JwtPayload,
+    organizationId: string,
+    names: { firstName: string; lastName: string; firstNameAr?: string; lastNameAr?: string },
+    tx: Prisma.TransactionClient,
+  ): Promise<UserRecord> {
+    if (caller.role !== UserRole.SUPER_ADMIN && !ORG_ADMIN_ALLOWED_ROLES.includes(dto.role)) {
+      throw new ForbiddenException('Cannot assign this role');
+    }
+
+    const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
+
+    return tx.user.create({
+      data: {
+        firstName: names.firstName,
+        lastName: names.lastName,
+        firstNameAr: names.firstNameAr,
+        lastNameAr: names.lastNameAr,
+        phone: dto.phone,
+        email: dto.email,
+        passwordHash,
+        role: dto.role,
+        isActive: dto.isActive,
+        organizationId,
+      },
+      select: SELECT,
+    });
   }
 
   async update(id: string, dto: UpdateUserDto, user: JwtPayload) {

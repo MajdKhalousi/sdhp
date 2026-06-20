@@ -2341,6 +2341,20 @@
         "editTitle": "Edit Employee",
         "noLoginAccount": "No login account",
         "inactiveSuffix": "Inactive",
+        "sections": {
+          "basicInfo": "Basic Information",
+          "contactInfo": "Contact Information",
+          "employmentDetails": "Employment Details",
+          "contractSalary": "Contract & Salary",
+          "accountLink": "Account Link",
+          "notes": "Notes"
+        },
+        "createSuccess": {
+          "title": "Employee \"{name}\" created.",
+          "openProfile": "Open employee profile",
+          "addAnother": "Add another",
+          "close": "Close"
+        },
         "userIdHelp": "Optionally link this employee to an existing staff account. Leave as \"No login account\" for HR-only employees.",
         "fields": {
           "firstName": "First Name",
@@ -2454,6 +2468,7 @@
         "employment": "Employment",
         "financial": "Financial",
         "contract": "Contract",
+        "contractFinancial": "Contract & Financial",
         "account": "Account",
         "documents": "Documents"
       },
@@ -2482,6 +2497,14 @@
           "CONTRACT": "Contract",
           "CERTIFICATE": "Certificate",
           "OTHER": "Other"
+        },
+        "checklist": {
+          "required": "Required",
+          "optional": "Optional",
+          "uploaded": "Uploaded",
+          "missing": "Missing",
+          "replace": "Replace",
+          "otherDocuments": "Other uploaded documents"
         },
         "uploadForm": {
           "title": "Upload Document",

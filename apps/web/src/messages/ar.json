@@ -2341,6 +2341,20 @@
         "editTitle": "تعديل السجل الوظيفي",
         "noLoginAccount": "بلا حساب تسجيل دخول",
         "inactiveSuffix": "غير نشط",
+        "sections": {
+          "basicInfo": "المعلومات الأساسية",
+          "contactInfo": "معلومات الاتصال",
+          "employmentDetails": "تفاصيل التوظيف",
+          "contractSalary": "العقد والراتب",
+          "accountLink": "ربط الحساب",
+          "notes": "ملاحظات"
+        },
+        "createSuccess": {
+          "title": "تم إنشاء الموظف \"{name}\".",
+          "openProfile": "فتح السجل الوظيفي",
+          "addAnother": "إضافة آخر",
+          "close": "إغلاق"
+        },
         "userIdHelp": "يمكنك اختياريًا ربط هذا الموظف بحساب موجود. اترك الخيار على \"بلا حساب تسجيل دخول\" للموظفين الذين لا يحتاجون إلى تسجيل دخول.",
         "fields": {
           "firstName": "الاسم الأول",
@@ -2454,6 +2468,7 @@
         "employment": "بيانات الوظيفة",
         "financial": "البيانات المالية",
         "contract": "العقد",
+        "contractFinancial": "العقد والبيانات المالية",
         "account": "الحساب",
         "documents": "الوثائق"
       },
@@ -2482,6 +2497,14 @@
           "CONTRACT": "عقد",
           "CERTIFICATE": "شهادة",
           "OTHER": "أخرى"
+        },
+        "checklist": {
+          "required": "مطلوب",
+          "optional": "اختياري",
+          "uploaded": "مرفوع",
+          "missing": "غير مرفوع",
+          "replace": "استبدال",
+          "otherDocuments": "وثائق أخرى مرفوعة"
         },
         "uploadForm": {
           "title": "رفع وثيقة",

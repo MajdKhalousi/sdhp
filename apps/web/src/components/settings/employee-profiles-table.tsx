@@ -3,7 +3,7 @@
 import { useState, useEffect, Fragment } from 'react';
 import { Plus, Pencil, UserX, Users, RotateCcw, Eye } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
-import { Link } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import {
   useEmployees,
   useCreateEmployee,
@@ -49,6 +49,15 @@ function FieldLabel({ children, required }: { children: React.ReactNode; require
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return <p className="mt-1 text-xs text-destructive">{message}</p>;
+}
+
+function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-3 border-t border-border pt-4 first:border-t-0 first:pt-0">
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</h3>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">{children}</div>
+    </div>
+  );
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -122,7 +131,7 @@ function initialFormState(initial?: EmployeeProfile): FormState {
 interface EmployeeFormProps {
   mode: 'create' | 'edit';
   initial?: EmployeeProfile;
-  onDone: () => void;
+  onDone: (created?: EmployeeProfile) => void;
 }
 
 function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
@@ -199,11 +208,12 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
     try {
       const dto = buildDto();
       if (mode === 'create') {
-        await create.mutateAsync(dto as CreateEmployeeDto);
+        const created = await create.mutateAsync(dto as CreateEmployeeDto);
+        onDone(created);
       } else if (initial) {
         await update.mutateAsync({ id: initial.id, dto });
+        onDone();
       }
-      onDone();
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : t('error.saveFailed'));
     }
@@ -213,7 +223,7 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-4">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <FormSection title={t('form.sections.basicInfo')}>
         <div>
           <FieldLabel required>{t('form.fields.firstName')}</FieldLabel>
           <input type="text" value={values.firstName} onChange={(e) => set('firstName', e.target.value)}
@@ -236,7 +246,9 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
           <input type="text" value={values.lastNameAr} onChange={(e) => set('lastNameAr', e.target.value)}
             className={inputClass()} disabled={isPending} dir="rtl" />
         </div>
+      </FormSection>
 
+      <FormSection title={t('form.sections.contactInfo')}>
         <div>
           <FieldLabel>{t('form.fields.phone')}</FieldLabel>
           <input type="tel" value={values.phone} onChange={(e) => set('phone', e.target.value)}
@@ -258,7 +270,6 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
           <input type="date" value={values.dateOfBirth} onChange={(e) => set('dateOfBirth', e.target.value)}
             className={inputClass()} disabled={isPending} dir="ltr" />
         </div>
-
         <div>
           <FieldLabel>{t('form.fields.gender')}</FieldLabel>
           <select value={values.gender} onChange={(e) => set('gender', e.target.value)}
@@ -269,12 +280,14 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
             ))}
           </select>
         </div>
-        <div className="sm:col-span-2">
+        <div>
           <FieldLabel>{t('form.fields.address')}</FieldLabel>
           <input type="text" value={values.address} onChange={(e) => set('address', e.target.value)}
             className={inputClass()} disabled={isPending} />
         </div>
+      </FormSection>
 
+      <FormSection title={t('form.sections.employmentDetails')}>
         <div>
           <FieldLabel>{t('form.fields.jobTitle')}</FieldLabel>
           <input type="text" value={values.jobTitle} onChange={(e) => set('jobTitle', e.target.value)}
@@ -305,20 +318,9 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
             ))}
           </select>
         </div>
-
         <div>
           <FieldLabel>{t('form.fields.hireDate')}</FieldLabel>
           <input type="date" value={values.hireDate} onChange={(e) => set('hireDate', e.target.value)}
-            className={inputClass()} disabled={isPending} dir="ltr" />
-        </div>
-        <div>
-          <FieldLabel>{t('form.fields.contractStartAt')}</FieldLabel>
-          <input type="date" value={values.contractStartAt} onChange={(e) => set('contractStartAt', e.target.value)}
-            className={inputClass()} disabled={isPending} dir="ltr" />
-        </div>
-        <div>
-          <FieldLabel>{t('form.fields.contractEndAt')}</FieldLabel>
-          <input type="date" value={values.contractEndAt} onChange={(e) => set('contractEndAt', e.target.value)}
             className={inputClass()} disabled={isPending} dir="ltr" />
         </div>
         <div>
@@ -330,7 +332,19 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
             ))}
           </select>
         </div>
+      </FormSection>
 
+      <FormSection title={t('form.sections.contractSalary')}>
+        <div>
+          <FieldLabel>{t('form.fields.contractStartAt')}</FieldLabel>
+          <input type="date" value={values.contractStartAt} onChange={(e) => set('contractStartAt', e.target.value)}
+            className={inputClass()} disabled={isPending} dir="ltr" />
+        </div>
+        <div>
+          <FieldLabel>{t('form.fields.contractEndAt')}</FieldLabel>
+          <input type="date" value={values.contractEndAt} onChange={(e) => set('contractEndAt', e.target.value)}
+            className={inputClass()} disabled={isPending} dir="ltr" />
+        </div>
         <div>
           <FieldLabel>{t('form.fields.baseSalary')}</FieldLabel>
           <input type="number" min={0} step="any" value={values.baseSalary} onChange={(e) => set('baseSalary', e.target.value)}
@@ -342,8 +356,10 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
           <input type="text" value={values.currency} onChange={(e) => set('currency', e.target.value)}
             className={inputClass()} disabled={isPending} dir="ltr" />
         </div>
+      </FormSection>
 
-        <div className="sm:col-span-2 lg:col-span-4">
+      <FormSection title={t('form.sections.accountLink')}>
+        <div className="sm:col-span-2">
           <FieldLabel>{t('form.fields.userId')}</FieldLabel>
           <select value={values.userId} onChange={(e) => set('userId', e.target.value)}
             className={inputClass()} disabled={isPending}>
@@ -356,13 +372,15 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
           </select>
           <p className="mt-1 text-xs text-muted-foreground">{t('form.userIdHelp')}</p>
         </div>
+      </FormSection>
 
-        <div className="sm:col-span-2 lg:col-span-4">
+      <FormSection title={t('form.sections.notes')}>
+        <div className="sm:col-span-2">
           <FieldLabel>{t('form.fields.notes')}</FieldLabel>
           <textarea rows={2} value={values.notes} onChange={(e) => set('notes', e.target.value)}
             className={inputClass()} disabled={isPending} />
         </div>
-      </div>
+      </FormSection>
 
       {saveError && <p className="text-sm text-destructive">{saveError}</p>}
 
@@ -373,7 +391,7 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
             ? (mode === 'create' ? t('form.actions.creating') : t('form.actions.saving'))
             : (mode === 'create' ? t('form.actions.create') : t('form.actions.save'))}
         </button>
-        <button type="button" onClick={onDone} disabled={isPending}
+        <button type="button" onClick={() => onDone()} disabled={isPending}
           className="h-8 rounded-md border border-input bg-background px-4 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50">
           {tCommon('actions.cancel')}
         </button>
@@ -397,6 +415,7 @@ export function EmployeeProfilesTable() {
   const t = useTranslations('settings.employees');
   const tCommon = useTranslations('common');
   const locale = useLocale();
+  const router = useRouter();
 
   const [showInactive, setShowInactive] = useState(false);
   const [expandedId, setExpandedId] = useState<string | 'new' | null>(null);
@@ -405,6 +424,7 @@ export function EmployeeProfilesTable() {
   const [restoringId, setRestoringId] = useState<string | null>(null);
   const [restoreError, setRestoreError] = useState<string | null>(null);
   const [restoreSuccessMsg, setRestoreSuccessMsg] = useState<string | null>(null);
+  const [createdSuccess, setCreatedSuccess] = useState<EmployeeProfile | null>(null);
 
   useEffect(() => {
     if (!restoreSuccessMsg) return;
@@ -449,7 +469,7 @@ export function EmployeeProfilesTable() {
         {t('showDeactivated')}
       </label>
       <button
-        onClick={() => { setExpandedId('new'); setDeletingId(null); setRestoringId(null); }}
+        onClick={() => { setExpandedId('new'); setDeletingId(null); setRestoringId(null); setCreatedSuccess(null); }}
         disabled={expandedId === 'new'}
         className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
       >
@@ -471,6 +491,35 @@ export function EmployeeProfilesTable() {
     </div>
   ) : null;
 
+  const createdSuccessBanner = createdSuccess ? (
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-green-500/20 bg-green-500/5 px-4 py-3 text-sm">
+      <p className="text-green-700 dark:text-green-400">
+        {t('form.createSuccess.title', { name: `${createdSuccess.firstName} ${createdSuccess.lastName}` })}
+      </p>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => { router.push(`/dashboard/hr/employees/${createdSuccess.id}`); setCreatedSuccess(null); }}
+          className="h-7 rounded-md border border-green-500/40 bg-green-500/10 px-3 text-xs font-medium text-green-700 transition-colors hover:bg-green-500/20 dark:text-green-400"
+        >
+          {t('form.createSuccess.openProfile')}
+        </button>
+        <button
+          onClick={() => { setCreatedSuccess(null); setExpandedId('new'); }}
+          className="h-7 rounded-md border border-border bg-background px-3 text-xs font-medium transition-colors hover:bg-accent"
+        >
+          {t('form.createSuccess.addAnother')}
+        </button>
+        <button
+          onClick={() => setCreatedSuccess(null)}
+          aria-label={t('form.createSuccess.close')}
+          className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  ) : null;
+
   const thead = (
     <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
       <tr>
@@ -488,6 +537,7 @@ export function EmployeeProfilesTable() {
     return (
       <div className="space-y-3">
         {restoreSuccessBanner}
+        {createdSuccessBanner}
         {toolbar}
         <div className="overflow-hidden rounded-xl border border-border">
           <div className="overflow-x-auto">
@@ -513,6 +563,7 @@ export function EmployeeProfilesTable() {
     return (
       <div className="space-y-3">
         {restoreSuccessBanner}
+        {createdSuccessBanner}
         {toolbar}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-12 text-center">
           <p className="text-sm font-medium text-destructive">{t('error.loadFailed')}</p>
@@ -531,6 +582,7 @@ export function EmployeeProfilesTable() {
     return (
       <div className="space-y-3">
         {restoreSuccessBanner}
+        {createdSuccessBanner}
         {toolbar}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-12 text-center">
           <Users className="h-8 w-8 text-muted-foreground/50" />
@@ -544,6 +596,7 @@ export function EmployeeProfilesTable() {
   return (
     <div className="space-y-3">
       {restoreSuccessBanner}
+      {createdSuccessBanner}
       {toolbar}
 
       <div className="overflow-hidden rounded-xl border border-border">
@@ -555,7 +608,13 @@ export function EmployeeProfilesTable() {
                 <tr className="border-t border-border bg-muted/10">
                   <td colSpan={COL_COUNT} className="p-4">
                     <p className="mb-3 text-sm font-semibold">{t('form.createTitle')}</p>
-                    <EmployeeForm mode="create" onDone={() => setExpandedId(null)} />
+                    <EmployeeForm
+                      mode="create"
+                      onDone={(created) => {
+                        setExpandedId(null);
+                        if (created) setCreatedSuccess(created);
+                      }}
+                    />
                   </td>
                 </tr>
               )}

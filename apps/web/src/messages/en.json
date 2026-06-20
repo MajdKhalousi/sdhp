@@ -2441,6 +2441,42 @@
         "loadFailed": "Failed to load employee profiles",
         "tryAgain": "Try again"
       }
+    },
+    "detail": {
+      "backToEmployees": "Back to Employee Profiles",
+      "sections": {
+        "overview": "Overview",
+        "employment": "Employment",
+        "financial": "Financial",
+        "contract": "Contract",
+        "account": "Account",
+        "documents": "Documents"
+      },
+      "account": {
+        "linkedTo": "Linked to {name}",
+        "role": "Role",
+        "status": "Account Status",
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "documents": {
+        "empty": "No documents uploaded yet.",
+        "download": "Download",
+        "downloading": "Downloading…",
+        "downloadFailed": "Failed to get download link",
+        "loadFailed": "Failed to load documents",
+        "categories": {
+          "PHOTO": "Photo",
+          "ID_DOCUMENT": "ID Document",
+          "CONTRACT": "Contract",
+          "CERTIFICATE": "Certificate",
+          "OTHER": "Other"
+        }
+      },
+      "errors": {
+        "notFound": "Employee Profile",
+        "loadFailed": "Failed to load this employee profile"
+      }
     }
   },
   "doctors": {

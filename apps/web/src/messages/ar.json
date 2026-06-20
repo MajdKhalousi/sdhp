@@ -2441,6 +2441,42 @@
         "loadFailed": "فشل تحميل السجلات الوظيفية",
         "tryAgain": "حاول مرة أخرى"
       }
+    },
+    "detail": {
+      "backToEmployees": "العودة إلى السجلات الوظيفية",
+      "sections": {
+        "overview": "نظرة عامة",
+        "employment": "بيانات الوظيفة",
+        "financial": "البيانات المالية",
+        "contract": "العقد",
+        "account": "الحساب",
+        "documents": "الوثائق"
+      },
+      "account": {
+        "linkedTo": "مرتبط بـ {name}",
+        "role": "الدور",
+        "status": "حالة الحساب",
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
+      "documents": {
+        "empty": "لا توجد وثائق مرفوعة حتى الآن.",
+        "download": "تحميل",
+        "downloading": "جارٍ التحميل…",
+        "downloadFailed": "فشل الحصول على رابط التحميل",
+        "loadFailed": "فشل تحميل الوثائق",
+        "categories": {
+          "PHOTO": "صورة",
+          "ID_DOCUMENT": "وثيقة هوية",
+          "CONTRACT": "عقد",
+          "CERTIFICATE": "شهادة",
+          "OTHER": "أخرى"
+        }
+      },
+      "errors": {
+        "notFound": "السجل الوظيفي",
+        "loadFailed": "فشل تحميل هذا السجل الوظيفي"
+      }
     }
   },
   "doctors": {

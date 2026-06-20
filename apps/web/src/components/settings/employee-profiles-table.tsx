@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, Fragment } from 'react';
-import { Plus, Pencil, UserX, Users, RotateCcw } from 'lucide-react';
+import { Plus, Pencil, UserX, Users, RotateCcw, Eye } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import {
   useEmployees,
   useCreateEmployee,
@@ -557,6 +558,13 @@ export function EmployeeProfilesTable() {
                       <td className="px-4 py-3">
                         {!isDeactivated ? (
                           <div className="flex items-center gap-1">
+                            <Link
+                              href={`/dashboard/hr/employees/${emp.id}`}
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
+                              aria-label="View"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                            </Link>
                             <button
                               onClick={() => { setExpandedId(expandedId === emp.id ? null : emp.id); setDeletingId(null); }}
                               className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
@@ -573,10 +581,19 @@ export function EmployeeProfilesTable() {
                             </button>
                           </div>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                            <RotateCcw className="h-3 w-3" />
-                            {t('deactivatedNote')}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <Link
+                              href={`/dashboard/hr/employees/${emp.id}`}
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
+                              aria-label="View"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                            </Link>
+                            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                              <RotateCcw className="h-3 w-3" />
+                              {t('deactivatedNote')}
+                            </span>
+                          </div>
                         )}
                       </td>
                     </tr>

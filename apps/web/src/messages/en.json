@@ -2456,7 +2456,8 @@
     "tabs": {
       "dashboard": "Dashboard",
       "employees": "Employees",
-      "accounts": "Login Accounts"
+      "accounts": "Login Accounts",
+      "attendance": "Attendance"
     },
     "accounts": {
       "title": "Login Accounts",
@@ -2466,6 +2467,44 @@
       "editTitle": "Edit Login Account",
       "emptyHeading": "No login accounts yet",
       "emptySubtext": "Create login accounts to grant your team access to the platform."
+    },
+    "attendance": {
+      "title": "Attendance",
+      "subtitle": "Record and review daily attendance for your employees",
+      "dateLabel": "Date",
+      "today": "Today",
+      "columns": {
+        "employee": "Employee",
+        "jobTitle": "Job Title",
+        "status": "Status",
+        "checkIn": "Check-in",
+        "checkOut": "Check-out",
+        "notes": "Notes",
+        "action": "Action"
+      },
+      "notRecorded": "Not recorded",
+      "record": "Record",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "statuses": {
+        "PRESENT": "Present",
+        "ABSENT": "Absent",
+        "LATE": "Late",
+        "HALF_DAY": "Half day",
+        "ON_LEAVE": "On leave",
+        "HOLIDAY": "Holiday"
+      },
+      "empty": {
+        "heading": "No employees to display",
+        "subtext": "Add employee profiles to start recording attendance."
+      },
+      "errors": {
+        "loadFailed": "Failed to load attendance",
+        "saveFailed": "Failed to save attendance record",
+        "conflict": "An attendance record already exists for this employee on this date",
+        "tryAgain": "Try again"
+      }
     },
     "dashboard": {
       "title": "Human Resources",

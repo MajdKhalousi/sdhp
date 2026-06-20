@@ -15,12 +15,15 @@ export default function HrLayout({ children }: { children: React.ReactNode }) {
     ? 'employees'
     : pathname.startsWith('/dashboard/hr/accounts')
     ? 'accounts'
+    : pathname.startsWith('/dashboard/hr/attendance')
+    ? 'attendance'
     : 'dashboard';
 
   const TABS: TabItem[] = [
     { value: 'dashboard', label: t('tabs.dashboard') },
     { value: 'employees', label: t('tabs.employees') },
     { value: 'accounts', label: t('tabs.accounts') },
+    { value: 'attendance', label: t('tabs.attendance') },
   ];
 
   return (

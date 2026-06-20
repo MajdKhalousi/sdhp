@@ -28,6 +28,7 @@ export const NAV_PLATFORM_PAYMENTS_ROLES: readonly string[]   = ['SUPER_ADMIN'];
 export const NAV_PLATFORM_AUDIT_LOGS_ROLES: readonly string[] = ['SUPER_ADMIN'];
 export const NAV_PLATFORM_USERS_ROLES: readonly string[]      = ['SUPER_ADMIN'];
 export const NAV_SETTINGS_ROLES: readonly string[]            = ['ORG_ADMIN'];
+export const NAV_HR_ROLES: readonly string[]                  = ['ORG_ADMIN'];
 export const NAV_PROFILE_ROLES: readonly string[]             = ['SUPER_ADMIN', 'ORG_ADMIN', 'BRANCH_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY', 'ACCOUNTANT', 'TECHNICIAN'];
 
 // ─── Super admin platform-only route hardening (134B) ────────────────────────
@@ -52,14 +53,14 @@ export const SUPER_ADMIN_ALLOWED_PATH_PREFIXES: readonly string[] = [
 export const PLATFORM_ACCESS_ROLES  = new Set(['SUPER_ADMIN']);
 export const SETTINGS_ACCESS_ROLES  = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
 export const DOCTORS_PAGE_ROLES     = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
-// Employee profile (HR) page — lives under /dashboard/settings/employees, so it
-// already inherits SettingsLayout's SETTINGS_ACCESS_ROLES guard. This constant
-// exists for parity with the other page-access sets and for any future
-// conditional UI; SUPER_ADMIN is listed but, per PlatformOnlyGuard (134B),
-// cannot reach any /dashboard/settings/* route in practice — pre-existing
-// behavior, unchanged by this phase. ACCOUNTANT deliberately excluded even
-// though the backend allows read access — frontend HR access is ORG_ADMIN-only
-// for this MVP (see Phase 144D).
+// Employee profile (HR) pages — used by both /dashboard/settings/employees
+// (inherits SettingsLayout's SETTINGS_ACCESS_ROLES guard directly) and the
+// new /dashboard/hr/* module (145B), which uses this constant directly via
+// RoleGuard. SUPER_ADMIN is listed but, per PlatformOnlyGuard (134B), cannot
+// reach any /dashboard/settings/* or /dashboard/hr/* route in practice —
+// pre-existing behavior, unchanged by this phase. ACCOUNTANT deliberately
+// excluded even though the backend allows read access — frontend HR access
+// is ORG_ADMIN-only for this MVP (see Phase 144D).
 export const EMPLOYEES_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
 
 // ─── Doctor workspace page access ────────────────────────────────────────────

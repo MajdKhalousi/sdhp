@@ -64,6 +64,7 @@
       "invoices": "Invoices",
       "billingReports": "Billing Reports",
       "settings": "Settings",
+      "hr": "Human Resources",
       "doctors": "Doctors",
       "platform": "Platform",
       "organizations": "Organizations",
@@ -2397,6 +2398,48 @@
         "loadFailed": "Failed to load employee profiles",
         "saveFailed": "Failed to save employee profile",
         "deleteFailed": "Failed to deactivate employee profile"
+      }
+    }
+  },
+  "hr": {
+    "tabs": {
+      "dashboard": "Dashboard",
+      "employees": "Employee Profiles"
+    },
+    "dashboard": {
+      "title": "Human Resources",
+      "subtitle": "Overview of employee profiles across your organization",
+      "cards": {
+        "totalEmployees": "Total Employees",
+        "totalEmployeesSub": "Excluding deactivated profiles",
+        "active": "Active",
+        "activeSub": "Currently active employees",
+        "onLeave": "On Leave",
+        "onLeaveSub": "Employees currently on leave",
+        "terminated": "Terminated",
+        "terminatedSub": "Employees no longer employed",
+        "withAccount": "With Login Account",
+        "withAccountSub": "Linked to a system account",
+        "withoutAccount": "Without Login Account",
+        "withoutAccountSub": "HR-only, no system access",
+        "totalBaseSalary": "Total Base Salaries",
+        "totalBaseSalarySub": "Sum across active profiles",
+        "contractsEndingSoon": "Contracts Ending Soon",
+        "contractsEndingSoonSub": "Within the next 30 days"
+      },
+      "recent": {
+        "title": "Recently Added",
+        "viewAll": "View all",
+        "empty": "No employee profiles yet."
+      },
+      "empty": {
+        "heading": "No employee profiles yet",
+        "subtext": "Add employee profiles to see HR statistics here.",
+        "action": "Go to Employee Profiles"
+      },
+      "errors": {
+        "loadFailed": "Failed to load employee profiles",
+        "tryAgain": "Try again"
       }
     }
   },

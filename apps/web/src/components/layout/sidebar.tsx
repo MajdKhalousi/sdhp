@@ -27,6 +27,7 @@ import {
   List,
   Wallet,
   ScrollText,
+  Briefcase,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
@@ -52,6 +53,7 @@ import {
   NAV_PLATFORM_AUDIT_LOGS_ROLES,
   NAV_PLATFORM_USERS_ROLES,
   NAV_SETTINGS_ROLES,
+  NAV_HR_ROLES,
   NAV_PROFILE_ROLES,
 } from '@/lib/permissions';
 
@@ -82,6 +84,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard/platform/payments',      icon: Wallet,        roles: NAV_PLATFORM_PAYMENTS_ROLES },
   { href: '/dashboard/platform/audit-logs',    icon: ScrollText,    roles: NAV_PLATFORM_AUDIT_LOGS_ROLES },
   { href: '/dashboard/platform/users',         icon: Users,         roles: NAV_PLATFORM_USERS_ROLES },
+  { href: '/dashboard/hr',                   icon: Briefcase,       roles: NAV_HR_ROLES },
   { href: '/dashboard/settings/clinic',      icon: Settings,        roles: NAV_SETTINGS_ROLES },
   { href: '/dashboard/profile',              icon: CircleUser,      roles: NAV_PROFILE_ROLES },
 ];
@@ -141,6 +144,7 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
     '/dashboard/platform/audit-logs':  t('items.auditLogs'),
     '/dashboard/platform/users':       t('items.users'),
     '/dashboard/settings/clinic':      t('items.settings'),
+    '/dashboard/hr':                   t('items.hr'),
     '/dashboard/profile':              t('items.profile'),
   };
 

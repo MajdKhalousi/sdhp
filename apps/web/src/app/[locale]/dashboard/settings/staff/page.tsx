@@ -1,17 +1,18 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { StaffTable } from '@/components/settings/staff-table';
+import { useEffect } from 'react';
+import { useRouter } from '@/i18n/navigation';
 
+// Login accounts moved to /dashboard/hr/accounts (146D-146G) — HR is now the
+// primary home for people/accounts, mirroring how Employee Profiles moved
+// to /dashboard/hr/employees (145C). This stub exists only so old
+// bookmarks/links keep working.
 export default function StaffPage() {
-  const t = useTranslations('settings.staff');
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-lg font-semibold">{t('title')}</h1>
-        <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
-      </div>
-      <StaffTable />
-    </div>
-  );
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/dashboard/hr/accounts');
+  }, [router]);
+
+  return null;
 }

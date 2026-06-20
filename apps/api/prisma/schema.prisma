@@ -219,6 +219,7 @@ model Organization {
   subscriptionPayments  SubscriptionPayment[]
   employeeProfiles      EmployeeProfile[]
   attendanceRecords     AttendanceRecord[]
+  leaveRequests         LeaveRequest[]
 
   @@map("organizations")
 }
@@ -318,6 +319,8 @@ model User {
   employeeProfile             EmployeeProfile?
   uploadedEmployeeDocuments   EmployeeDocument[]
   recordedAttendanceRecords   AttendanceRecord[]
+  createdLeaveRequests        LeaveRequest[]         @relation("LeaveCreatedBy")
+  decidedLeaveRequests        LeaveRequest[]         @relation("LeaveDecidedBy")
 
   @@index([organizationId])
   @@map("users")
@@ -442,6 +445,7 @@ model EmployeeProfile {
   department        Department?        @relation(fields: [departmentId], references: [id])
   documents         EmployeeDocument[]
   attendanceRecords AttendanceRecord[]
+  leaveRequests     LeaveRequest[]
 
   @@index([organizationId])
   @@index([userId])
@@ -510,6 +514,56 @@ model AttendanceRecord {
   @@index([employeeProfileId])
   @@index([date])
   @@map("attendance_records")
+}
+
+enum LeaveType {
+  ANNUAL
+  SICK
+  UNPAID
+  MATERNITY
+  OTHER
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+// HR/payroll-adjacent record, linked to EmployeeProfile (not User) so
+// HR-only employees with no login account can have leave tracked.
+// organizationId is denormalized here (always derived server-side from
+// EmployeeProfile, never trusted from client input), matching
+// AttendanceRecord's convention (Phase 147B). Approving a request never
+// auto-updates EmployeeProfile.employmentStatus — that remains a separate,
+// manual control until a later phase decides to couple them.
+model LeaveRequest {
+  id                String      @id @default(cuid())
+  organizationId    String
+  employeeProfileId String
+  type              LeaveType
+  startDate         DateTime // calendar date stored as midnight UTC
+  endDate           DateTime // calendar date stored as midnight UTC
+  status            LeaveStatus @default(PENDING)
+  reason            String?
+  decisionNote      String?
+  decidedById       String?
+  decidedAt         DateTime?
+  createdById       String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization    Organization    @relation(fields: [organizationId], references: [id])
+  employeeProfile EmployeeProfile @relation(fields: [employeeProfileId], references: [id])
+  decidedBy       User?           @relation("LeaveDecidedBy", fields: [decidedById], references: [id])
+  createdBy       User            @relation("LeaveCreatedBy", fields: [createdById], references: [id])
+
+  @@index([organizationId])
+  @@index([employeeProfileId])
+  @@index([status])
+  @@map("leave_requests")
 }
 
 // ─────────────────────────────────────────────

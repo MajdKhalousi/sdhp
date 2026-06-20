@@ -11,11 +11,16 @@ export default function HrLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const activeTab = pathname.startsWith('/dashboard/hr/employees') ? 'employees' : 'dashboard';
+  const activeTab = pathname.startsWith('/dashboard/hr/employees')
+    ? 'employees'
+    : pathname.startsWith('/dashboard/hr/accounts')
+    ? 'accounts'
+    : 'dashboard';
 
   const TABS: TabItem[] = [
     { value: 'dashboard', label: t('tabs.dashboard') },
     { value: 'employees', label: t('tabs.employees') },
+    { value: 'accounts', label: t('tabs.accounts') },
   ];
 
   return (

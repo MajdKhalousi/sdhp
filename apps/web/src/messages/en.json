@@ -2455,7 +2455,12 @@
   "hr": {
     "tabs": {
       "dashboard": "Dashboard",
-      "employees": "Employee Profiles"
+      "employees": "Employee Profiles",
+      "accounts": "Login Accounts"
+    },
+    "accounts": {
+      "title": "Login Accounts",
+      "subtitle": "Manage platform login accounts and permissions for your organization"
     },
     "dashboard": {
       "title": "Human Resources",

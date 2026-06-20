@@ -443,7 +443,19 @@ function protectedLabel(
 
 const COL_COUNT = 6;
 
-export function StaffTable() {
+// Optional display-string overrides — lets a caller (e.g. the HR "Login
+// Accounts" page) show account-flavored copy without forking this component
+// or its mutations. Omitting labels (Settings > Staff's usage) renders
+// exactly the existing settings.staff.* text, unchanged.
+export interface StaffTableLabels {
+  newStaff?: string;
+  createTitle?: string;
+  editTitle?: string;
+  emptyHeading?: string;
+  emptySubtext?: string;
+}
+
+export function StaffTable({ labels }: { labels?: StaffTableLabels } = {}) {
   const t       = useTranslations('settings.staff');
   const tCommon = useTranslations('common');
   const locale  = useLocale();
@@ -528,7 +540,7 @@ export function StaffTable() {
         className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
       >
         <Plus className="h-3.5 w-3.5" />
-        {t('newStaff')}
+        {labels?.newStaff ?? t('newStaff')}
       </button>
     </div>
   );
@@ -632,8 +644,8 @@ export function StaffTable() {
         {toolbar}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-12 text-center">
           <Users className="h-8 w-8 text-muted-foreground/50" />
-          <p className="text-sm font-medium">{t('empty.heading')}</p>
-          <p className="text-xs text-muted-foreground">{t('empty.subtext')}</p>
+          <p className="text-sm font-medium">{labels?.emptyHeading ?? t('empty.heading')}</p>
+          <p className="text-xs text-muted-foreground">{labels?.emptySubtext ?? t('empty.subtext')}</p>
         </div>
       </div>
     );
@@ -654,7 +666,7 @@ export function StaffTable() {
               {expandedId === 'new' && (
                 <tr className="border-t border-border bg-muted/10">
                   <td colSpan={COL_COUNT} className="p-4">
-                    <p className="mb-3 text-sm font-semibold">{t('form.createTitle')}</p>
+                    <p className="mb-3 text-sm font-semibold">{labels?.createTitle ?? t('form.createTitle')}</p>
                     <StaffForm
                       mode="create"
                       onDone={() => setExpandedId(null)}
@@ -779,7 +791,7 @@ export function StaffTable() {
                     {expandedId === member.id && canManageRow(member, user) && !isDeactivated && (
                       <tr className="border-t border-border bg-muted/10">
                         <td colSpan={COL_COUNT} className="p-4">
-                          <p className="mb-3 text-sm font-semibold">{t('form.editTitle')}</p>
+                          <p className="mb-3 text-sm font-semibold">{labels?.editTitle ?? t('form.editTitle')}</p>
                           <StaffForm
                             mode="edit"
                             initial={member}

@@ -11,7 +11,15 @@ export default function HrAccountsPage() {
         <h1 className="text-lg font-semibold">{t('title')}</h1>
         <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
       </div>
-      <StaffTable />
+      <StaffTable
+        labels={{
+          newStaff: t('newAccount'),
+          createTitle: t('createTitle'),
+          editTitle: t('editTitle'),
+          emptyHeading: t('emptyHeading'),
+          emptySubtext: t('emptySubtext'),
+        }}
+      />
     </div>
   );
 }

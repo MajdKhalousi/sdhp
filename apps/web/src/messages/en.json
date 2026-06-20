@@ -2460,7 +2460,12 @@
     },
     "accounts": {
       "title": "Login Accounts",
-      "subtitle": "Manage platform login accounts and permissions for your organization"
+      "subtitle": "Manage platform login accounts and permissions for your organization",
+      "newAccount": "New Login Account",
+      "createTitle": "New Login Account",
+      "editTitle": "Edit Login Account",
+      "emptyHeading": "No login accounts yet",
+      "emptySubtext": "Create login accounts to grant your team access to the platform."
     },
     "dashboard": {
       "title": "Human Resources",

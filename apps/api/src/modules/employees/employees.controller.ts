@@ -95,6 +95,19 @@ export class EmployeesController {
     return this.service.update(id, dto, user);
   }
 
+  @Patch(':id/restore')
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)
+  @ApiOperation({
+    summary:
+      'Restore a soft-deleted employee profile — ORG_ADMIN restricted to own org. ' +
+      'Only clears deletedAt; employmentStatus is left exactly as it was. Does not affect the linked User account.',
+  })
+  @ApiNotFoundResponse({ description: 'Employee profile not found' })
+  restore(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.service.restore(id, user);
+  }
+
   @Delete(':id')
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN)

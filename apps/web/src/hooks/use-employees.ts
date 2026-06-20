@@ -76,3 +76,13 @@ export function useDeleteEmployee() {
     },
   });
 }
+
+export function useRestoreEmployee() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.patch<EmployeeProfile>(`/v1/employees/${id}/restore`, {}),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['employees'] });
+    },
+  });
+}

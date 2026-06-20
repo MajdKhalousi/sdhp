@@ -295,6 +295,39 @@ export class EmployeesService {
     });
   }
 
+  // Restore is the exact inverse of remove() above — it only clears
+  // deletedAt. employmentStatus is left exactly as it was (remove() never
+  // touches it either), so a profile that was ON_LEAVE/TERMINATED before
+  // being archived comes back in that same state, not silently reset to
+  // ACTIVE. No deletedAt filter in the lookup — restore must be able to
+  // find the record regardless of its current soft-delete state.
+  async restore(id: string, caller: JwtPayload) {
+    const found = await this.prisma.employeeProfile.findFirst({
+      where: { id },
+      select: { id: true, organizationId: true, deletedAt: true, employmentStatus: true },
+    });
+
+    if (!found) throw new NotFoundException('Employee profile not found');
+    this.assertOwnership(found.organizationId, caller);
+
+    const result = await this.prisma.employeeProfile.update({
+      where: { id },
+      data: { deletedAt: null },
+      select: SELECT,
+    });
+
+    await this.auditWriter.log({
+      caller,
+      action: 'EMPLOYEE_PROFILE_RESTORED',
+      resource: 'employee_profile',
+      resourceId: id,
+      oldData: toSnapshot({ deletedAt: found.deletedAt, employmentStatus: found.employmentStatus }),
+      newData: toSnapshot({ deletedAt: result.deletedAt, employmentStatus: result.employmentStatus }),
+    });
+
+    return result;
+  }
+
   private assertOwnership(profileOrgId: string, caller: JwtPayload): void {
     if (caller.role === UserRole.SUPER_ADMIN) return;
     if (profileOrgId !== caller.organizationId) {

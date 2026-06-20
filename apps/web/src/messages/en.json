@@ -2323,6 +2323,10 @@
       "deactivating": "Deactivating…",
       "deactivateConfirm": "Deactivate this employee profile? It will be hidden from the default list.",
       "deactivatedNote": "Deactivated",
+      "restore": "Restore",
+      "restoring": "Restoring…",
+      "restoreConfirm": "Restore this employee profile? It will reappear in the default list.",
+      "restoreSuccess": "Employee profile restored.",
       "noLinkedAccount": "No login account",
       "columns": {
         "name": "Name",
@@ -2397,7 +2401,8 @@
       "error": {
         "loadFailed": "Failed to load employee profiles",
         "saveFailed": "Failed to save employee profile",
-        "deleteFailed": "Failed to deactivate employee profile"
+        "deleteFailed": "Failed to deactivate employee profile",
+        "restoreFailed": "Failed to restore employee profile"
       }
     }
   },

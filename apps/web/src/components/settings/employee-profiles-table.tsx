@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Fragment } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { Plus, Pencil, UserX, Users, RotateCcw, Eye } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
@@ -9,6 +9,7 @@ import {
   useCreateEmployee,
   useUpdateEmployee,
   useDeleteEmployee,
+  useRestoreEmployee,
 } from '@/hooks/use-employees';
 import { useStaff } from '@/hooks/use-staff';
 import { useBranches } from '@/hooks/use-branches';
@@ -401,9 +402,19 @@ export function EmployeeProfilesTable() {
   const [expandedId, setExpandedId] = useState<string | 'new' | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [restoringId, setRestoringId] = useState<string | null>(null);
+  const [restoreError, setRestoreError] = useState<string | null>(null);
+  const [restoreSuccessMsg, setRestoreSuccessMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!restoreSuccessMsg) return;
+    const id = setTimeout(() => setRestoreSuccessMsg(null), 5_000);
+    return () => clearTimeout(id);
+  }, [restoreSuccessMsg]);
 
   const { data: allEmployees, isLoading, isError, error, refetch } = useEmployees(showInactive);
   const deleteEmployee = useDeleteEmployee();
+  const restoreEmployee = useRestoreEmployee();
 
   async function handleDeactivate(id: string) {
     setDeleteError(null);
@@ -412,6 +423,17 @@ export function EmployeeProfilesTable() {
       setDeletingId(null);
     } catch (err) {
       setDeleteError(err instanceof Error ? err.message : t('error.deleteFailed'));
+    }
+  }
+
+  async function handleRestore(id: string) {
+    setRestoreError(null);
+    try {
+      await restoreEmployee.mutateAsync(id);
+      setRestoringId(null);
+      setRestoreSuccessMsg(t('restoreSuccess'));
+    } catch (err) {
+      setRestoreError(err instanceof Error ? err.message : t('error.restoreFailed'));
     }
   }
 
@@ -427,7 +449,7 @@ export function EmployeeProfilesTable() {
         {t('showDeactivated')}
       </label>
       <button
-        onClick={() => { setExpandedId('new'); setDeletingId(null); }}
+        onClick={() => { setExpandedId('new'); setDeletingId(null); setRestoringId(null); }}
         disabled={expandedId === 'new'}
         className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
       >
@@ -436,6 +458,18 @@ export function EmployeeProfilesTable() {
       </button>
     </div>
   );
+
+  const restoreSuccessBanner = restoreSuccessMsg ? (
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-green-500/20 bg-green-500/5 px-4 py-3 text-sm">
+      <p className="text-green-700 dark:text-green-400">{restoreSuccessMsg}</p>
+      <button
+        onClick={() => setRestoreSuccessMsg(null)}
+        className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+      >
+        ✕
+      </button>
+    </div>
+  ) : null;
 
   const thead = (
     <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
@@ -453,6 +487,7 @@ export function EmployeeProfilesTable() {
   if (isLoading) {
     return (
       <div className="space-y-3">
+        {restoreSuccessBanner}
         {toolbar}
         <div className="overflow-hidden rounded-xl border border-border">
           <div className="overflow-x-auto">
@@ -477,6 +512,7 @@ export function EmployeeProfilesTable() {
   if (isError) {
     return (
       <div className="space-y-3">
+        {restoreSuccessBanner}
         {toolbar}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 py-12 text-center">
           <p className="text-sm font-medium text-destructive">{t('error.loadFailed')}</p>
@@ -494,6 +530,7 @@ export function EmployeeProfilesTable() {
   if (items.length === 0 && expandedId !== 'new') {
     return (
       <div className="space-y-3">
+        {restoreSuccessBanner}
         {toolbar}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-12 text-center">
           <Users className="h-8 w-8 text-muted-foreground/50" />
@@ -506,6 +543,7 @@ export function EmployeeProfilesTable() {
 
   return (
     <div className="space-y-3">
+      {restoreSuccessBanner}
       {toolbar}
 
       <div className="overflow-hidden rounded-xl border border-border">
@@ -566,14 +604,14 @@ export function EmployeeProfilesTable() {
                               <Eye className="h-3.5 w-3.5" />
                             </Link>
                             <button
-                              onClick={() => { setExpandedId(expandedId === emp.id ? null : emp.id); setDeletingId(null); }}
+                              onClick={() => { setExpandedId(expandedId === emp.id ? null : emp.id); setDeletingId(null); setRestoringId(null); }}
                               className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
                               aria-label="Edit"
                             >
                               <Pencil className="h-3.5 w-3.5" />
                             </button>
                             <button
-                              onClick={() => { setDeletingId(deletingId === emp.id ? null : emp.id); setExpandedId(null); setDeleteError(null); }}
+                              onClick={() => { setDeletingId(deletingId === emp.id ? null : emp.id); setExpandedId(null); setRestoringId(null); setDeleteError(null); }}
                               className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-destructive/30 text-destructive transition-colors hover:bg-destructive/10"
                               aria-label="Deactivate"
                             >
@@ -581,7 +619,7 @@ export function EmployeeProfilesTable() {
                             </button>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
                             <Link
                               href={`/dashboard/hr/employees/${emp.id}`}
                               className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
@@ -589,10 +627,18 @@ export function EmployeeProfilesTable() {
                             >
                               <Eye className="h-3.5 w-3.5" />
                             </Link>
-                            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                              <RotateCcw className="h-3 w-3" />
-                              {t('deactivatedNote')}
-                            </span>
+                            <button
+                              onClick={() => {
+                                setRestoringId(restoringId === emp.id ? null : emp.id);
+                                setExpandedId(null);
+                                setDeletingId(null);
+                                setRestoreError(null);
+                              }}
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-primary/30 text-primary transition-colors hover:bg-primary/10"
+                              aria-label="Restore"
+                            >
+                              <RotateCcw className="h-3.5 w-3.5" />
+                            </button>
                           </div>
                         )}
                       </td>
@@ -626,6 +672,35 @@ export function EmployeeProfilesTable() {
                               <button
                                 onClick={() => { setDeletingId(null); setDeleteError(null); }}
                                 disabled={deleteEmployee.isPending}
+                                className="h-7 rounded-md border border-border bg-background px-3 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
+                              >
+                                {tCommon('actions.cancel')}
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+
+                    {restoringId === emp.id && isDeactivated && (
+                      <tr className="border-t border-border bg-primary/5">
+                        <td colSpan={COL_COUNT} className="px-4 py-2.5">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <p className="text-sm text-foreground">{t('restoreConfirm')}</p>
+                            {restoreError && restoringId === emp.id && (
+                              <p className="text-xs text-destructive">{restoreError}</p>
+                            )}
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleRestore(emp.id)}
+                                disabled={restoreEmployee.isPending}
+                                className="h-7 rounded-md border border-primary/40 bg-primary/10 px-3 text-sm font-medium text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
+                              >
+                                {restoreEmployee.isPending ? t('restoring') : t('restore')}
+                              </button>
+                              <button
+                                onClick={() => { setRestoringId(null); setRestoreError(null); }}
+                                disabled={restoreEmployee.isPending}
                                 className="h-7 rounded-md border border-border bg-background px-3 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
                               >
                                 {tCommon('actions.cancel')}

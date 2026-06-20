@@ -33,10 +33,14 @@ export function useEmployees(includeDeleted = false) {
   });
 }
 
+// includeDeleted=true is always sent here — this hook backs the read-only
+// detail page only (the list page uses useEmployees, unaffected by this).
+// It has no effect on an active profile and allows the detail page to load
+// a soft-deleted/deactivated one read-only (145D-1).
 export function useEmployee(id: string) {
   return useQuery({
     queryKey: ['employees', id],
-    queryFn: () => api.get<EmployeeProfile>(`/v1/employees/${id}`),
+    queryFn: () => api.get<EmployeeProfile>(`/v1/employees/${id}`, { includeDeleted: 'true' }),
     staleTime: 30_000,
     enabled: !!id,
   });

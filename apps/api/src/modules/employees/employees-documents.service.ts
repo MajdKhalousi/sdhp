@@ -95,8 +95,13 @@ export class EmployeesDocumentsService {
     }
   }
 
+  // Read-only — resolves the parent profile even if soft-deleted, so an
+  // archived employee's existing documents remain visible/downloadable from
+  // the read-only detail view. Write paths (getUploadUrl/create/remove) below
+  // deliberately do NOT pass includeDeleted, so they keep blocking deactivated
+  // profiles exactly as before.
   async findAll(employeeProfileId: string, caller: JwtPayload) {
-    await this.employeesService.findOne(employeeProfileId, caller);
+    await this.employeesService.findOne(employeeProfileId, caller, { includeDeleted: true });
 
     return this.prisma.employeeDocument.findMany({
       where: { employeeProfileId, deletedAt: null },
@@ -106,7 +111,7 @@ export class EmployeesDocumentsService {
   }
 
   async getDownloadUrl(employeeProfileId: string, documentId: string, caller: JwtPayload) {
-    await this.employeesService.findOne(employeeProfileId, caller);
+    await this.employeesService.findOne(employeeProfileId, caller, { includeDeleted: true });
     const doc = await this.fetchDocument(employeeProfileId, documentId);
 
     const downloadUrl = await this.storage.presignedGetUrl(doc.storageKey);

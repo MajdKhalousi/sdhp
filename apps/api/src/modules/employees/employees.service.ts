@@ -92,9 +92,9 @@ export class EmployeesService {
     return { data, total, page, limit };
   }
 
-  async findOne(id: string, caller: JwtPayload) {
+  async findOne(id: string, caller: JwtPayload, options?: { includeDeleted?: boolean }) {
     const found = await this.prisma.employeeProfile.findFirst({
-      where: { id, deletedAt: null },
+      where: { id, ...(options?.includeDeleted ? {} : { deletedAt: null }) },
       select: SELECT,
     });
 

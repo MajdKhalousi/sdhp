@@ -22,6 +22,7 @@ import {
 import { UserRole } from '@prisma/client';
 import { EmployeesService } from './employees.service';
 import { EmployeeQueryDto } from './dto/employee-query.dto';
+import { EmployeeDetailQueryDto } from './dto/employee-detail-query.dto';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -51,10 +52,18 @@ export class EmployeesController {
   @Get(':id')
   @Version('1')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ACCOUNTANT)
-  @ApiOperation({ summary: 'Get employee profile by ID — ORG_ADMIN/ACCOUNTANT restricted to own org' })
+  @ApiOperation({
+    summary:
+      'Get employee profile by ID — ORG_ADMIN/ACCOUNTANT restricted to own org. ' +
+      'includeDeleted=true allows read-only access to a soft-deleted profile (e.g. an archived detail view); has no effect on writes.',
+  })
   @ApiNotFoundResponse({ description: 'Employee profile not found' })
-  findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    return this.service.findOne(id, user);
+  findOne(
+    @Param('id') id: string,
+    @Query() query: EmployeeDetailQueryDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.service.findOne(id, user, { includeDeleted: query.includeDeleted });
   }
 
   @Post()

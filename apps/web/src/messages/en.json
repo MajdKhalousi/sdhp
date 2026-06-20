@@ -2470,12 +2470,33 @@
         "downloading": "Downloading…",
         "downloadFailed": "Failed to get download link",
         "loadFailed": "Failed to load documents",
+        "uploadButton": "Upload Document",
+        "closeUpload": "Close",
+        "deleteButton": "Delete",
+        "deleting": "Deleting…",
+        "confirmDelete": "Are you sure you want to delete this document? This action cannot be undone.",
+        "deleteFailed": "Failed to delete document",
         "categories": {
           "PHOTO": "Photo",
           "ID_DOCUMENT": "ID Document",
           "CONTRACT": "Contract",
           "CERTIFICATE": "Certificate",
           "OTHER": "Other"
+        },
+        "uploadForm": {
+          "title": "Upload Document",
+          "filePicker": "Choose File",
+          "noFileChosen": "No file chosen",
+          "categoryLabel": "Category",
+          "uploadButton": "Upload",
+          "uploadingButton": "Uploading…",
+          "cancelButton": "Cancel",
+          "invalidType": "Only PDF, JPEG, PNG, or WebP files are allowed",
+          "tooLarge": "File is too large — maximum size is 10MB",
+          "uploadStorageFailed": "Failed to upload file to storage ({status})",
+          "uploadRegistrationFailed": "File uploaded but registration failed, please retry or contact admin",
+          "uploadFailed": "An error occurred while uploading the document",
+          "uploadSuccess": "Document uploaded."
         }
       },
       "errors": {

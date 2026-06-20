@@ -3,16 +3,33 @@
 import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
-import { ArrowLeft, Download, FileText } from 'lucide-react';
+import { ArrowLeft, Download, FileText, Upload, Trash2 } from 'lucide-react';
 import { useEmployee } from '@/hooks/use-employees';
 import { useBranches } from '@/hooks/use-branches';
 import { useDepartments } from '@/hooks/use-departments';
-import { useEmployeeDocuments, useEmployeeDocumentDownloadUrl } from '@/hooks/use-employee-documents';
+import {
+  useEmployeeDocuments,
+  useEmployeeDocumentDownloadUrl,
+  useRequestEmployeeDocumentUploadUrl,
+  useRegisterEmployeeDocument,
+  useDeleteEmployeeDocument,
+} from '@/hooks/use-employee-documents';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatAmount } from '@/lib/format-currency';
 import { formatDateDisplay, formatDateTimeDisplay } from '@/lib/format-date';
 import type { EmploymentStatus } from '@/types/employee';
+import type { EmployeeDocumentCategory } from '@/types/employee-document';
+
+const EMPLOYEE_DOCUMENT_CATEGORIES: EmployeeDocumentCategory[] = [
+  'PHOTO',
+  'ID_DOCUMENT',
+  'CONTRACT',
+  'CERTIFICATE',
+  'OTHER',
+];
+const ALLOWED_DOCUMENT_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+const MAX_DOCUMENT_SIZE_BYTES = 10_485_760;
 
 function StatusBadge({ status, t }: { status: EmploymentStatus; t: (key: string) => string }) {
   const variant = status === 'ACTIVE' ? 'success' : status === 'ON_LEAVE' ? 'warning' : 'outline';
@@ -37,6 +54,167 @@ function Field({ label, value, dir }: { label: string; value: React.ReactNode; d
   );
 }
 
+function DocumentUploadForm({
+  employeeProfileId,
+  onDone,
+}: {
+  employeeProfileId: string;
+  onDone: () => void;
+}) {
+  const t = useTranslations('hr.detail.documents');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [category, setCategory] = useState<EmployeeDocumentCategory>('OTHER');
+  const [error, setError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const requestUrl = useRequestEmployeeDocumentUploadUrl();
+  const registerDoc = useRegisterEmployeeDocument();
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null;
+    setError(null);
+    if (file) {
+      if (!ALLOWED_DOCUMENT_MIME_TYPES.includes(file.type)) {
+        setError(t('uploadForm.invalidType'));
+        setSelectedFile(null);
+        e.target.value = '';
+        return;
+      }
+      if (file.size > MAX_DOCUMENT_SIZE_BYTES) {
+        setError(t('uploadForm.tooLarge'));
+        setSelectedFile(null);
+        e.target.value = '';
+        return;
+      }
+    }
+    setSelectedFile(file);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedFile || isUploading) return;
+    setError(null);
+    setIsUploading(true);
+
+    try {
+      // Step 1 — request a presigned upload URL from the API
+      const { uploadUrl, storageKey } = await requestUrl.mutateAsync({
+        employeeProfileId,
+        fileName: selectedFile.name,
+        mimeType: selectedFile.type,
+        sizeBytes: selectedFile.size,
+        category,
+      });
+
+      // Step 2 — upload the binary directly to storage (no JWT; the presigned URL handles auth)
+      const putRes = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: selectedFile,
+        headers: { 'Content-Type': selectedFile.type },
+      });
+      if (!putRes.ok) {
+        throw new Error(t('uploadForm.uploadStorageFailed', { status: putRes.status }));
+      }
+
+      // Step 3 — register the metadata in the database
+      try {
+        await registerDoc.mutateAsync({
+          employeeProfileId,
+          dto: {
+            category,
+            fileName: selectedFile.name,
+            mimeType: selectedFile.type,
+            sizeBytes: selectedFile.size,
+            storageKey,
+          },
+        });
+      } catch {
+        // Binary is in storage but the DB record failed — warn clearly so an admin can reconcile
+        setError(t('uploadForm.uploadRegistrationFailed'));
+        setIsUploading(false);
+        return;
+      }
+
+      onDone();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('uploadForm.uploadFailed'));
+      setIsUploading(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-xl border bg-card p-4">
+      <p className="text-sm font-semibold text-foreground">{t('uploadForm.title')}</p>
+
+      <div className="flex items-center gap-2.5">
+        <label
+          htmlFor="employee-document-input"
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+        >
+          <Upload className="h-3.5 w-3.5" />
+          {t('uploadForm.filePicker')}
+        </label>
+        <input
+          id="employee-document-input"
+          type="file"
+          accept={ALLOWED_DOCUMENT_MIME_TYPES.join(',')}
+          className="sr-only"
+          onChange={handleFileChange}
+        />
+        {selectedFile ? (
+          <span className="max-w-[220px] truncate text-sm text-muted-foreground" dir="ltr">
+            {selectedFile.name}
+          </span>
+        ) : (
+          <span className="text-sm text-muted-foreground/60">{t('uploadForm.noFileChosen')}</span>
+        )}
+      </div>
+
+      <div>
+        <label className="mb-1 block text-xs font-medium text-muted-foreground">
+          {t('uploadForm.categoryLabel')}
+        </label>
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value as EmployeeDocumentCategory)}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          {EMPLOYEE_DOCUMENT_CATEGORIES.map((cat) => (
+            <option key={cat} value={cat}>
+              {t(`categories.${cat}`)}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {error && (
+        <div className="rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2">
+          <p className="text-xs text-destructive">{error}</p>
+        </div>
+      )}
+
+      <div className="flex items-center gap-2 pt-1">
+        <button
+          type="submit"
+          disabled={!selectedFile || isUploading}
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+        >
+          {isUploading ? t('uploadForm.uploadingButton') : t('uploadForm.uploadButton')}
+        </button>
+        {!isUploading && (
+          <button
+            type="button"
+            onClick={onDone}
+            className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
+          >
+            {t('uploadForm.cancelButton')}
+          </button>
+        )}
+      </div>
+    </form>
+  );
+}
+
 const BACK_HREF = '/dashboard/hr/employees';
 
 export function EmployeeProfileDetail({ employeeId }: { employeeId: string }) {
@@ -49,9 +227,13 @@ export function EmployeeProfileDetail({ employeeId }: { employeeId: string }) {
   const { data: departments } = useDepartments();
   const { data: documents, isLoading: docsLoading, isError: docsError } = useEmployeeDocuments(employeeId);
   const downloadUrlMutation = useEmployeeDocumentDownloadUrl();
+  const deleteDocMutation = useDeleteEmployeeDocument();
 
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [showUpload, setShowUpload] = useState(false);
 
   async function handleDownload(documentId: string) {
     setDownloadError(null);
@@ -63,6 +245,19 @@ export function EmployeeProfileDetail({ employeeId }: { employeeId: string }) {
       setDownloadError(err instanceof Error ? err.message : t('documents.downloadFailed'));
     } finally {
       setDownloadingId(null);
+    }
+  }
+
+  async function handleDelete(documentId: string) {
+    if (!window.confirm(t('documents.confirmDelete'))) return;
+    setDeleteError(null);
+    setDeletingId(documentId);
+    try {
+      await deleteDocMutation.mutateAsync({ employeeProfileId: employeeId, documentId });
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : t('documents.deleteFailed'));
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -194,43 +389,74 @@ export function EmployeeProfileDetail({ employeeId }: { employeeId: string }) {
       </div>
 
       <SectionCard title={t('sections.documents')}>
-        {docsLoading ? (
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-          </div>
-        ) : docsError ? (
-          <p className="text-sm text-destructive">{t('documents.loadFailed')}</p>
-        ) : !documents || documents.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-6 text-center">
-            <FileText className="h-6 w-6 text-muted-foreground/40" />
-            <p className="text-sm text-muted-foreground">{t('documents.empty')}</p>
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {downloadError && <p className="mb-2 text-xs text-destructive">{downloadError}</p>}
-            <ul className="divide-y">
-              {documents.map((doc) => (
-                <li key={doc.id} className="flex items-center justify-between gap-3 py-2.5">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium" dir="ltr">{doc.fileName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {t(`documents.categories.${doc.category}`)} · {formatDateTimeDisplay(doc.createdAt)}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleDownload(doc.id)}
-                    disabled={downloadingId === doc.id}
-                    className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-50"
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                    {downloadingId === doc.id ? t('documents.downloading') : t('documents.download')}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <div className="space-y-3">
+          {!isDeactivated && (
+            <div className="flex items-center justify-end">
+              <button
+                onClick={() => setShowUpload((v) => !v)}
+                className="inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent"
+              >
+                <Upload className="h-3.5 w-3.5" />
+                {showUpload ? t('documents.closeUpload') : t('documents.uploadButton')}
+              </button>
+            </div>
+          )}
+
+          {!isDeactivated && showUpload && (
+            <DocumentUploadForm employeeProfileId={employeeId} onDone={() => setShowUpload(false)} />
+          )}
+
+          {docsLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+            </div>
+          ) : docsError ? (
+            <p className="text-sm text-destructive">{t('documents.loadFailed')}</p>
+          ) : !documents || documents.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-6 text-center">
+              <FileText className="h-6 w-6 text-muted-foreground/40" />
+              <p className="text-sm text-muted-foreground">{t('documents.empty')}</p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {downloadError && <p className="mb-2 text-xs text-destructive">{downloadError}</p>}
+              {deleteError && <p className="mb-2 text-xs text-destructive">{deleteError}</p>}
+              <ul className="divide-y">
+                {documents.map((doc) => (
+                  <li key={doc.id} className="flex items-center justify-between gap-3 py-2.5">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium" dir="ltr">{doc.fileName}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t(`documents.categories.${doc.category}`)} · {formatDateTimeDisplay(doc.createdAt)}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <button
+                        onClick={() => handleDownload(doc.id)}
+                        disabled={downloadingId === doc.id}
+                        className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-50"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        {downloadingId === doc.id ? t('documents.downloading') : t('documents.download')}
+                      </button>
+                      {!isDeactivated && (
+                        <button
+                          onClick={() => handleDelete(doc.id)}
+                          disabled={deletingId === doc.id}
+                          className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-destructive/30 px-3 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          {deletingId === doc.id ? t('documents.deleting') : t('documents.deleteButton')}
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
       </SectionCard>
     </div>
   );

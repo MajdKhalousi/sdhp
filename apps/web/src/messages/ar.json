@@ -2470,12 +2470,33 @@
         "downloading": "جارٍ التحميل…",
         "downloadFailed": "فشل الحصول على رابط التحميل",
         "loadFailed": "فشل تحميل الوثائق",
+        "uploadButton": "رفع وثيقة",
+        "closeUpload": "إغلاق",
+        "deleteButton": "حذف",
+        "deleting": "جارٍ الحذف…",
+        "confirmDelete": "هل أنت متأكد من حذف هذه الوثيقة؟ لا يمكن التراجع عن هذا الإجراء.",
+        "deleteFailed": "فشل حذف الوثيقة",
         "categories": {
           "PHOTO": "صورة",
           "ID_DOCUMENT": "وثيقة هوية",
           "CONTRACT": "عقد",
           "CERTIFICATE": "شهادة",
           "OTHER": "أخرى"
+        },
+        "uploadForm": {
+          "title": "رفع وثيقة",
+          "filePicker": "اختر ملفاً",
+          "noFileChosen": "لم يُختر ملف",
+          "categoryLabel": "التصنيف",
+          "uploadButton": "رفع",
+          "uploadingButton": "جارٍ الرفع…",
+          "cancelButton": "إلغاء",
+          "invalidType": "يُسمح فقط بملفات PDF أو JPEG أو PNG أو WebP",
+          "tooLarge": "حجم الملف كبير جدًا — الحد الأقصى 10 ميغابايت",
+          "uploadStorageFailed": "فشل رفع الملف إلى التخزين ({status})",
+          "uploadRegistrationFailed": "تم رفع الملف ولكن فشل تسجيله، يرجى المحاولة مجددًا أو التواصل مع الإدارة",
+          "uploadFailed": "حدث خطأ أثناء رفع الوثيقة",
+          "uploadSuccess": "تم رفع الوثيقة."
         }
       },
       "errors": {

@@ -20,3 +20,18 @@ export interface EmployeeDocumentDownloadUrl {
   mimeType: string;
   sizeBytes: number;
 }
+
+export interface EmployeeDocumentUploadUrl {
+  uploadUrl: string;
+  storageKey: string;
+  method: 'PUT';
+  expiresIn: number;
+}
+
+export interface CreateEmployeeDocumentPayload {
+  category: EmployeeDocumentCategory;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  storageKey: string;
+}

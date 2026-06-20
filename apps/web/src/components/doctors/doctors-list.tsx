@@ -146,7 +146,7 @@ function DoctorCreateForm({ availableUsers, departments, onDone }: DoctorCreateF
       <div className="flex flex-col gap-2 py-2">
         <p className="text-sm text-muted-foreground">{t('form.noDoctorUsers')}</p>
         <Link
-          href="/dashboard/settings/staff"
+          href="/dashboard/hr/accounts"
           locale={locale}
           className="text-sm text-primary hover:underline"
         >

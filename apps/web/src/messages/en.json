@@ -2356,6 +2356,38 @@
           "close": "Close"
         },
         "userIdHelp": "Optionally link this employee to an existing staff account. Leave as \"No login account\" for HR-only employees.",
+        "accountMode": {
+          "sectionTitle": "Login Account",
+          "options": {
+            "NONE": "No login account",
+            "LINK_EXISTING": "Link existing account",
+            "CREATE_NEW": "Create new login account"
+          },
+          "noneHelp": "This employee has no login account.",
+          "linkExistingHelp": "Select an existing account to link to this employee profile.",
+          "createNewHelp": "A login account will be created and linked to this employee profile.",
+          "fields": {
+            "accountPhone": "Login phone",
+            "accountEmail": "Login email",
+            "accountPassword": "Password",
+            "accountRole": "Account role",
+            "accountIsActive": "Account active"
+          },
+          "roles": {
+            "SECRETARY": "Secretary",
+            "DOCTOR": "Doctor",
+            "NURSE": "Nurse",
+            "ACCOUNTANT": "Accountant",
+            "TECHNICIAN": "Technician"
+          },
+          "validation": {
+            "phoneRequired": "Login phone is required.",
+            "userIdRequired": "Select an account to link.",
+            "passwordFormat": "Password must be at least 10 characters and include a letter and a number.",
+            "emailFormat": "Invalid login email.",
+            "roleRequired": "Account role is required."
+          }
+        },
         "fields": {
           "firstName": "First Name",
           "lastName": "Last Name",

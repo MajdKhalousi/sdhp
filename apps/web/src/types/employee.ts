@@ -1,8 +1,12 @@
+import type { StaffRole } from './staff';
+
 export type EmploymentStatus = 'ACTIVE' | 'ON_LEAVE' | 'TERMINATED';
 export type EmployeeGender = 'MALE' | 'FEMALE';
+export type EmployeeAccountMode = 'NONE' | 'LINK_EXISTING' | 'CREATE_NEW';
 
 export const EMPLOYMENT_STATUSES: EmploymentStatus[] = ['ACTIVE', 'ON_LEAVE', 'TERMINATED'];
 export const EMPLOYEE_GENDERS: EmployeeGender[] = ['MALE', 'FEMALE'];
+export const EMPLOYEE_ACCOUNT_MODES: EmployeeAccountMode[] = ['NONE', 'LINK_EXISTING', 'CREATE_NEW'];
 
 export interface LinkedUserRef {
   id: string;
@@ -48,7 +52,20 @@ export interface EmployeeProfile {
   user: LinkedUserRef | null;
 }
 
+// Deliberately does not repeat firstName/lastName/firstNameAr/lastNameAr —
+// the backend copies those from CreateEmployeeDto's own fields when
+// accountMode is CREATE_NEW.
+export interface CreateEmployeeAccountDto {
+  phone: string;
+  email?: string;
+  password: string;
+  role: StaffRole;
+  isActive?: boolean;
+}
+
 export interface CreateEmployeeDto {
+  accountMode?: EmployeeAccountMode;
+  account?: CreateEmployeeAccountDto;
   userId?: string | null;
   branchId?: string;
   departmentId?: string;
@@ -73,7 +90,9 @@ export interface CreateEmployeeDto {
   notes?: string;
 }
 
-export type UpdateEmployeeDto = Partial<CreateEmployeeDto>;
+// accountMode/account excluded — account creation is create-time-only (146B/146C);
+// edit continues to support only the existing userId link/unlink behavior.
+export type UpdateEmployeeDto = Partial<Omit<CreateEmployeeDto, 'accountMode' | 'account'>>;
 
 export interface EmployeesResponse {
   data: EmployeeProfile[];

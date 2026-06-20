@@ -2356,6 +2356,38 @@
           "close": "إغلاق"
         },
         "userIdHelp": "يمكنك اختياريًا ربط هذا الموظف بحساب موجود. اترك الخيار على \"بلا حساب تسجيل دخول\" للموظفين الذين لا يحتاجون إلى تسجيل دخول.",
+        "accountMode": {
+          "sectionTitle": "حساب الدخول",
+          "options": {
+            "NONE": "لا يحتاج إلى حساب دخول",
+            "LINK_EXISTING": "ربط حساب موجود",
+            "CREATE_NEW": "إنشاء حساب دخول جديد"
+          },
+          "noneHelp": "هذا الموظف بدون حساب دخول.",
+          "linkExistingHelp": "اختر حسابًا موجودًا لربطه بهذا السجل الوظيفي.",
+          "createNewHelp": "سيتم إنشاء حساب دخول وربطه بهذا السجل الوظيفي.",
+          "fields": {
+            "accountPhone": "هاتف تسجيل الدخول",
+            "accountEmail": "بريد تسجيل الدخول",
+            "accountPassword": "كلمة المرور",
+            "accountRole": "دور الحساب",
+            "accountIsActive": "الحساب نشط"
+          },
+          "roles": {
+            "SECRETARY": "سكرتير",
+            "DOCTOR": "طبيب",
+            "NURSE": "ممرض",
+            "ACCOUNTANT": "محاسب",
+            "TECHNICIAN": "تقني"
+          },
+          "validation": {
+            "phoneRequired": "هاتف تسجيل الدخول مطلوب.",
+            "userIdRequired": "اختر حسابًا للربط.",
+            "passwordFormat": "يجب أن تكون كلمة المرور 10 أحرف على الأقل وتحتوي على حرف ورقم.",
+            "emailFormat": "بريد تسجيل الدخول غير صالح.",
+            "roleRequired": "دور الحساب مطلوب."
+          }
+        },
         "fields": {
           "firstName": "الاسم الأول",
           "lastName": "اسم العائلة",

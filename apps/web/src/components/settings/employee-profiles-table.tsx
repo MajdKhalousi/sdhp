@@ -20,12 +20,15 @@ import { formatAmount } from '@/lib/format-currency';
 import {
   EMPLOYMENT_STATUSES,
   EMPLOYEE_GENDERS,
+  EMPLOYEE_ACCOUNT_MODES,
   type EmployeeProfile,
   type CreateEmployeeDto,
   type UpdateEmployeeDto,
   type EmploymentStatus,
   type EmployeeGender,
+  type EmployeeAccountMode,
 } from '@/types/employee';
+import { ORG_ADMIN_MANAGEABLE_ROLES, type StaffRole } from '@/types/staff';
 
 // ─── Field helpers — mirrors the established settings table form styling ──────
 
@@ -87,6 +90,12 @@ interface FormState {
   currency: string;
   notes: string;
   userId: string;
+  accountMode: EmployeeAccountMode;
+  accountPhone: string;
+  accountEmail: string;
+  accountPassword: string;
+  accountRole: StaffRole;
+  accountIsActive: boolean;
 }
 
 interface FormErrors {
@@ -94,6 +103,11 @@ interface FormErrors {
   lastName?: string;
   email?: string;
   baseSalary?: string;
+  userId?: string;
+  accountPhone?: string;
+  accountEmail?: string;
+  accountPassword?: string;
+  accountRole?: string;
 }
 
 function toDateInputValue(value: string | null): string {
@@ -125,6 +139,12 @@ function initialFormState(initial?: EmployeeProfile): FormState {
     currency: initial?.currency ?? 'SYP',
     notes: initial?.notes ?? '',
     userId: initial?.userId ?? '',
+    accountMode: 'NONE',
+    accountPhone: '',
+    accountEmail: '',
+    accountPassword: '',
+    accountRole: ORG_ADMIN_MANAGEABLE_ROLES[0],
+    accountIsActive: true,
   };
 }
 
@@ -147,9 +167,23 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
   const [errors, setErrors] = useState<FormErrors>({});
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  function set(field: keyof FormState, value: string) {
+  function set<K extends keyof FormState>(field: K, value: FormState[K]) {
     setValues((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => ({ ...prev, [field]: undefined }));
+    setSaveError(null);
+  }
+
+  // One-time prefill when switching to CREATE_NEW — not a live sync. Editing
+  // the login phone/email afterward never touches the employee's own
+  // phone/email fields, and vice versa.
+  function handleAccountModeChange(mode: EmployeeAccountMode) {
+    setValues((prev) => ({
+      ...prev,
+      accountMode: mode,
+      accountPhone: mode === 'CREATE_NEW' && !prev.accountPhone ? prev.phone : prev.accountPhone,
+      accountEmail: mode === 'CREATE_NEW' && !prev.accountEmail ? prev.email : prev.accountEmail,
+    }));
+    setErrors((prev) => ({ ...prev, userId: undefined, accountPhone: undefined, accountEmail: undefined, accountPassword: undefined, accountRole: undefined }));
     setSaveError(null);
   }
 
@@ -163,6 +197,31 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
     if (values.baseSalary.trim() && (isNaN(Number(values.baseSalary)) || Number(values.baseSalary) < 0)) {
       errs.baseSalary = t('form.validation.baseSalaryFormat');
     }
+
+    if (mode === 'create') {
+      if (values.accountMode === 'LINK_EXISTING' && !values.userId) {
+        errs.userId = t('form.accountMode.validation.userIdRequired');
+      }
+      if (values.accountMode === 'CREATE_NEW') {
+        if (!values.accountPhone.trim()) {
+          errs.accountPhone = t('form.accountMode.validation.phoneRequired');
+        }
+        if (
+          values.accountPassword.length < 10 ||
+          !/(?=.*[A-Za-z])/.test(values.accountPassword) ||
+          !/(?=.*\d)/.test(values.accountPassword)
+        ) {
+          errs.accountPassword = t('form.accountMode.validation.passwordFormat');
+        }
+        if (values.accountEmail.trim() && !EMAIL_RE.test(values.accountEmail.trim())) {
+          errs.accountEmail = t('form.accountMode.validation.emailFormat');
+        }
+        if (!values.accountRole) {
+          errs.accountRole = t('form.accountMode.validation.roleRequired');
+        }
+      }
+    }
+
     return errs;
   }
 
@@ -192,7 +251,18 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
     };
 
     if (mode === 'create') {
-      if (values.userId) dto.userId = values.userId;
+      dto.accountMode = values.accountMode;
+      if (values.accountMode === 'LINK_EXISTING') {
+        dto.userId = values.userId;
+      } else if (values.accountMode === 'CREATE_NEW') {
+        dto.account = {
+          phone: values.accountPhone.trim(),
+          email: values.accountEmail.trim() || undefined,
+          password: values.accountPassword,
+          role: values.accountRole,
+          isActive: values.accountIsActive,
+        };
+      }
     } else {
       dto.userId = values.userId || null;
     }
@@ -272,7 +342,7 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
         </div>
         <div>
           <FieldLabel>{t('form.fields.gender')}</FieldLabel>
-          <select value={values.gender} onChange={(e) => set('gender', e.target.value)}
+          <select value={values.gender} onChange={(e) => set('gender', e.target.value as '' | EmployeeGender)}
             className={inputClass()} disabled={isPending}>
             <option value="">—</option>
             {EMPLOYEE_GENDERS.map((g) => (
@@ -325,7 +395,7 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
         </div>
         <div>
           <FieldLabel>{t('form.fields.employmentStatus')}</FieldLabel>
-          <select value={values.employmentStatus} onChange={(e) => set('employmentStatus', e.target.value)}
+          <select value={values.employmentStatus} onChange={(e) => set('employmentStatus', e.target.value as EmploymentStatus)}
             className={inputClass()} disabled={isPending}>
             {EMPLOYMENT_STATUSES.map((s) => (
               <option key={s} value={s}>{t(`form.employmentStatusOptions.${s}`)}</option>
@@ -358,21 +428,109 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
         </div>
       </FormSection>
 
-      <FormSection title={t('form.sections.accountLink')}>
-        <div className="sm:col-span-2">
-          <FieldLabel>{t('form.fields.userId')}</FieldLabel>
-          <select value={values.userId} onChange={(e) => set('userId', e.target.value)}
-            className={inputClass()} disabled={isPending}>
-            <option value="">{t('form.noLoginAccount')}</option>
-            {(staff ?? []).map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.firstName} {u.lastName} ({u.phone}){!u.isActive ? ` — ${t('form.inactiveSuffix')}` : ''}
-              </option>
+      {mode === 'edit' ? (
+        <FormSection title={t('form.sections.accountLink')}>
+          <div className="sm:col-span-2">
+            <FieldLabel>{t('form.fields.userId')}</FieldLabel>
+            <select value={values.userId} onChange={(e) => set('userId', e.target.value)}
+              className={inputClass()} disabled={isPending}>
+              <option value="">{t('form.noLoginAccount')}</option>
+              {(staff ?? []).map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.firstName} {u.lastName} ({u.phone}){!u.isActive ? ` — ${t('form.inactiveSuffix')}` : ''}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-muted-foreground">{t('form.userIdHelp')}</p>
+          </div>
+        </FormSection>
+      ) : (
+        <FormSection title={t('form.accountMode.sectionTitle')}>
+          <div className="sm:col-span-2 space-y-2">
+            {EMPLOYEE_ACCOUNT_MODES.map((modeOption) => (
+              <label key={modeOption} className="flex cursor-pointer items-center gap-2 text-sm">
+                <input
+                  type="radio"
+                  name="accountMode"
+                  value={modeOption}
+                  checked={values.accountMode === modeOption}
+                  onChange={() => handleAccountModeChange(modeOption)}
+                  disabled={isPending}
+                  className="h-4 w-4 accent-primary"
+                />
+                {t(`form.accountMode.options.${modeOption}`)}
+              </label>
             ))}
-          </select>
-          <p className="mt-1 text-xs text-muted-foreground">{t('form.userIdHelp')}</p>
-        </div>
-      </FormSection>
+          </div>
+
+          {values.accountMode === 'NONE' && (
+            <div className="sm:col-span-2">
+              <p className="text-xs text-muted-foreground">{t('form.accountMode.noneHelp')}</p>
+            </div>
+          )}
+
+          {values.accountMode === 'LINK_EXISTING' && (
+            <div className="sm:col-span-2">
+              <FieldLabel required>{t('form.fields.userId')}</FieldLabel>
+              <select value={values.userId} onChange={(e) => set('userId', e.target.value)}
+                className={inputClass(!!errors.userId)} disabled={isPending}>
+                <option value="">—</option>
+                {(staff ?? []).map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.firstName} {u.lastName} ({u.phone}){!u.isActive ? ` — ${t('form.inactiveSuffix')}` : ''}
+                  </option>
+                ))}
+              </select>
+              <FieldError message={errors.userId} />
+              <p className="mt-1 text-xs text-muted-foreground">{t('form.accountMode.linkExistingHelp')}</p>
+            </div>
+          )}
+
+          {values.accountMode === 'CREATE_NEW' && (
+            <>
+              <div className="sm:col-span-2">
+                <p className="text-xs text-muted-foreground">{t('form.accountMode.createNewHelp')}</p>
+              </div>
+              <div>
+                <FieldLabel required>{t('form.accountMode.fields.accountPhone')}</FieldLabel>
+                <input type="tel" value={values.accountPhone} onChange={(e) => set('accountPhone', e.target.value)}
+                  className={inputClass(!!errors.accountPhone)} disabled={isPending} dir="ltr" />
+                <FieldError message={errors.accountPhone} />
+              </div>
+              <div>
+                <FieldLabel>{t('form.accountMode.fields.accountEmail')}</FieldLabel>
+                <input type="email" value={values.accountEmail} onChange={(e) => set('accountEmail', e.target.value)}
+                  className={inputClass(!!errors.accountEmail)} disabled={isPending} dir="ltr" />
+                <FieldError message={errors.accountEmail} />
+              </div>
+              <div>
+                <FieldLabel required>{t('form.accountMode.fields.accountPassword')}</FieldLabel>
+                <input type="password" value={values.accountPassword} onChange={(e) => set('accountPassword', e.target.value)}
+                  className={inputClass(!!errors.accountPassword)} disabled={isPending} dir="ltr" autoComplete="new-password" />
+                <FieldError message={errors.accountPassword} />
+              </div>
+              <div>
+                <FieldLabel required>{t('form.accountMode.fields.accountRole')}</FieldLabel>
+                <select value={values.accountRole} onChange={(e) => set('accountRole', e.target.value as StaffRole)}
+                  className={inputClass(!!errors.accountRole)} disabled={isPending}>
+                  {ORG_ADMIN_MANAGEABLE_ROLES.map((r) => (
+                    <option key={r} value={r}>{t(`form.accountMode.roles.${r}`)}</option>
+                  ))}
+                </select>
+                <FieldError message={errors.accountRole} />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="flex cursor-pointer items-center gap-2 text-sm">
+                  <input type="checkbox" checked={values.accountIsActive}
+                    onChange={(e) => set('accountIsActive', e.target.checked)}
+                    disabled={isPending} className="h-4 w-4 rounded border-input accent-primary" />
+                  {t('form.accountMode.fields.accountIsActive')}
+                </label>
+              </div>
+            </>
+          )}
+        </FormSection>
+      )}
 
       <FormSection title={t('form.sections.notes')}>
         <div className="sm:col-span-2">

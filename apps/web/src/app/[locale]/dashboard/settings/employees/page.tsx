@@ -1,17 +1,17 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { EmployeeProfilesTable } from '@/components/settings/employee-profiles-table';
+import { useEffect } from 'react';
+import { useRouter } from '@/i18n/navigation';
 
+// Employee Profiles moved to /dashboard/hr/employees (145C) to remove the
+// duplicate navigation surface between Settings and the HR module. This
+// stub exists only so old bookmarks/links keep working.
 export default function EmployeesPage() {
-  const t = useTranslations('settings.employees');
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-lg font-semibold">{t('title')}</h1>
-        <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
-      </div>
-      <EmployeeProfilesTable />
-    </div>
-  );
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/dashboard/hr/employees');
+  }, [router]);
+
+  return null;
 }

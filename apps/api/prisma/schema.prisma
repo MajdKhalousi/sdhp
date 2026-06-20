@@ -218,6 +218,7 @@ model Organization {
   clinicPatients        ClinicPatient[]
   subscriptionPayments  SubscriptionPayment[]
   employeeProfiles      EmployeeProfile[]
+  attendanceRecords     AttendanceRecord[]
 
   @@map("organizations")
 }
@@ -302,20 +303,21 @@ model User {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization           Organization           @relation(fields: [organizationId], references: [id])
-  branch                 Branch?                @relation(fields: [branchId], references: [id])
-  doctor                 Doctor?
-  auditLogs              AuditLog[]
-  uploadedFiles          MedicalFile[]
-  createdInvoices        Invoice[]              @relation("InvoicesCreated")
-  receivedPayments       Payment[]              @relation("PaymentsReceived")
-  voidedPayments         Payment[]              @relation("PaymentsVoided")
-  timelineEventsCreated  MedicalTimelineEvent[] @relation("TimelineEventsCreated")
-  createdClinicalReports ClinicalReport[]
-  linkedClinicPatients   ClinicPatient[]        @relation("ClinicPatientLinkedBy")
+  organization                Organization           @relation(fields: [organizationId], references: [id])
+  branch                      Branch?                @relation(fields: [branchId], references: [id])
+  doctor                      Doctor?
+  auditLogs                   AuditLog[]
+  uploadedFiles               MedicalFile[]
+  createdInvoices             Invoice[]              @relation("InvoicesCreated")
+  receivedPayments            Payment[]              @relation("PaymentsReceived")
+  voidedPayments              Payment[]              @relation("PaymentsVoided")
+  timelineEventsCreated       MedicalTimelineEvent[] @relation("TimelineEventsCreated")
+  createdClinicalReports      ClinicalReport[]
+  linkedClinicPatients        ClinicPatient[]        @relation("ClinicPatientLinkedBy")
   createdSubscriptionPayments SubscriptionPayment[]
   employeeProfile             EmployeeProfile?
   uploadedEmployeeDocuments   EmployeeDocument[]
+  recordedAttendanceRecords   AttendanceRecord[]
 
   @@index([organizationId])
   @@map("users")
@@ -434,11 +436,12 @@ model EmployeeProfile {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization Organization       @relation(fields: [organizationId], references: [id])
-  user         User?              @relation(fields: [userId], references: [id])
-  branch       Branch?            @relation(fields: [branchId], references: [id])
-  department   Department?        @relation(fields: [departmentId], references: [id])
-  documents    EmployeeDocument[]
+  organization      Organization       @relation(fields: [organizationId], references: [id])
+  user              User?              @relation(fields: [userId], references: [id])
+  branch            Branch?            @relation(fields: [branchId], references: [id])
+  department        Department?        @relation(fields: [departmentId], references: [id])
+  documents         EmployeeDocument[]
+  attendanceRecords AttendanceRecord[]
 
   @@index([organizationId])
   @@index([userId])
@@ -468,6 +471,45 @@ model EmployeeDocument {
   @@index([employeeProfileId])
   @@index([uploadedById])
   @@map("employee_documents")
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  HALF_DAY
+  ON_LEAVE
+  HOLIDAY
+}
+
+// One record per EmployeeProfile per calendar date — manual ORG_ADMIN entry
+// for this phase (no biometric/device integration). organizationId is
+// denormalized here (and must always be derived server-side from the
+// EmployeeProfile, never trusted from client input) to keep org-scoped
+// listing queries simple, matching most other models in this schema.
+model AttendanceRecord {
+  id                String           @id @default(cuid())
+  organizationId    String
+  employeeProfileId String
+  date              DateTime // calendar date stored as midnight UTC
+  status            AttendanceStatus
+  checkInAt         DateTime?
+  checkOutAt        DateTime?
+  notes             String?
+  recordedById      String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization    Organization    @relation(fields: [organizationId], references: [id])
+  employeeProfile EmployeeProfile @relation(fields: [employeeProfileId], references: [id])
+  recordedBy      User            @relation(fields: [recordedById], references: [id])
+
+  @@unique([employeeProfileId, date])
+  @@index([organizationId])
+  @@index([employeeProfileId])
+  @@index([date])
+  @@map("attendance_records")
 }
 
 // ─────────────────────────────────────────────

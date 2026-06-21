@@ -2458,7 +2458,8 @@
       "employees": "الموظفون",
       "accounts": "حسابات الدخول",
       "attendance": "الحضور",
-      "leave": "الإجازات"
+      "leave": "الإجازات",
+      "payroll": "الرواتب"
     },
     "accounts": {
       "title": "حسابات الدخول",
@@ -2551,6 +2552,60 @@
         "saveFailed": "فشل حفظ طلب الإجازة",
         "conflict": "يوجد طلب إجازة متداخل لهذا الموظف مسبقًا",
         "invalidDateRange": "يجب أن يكون تاريخ النهاية بعد تاريخ البداية أو يساويه",
+        "tryAgain": "أعد المحاولة"
+      }
+    },
+    "payroll": {
+      "title": "الرواتب",
+      "subtitle": "إنشاء ومراجعة رواتب الموظفين الشهرية لمؤسستك",
+      "yearLabel": "السنة",
+      "monthLabel": "الشهر",
+      "generate": "إنشاء رواتب",
+      "runsHeading": "كشوفات الرواتب",
+      "columns": {
+        "period": "الفترة",
+        "status": "الحالة",
+        "lineCount": "عدد الموظفين",
+        "generatedAt": "تاريخ الإنشاء",
+        "action": "الإجراء"
+      },
+      "view": "عرض",
+      "statuses": {
+        "DRAFT": "مسودة",
+        "APPROVED": "معتمد",
+        "PAID": "مدفوع",
+        "CANCELLED": "ملغى"
+      },
+      "linesHeading": "بنود الرواتب",
+      "lineColumns": {
+        "employee": "الموظف",
+        "baseSalary": "الراتب الأساسي",
+        "additions": "الإضافات",
+        "deductions": "الاستقطاعات",
+        "netSalary": "صافي الراتب",
+        "currency": "العملة",
+        "notes": "ملاحظات",
+        "action": "الإجراء"
+      },
+      "edit": "تعديل",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "approve": "اعتماد",
+      "markPaid": "تحديد كمدفوع",
+      "cancelRun": "إلغاء الكشف",
+      "cancelReasonPlaceholder": "سبب الإلغاء (اختياري)",
+      "totalsHeading": "الإجمالي",
+      "empty": {
+        "heading": "لا توجد كشوفات رواتب بعد",
+        "subtext": "أنشئ كشف رواتب لشهر معين للبدء."
+      },
+      "linesEmpty": "لا توجد بنود في كشف الرواتب هذا.",
+      "errors": {
+        "loadFailed": "فشل تحميل بيانات الرواتب",
+        "saveFailed": "فشل حفظ التغييرات",
+        "duplicateMonth": "يوجد كشف رواتب لهذا الشهر مسبقًا",
+        "missingBaseSalary": "لا يمكن إنشاء كشف الرواتب لأن بعض الموظفين النشطين ليس لديهم راتب أساسي محدد. يرجى تحديد راتب أساسي لكل موظف نشط أولاً.",
+        "generateFailed": "فشل إنشاء كشف الرواتب",
         "tryAgain": "أعد المحاولة"
       }
     },

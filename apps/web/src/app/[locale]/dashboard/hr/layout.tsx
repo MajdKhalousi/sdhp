@@ -19,6 +19,8 @@ export default function HrLayout({ children }: { children: React.ReactNode }) {
     ? 'attendance'
     : pathname.startsWith('/dashboard/hr/leave')
     ? 'leave'
+    : pathname.startsWith('/dashboard/hr/payroll')
+    ? 'payroll'
     : 'dashboard';
 
   const TABS: TabItem[] = [
@@ -27,6 +29,7 @@ export default function HrLayout({ children }: { children: React.ReactNode }) {
     { value: 'accounts', label: t('tabs.accounts') },
     { value: 'attendance', label: t('tabs.attendance') },
     { value: 'leave', label: t('tabs.leave') },
+    { value: 'payroll', label: t('tabs.payroll') },
   ];
 
   return (

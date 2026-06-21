@@ -2458,7 +2458,8 @@
       "employees": "Employees",
       "accounts": "Login Accounts",
       "attendance": "Attendance",
-      "leave": "Leave"
+      "leave": "Leave",
+      "payroll": "Payroll"
     },
     "accounts": {
       "title": "Login Accounts",
@@ -2551,6 +2552,60 @@
         "saveFailed": "Failed to save leave request",
         "conflict": "An overlapping leave request already exists for this employee",
         "invalidDateRange": "End date must be on or after the start date",
+        "tryAgain": "Try again"
+      }
+    },
+    "payroll": {
+      "title": "Payroll",
+      "subtitle": "Generate and review monthly payroll for your organization",
+      "yearLabel": "Year",
+      "monthLabel": "Month",
+      "generate": "Generate Payroll",
+      "runsHeading": "Payroll Runs",
+      "columns": {
+        "period": "Period",
+        "status": "Status",
+        "lineCount": "Employees",
+        "generatedAt": "Generated",
+        "action": "Action"
+      },
+      "view": "View",
+      "statuses": {
+        "DRAFT": "Draft",
+        "APPROVED": "Approved",
+        "PAID": "Paid",
+        "CANCELLED": "Cancelled"
+      },
+      "linesHeading": "Payroll Lines",
+      "lineColumns": {
+        "employee": "Employee",
+        "baseSalary": "Base Salary",
+        "additions": "Additions",
+        "deductions": "Deductions",
+        "netSalary": "Net Salary",
+        "currency": "Currency",
+        "notes": "Notes",
+        "action": "Action"
+      },
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "approve": "Approve",
+      "markPaid": "Mark as Paid",
+      "cancelRun": "Cancel Run",
+      "cancelReasonPlaceholder": "Reason for cancelling (optional)",
+      "totalsHeading": "Totals",
+      "empty": {
+        "heading": "No payroll runs yet",
+        "subtext": "Generate a payroll run for a month to get started."
+      },
+      "linesEmpty": "This payroll run has no lines.",
+      "errors": {
+        "loadFailed": "Failed to load payroll data",
+        "saveFailed": "Failed to save payroll changes",
+        "duplicateMonth": "A payroll run already exists for this month",
+        "missingBaseSalary": "Cannot generate payroll — one or more active employees are missing a base salary. Set a base salary for every active employee first.",
+        "generateFailed": "Failed to generate payroll",
         "tryAgain": "Try again"
       }
     },

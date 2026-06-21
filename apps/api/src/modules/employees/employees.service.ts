@@ -63,6 +63,13 @@ const SELECT = {
 
 type EmployeeRecord = Prisma.EmployeeProfileGetPayload<{ select: typeof SELECT }>;
 
+// ACCOUNTANT keeps read access to Employees for billing/accounting context
+// (e.g. resolving who an invoice or payment is associated with), but must
+// not receive compensation or identity-document fields — those are HR data,
+// not billing data, mirroring the existing, deliberate exclusion of
+// ACCOUNTANT from Employee Documents and Payroll.
+type AccountantSafeEmployeeRecord = Omit<EmployeeRecord, 'baseSalary' | 'nationalId' | 'dateOfBirth' | 'address'>;
+
 @Injectable()
 export class EmployeesService {
   constructor(
@@ -71,7 +78,10 @@ export class EmployeesService {
     private usersService: UsersService,
   ) {}
 
-  async findAll(query: EmployeeQueryDto, caller: JwtPayload): Promise<PaginatedResponse<EmployeeRecord>> {
+  async findAll(
+    query: EmployeeQueryDto,
+    caller: JwtPayload,
+  ): Promise<PaginatedResponse<EmployeeRecord | AccountantSafeEmployeeRecord>> {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
     const skip = (page - 1) * limit;
@@ -91,7 +101,8 @@ export class EmployeesService {
       this.prisma.employeeProfile.count({ where }),
     ]);
 
-    return { data, total, page, limit };
+    const sanitized = data.map((record) => this.redactForAccountant(record, caller));
+    return { data: sanitized, total, page, limit };
   }
 
   async findOne(id: string, caller: JwtPayload, options?: { includeDeleted?: boolean }) {
@@ -102,7 +113,7 @@ export class EmployeesService {
 
     if (!found) throw new NotFoundException('Employee profile not found');
     this.assertOwnership(found.organizationId, caller);
-    return found;
+    return this.redactForAccountant(found, caller);
   }
 
   async create(dto: CreateEmployeeDto, caller: JwtPayload) {
@@ -462,6 +473,15 @@ export class EmployeesService {
     });
 
     return result;
+  }
+
+  private redactForAccountant(
+    record: EmployeeRecord,
+    caller: JwtPayload,
+  ): EmployeeRecord | AccountantSafeEmployeeRecord {
+    if (caller.role !== UserRole.ACCOUNTANT) return record;
+    const { baseSalary, nationalId, dateOfBirth, address, ...safe } = record;
+    return safe;
   }
 
   private assertOwnership(profileOrgId: string, caller: JwtPayload): void {

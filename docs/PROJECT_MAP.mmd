@@ -1,0 +1,112 @@
+%% Elaji Health (SDHP) — Project Map
+%% Documentation only. Represents REAL current state as of 2026-06-21 (commit 13890c4),
+%% not an aspirational design. Companion to /docs/PROJECT_MASTER_MAP.md.
+%% Color legend is the LEGEND subgraph at the bottom.
+%% Detail lives in /docs/architecture/*.md — this diagram is intentionally simplified.
+
+flowchart TB
+
+    subgraph PLATFORM["PLATFORM LAYER"]
+        SA["SUPER_ADMIN\n(bypasses all backend role checks,\nbut frontend-confined to /dashboard/platform/*)"]
+        ONBOARD["Organization Onboarding\n(atomic: org + branch + ORG_ADMIN)"]
+        SUBPAY["Subscription Payments\n(platform <- clinic SaaS billing,\nmanual, no gateway)"]
+        GAUDIT["Global Audit Logs\n(SUPER_ADMIN read-only)"]
+    end
+
+    subgraph TENANCY["TENANCY / CLINICS"]
+        ORG["Organization\n(tenant root: HOSPITAL / CLINIC / POLYCLINIC)"]
+        BRANCHDEPT["Branch + Department"]
+    end
+
+    subgraph AUTHBLOCK["AUTH / USERS / ROLES / PERMISSIONS"]
+        AUTH["Auth\n(JWT login by phone)"]
+        USERS["Users\n(staff accounts, soft delete + restore)"]
+        ROLES["Roles & Permissions\nORG_ADMIN, BRANCH_ADMIN*, DOCTOR, NURSE,\nSECRETARY, ACCOUNTANT, TECHNICIAN\n(*BRANCH_ADMIN confirmed narrow today)"]
+    end
+
+    subgraph PATIENTSG["PATIENTS"]
+        PATIENT["Patient\n(clinical record, auto-MRN)"]
+        CLINICPATIENT["ClinicPatient\n(cross-org link, verify-code flow)"]
+        PORTAL["Patient Portal / Self-Service\nFOUNDATION EXISTS ONLY\n(platformId + hasPortalAccess columns exist,\nno PATIENT auth role, no patient-facing app)"]
+    end
+
+    subgraph CLINICALFLOW["CLINICAL WORKFLOW"]
+        APPT["Appointments\n(+ Doctor Scheduling, + Queue/Check-in)"]
+        ENCOUNTER["Encounters\n(+ Prescriptions, Labs, Radiology,\nMedical Files, Clinical Reports,\nAllergies, Medical Timeline)"]
+        FOLLOWUP["Follow-ups & Reminders\nFOUNDATION EXISTS\n(status tracking + patient-response built;\nNO actual SMS/WhatsApp/Email delivery)"]
+    end
+
+    subgraph BILLINGG["BILLING"]
+        INVOICE["Invoices\n(DRAFT to ISSUED to PARTIALLY_PAID to PAID)\n(+ Visit Type / Service catalog pricing)"]
+        PAYMENT["Payments\n(clinic <- patient, manual record only,\nno payment gateway)"]
+    end
+
+    subgraph HRBLOCK["HR / EMPLOYEES"]
+        EMP["Employee Profiles\n(decoupled from User login)\n+ Attendance (manual) + Leave + Documents\nMOSTLY COMPLETE — active development"]
+        PAYROLL["Payroll calculation\nNOT STARTED\n(baseSalary stored, nothing computes pay)"]
+    end
+
+    subgraph REPORTSG["REPORTS"]
+        REPORT["Reports & Analytics + Dashboard / Today Hub"]
+    end
+
+    subgraph GAP["GAP / NEXT WORK"]
+        NOTIF["Notifications\nPLACEHOLDER ONLY\n(.gitkeep only — no SMS/WhatsApp/Email/push\ndelivery exists anywhere in the system)"]
+    end
+
+    subgraph NOTSTARTEDG["NOT STARTED — DECISION NEEDED"]
+        INVENTORY["Inventory / Stock Management\nNOT STARTED\n(named in original brief,\nzero schema/code footprint today)"]
+    end
+
+    subgraph PLACEHOLDERSG["PLACEHOLDER ONLY — empty folders, no scope defined"]
+        AIASSIST["AI Assistant\n(.gitkeep only, no defined use case)"]
+        ROOMS["Rooms / Resource Scheduling\n(.gitkeep only, no demand confirmed)"]
+    end
+
+    %% ---- Relationships ----
+    SA --> ONBOARD --> ORG
+    SA --> SUBPAY
+    SA --> GAUDIT
+    ORG --> BRANCHDEPT
+    ORG --> USERS
+    USERS --> AUTH
+    USERS --> ROLES
+    ORG --> PATIENT
+    PATIENT --> CLINICPATIENT
+    CLINICPATIENT -.->|"groundwork only, not a real portal"| PORTAL
+    PATIENT --> APPT
+    APPT --> ENCOUNTER
+    ENCOUNTER --> FOLLOWUP
+    FOLLOWUP -.->|"BLOCKED ON — no delivery channel exists"| NOTIF
+    USERS -.->|"invite-flow email/SMS also blocked on"| NOTIF
+    APPT --> INVOICE
+    ENCOUNTER --> INVOICE
+    INVOICE --> PAYMENT
+    ORG --> EMP
+    EMP -.->|"not built"| PAYROLL
+    ORG --> REPORT
+    ORG --> GAUDIT
+    ORG -.->|"no schema, no module, no UI"| INVENTORY
+    ORG -.->|"no defined scope or demand"| AIASSIST
+    APPT -.->|"no resource/room model exists"| ROOMS
+
+    %% ---- Status styling ----
+    classDef ready fill:#d4edda,stroke:#28a745,color:#155724,stroke-width:1px
+    classDef mostly fill:#fff3cd,stroke:#ffc107,color:#856404,stroke-width:1px
+    classDef foundation fill:#ffe5b4,stroke:#fd7e14,color:#7a3e00,stroke-width:1px
+    classDef placeholder fill:#e2e3e5,stroke:#6c757d,color:#383d41,stroke-width:1px,stroke-dasharray: 4 3
+    classDef notstarted fill:#f8d7da,stroke:#dc3545,color:#721c24,stroke-width:1px,stroke-dasharray: 4 3
+
+    class SA,ONBOARD,SUBPAY,GAUDIT,ORG,BRANCHDEPT,AUTH,USERS,ROLES,PATIENT,CLINICPATIENT,APPT,ENCOUNTER,INVOICE,PAYMENT,REPORT ready
+    class EMP mostly
+    class FOLLOWUP,PORTAL foundation
+    class NOTIF,AIASSIST,ROOMS placeholder
+    class INVENTORY,PAYROLL notstarted
+
+    subgraph LEGEND["LEGEND"]
+        L1["Production Ready"]:::ready
+        L2["Mostly Complete"]:::mostly
+        L3["Foundation Exists"]:::foundation
+        L4["Placeholder Only"]:::placeholder
+        L5["Not Started"]:::notstarted
+    end

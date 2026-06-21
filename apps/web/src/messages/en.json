@@ -2457,7 +2457,8 @@
       "dashboard": "Dashboard",
       "employees": "Employees",
       "accounts": "Login Accounts",
-      "attendance": "Attendance"
+      "attendance": "Attendance",
+      "leave": "Leave"
     },
     "accounts": {
       "title": "Login Accounts",
@@ -2503,6 +2504,51 @@
         "loadFailed": "Failed to load attendance",
         "saveFailed": "Failed to save attendance record",
         "conflict": "An attendance record already exists for this employee on this date",
+        "tryAgain": "Try again"
+      }
+    },
+    "leave": {
+      "title": "Leave",
+      "subtitle": "Manage employee leave requests for your organization",
+      "newRequest": "New Leave Request",
+      "pendingRequests": "Pending Requests",
+      "recentRequests": "Recent Requests",
+      "employee": "Employee",
+      "type": "Type",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "reason": "Reason",
+      "decisionNote": "Decision note (optional)",
+      "status": "Status",
+      "actions": "Actions",
+      "create": "Create Request",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "approve": "Approve",
+      "reject": "Reject",
+      "cancelRequest": "Cancel Request",
+      "types": {
+        "ANNUAL": "Annual",
+        "SICK": "Sick",
+        "UNPAID": "Unpaid",
+        "MATERNITY": "Maternity",
+        "OTHER": "Other"
+      },
+      "statuses": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "CANCELLED": "Cancelled"
+      },
+      "empty": {
+        "heading": "No leave requests",
+        "subtext": "Leave requests will appear here once created."
+      },
+      "errors": {
+        "loadFailed": "Failed to load leave requests",
+        "saveFailed": "Failed to save leave request",
+        "conflict": "An overlapping leave request already exists for this employee",
         "tryAgain": "Try again"
       }
     },

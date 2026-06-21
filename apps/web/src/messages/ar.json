@@ -2457,7 +2457,8 @@
       "dashboard": "لوحة المعلومات",
       "employees": "الموظفون",
       "accounts": "حسابات الدخول",
-      "attendance": "الحضور"
+      "attendance": "الحضور",
+      "leave": "الإجازات"
     },
     "accounts": {
       "title": "حسابات الدخول",
@@ -2503,6 +2504,51 @@
         "loadFailed": "فشل تحميل بيانات الحضور",
         "saveFailed": "فشل حفظ سجل الحضور",
         "conflict": "يوجد سجل حضور لهذا الموظف في هذا التاريخ مسبقًا",
+        "tryAgain": "أعد المحاولة"
+      }
+    },
+    "leave": {
+      "title": "الإجازات",
+      "subtitle": "إدارة طلبات إجازات الموظفين في مؤسستك",
+      "newRequest": "طلب إجازة جديد",
+      "pendingRequests": "الطلبات المعلقة",
+      "recentRequests": "الطلبات الأخيرة",
+      "employee": "الموظف",
+      "type": "النوع",
+      "startDate": "تاريخ البداية",
+      "endDate": "تاريخ النهاية",
+      "reason": "السبب",
+      "decisionNote": "ملاحظة القرار (اختياري)",
+      "status": "الحالة",
+      "actions": "الإجراءات",
+      "create": "إنشاء الطلب",
+      "edit": "تعديل",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "approve": "قبول",
+      "reject": "رفض",
+      "cancelRequest": "إلغاء الطلب",
+      "types": {
+        "ANNUAL": "سنوية",
+        "SICK": "مرضية",
+        "UNPAID": "بدون راتب",
+        "MATERNITY": "أمومة",
+        "OTHER": "أخرى"
+      },
+      "statuses": {
+        "PENDING": "معلقة",
+        "APPROVED": "مقبولة",
+        "REJECTED": "مرفوضة",
+        "CANCELLED": "ملغاة"
+      },
+      "empty": {
+        "heading": "لا توجد طلبات إجازة",
+        "subtext": "ستظهر طلبات الإجازة هنا بعد إنشائها."
+      },
+      "errors": {
+        "loadFailed": "فشل تحميل طلبات الإجازة",
+        "saveFailed": "فشل حفظ طلب الإجازة",
+        "conflict": "يوجد طلب إجازة متداخل لهذا الموظف مسبقًا",
         "tryAgain": "أعد المحاولة"
       }
     },

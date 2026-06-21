@@ -7,6 +7,8 @@ import { AttendanceService } from './attendance.service';
 import { AttendanceController, DailyAttendanceController } from './attendance.controller';
 import { LeaveService } from './leave.service';
 import { LeaveController, LeaveQueueController } from './leave.controller';
+import { PayrollService } from './payroll.service';
+import { PayrollController } from './payroll.controller';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 import { StorageModule } from '../storage/storage.module';
 import { UsersModule } from '../users/users.module';
@@ -20,7 +22,8 @@ import { UsersModule } from '../users/users.module';
     DailyAttendanceController,
     LeaveController,
     LeaveQueueController,
+    PayrollController,
   ],
-  providers: [EmployeesService, EmployeesDocumentsService, AttendanceService, LeaveService],
+  providers: [EmployeesService, EmployeesDocumentsService, AttendanceService, LeaveService, PayrollService],
 })
 export class EmployeesModule {}

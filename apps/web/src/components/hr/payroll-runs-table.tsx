@@ -68,6 +68,7 @@ export function PayrollRunsTable() {
 
   const [cancelingRun, setCancelingRun] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
+  const [confirmingMarkPaid, setConfirmingMarkPaid] = useState(false);
   const [runActionError, setRunActionError] = useState<string | null>(null);
 
   const {
@@ -93,6 +94,12 @@ export function PayrollRunsTable() {
 
   const runs = runsResult?.data ?? [];
 
+  // UX fast-path only: the runs list is already fetched for display, so we
+  // can warn before submitting. The backend's organizationId/year/month
+  // unique constraint remains the authoritative guard — this list can be
+  // paginated or briefly stale, so the 409 path below is still required.
+  const duplicateRun = runs.find((r) => r.year === genYear && r.month === genMonth);
+
   function resetLineEditState() {
     setEditingLineId(null);
     setLineError(null);
@@ -101,6 +108,7 @@ export function PayrollRunsTable() {
   function resetRunActionState() {
     setCancelingRun(false);
     setCancelReason('');
+    setConfirmingMarkPaid(false);
     setRunActionError(null);
   }
 
@@ -163,6 +171,7 @@ export function PayrollRunsTable() {
     setRunActionError(null);
     try {
       await markPaidMutation.mutateAsync(runId);
+      resetRunActionState();
     } catch {
       setRunActionError(t('errors.saveFailed'));
     }
@@ -214,13 +223,26 @@ export function PayrollRunsTable() {
           </div>
           <button
             onClick={handleGenerate}
-            disabled={createMutation.isPending}
+            disabled={createMutation.isPending || !!duplicateRun}
             className="h-9 rounded-md bg-primary px-4 text-sm text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
           >
             {t('generate')}
           </button>
         </div>
-        {generateError && <p className="mt-2 text-xs text-destructive">{generateError}</p>}
+        {duplicateRun ? (
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-destructive">
+            <span>{t('errors.duplicateMonth')}</span>
+            <button
+              type="button"
+              onClick={() => selectRun(duplicateRun.id)}
+              className="underline transition-colors hover:no-underline"
+            >
+              {t('viewExisting')}
+            </button>
+          </div>
+        ) : (
+          generateError && <p className="mt-2 text-xs text-destructive">{generateError}</p>
+        )}
       </div>
 
       <div className="space-y-3">
@@ -300,33 +322,43 @@ export function PayrollRunsTable() {
                     {t('approve')}
                   </button>
                 )}
-                {selectedRun.status === 'APPROVED' && (
+                {selectedRun.status === 'APPROVED' && !confirmingMarkPaid && !cancelingRun && (
                   <button
-                    onClick={() => handleMarkPaid(selectedRun.id)}
+                    onClick={() => {
+                      resetLineEditState();
+                      resetRunActionState();
+                      setConfirmingMarkPaid(true);
+                    }}
                     disabled={runMutating}
                     className="h-8 rounded-md border border-green-600/40 px-3 text-sm font-medium text-green-700 transition-colors hover:bg-green-50 disabled:opacity-50 dark:text-green-400 dark:hover:bg-green-950/30"
                   >
                     {t('markPaid')}
                   </button>
                 )}
-                {(selectedRun.status === 'DRAFT' || selectedRun.status === 'APPROVED') && !cancelingRun && (
-                  <button
-                    onClick={() => {
-                      resetLineEditState();
-                      setCancelingRun(true);
-                    }}
-                    disabled={runMutating}
-                    className="h-8 rounded-md border border-destructive/40 px-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
-                  >
-                    {t('cancelRun')}
-                  </button>
-                )}
+                {(selectedRun.status === 'DRAFT' || selectedRun.status === 'APPROVED') &&
+                  !cancelingRun &&
+                  !confirmingMarkPaid && (
+                    <button
+                      onClick={() => {
+                        resetLineEditState();
+                        resetRunActionState();
+                        setCancelingRun(true);
+                      }}
+                      disabled={runMutating}
+                      className="h-8 rounded-md border border-destructive/40 px-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
+                    >
+                      {t('cancelRun')}
+                    </button>
+                  )}
               </div>
             )}
           </div>
 
           {cancelingRun && selectedRun && (
             <div className="flex flex-col gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+              {selectedRun.status === 'APPROVED' && (
+                <p className="text-xs text-destructive">{t('cancelApprovedWarning')}</p>
+              )}
               <input
                 type="text"
                 placeholder={t('cancelReasonPlaceholder')}
@@ -341,6 +373,28 @@ export function PayrollRunsTable() {
                   className="h-8 rounded-md bg-destructive px-3 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-50"
                 >
                   {t('cancelRun')}
+                </button>
+                <button
+                  onClick={resetRunActionState}
+                  disabled={runMutating}
+                  className="h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent disabled:opacity-50"
+                >
+                  {t('cancel')}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {confirmingMarkPaid && selectedRun && (
+            <div className="flex flex-col gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+              <p className="text-xs text-amber-700 dark:text-amber-400">{t('confirmMarkPaidMessage')}</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleMarkPaid(selectedRun.id)}
+                  disabled={runMutating}
+                  className="h-8 rounded-md border border-green-600/40 px-3 text-sm font-medium text-green-700 transition-colors hover:bg-green-50 disabled:opacity-50 dark:text-green-400 dark:hover:bg-green-950/30"
+                >
+                  {t('markPaid')}
                 </button>
                 <button
                   onClick={resetRunActionState}

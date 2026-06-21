@@ -2594,6 +2594,9 @@
       "markPaid": "Mark as Paid",
       "cancelRun": "Cancel Run",
       "cancelReasonPlaceholder": "Reason for cancelling (optional)",
+      "cancelApprovedWarning": "This payroll run is already approved. Cancelling it will undo the approved payroll review.",
+      "confirmMarkPaidMessage": "Marking this payroll run as paid is a final bookkeeping step. You will not be able to cancel it afterward.",
+      "viewExisting": "View existing run",
       "totalsHeading": "Totals",
       "empty": {
         "heading": "No payroll runs yet",

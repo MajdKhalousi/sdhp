@@ -59,27 +59,37 @@ export class PayrollService {
   ) {}
 
   // Generates one DRAFT run for every active EmployeeProfile (not soft-deleted,
-  // employmentStatus ACTIVE) that has a baseSalary set. Employees with no
-  // baseSalary are deliberately skipped rather than given a fabricated 0.00
-  // line — Phase 148A treats payroll as a money record, not a placeholder.
+  // employmentStatus ACTIVE). All active employees must have a baseSalary
+  // set, checked up front — generation must never silently skip someone an
+  // Org Admin would reasonably expect to be paid (Phase 148B-1). No run/line
+  // is created, and no audit log is written, unless every active employee
+  // is eligible.
   async create(dto: CreatePayrollRunDto, caller: JwtPayload) {
     const organizationId = await this.resolveOrgId(dto.organizationId, caller);
 
-    const eligibleEmployees = await this.prisma.employeeProfile.findMany({
+    const activeEmployees = await this.prisma.employeeProfile.findMany({
       where: {
         organizationId,
         deletedAt: null,
         employmentStatus: 'ACTIVE',
-        baseSalary: { not: null },
       },
       select: { id: true, baseSalary: true, currency: true },
     });
 
-    if (eligibleEmployees.length === 0) {
+    if (activeEmployees.length === 0) {
       throw new BadRequestException(
         'No active employees with a base salary set were found for payroll generation',
       );
     }
+
+    const missingBaseSalary = activeEmployees.some((emp) => emp.baseSalary === null);
+    if (missingBaseSalary) {
+      throw new BadRequestException(
+        'Cannot generate payroll because one or more active employees are missing a base salary.',
+      );
+    }
+
+    const eligibleEmployees = activeEmployees;
 
     try {
       const result = await this.prisma.payrollRun.create({

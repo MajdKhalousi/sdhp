@@ -13,6 +13,15 @@
 #   api       — NestJS backend (internal only, fronted by nginx)
 #   web       — Next.js frontend (internal only, fronted by nginx)
 #   nginx     — reverse proxy + TLS termination (ports 80/443)
+#
+# Explicit project name (Phase 149B): without this, Compose derives the
+# project name from the directory ("docker"), which docker-compose.yml
+# (dev) also resolves to — causing both files to fight over the same
+# container names, networks, and default volume names. "sdhp_prod" makes
+# this stack's identity independent of dev's. The three data volumes below
+# are pinned to the volume names that already hold production data, so
+# this rename does not move or recreate any data.
+name: sdhp_prod
 
 services:
 
@@ -214,8 +223,21 @@ networks:
     driver: bridge   # nginx is the only internet-facing service
 
 # ── Volumes ───────────────────────────────────────────────────
+# postgres_data/redis_data/minio_data are pinned to the exact physical volume
+# names that already hold production data (confirmed present via `docker
+# volume ls` before this change). `external: true` makes Compose refuse to
+# start if a volume by that exact name doesn't already exist, instead of
+# silently creating a new empty one — the failure mode we want if this ever
+# drifts. nginx_logs holds no data worth preserving across a rename, so it
+# stays project-scoped (sdhp_prod_nginx_logs).
 volumes:
   postgres_data:
+    name: docker_postgres_data
+    external: true
   redis_data:
+    name: docker_redis_data
+    external: true
   minio_data:
+    name: docker_minio_data
+    external: true
   nginx_logs:

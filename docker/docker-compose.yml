@@ -1,7 +1,17 @@
+# Explicit project name (Phase 149B): without this, Compose derives the
+# project name from the directory ("docker"), which docker-compose.prod.yml
+# also resolves to — causing this dev stack to silently collide with
+# production's containers, networks, and default volume names whenever
+# both are brought up from the same host. "sdhp_dev" plus the renamed
+# container_name values below give this stack its own identity. Dev's
+# volumes are intentionally left unpinned: they may reset, production's
+# may not.
+name: sdhp_dev
+
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: sdhp_postgres
+    container_name: sdhp_dev_postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -19,7 +29,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: sdhp_redis
+    container_name: sdhp_dev_redis
     restart: unless-stopped
     ports:
       - '6379:6379'
@@ -33,7 +43,7 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: sdhp_minio
+    container_name: sdhp_dev_minio
     restart: unless-stopped
     command: server /data --console-address ':9001'
     environment:

@@ -124,11 +124,22 @@ export function AttendanceTable() {
 
     try {
       if (existing) {
+        // checkInAt/checkOutAt: send null (not omit) when a previously-set
+        // time is cleared in the form, so the backend actually clears it —
+        // omitting an unset-and-still-empty field is left as a no-op.
         const payload: UpdateAttendancePayload = {
           status: formState.status,
           notes: formState.notes,
-          ...(formState.checkInTime ? { checkInAt: combineDateAndTimeToIso(date, formState.checkInTime) } : {}),
-          ...(formState.checkOutTime ? { checkOutAt: combineDateAndTimeToIso(date, formState.checkOutTime) } : {}),
+          ...(formState.checkInTime
+            ? { checkInAt: combineDateAndTimeToIso(date, formState.checkInTime) }
+            : existing.checkInAt
+            ? { checkInAt: null }
+            : {}),
+          ...(formState.checkOutTime
+            ? { checkOutAt: combineDateAndTimeToIso(date, formState.checkOutTime) }
+            : existing.checkOutAt
+            ? { checkOutAt: null }
+            : {}),
         };
         await updateMutation.mutateAsync({ employeeProfileId, recordId: existing.id, payload });
       } else {
@@ -317,7 +328,7 @@ export function AttendanceTable() {
                               {t(`statuses.${record.status}`)}
                             </Badge>
                           ) : (
-                            <span className="text-muted-foreground">{t('notRecorded')}</span>
+                            <Badge variant="outline">{t('notRecorded')}</Badge>
                           )}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">

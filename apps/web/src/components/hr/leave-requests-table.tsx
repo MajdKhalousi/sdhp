@@ -57,6 +57,18 @@ interface EditFormState {
 
 type DecisionAction = 'approve' | 'reject' | 'cancel';
 
+const NEUTRAL_BUTTON_CLASS = 'h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent';
+const APPROVE_BUTTON_CLASS =
+  'h-8 rounded-md border border-green-600/40 px-3 text-sm font-medium text-green-700 transition-colors hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-950/30';
+const REJECT_BUTTON_CLASS =
+  'h-8 rounded-md border border-destructive/40 px-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10';
+const CONFIRM_BUTTON_CLASS: Record<DecisionAction, string> = {
+  approve: 'h-8 rounded-md bg-green-600 px-3 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50',
+  reject:
+    'h-8 rounded-md bg-destructive px-3 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-50',
+  cancel: 'h-8 rounded-md bg-primary px-3 text-sm text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50',
+};
+
 export function LeaveRequestsTable() {
   const t = useTranslations('hr.leave');
 
@@ -112,6 +124,10 @@ export function LeaveRequestsTable() {
   async function handleCreateSubmit(e: React.FormEvent) {
     e.preventDefault();
     setCreateError(null);
+    if (createForm.endDate < createForm.startDate) {
+      setCreateError(t('errors.invalidDateRange'));
+      return;
+    }
     try {
       await createMutation.mutateAsync({
         employeeProfileId: createForm.employeeProfileId,
@@ -141,6 +157,10 @@ export function LeaveRequestsTable() {
   }
 
   async function handleEditSave(record: LeaveQueueRecord) {
+    if (editForm.endDate < editForm.startDate) {
+      setRowError({ id: record.id, message: t('errors.invalidDateRange') });
+      return;
+    }
     try {
       await updateMutation.mutateAsync({
         employeeProfileId: record.employeeProfileId,
@@ -280,7 +300,15 @@ export function LeaveRequestsTable() {
             <td className="px-4 py-3 text-muted-foreground">
               {formatDateDisplay(record.startDate)} — {formatDateDisplay(record.endDate)}
             </td>
-            <td className="px-4 py-3 text-muted-foreground">{record.reason ?? '—'}</td>
+            <td className="px-4 py-3 text-muted-foreground">
+              <p>{record.reason ?? '—'}</p>
+              {record.decisionNote && (
+                <p className="mt-1 text-xs italic">
+                  <span className="font-medium not-italic text-foreground">{t('decisionNoteLabel')}:</span>{' '}
+                  {record.decisionNote}
+                </p>
+              )}
+            </td>
             <td className="px-4 py-3">
               <Badge variant={STATUS_BADGE_VARIANT[record.status]}>{t(`statuses.${record.status}`)}</Badge>
             </td>
@@ -298,15 +326,11 @@ export function LeaveRequestsTable() {
                     <button
                       onClick={() => confirmDecision(record)}
                       disabled={saving}
-                      className="h-8 rounded-md bg-primary px-3 text-sm text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+                      className={CONFIRM_BUTTON_CLASS[decidingAction!]}
                     >
                       {t(decidingAction === 'approve' ? 'approve' : decidingAction === 'reject' ? 'reject' : 'cancelRequest')}
                     </button>
-                    <button
-                      onClick={resetActionState}
-                      disabled={saving}
-                      className="h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent disabled:opacity-50"
-                    >
+                    <button onClick={resetActionState} disabled={saving} className={NEUTRAL_BUTTON_CLASS + ' disabled:opacity-50'}>
                       {t('cancel')}
                     </button>
                   </div>
@@ -316,31 +340,19 @@ export function LeaveRequestsTable() {
                 <div className="flex flex-wrap gap-2">
                   {record.status === 'PENDING' && (
                     <>
-                      <button
-                        onClick={() => startEdit(record)}
-                        className="h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
-                      >
+                      <button onClick={() => startEdit(record)} className={NEUTRAL_BUTTON_CLASS}>
                         {t('edit')}
                       </button>
-                      <button
-                        onClick={() => startDecision(record, 'approve')}
-                        className="h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
-                      >
+                      <button onClick={() => startDecision(record, 'approve')} className={APPROVE_BUTTON_CLASS}>
                         {t('approve')}
                       </button>
-                      <button
-                        onClick={() => startDecision(record, 'reject')}
-                        className="h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
-                      >
+                      <button onClick={() => startDecision(record, 'reject')} className={REJECT_BUTTON_CLASS}>
                         {t('reject')}
                       </button>
                     </>
                   )}
                   {(record.status === 'PENDING' || record.status === 'APPROVED') && (
-                    <button
-                      onClick={() => startDecision(record, 'cancel')}
-                      className="h-8 rounded-md border px-3 text-sm transition-colors hover:bg-accent"
-                    >
+                    <button onClick={() => startDecision(record, 'cancel')} className={NEUTRAL_BUTTON_CLASS}>
                       {t('cancelRequest')}
                     </button>
                   )}

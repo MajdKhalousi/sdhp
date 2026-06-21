@@ -2512,13 +2512,14 @@
       "subtitle": "Manage employee leave requests for your organization",
       "newRequest": "New Leave Request",
       "pendingRequests": "Pending Requests",
-      "recentRequests": "Recent Requests",
+      "recentRequests": "Leave History",
       "employee": "Employee",
       "type": "Type",
       "startDate": "Start Date",
       "endDate": "End Date",
       "reason": "Reason",
       "decisionNote": "Decision note (optional)",
+      "decisionNoteLabel": "Decision note",
       "status": "Status",
       "actions": "Actions",
       "create": "Create Request",
@@ -2549,6 +2550,7 @@
         "loadFailed": "Failed to load leave requests",
         "saveFailed": "Failed to save leave request",
         "conflict": "An overlapping leave request already exists for this employee",
+        "invalidDateRange": "End date must be on or after the start date",
         "tryAgain": "Try again"
       }
     },
@@ -2580,16 +2582,16 @@
         "lateTodaySub": "Marked late for today's date",
         "notRecordedToday": "Not Recorded Today",
         "notRecordedTodaySub": "No attendance entry yet for today",
-        "onLeaveToday": "On Leave Today",
+        "onLeaveToday": "Approved Leave Today",
         "onLeaveTodaySub": "Approved leave covering today's date",
         "pendingLeaveRequests": "Pending Leave Requests",
         "pendingLeaveRequestsSub": "Awaiting approval or rejection"
       },
       "needsAttention": {
         "title": "Needs Attention",
-        "pendingLeave": "{count} pending leave request(s) awaiting review",
-        "notRecorded": "{count} employee(s) without an attendance record today",
-        "contractsEndingSoon": "{count} contract(s) ending within 30 days",
+        "pendingLeave": "{count} pending leave requests",
+        "notRecorded": "{count} employees not recorded today",
+        "contractsEndingSoon": "{count} contracts ending soon",
         "empty": "Nothing needs attention right now"
       },
       "recent": {

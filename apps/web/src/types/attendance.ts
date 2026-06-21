@@ -52,4 +52,10 @@ export interface CreateAttendancePayload {
   notes?: string;
 }
 
-export type UpdateAttendancePayload = Partial<CreateAttendancePayload>;
+// checkInAt/checkOutAt additionally accept null on update — explicit null
+// clears a previously-set value; omitting the field leaves it unchanged
+// (the backend already distinguishes these, see attendance.service.ts).
+export type UpdateAttendancePayload = Partial<Omit<CreateAttendancePayload, 'checkInAt' | 'checkOutAt'>> & {
+  checkInAt?: string | null;
+  checkOutAt?: string | null;
+};

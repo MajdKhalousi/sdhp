@@ -2512,13 +2512,14 @@
       "subtitle": "إدارة طلبات إجازات الموظفين في مؤسستك",
       "newRequest": "طلب إجازة جديد",
       "pendingRequests": "الطلبات المعلقة",
-      "recentRequests": "الطلبات الأخيرة",
+      "recentRequests": "سجل الإجازات",
       "employee": "الموظف",
       "type": "النوع",
       "startDate": "تاريخ البداية",
       "endDate": "تاريخ النهاية",
       "reason": "السبب",
       "decisionNote": "ملاحظة القرار (اختياري)",
+      "decisionNoteLabel": "ملاحظة القرار",
       "status": "الحالة",
       "actions": "الإجراءات",
       "create": "إنشاء الطلب",
@@ -2549,6 +2550,7 @@
         "loadFailed": "فشل تحميل طلبات الإجازة",
         "saveFailed": "فشل حفظ طلب الإجازة",
         "conflict": "يوجد طلب إجازة متداخل لهذا الموظف مسبقًا",
+        "invalidDateRange": "يجب أن يكون تاريخ النهاية بعد تاريخ البداية أو يساويه",
         "tryAgain": "أعد المحاولة"
       }
     },
@@ -2580,7 +2582,7 @@
         "lateTodaySub": "تم تسجيل تأخرهم لتاريخ اليوم",
         "notRecordedToday": "غير مسجلين اليوم",
         "notRecordedTodaySub": "لا يوجد سجل حضور لهم لهذا اليوم بعد",
-        "onLeaveToday": "في إجازة اليوم",
+        "onLeaveToday": "إجازات معتمدة اليوم",
         "onLeaveTodaySub": "إجازة مقبولة تشمل تاريخ اليوم",
         "pendingLeaveRequests": "طلبات إجازة معلقة",
         "pendingLeaveRequestsSub": "بانتظار القبول أو الرفض"

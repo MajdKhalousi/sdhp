@@ -2571,7 +2571,26 @@
         "totalBaseSalary": "Total Base Salaries",
         "totalBaseSalarySub": "Sum across active profiles",
         "contractsEndingSoon": "Contracts Ending Soon",
-        "contractsEndingSoonSub": "Within the next 30 days"
+        "contractsEndingSoonSub": "Within the next 30 days",
+        "presentToday": "Present Today",
+        "presentTodaySub": "Marked present for today's date",
+        "absentToday": "Absent Today",
+        "absentTodaySub": "Marked absent for today's date",
+        "lateToday": "Late Today",
+        "lateTodaySub": "Marked late for today's date",
+        "notRecordedToday": "Not Recorded Today",
+        "notRecordedTodaySub": "No attendance entry yet for today",
+        "onLeaveToday": "On Leave Today",
+        "onLeaveTodaySub": "Approved leave covering today's date",
+        "pendingLeaveRequests": "Pending Leave Requests",
+        "pendingLeaveRequestsSub": "Awaiting approval or rejection"
+      },
+      "needsAttention": {
+        "title": "Needs Attention",
+        "pendingLeave": "{count} pending leave request(s) awaiting review",
+        "notRecorded": "{count} employee(s) without an attendance record today",
+        "contractsEndingSoon": "{count} contract(s) ending within 30 days",
+        "empty": "Nothing needs attention right now"
       },
       "recent": {
         "title": "Recently Added",

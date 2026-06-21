@@ -2571,7 +2571,26 @@
         "totalBaseSalary": "إجمالي الرواتب الأساسية",
         "totalBaseSalarySub": "الإجمالي عبر السجلات الحالية",
         "contractsEndingSoon": "عقود تنتهي قريبًا",
-        "contractsEndingSoonSub": "خلال الثلاثين يومًا القادمة"
+        "contractsEndingSoonSub": "خلال الثلاثين يومًا القادمة",
+        "presentToday": "حاضرون اليوم",
+        "presentTodaySub": "تم تسجيل حضورهم لتاريخ اليوم",
+        "absentToday": "غائبون اليوم",
+        "absentTodaySub": "تم تسجيل غيابهم لتاريخ اليوم",
+        "lateToday": "متأخرون اليوم",
+        "lateTodaySub": "تم تسجيل تأخرهم لتاريخ اليوم",
+        "notRecordedToday": "غير مسجلين اليوم",
+        "notRecordedTodaySub": "لا يوجد سجل حضور لهم لهذا اليوم بعد",
+        "onLeaveToday": "في إجازة اليوم",
+        "onLeaveTodaySub": "إجازة مقبولة تشمل تاريخ اليوم",
+        "pendingLeaveRequests": "طلبات إجازة معلقة",
+        "pendingLeaveRequestsSub": "بانتظار القبول أو الرفض"
+      },
+      "needsAttention": {
+        "title": "يتطلب الانتباه",
+        "pendingLeave": "{count} طلب إجازة بانتظار المراجعة",
+        "notRecorded": "{count} موظف بلا سجل حضور لهذا اليوم",
+        "contractsEndingSoon": "{count} عقد ينتهي خلال 30 يومًا",
+        "empty": "لا يوجد ما يستدعي الانتباه حاليًا"
       },
       "recent": {
         "title": "أضيف حديثًا",

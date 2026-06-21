@@ -215,7 +215,12 @@ export class LeaveService {
     allowedFrom: LeaveStatus[],
     errorMessage: string,
   ) {
-    await this.employeesService.findOne(employeeProfileId, caller);
+    // includeDeleted: true — a PENDING/APPROVED request must remain
+    // resolvable (approve/reject/cancel) even after its EmployeeProfile is
+    // later deactivated, so it can never get stuck in the org-wide queue.
+    // assertOwnership inside findOne still runs unconditionally, so tenant
+    // isolation is unaffected (Phase 147E-1).
+    await this.employeesService.findOne(employeeProfileId, caller, { includeDeleted: true });
     const existing = await this.fetchRecord(employeeProfileId, id);
 
     if (!allowedFrom.includes(existing.status)) {

@@ -11,6 +11,7 @@ import {
   useDeleteStaff,
   useRestoreStaff,
 } from '@/hooks/use-staff';
+import { useEmployees } from '@/hooks/use-employees';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { STAFF_ROLES, ORG_ADMIN_MANAGEABLE_ROLES, PROTECTED_ROLES } from '@/types/staff';
@@ -441,7 +442,7 @@ function protectedLabel(
 
 // ─── Staff Table ──────────────────────────────────────────────────────────────
 
-const COL_COUNT = 6;
+const COL_COUNT = 7;
 
 // Optional display-string overrides — lets a caller (e.g. the HR "Login
 // Accounts" page) show account-flavored copy without forking this component
@@ -487,6 +488,28 @@ export function StaffTable({ labels }: { labels?: StaffTableLabels } = {}) {
   const { data: allStaff, isLoading, isError, error, refetch } = useStaff(showInactive);
   const deleteStaff  = useDeleteStaff();
   const restoreStaff = useRestoreStaff();
+
+  // Reverse lookup for the "Linked Employee" column — reuses the same
+  // org-scoped /v1/employees data the Employee Profiles table already
+  // fetches (and already shares a query cache with), instead of adding a
+  // backend include. Only identity fields are read out of each profile;
+  // baseSalary/nationalId/dateOfBirth/address are never touched here.
+  const { data: allEmployees } = useEmployees(false);
+  const linkedEmployeeByUserId = new Map<
+    string,
+    { id: string; firstName: string; lastName: string; firstNameAr: string | null; lastNameAr: string | null; jobTitle: string | null }
+  >();
+  for (const emp of allEmployees ?? []) {
+    if (!emp.userId) continue;
+    linkedEmployeeByUserId.set(emp.userId, {
+      id: emp.id,
+      firstName: emp.firstName,
+      lastName: emp.lastName,
+      firstNameAr: emp.firstNameAr,
+      lastNameAr: emp.lastNameAr,
+      jobTitle: emp.jobTitle,
+    });
+  }
 
   async function handleDeactivate(id: string) {
     setDeleteError(null);
@@ -553,6 +576,7 @@ export function StaffTable({ labels }: { labels?: StaffTableLabels } = {}) {
         <th className="px-4 py-3 text-start font-medium">{t('columns.email')}</th>
         <th className="px-4 py-3 text-start font-medium">{t('columns.role')}</th>
         <th className="px-4 py-3 text-start font-medium">{t('columns.status')}</th>
+        <th className="px-4 py-3 text-start font-medium">{t('columns.linkedEmployee')}</th>
         <th className="px-4 py-3 text-start font-medium">{t('columns.actions')}</th>
       </tr>
     </thead>
@@ -732,6 +756,27 @@ export function StaffTable({ labels }: { labels?: StaffTableLabels } = {}) {
                             <Badge variant="warning">{t('lastOrgAdmin')}</Badge>
                           )}
                         </div>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        {(() => {
+                          const linked = linkedEmployeeByUserId.get(member.id);
+                          if (!linked) {
+                            return <span className="text-xs text-muted-foreground">{t('noLinkedEmployee')}</span>;
+                          }
+                          const linkedNameAr = [linked.firstNameAr, linked.lastNameAr].filter(Boolean).join(' ');
+                          return (
+                            <Link
+                              href={`/dashboard/hr/employees/${linked.id}`}
+                              className="text-sm text-primary hover:underline"
+                              dir="ltr"
+                            >
+                              {linked.firstName} {linked.lastName}
+                              {linked.jobTitle && <span className="text-muted-foreground"> ({linked.jobTitle})</span>}
+                              {linkedNameAr && <span className="ms-1 text-xs text-muted-foreground" dir="rtl">({linkedNameAr})</span>}
+                            </Link>
+                          );
+                        })()}
                       </td>
 
                       <td className="px-4 py-3">

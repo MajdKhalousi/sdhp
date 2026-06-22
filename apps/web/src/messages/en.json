@@ -2225,12 +2225,14 @@
       "restoring": "Restoring…",
       "confirmRestore": "Restore this staff account? They will regain access to the system.",
       "restoreSuccess": "Staff account restored.",
+      "noLinkedEmployee": "No linked employee",
       "columns": {
         "name": "Name",
         "phone": "Phone",
         "email": "Email",
         "role": "Role",
         "status": "Status",
+        "linkedEmployee": "Linked Employee",
         "actions": "Actions"
       },
       "form": {

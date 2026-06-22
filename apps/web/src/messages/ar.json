@@ -219,6 +219,7 @@
         "doctor": "الطبيب",
         "allDoctors": "كل الأطباء"
       },
+      "durationMinutes": "{count} دقيقة",
       "errors": {
         "loadFailed": "فشل تحميل زيارات اليوم"
       }
@@ -432,6 +433,8 @@
       "called": "استُدعي",
       "inQueue": "في الطابور",
       "justNow": "الآن",
+      "minuteShort": "د",
+      "hourShort": "س",
       "scheduled": "موعد: {time}",
       "visitType": "الزيارة: {name}",
       "viewAppointment": "عرض الموعد ←",
@@ -451,6 +454,7 @@
         "patientSearchPlaceholder": "ابحث بالاسم أو الهاتف أو رقم الملف",
         "doctorLabel": "الطبيب",
         "dateTimeLabel": "التاريخ والوقت",
+        "dateTimeHint": "يجب أن يكون وقت المراجعة المباشرة ضمن ساعتين من الوقت الحالي.",
         "durationLabel": "المدة (بالدقائق)",
         "visitTypeLabel": "نوع الزيارة",
         "visitTypeOptional": "اختياري"
@@ -2970,6 +2974,7 @@
       "submitButton": "تأكيد وتحصيل",
       "submitting": "جارٍ المعالجة…",
       "paymentRecorded": "تم تسجيل الدفعة بنجاح",
+      "issuedNoPayment": "تم إصدار الفاتورة. لم يتم تسجيل أي دفعة.",
       "close": "إغلاق",
       "noBalanceDue": "لا يوجد رصيد مستحق. سيتم إصدار الفاتورة بدون تحصيل دفعة.",
       "issueOnlyButton": "إصدار الفاتورة"

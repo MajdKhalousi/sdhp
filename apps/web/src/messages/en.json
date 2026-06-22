@@ -219,6 +219,7 @@
         "doctor": "Doctor",
         "allDoctors": "All doctors"
       },
+      "durationMinutes": "{count} min",
       "errors": {
         "loadFailed": "Failed to load today's visits"
       }
@@ -432,6 +433,8 @@
       "called": "Called",
       "inQueue": "In queue",
       "justNow": "just now",
+      "minuteShort": "m",
+      "hourShort": "h",
       "scheduled": "Appt: {time}",
       "visitType": "Visit: {name}",
       "viewAppointment": "View appointment →",
@@ -451,6 +454,7 @@
         "patientSearchPlaceholder": "Search by name, phone, or MRN",
         "doctorLabel": "Doctor",
         "dateTimeLabel": "Date & Time",
+        "dateTimeHint": "Walk-in time must be within 2 hours of the current time.",
         "durationLabel": "Duration (minutes)",
         "visitTypeLabel": "Visit Type",
         "visitTypeOptional": "optional"
@@ -2970,6 +2974,7 @@
       "submitButton": "Confirm & Collect",
       "submitting": "Processing…",
       "paymentRecorded": "Payment recorded successfully",
+      "issuedNoPayment": "Invoice issued. No payment was recorded.",
       "close": "Close",
       "noBalanceDue": "No balance due. This invoice will be issued without collecting payment.",
       "issueOnlyButton": "Issue Invoice"

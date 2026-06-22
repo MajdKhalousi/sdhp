@@ -271,7 +271,7 @@ export default function TodayPage() {
                           {formatTimeDisplay(entry.appointment.scheduledAt)}
                         </p>
                         <p className="text-xs text-muted-foreground/60">
-                          {entry.appointment.durationMin} min
+                          {t('durationMinutes', { count: entry.appointment.durationMin })}
                         </p>
                       </td>
 

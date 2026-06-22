@@ -6,12 +6,12 @@ import type { QueueEntry, QueueStatus } from '@/types/queue';
 import type { Invoice } from '@/types/invoice';
 import { formatTimeDisplay } from '@/lib/format-date';
 
-function relativeTime(iso: string, justNow: string) {
+function relativeTime(iso: string, justNow: string, minuteShort: string, hourShort: string) {
   const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
   if (mins < 1) return justNow;
-  if (mins < 60) return `${mins}m`;
+  if (mins < 60) return `${mins}${minuteShort}`;
   const hrs = Math.floor(mins / 60);
-  return `${hrs}h ${mins % 60}m`;
+  return `${hrs}${hourShort} ${mins % 60}${minuteShort}`;
 }
 
 const STATUS_LEFT: Record<QueueStatus, string> = {
@@ -90,12 +90,16 @@ export function QueueTicket({ entry, invoice, visitTypeName }: { entry: QueueEnt
         {status === 'CALLED' && calledAt ? (
           <>
             <p className="text-xs text-muted-foreground">{t('called')}</p>
-            <p className="text-sm tabular-nums">{relativeTime(calledAt, t('justNow'))}</p>
+            <p className="text-sm tabular-nums">
+              {relativeTime(calledAt, t('justNow'), t('minuteShort'), t('hourShort'))}
+            </p>
           </>
         ) : (
           <>
             <p className="text-xs text-muted-foreground">{t('inQueue')}</p>
-            <p className="text-sm tabular-nums">{relativeTime(createdAt, t('justNow'))}</p>
+            <p className="text-sm tabular-nums">
+              {relativeTime(createdAt, t('justNow'), t('minuteShort'), t('hourShort'))}
+            </p>
           </>
         )}
       </div>

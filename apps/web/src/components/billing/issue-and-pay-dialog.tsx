@@ -82,7 +82,7 @@ export function IssueAndPayDialog({ invoice, onSuccess, onCancel }: Props) {
       try {
         await issueInvoice(invoice.id);
         onSuccess();
-        toast({ title: t('paymentRecorded'), variant: 'success' });
+        toast({ title: t('issuedNoPayment'), variant: 'success' });
       } catch {
         setSubmitError(t('issueError'));
       } finally {

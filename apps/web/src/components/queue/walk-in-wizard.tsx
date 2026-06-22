@@ -373,6 +373,7 @@ export function WalkInWizard({ initialPatientId, onClose }: WalkInWizardProps = 
             {t('actions.setNow')}
           </button>
         </div>
+        <p className="text-xs text-muted-foreground">{t('fields.dateTimeHint')}</p>
       </div>
 
       {/* Duration */}

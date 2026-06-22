@@ -3098,6 +3098,7 @@
       "totalInvoiced": "إجمالي الفواتير",
       "collected": "المحصل",
       "currentOutstanding": "المستحقات الحالية",
+      "currentOutstandingScopeNote": "لجميع الفترات، غير مقيّد بالفترة المحددة",
       "collectionRate": "نسبة التحصيل",
       "collectionRateHint": "المستلم مقابل الفواتير الصادرة في الفترة",
       "collectionRateNoInvoices": "لا توجد فواتير صادرة في هذه الفترة",

@@ -219,6 +219,9 @@ export default function BillingReportsPage() {
             <p className="mt-1 text-xs text-muted-foreground">
               {report ? `${report.unpaidCount} ${t('cards.unpaid')}` : ''}
             </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t('cards.currentOutstandingScopeNote')}
+            </p>
           </div>
 
           <div className="rounded-xl border bg-card p-5 shadow-sm">

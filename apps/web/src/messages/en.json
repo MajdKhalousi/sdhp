@@ -3098,6 +3098,7 @@
       "totalInvoiced": "Total Invoiced",
       "collected": "Collected",
       "currentOutstanding": "Current Outstanding",
+      "currentOutstandingScopeNote": "All-time, not limited to the selected period",
       "collectionRate": "Collection Rate",
       "collectionRateHint": "payments received vs. invoiced in period",
       "collectionRateNoInvoices": "no invoices issued in this period",

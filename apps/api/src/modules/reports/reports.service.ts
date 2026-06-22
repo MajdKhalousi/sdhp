@@ -518,12 +518,28 @@ export class ReportsService {
     };
   }
 
+  // Normalizes a bare YYYY-MM-DD or a full ISO instant to the start/end of the
+  // Damascus calendar day it falls on, in UTC. Same UTC+3 convention as
+  // dateToUtcRange() — used only by the Billing Report's issued/paid filters
+  // so that from=today&to=today covers the full Damascus business day.
+  private damascusDayBoundary(dateInput: string, edge: 'start' | 'end'): Date {
+    const TZ_OFFSET_MS = 3 * 60 * 60 * 1000;
+    const asDate = new Date(dateInput);
+    const damascusShifted = new Date(asDate.getTime() + TZ_OFFSET_MS);
+    const y = damascusShifted.getUTCFullYear();
+    const m = damascusShifted.getUTCMonth();
+    const d = damascusShifted.getUTCDate();
+    return edge === 'start'
+      ? new Date(Date.UTC(y, m, d, 0, 0, 0, 0) - TZ_OFFSET_MS)
+      : new Date(Date.UTC(y, m, d, 23, 59, 59, 999) - TZ_OFFSET_MS);
+  }
+
   private issuedAtFilter(from?: string, to?: string) {
     if (!from && !to) return {};
     return {
       issuedAt: {
-        ...(from ? { gte: new Date(from) } : {}),
-        ...(to ? { lte: new Date(to) } : {}),
+        ...(from ? { gte: this.damascusDayBoundary(from, 'start') } : {}),
+        ...(to ? { lte: this.damascusDayBoundary(to, 'end') } : {}),
       },
     };
   }
@@ -532,8 +548,8 @@ export class ReportsService {
     if (!from && !to) return {};
     return {
       paidAt: {
-        ...(from ? { gte: new Date(from) } : {}),
-        ...(to ? { lte: new Date(to) } : {}),
+        ...(from ? { gte: this.damascusDayBoundary(from, 'start') } : {}),
+        ...(to ? { lte: this.damascusDayBoundary(to, 'end') } : {}),
       },
     };
   }

@@ -478,6 +478,32 @@ export class BillingService {
     return result;
   }
 
+  async settleNoCharge(id: string, caller: JwtPayload) {
+    const invoice = await this.fetchInvoice(id);
+    this.assertOrgAccess(invoice, caller);
+
+    if (invoice.status !== InvoiceStatus.ISSUED) {
+      throw new BadRequestException('Only issued invoices can be settled as no-charge.');
+    }
+
+    if (invoice.totalAmount.toNumber() !== 0) {
+      throw new BadRequestException('Only zero-total invoices can be settled as no-charge.');
+    }
+
+    const result = await this.prisma.invoice.update({
+      where: { id },
+      data: { status: InvoiceStatus.PAID },
+      select: INVOICE_SELECT,
+    });
+    await this.auditWriter.log({
+      caller,
+      action: 'INVOICE_SETTLED_NO_CHARGE',
+      resource: 'invoice',
+      resourceId: id,
+    });
+    return result;
+  }
+
   async recordPayment(id: string, dto: RecordPaymentDto, caller: JwtPayload) {
     const invoice = await this.fetchInvoice(id);
     this.assertOrgAccess(invoice, caller);

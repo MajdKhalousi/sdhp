@@ -15,6 +15,7 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
@@ -238,6 +239,24 @@ export class BillingController {
     @CurrentUser() user: JwtPayload,
   ) {
     return this.service.cancel(id, dto, user);
+  }
+
+  @Patch(':id/settle-no-charge')
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.SECRETARY, UserRole.ACCOUNTANT)
+  @RequiresActiveSubscription()
+  @ApiOperation({
+    summary:
+      'Settle a zero-total ISSUED invoice as no-charge — sets status to PAID without recording a payment. paidAmount remains 0.',
+  })
+  @ApiOkResponse({ description: 'Invoice settled as no-charge (PAID, paidAmount unchanged at 0)' })
+  @ApiNotFoundResponse({ description: 'Invoice not found' })
+  @ApiForbiddenResponse({ description: 'Cross-org access denied or insufficient role' })
+  @ApiBadRequestResponse({
+    description: 'Invoice is not ISSUED, or invoice totalAmount is not zero',
+  })
+  settleNoCharge(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.service.settleNoCharge(id, user);
   }
 
   @Post(':id/payments')

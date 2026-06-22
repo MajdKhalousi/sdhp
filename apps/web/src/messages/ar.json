@@ -1855,6 +1855,13 @@
       "cancelReasonPlaceholder": "سبب اختياري للإلغاء",
       "cancelConfirm": "هل تريد إلغاء هذه الفاتورة؟ لا يمكن التراجع عن هذا الإجراء.",
       "cancelSubmit": "تأكيد الإلغاء",
+      "settleNoCharge": "تسوية بدون دفع",
+      "settling": "جارٍ التسوية…",
+      "settleFailed": "فشلت تسوية الفاتورة",
+      "settleConfirmTitle": "تسوية الفاتورة بدون دفع؟",
+      "settleConfirmBody": "لن يتم تسجيل أي دفعة. سيتم إغلاق الفاتورة ذات القيمة الصفرية كمدفوعة/بدون دفع.",
+      "settleSubmit": "تسوية بدون دفع",
+      "settleSuccess": "تمت تسوية الفاتورة بدون دفع.",
       "openAppointment": "فتح الموعد",
       "downloadPdf": "تنزيل PDF",
       "downloading": "جارٍ التنزيل…",
@@ -2952,7 +2959,8 @@
       "collectPayment": "تحصيل الدفع",
       "collectRemaining": "تحصيل المتبقي",
       "paid": "مدفوعة",
-      "noCharge": "بدون رسوم"
+      "noCharge": "بدون رسوم",
+      "markNoCharge": "تسوية بدون دفع"
     },
     "issueAndPayDialog": {
       "title": "تحصيل الدفع",

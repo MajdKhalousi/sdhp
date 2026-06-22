@@ -11,6 +11,7 @@ import { useAuthStore } from '@/store/auth';
 import { InvoiceStatusBadge } from './invoice-status-badge';
 import { InvoiceItemsTable } from './invoice-items-table';
 import { CancelInvoiceDialog } from './cancel-invoice-dialog';
+import { SettleNoChargeDialog } from './settle-no-charge-dialog';
 import { RecordPaymentForm } from './record-payment-form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateDisplay } from '@/lib/format-date';
@@ -406,6 +407,7 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
       : formatAmount(String(remaining), locale);
   const isDraft = invoice.status === 'DRAFT';
   const isCancellable = invoice.status === 'DRAFT' || invoice.status === 'ISSUED';
+  const isSettleableNoCharge = invoice.status === 'ISSUED' && parseFloat(invoice.totalAmount) === 0;
   const canCancel = BILLING_WRITE_ROLES.has(user?.role ?? '');
   const canCreate = INVOICE_CREATE_ROLES.has(user?.role ?? '');
 
@@ -458,6 +460,9 @@ export function InvoiceDetail({ invoiceId }: InvoiceDetailProps) {
             </Link>
           )}
           {isDraft && canCreate && <IssueButton invoice={invoice} />}
+          {isSettleableNoCharge && canCreate && (
+            <SettleNoChargeDialog invoiceId={invoice.id} onSuccess={refetch} />
+          )}
           {isCancellable && canCancel && <CancelInvoiceDialog invoiceId={invoice.id} />}
           <a
             href={`/${locale}/invoice/${invoice.id}/print`}

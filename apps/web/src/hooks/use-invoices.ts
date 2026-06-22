@@ -97,6 +97,17 @@ export function useIssueInvoice() {
   });
 }
 
+export function useSettleNoCharge() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.patch<Invoice>(`/v1/invoices/${id}/settle-no-charge`, {}),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['invoices'] });
+    },
+  });
+}
+
 export function useCancelInvoice() {
   const qc = useQueryClient();
   return useMutation({

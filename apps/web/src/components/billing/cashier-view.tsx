@@ -9,6 +9,7 @@ import { useAppointments, useVisitTypesList } from '@/hooks/use-appointments';
 import { useAuthStore } from '@/store/auth';
 import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import { IssueAndPayDialog } from '@/components/billing/issue-and-pay-dialog';
+import { SettleNoChargeConfirm } from '@/components/billing/settle-no-charge-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { formatDateDisplay, formatDateTimeDisplay } from '@/lib/format-date';
@@ -58,6 +59,7 @@ function InvoiceRow({ invoice, isActive, onAction, onSuccess, onCancel, visitTyp
   const paid = parseFloat(invoice.paidAmount);
   const remaining = Math.max(0, total - paid);
   const isPaid = invoice.status === 'PAID';
+  const isSettleableNoCharge = invoice.status === 'ISSUED' && total === 0 && remaining === 0;
 
   const resolvedVT = (() => {
     if (!visitTypes) return null;
@@ -137,6 +139,14 @@ function InvoiceRow({ invoice, isActive, onAction, onSuccess, onCancel, visitTyp
                 {tInvoicePrint('printReceipt')}
               </a>
             </div>
+          ) : isSettleableNoCharge ? (
+            <button
+              onClick={onAction}
+              disabled={isActive}
+              className="inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-50"
+            >
+              {t('actions.markNoCharge')}
+            </button>
           ) : remaining <= 0 && invoice.status !== 'DRAFT' ? (
             <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
               {t('actions.noCharge')}
@@ -159,11 +169,19 @@ function InvoiceRow({ invoice, isActive, onAction, onSuccess, onCancel, visitTyp
       {/* Expandable payment form */}
       {isActive && (
         <div className="border-t border-border">
-          <IssueAndPayDialog
-            invoice={invoice}
-            onSuccess={onSuccess}
-            onCancel={onCancel}
-          />
+          {isSettleableNoCharge ? (
+            <SettleNoChargeConfirm
+              invoiceId={invoice.id}
+              onSuccess={onSuccess}
+              onCancel={onCancel}
+            />
+          ) : (
+            <IssueAndPayDialog
+              invoice={invoice}
+              onSuccess={onSuccess}
+              onCancel={onCancel}
+            />
+          )}
         </div>
       )}
     </div>
@@ -178,6 +196,7 @@ function OutstandingRow({ invoice, isActive, onAction, onSuccess, onCancel, visi
   const total = parseFloat(invoice.totalAmount);
   const paid = parseFloat(invoice.paidAmount);
   const remaining = Math.max(0, total - paid);
+  const isSettleableNoCharge = invoice.status === 'ISSUED' && total === 0 && remaining === 0;
 
   const resolvedVT = (() => {
     if (!visitTypes) return null;
@@ -254,7 +273,15 @@ function OutstandingRow({ invoice, isActive, onAction, onSuccess, onCancel, visi
         </div>
 
         <div className="shrink-0">
-          {remaining <= 0 ? (
+          {isSettleableNoCharge ? (
+            <button
+              onClick={onAction}
+              disabled={isActive}
+              className="inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-50"
+            >
+              {t('actions.markNoCharge')}
+            </button>
+          ) : remaining <= 0 ? (
             <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
               {t('actions.noCharge')}
             </span>
@@ -273,11 +300,19 @@ function OutstandingRow({ invoice, isActive, onAction, onSuccess, onCancel, visi
 
       {isActive && (
         <div className="border-t border-border">
-          <IssueAndPayDialog
-            invoice={invoice}
-            onSuccess={onSuccess}
-            onCancel={onCancel}
-          />
+          {isSettleableNoCharge ? (
+            <SettleNoChargeConfirm
+              invoiceId={invoice.id}
+              onSuccess={onSuccess}
+              onCancel={onCancel}
+            />
+          ) : (
+            <IssueAndPayDialog
+              invoice={invoice}
+              onSuccess={onSuccess}
+              onCancel={onCancel}
+            />
+          )}
         </div>
       )}
     </div>

@@ -1855,6 +1855,13 @@
       "cancelReasonPlaceholder": "Optional reason for cancellation",
       "cancelConfirm": "Cancel this invoice? This action cannot be undone.",
       "cancelSubmit": "Confirm Cancellation",
+      "settleNoCharge": "Mark as No-Charge",
+      "settling": "Settling…",
+      "settleFailed": "Failed to settle invoice",
+      "settleConfirmTitle": "Settle invoice as no-charge?",
+      "settleConfirmBody": "No payment will be recorded. This will close the zero-total invoice as paid/no-charge.",
+      "settleSubmit": "Mark as No-Charge",
+      "settleSuccess": "Invoice settled as no-charge.",
       "openAppointment": "Open Appointment",
       "downloadPdf": "Download PDF",
       "downloading": "Downloading…",
@@ -2952,7 +2959,8 @@
       "collectPayment": "Collect Payment",
       "collectRemaining": "Collect Remaining",
       "paid": "Paid",
-      "noCharge": "No charge"
+      "noCharge": "No charge",
+      "markNoCharge": "Mark as No-Charge"
     },
     "issueAndPayDialog": {
       "title": "Collect Payment",

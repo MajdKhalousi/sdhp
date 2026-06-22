@@ -112,6 +112,11 @@ export const PATIENT_ARCHIVE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN']);
 export const PATIENT_BOOK_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
 export const PATIENT_INVOICE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
 
+// ─── Pending patient-link review page (150B-3A) ──────────────────────────────
+// Mirrors backend GET /patients/pending-links (patients.controller.ts) exactly
+// — no SUPER_ADMIN, no ACCOUNTANT, no NURSE.
+export const PENDING_LINKS_ACCESS_ROLES = new Set(['ORG_ADMIN', 'DOCTOR', 'SECRETARY']);
+
 // ─── Appointments page action gates ──────────────────────────────────────────
 
 export const APPOINTMENT_CREATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
@@ -126,6 +131,11 @@ export const INVOICE_CREATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUN
 export const CLINICAL_ROLES            = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE']);
 export const PATIENT_SAFETY_ALERT_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY']);
 export const RECEPTION_ACTION_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+
+// ─── Encounter detail page access (150B-3A) ──────────────────────────────────
+// Mirrors backend GET /encounters/:id (encounters.controller.ts) exactly —
+// ACCOUNTANT has no clinical encounter access at any level.
+export const ENCOUNTER_DETAIL_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY']);
 
 // ─── Technician worklist pages ────────────────────────────────────────────────
 

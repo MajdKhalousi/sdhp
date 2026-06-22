@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { ArrowLeft, Printer } from 'lucide-react';
 import { EncounterWorkspace } from '@/components/encounters/encounter-workspace';
+import { useAuthStore } from '@/store/auth';
+import { ENCOUNTER_DETAIL_ACCESS_ROLES } from '@/lib/permissions';
 
 interface Props {
   params: { id: string };
@@ -15,7 +17,16 @@ export default function EncounterPage({ params }: Props) {
   const tCommon = useTranslations('common');
   const router = useRouter();
   const locale = useLocale();
+  const { user } = useAuthStore();
   const [isDirty, setIsDirty] = useState(false);
+
+  useEffect(() => {
+    if (user && !ENCOUNTER_DETAIL_ACCESS_ROLES.has(user.role)) {
+      router.replace('/dashboard');
+    }
+  }, [user, router]);
+
+  if (!user || !ENCOUNTER_DETAIL_ACCESS_ROLES.has(user.role)) return null;
 
   function handleBack() {
     if (isDirty && !window.confirm(t('actions.unsavedChangesConfirm'))) return;

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Link } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { ArrowLeft, CalendarX2 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAppointment, useVisitTypesList } from '@/hooks/use-appointments';
@@ -15,7 +15,7 @@ import { NoShowButton } from '@/components/appointments/no-show-button';
 import { CancelAppointmentDialog } from '@/components/appointments/cancel-appointment-dialog';
 import { RescheduleDialog } from '@/components/appointments/reschedule-dialog';
 import { useAuthStore } from '@/store/auth';
-import { APPOINTMENT_MUTATE_ROLES, INVOICE_CREATE_ROLES } from '@/lib/permissions';
+import { APPOINTMENT_MUTATE_ROLES, INVOICE_CREATE_ROLES, NAV_APPOINTMENTS_ROLES } from '@/lib/permissions';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AppointmentStatus } from '@/types/appointment';
 import { formatDateTimeDisplay } from '@/lib/format-date';
@@ -43,10 +43,17 @@ export default function AppointmentDetailPage() {
   const tAppt = useTranslations('appointment');
   const tInvoice = useTranslations('invoice');
   const locale = useLocale();
+  const router = useRouter();
   const { user } = useAuthStore();
   const canMutate = user ? APPOINTMENT_MUTATE_ROLES.has(user.role) : false;
   const canCreateInvoice = user ? INVOICE_CREATE_ROLES.has(user.role) : false;
   const displayLocale = locale === 'ar' ? 'ar-u-nu-latn' : 'en-US';
+
+  useEffect(() => {
+    if (user && !NAV_APPOINTMENTS_ROLES.includes(user.role)) {
+      router.replace('/dashboard');
+    }
+  }, [user, router]);
 
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
 
@@ -69,6 +76,8 @@ export default function AppointmentDetailPage() {
   const visitTypeName = visitType
     ? (locale === 'ar' && visitType.nameAr ? visitType.nameAr : visitType.name)
     : t('fields.none');
+
+  if (!user || !NAV_APPOINTMENTS_ROLES.includes(user.role)) return null;
 
   if (isLoading) {
     return (

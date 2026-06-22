@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Link } from '@/i18n/navigation';
+import { useEffect, useState } from 'react';
+import { Link, useRouter } from '@/i18n/navigation';
 import { ChevronLeft, ChevronRight, Clock, LinkIcon, RefreshCw, X } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,6 +15,7 @@ import {
 } from '@/hooks/use-patient';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/store/auth';
+import { PENDING_LINKS_ACCESS_ROLES } from '@/lib/permissions';
 
 function formatDateTime(iso: string, locale: string): string {
   const d = new Date(iso);
@@ -78,8 +79,15 @@ export default function PendingLinksPage() {
   const t = useTranslations('patient.pendingLinks');
   const tCommon = useTranslations('common');
   const locale = useLocale();
+  const router = useRouter();
   const { user } = useAuthStore();
   const isOrgAdmin = user?.role === 'ORG_ADMIN';
+
+  useEffect(() => {
+    if (user && !PENDING_LINKS_ACCESS_ROLES.has(user.role)) {
+      router.replace('/dashboard');
+    }
+  }, [user, router]);
 
   const { data: links, isLoading, isError, refetch } = usePendingLinks();
   const cancelLink = useCancelPendingLink();
@@ -110,6 +118,8 @@ export default function PendingLinksPage() {
   }
 
   const BackIcon = locale === 'ar' ? ChevronRight : ChevronLeft;
+
+  if (!user || !PENDING_LINKS_ACCESS_ROLES.has(user.role)) return null;
 
   return (
     <div className="space-y-6">

@@ -155,6 +155,10 @@ export class AppointmentsService {
     const scheduledAt = new Date(dto.scheduledAt);
     const durationMin = dto.durationMin ?? 30;
 
+    if (dto.isWalkIn === true) {
+      this.assertWalkInSanityWindow(scheduledAt);
+    }
+
     await this.doctorSchedulesService.assertDoctorAvailability(
       dto.doctorId,
       scheduledAt,
@@ -510,6 +514,16 @@ export class AppointmentsService {
     if (!doctor.isActive) throw new BadRequestException('Doctor is inactive');
     if (doctor.user.organizationId !== organizationId) {
       throw new ForbiddenException('Doctor does not belong to this organization');
+    }
+  }
+
+  private static readonly WALK_IN_WINDOW_MS = 2 * 60 * 60 * 1000;
+
+  private assertWalkInSanityWindow(scheduledAt: Date): void {
+    if (Math.abs(scheduledAt.getTime() - Date.now()) > AppointmentsService.WALK_IN_WINDOW_MS) {
+      throw new BadRequestException(
+        'Walk-in time must be within 2 hours of the current time. For appointments further out, use Schedule Appointment.',
+      );
     }
   }
 

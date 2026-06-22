@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AppointmentStatus } from '@prisma/client';
 import {
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsInt,
@@ -70,4 +71,13 @@ export class CreateAppointmentDto {
   @IsOptional()
   @IsString()
   sourceEncounterId?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Marks this request as an immediate walk-in. When true, scheduledAt must be near current server time. Request-only — never persisted.',
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  isWalkIn?: boolean;
 }

@@ -60,7 +60,8 @@ export class AppointmentsController {
   @RequiresActiveSubscription()
   @ApiOperation({
     summary:
-      'Create appointment — patientId and doctorId must belong to the same org. SUPER_ADMIN must supply organizationId.',
+      'Create appointment — patientId and doctorId must belong to the same org. SUPER_ADMIN must supply organizationId. ' +
+      'isWalkIn (optional, not persisted): when true, scheduledAt must be within ±2 hours of server now.',
   })
   create(@Body() dto: CreateAppointmentDto, @CurrentUser() user: JwtPayload) {
     return this.service.create(dto, user);

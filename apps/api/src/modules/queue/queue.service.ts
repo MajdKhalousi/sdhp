@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -140,7 +141,7 @@ export class QueueService {
   async create(dto: CreateQueueEntryDto, caller: JwtPayload) {
     const appointment = await this.prisma.appointment.findFirst({
       where: { id: dto.appointmentId, deletedAt: null },
-      select: { id: true, organizationId: true, status: true },
+      select: { id: true, organizationId: true, status: true, scheduledAt: true },
     });
 
     if (!appointment) throw new NotFoundException('Appointment not found');
@@ -152,6 +153,12 @@ export class QueueService {
         CHECK_IN_BLOCKED_MESSAGES[appointment.status] ??
         `Cannot check in appointment with status ${appointment.status}`;
       throw new ConflictException(message);
+    }
+
+    if (this.toDamascusDateStr(appointment.scheduledAt) !== this.todayDamascus()) {
+      throw new BadRequestException(
+        'Only appointments scheduled for today can be checked in to the queue.',
+      );
     }
 
     const organizationId = appointment.organizationId;
@@ -399,6 +406,12 @@ export class QueueService {
   private todayDamascus(): string {
     // Returns current date as YYYY-MM-DD in Asia/Damascus timezone.
     return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
+  }
+
+  private toDamascusDateStr(date: Date): string {
+    // Same convention as todayDamascus(), applied to an arbitrary instant —
+    // used to confirm an appointment's scheduledAt falls on today's business day.
+    return date.toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
   }
 
   private assertOwnership(orgId: string, caller: JwtPayload): void {

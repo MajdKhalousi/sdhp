@@ -12,6 +12,7 @@ import {
   Version,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiConflictResponse,
   ApiNoContentResponse,
@@ -62,10 +63,12 @@ export class QueueController {
   @RequiresActiveSubscription()
   @ApiOperation({
     summary:
-      'Check patient in — creates queue entry from an existing appointment. Ticket number auto-generated. Appointment status updated to IN_QUEUE.',
+      'Check patient in — creates queue entry from an existing appointment. Ticket number auto-generated. Appointment status updated to IN_QUEUE. ' +
+      'Appointment scheduledAt must fall on the current Damascus business day.',
   })
   @ApiNotFoundResponse({ description: 'Appointment not found' })
   @ApiConflictResponse({ description: 'Queue entry already exists for this appointment' })
+  @ApiBadRequestResponse({ description: 'Appointment is not scheduled for today' })
   create(@Body() dto: CreateQueueEntryDto, @CurrentUser() user: JwtPayload) {
     return this.service.create(dto, user);
   }

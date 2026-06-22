@@ -79,6 +79,7 @@ export interface CreateAppointmentDto {
   visitTypeId?: string;
   notes?: string;
   sourceEncounterId?: string;
+  isWalkIn?: boolean;
 }
 
 export interface AppointmentsResponse {

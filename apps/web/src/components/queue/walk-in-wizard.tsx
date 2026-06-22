@@ -21,10 +21,16 @@ interface Step1Form {
   visitTypeId: string;
 }
 
-function nowDamascusDateTimeLocal(): string {
-  const d = new Date(Date.now() + 3 * 60 * 60 * 1000);
+const WALK_IN_WINDOW_MS = 2 * 60 * 60 * 1000;
+
+function damascusDateTimeLocalAt(ms: number): string {
+  const d = new Date(ms + 3 * 60 * 60 * 1000);
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+}
+
+function nowDamascusDateTimeLocal(): string {
+  return damascusDateTimeLocalAt(Date.now());
 }
 
 const INITIAL: Step1Form = {
@@ -111,6 +117,7 @@ export function WalkInWizard({ initialPatientId, onClose }: WalkInWizardProps = 
         doctorId: form.doctorId,
         scheduledAt: new Date(`${form.scheduledAt}:00+03:00`).toISOString(),
         durationMin: duration,
+        isWalkIn: true,
         ...(form.visitTypeId ? { visitTypeId: form.visitTypeId } : {}),
       },
       {
@@ -352,6 +359,8 @@ export function WalkInWizard({ initialPatientId, onClose }: WalkInWizardProps = 
             type="datetime-local"
             value={form.scheduledAt}
             onChange={set('scheduledAt')}
+            min={damascusDateTimeLocalAt(Date.now() - WALK_IN_WINDOW_MS)}
+            max={damascusDateTimeLocalAt(Date.now() + WALK_IN_WINDOW_MS)}
             disabled={creatingAppt}
             className="h-9 flex-1 rounded-md border bg-background px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring disabled:opacity-60"
           />

@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { LogOut, Menu } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/auth';
 import { useUnsavedGuardStore } from '@/store/unsaved-guard';
 import { Link, useRouter, usePathname } from '@/i18n/navigation';
@@ -30,10 +31,15 @@ export function Header({ onMenuClick }: HeaderProps = {}) {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const guard = useUnsavedGuardStore();
+  const queryClient = useQueryClient();
 
   function handleLogout() {
     guard.requestNavigate(() => {
       logout();
+      // Drop every cached query — the next sign-in (possibly a different
+      // identity/org in this same tab) must never see a previous
+      // session's cached responses.
+      queryClient.clear();
       router.replace('/login');
     });
   }

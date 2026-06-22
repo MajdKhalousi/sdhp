@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { useAuthStore, type AuthUser } from '@/store/auth';
 
@@ -28,6 +29,7 @@ export default function LoginPage() {
   const t = useTranslations('auth');
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
+  const queryClient = useQueryClient();
 
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -42,6 +44,10 @@ export default function LoginPage() {
 
     try {
       const res = await api.post<LoginResponse>('/v1/auth/login', { phone, password });
+      // Defense-in-depth: also clear on the way in, in case this tab still
+      // holds cached responses from a previous identity that didn't log out
+      // through one of the explicit logout paths.
+      queryClient.clear();
       login(res.accessToken, res.user);
       router.push('/dashboard');
     } catch (err) {

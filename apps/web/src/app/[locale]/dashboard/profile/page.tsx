@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { api } from '@/lib/api';
@@ -44,6 +44,7 @@ export default function ProfilePage() {
   const t = useTranslations('profile');
   const router = useRouter();
   const logout = useAuthStore((s) => s.logout);
+  const queryClient = useQueryClient();
 
   const { data: profile, isLoading, isError } = useQuery<MeResponse>({
     queryKey: ['auth', 'me'],
@@ -89,6 +90,7 @@ export default function ProfilePage() {
       setConfirmPassword('');
       setTimeout(() => {
         logout();
+        queryClient.clear();
         router.replace('/login');
       }, 1500);
     } catch (err: unknown) {

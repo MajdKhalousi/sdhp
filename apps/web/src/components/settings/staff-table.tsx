@@ -294,18 +294,21 @@ function StaffForm({ mode, initial, onDone, onCreated, roleOptions }: StaffFormP
             <FieldError message={errors.password} />
           </div>
         ) : (
-          <div className="flex items-center gap-2 pt-6">
-            <input
-              type="checkbox"
-              id="staff-isActive"
-              checked={values.isActive}
-              onChange={(e) => set('isActive', e.target.checked)}
-              disabled={isPending}
-              className="h-4 w-4 rounded border-input accent-primary cursor-pointer"
-            />
-            <label htmlFor="staff-isActive" className="cursor-pointer text-sm font-medium">
-              {t('form.fields.isActive')}
-            </label>
+          <div className="pt-6">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="staff-isActive"
+                checked={values.isActive}
+                onChange={(e) => set('isActive', e.target.checked)}
+                disabled={isPending}
+                className="h-4 w-4 rounded border-input accent-primary cursor-pointer"
+              />
+              <label htmlFor="staff-isActive" className="cursor-pointer text-sm font-medium">
+                {t('form.fields.isActive')}
+              </label>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">{t('form.fields.isActiveHelp')}</p>
           </div>
         )}
 
@@ -816,7 +819,7 @@ export function StaffTable({ labels }: { labels?: StaffTableLabels } = {}) {
                                   setDeleteError(null);
                                 }}
                                 disabled={isLastOrgAdmin}
-                                title={isLastOrgAdmin ? t('lastOrgAdminDeactivateTooltip') : undefined}
+                                title={isLastOrgAdmin ? t('lastOrgAdminDeactivateTooltip') : t('deactivateHelp')}
                                 className={isLastOrgAdmin
                                   ? 'inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground opacity-40 cursor-not-allowed'
                                   : 'inline-flex h-7 w-7 items-center justify-center rounded-md border border-destructive/30 text-destructive transition-colors hover:bg-destructive/10'}

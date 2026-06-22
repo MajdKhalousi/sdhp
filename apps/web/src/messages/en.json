@@ -2221,6 +2221,7 @@
       "deactivate": "Deactivate",
       "deactivating": "Deactivating…",
       "deactivateConfirm": "Deactivate this staff member? They will lose access to the system.",
+      "deactivateHelp": "Removes this account from the default list. Can be restored later.",
       "restore": "Restore",
       "restoring": "Restoring…",
       "confirmRestore": "Restore this staff account? They will regain access to the system.",
@@ -2248,10 +2249,11 @@
           "password": "Password",
           "role": "Role",
           "isActive": "Active",
+          "isActiveHelp": "Unchecking Active blocks sign-in immediately but keeps this account in the list. Use Deactivate to remove it from the default list and free up the slot for re-use.",
           "temporaryPasswordSection": "Set Temporary Password",
           "temporaryPassword": "Temporary Password",
           "confirmTemporaryPassword": "Confirm Temporary Password",
-          "temporaryPasswordHelp": "Filling this field will reset the user's current password immediately. Leave blank to keep the existing password."
+          "temporaryPasswordHelp": "Filling this field immediately sets a new password for this account — their current password cannot be viewed and is not shown anywhere. Leave blank to keep it unchanged."
         },
         "placeholders": {
           "phone": "e.g. +963912345678",
@@ -2357,7 +2359,7 @@
           "addAnother": "Add another",
           "close": "Close"
         },
-        "userIdHelp": "Optionally link this employee to an existing staff account. Leave as \"No login account\" for HR-only employees.",
+        "userIdHelp": "Optionally link this employee to an existing staff account. Leave as \"No login account\" for HR-only employees. To create a brand-new login account for this employee, create it first from Login Accounts, then link it here.",
         "accountMode": {
           "sectionTitle": "Login Account",
           "options": {

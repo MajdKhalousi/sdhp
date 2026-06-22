@@ -160,8 +160,21 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
   const create = useCreateEmployee();
   const update = useUpdateEmployee();
   const { data: staff } = useStaff(false);
+  const { data: allEmployees } = useEmployees(false);
   const { data: branches } = useBranches();
   const { data: departments } = useDepartments();
+
+  // Users already linked to a *different* employee profile can never be
+  // picked here (the backend rejects it with a clear conflict error), so
+  // they're filtered out rather than shown as a choice that always fails
+  // on submit. The profile's own currently-linked user (edit mode) stays
+  // selectable — it isn't "linked elsewhere", it's linked to this profile.
+  const linkedElsewhereUserIds = new Set(
+    (allEmployees ?? [])
+      .filter((e) => e.userId && e.id !== initial?.id)
+      .map((e) => e.userId as string),
+  );
+  const availableStaff = (staff ?? []).filter((u) => !linkedElsewhereUserIds.has(u.id));
 
   const [values, setValues] = useState<FormState>(initialFormState(initial));
   const [errors, setErrors] = useState<FormErrors>({});
@@ -435,7 +448,7 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
             <select value={values.userId} onChange={(e) => set('userId', e.target.value)}
               className={inputClass()} disabled={isPending}>
               <option value="">{t('form.noLoginAccount')}</option>
-              {(staff ?? []).map((u) => (
+              {availableStaff.map((u) => (
                 <option key={u.id} value={u.id}>
                   {u.firstName} {u.lastName} ({u.phone}){!u.isActive ? ` — ${t('form.inactiveSuffix')}` : ''}
                 </option>
@@ -475,7 +488,7 @@ function EmployeeForm({ mode, initial, onDone }: EmployeeFormProps) {
               <select value={values.userId} onChange={(e) => set('userId', e.target.value)}
                 className={inputClass(!!errors.userId)} disabled={isPending}>
                 <option value="">—</option>
-                {(staff ?? []).map((u) => (
+                {availableStaff.map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.firstName} {u.lastName} ({u.phone}){!u.isActive ? ` — ${t('form.inactiveSuffix')}` : ''}
                   </option>

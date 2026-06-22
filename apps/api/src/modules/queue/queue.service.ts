@@ -91,6 +91,12 @@ const QUEUE_TO_APPOINTMENT_STATUS: Partial<Record<QueueStatus, AppointmentStatus
   [QueueStatus.SKIPPED]:     AppointmentStatus.NO_SHOW,
 };
 
+const ACTIVE_QUEUE_STATUSES: QueueStatus[] = [
+  QueueStatus.WAITING,
+  QueueStatus.CALLED,
+  QueueStatus.IN_PROGRESS,
+];
+
 @Injectable()
 export class QueueService {
   private readonly logger = new Logger(QueueService.name);
@@ -320,6 +326,12 @@ export class QueueService {
 
     if (!entry) throw new NotFoundException('Queue entry not found');
     this.assertOwnership(entry.appointment.organizationId, caller);
+
+    if (ACTIVE_QUEUE_STATUSES.includes(entry.status)) {
+      throw new ConflictException(
+        'Cannot remove a queue entry while the visit is active. Complete or cancel the visit first.',
+      );
+    }
 
     await this.prisma.queueEntry.update({
       where: { id },

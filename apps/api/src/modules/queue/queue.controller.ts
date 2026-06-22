@@ -108,7 +108,13 @@ export class QueueController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse({ description: 'Queue entry soft-deleted (deletedAt set)' })
   @ApiNotFoundResponse({ description: 'Queue entry not found' })
-  @ApiOperation({ summary: 'Soft-delete queue entry (sets deletedAt)' })
+  @ApiConflictResponse({
+    description: 'Cannot remove a queue entry while the visit is active (WAITING, CALLED, or IN_PROGRESS)',
+  })
+  @ApiOperation({
+    summary:
+      'Soft-delete queue entry (sets deletedAt) — blocked while the linked visit is active (WAITING/CALLED/IN_PROGRESS); allowed for DONE/SKIPPED entries.',
+  })
   remove(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.service.remove(id, user);
   }

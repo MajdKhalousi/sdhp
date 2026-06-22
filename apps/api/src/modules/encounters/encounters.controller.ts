@@ -61,10 +61,13 @@ export class EncountersController {
   @RequiresActiveSubscription()
   @ApiOperation({
     summary:
-      'Create encounter — DOCTOR callers must use their own doctorId. Links to appointment trigger status updates (appointment→IN_PROGRESS, queue→IN_PROGRESS).',
+      'Create encounter — DOCTOR callers must use their own doctorId. Links to appointment trigger status updates (appointment→IN_PROGRESS, queue→IN_PROGRESS). Repeat calls for an appointment with an existing encounter return that encounter only if the resolved doctorId matches; otherwise rejected with 409.',
   })
   @ApiNotFoundResponse({ description: 'Patient, Doctor, or Appointment not found' })
-  @ApiConflictResponse({ description: 'Encounter already exists for this appointment' })
+  @ApiConflictResponse({
+    description:
+      'Encounter already exists for this appointment under a race condition, OR an encounter already exists for this appointment under a different doctor',
+  })
   create(@Body() dto: CreateEncounterDto, @CurrentUser() user: JwtPayload) {
     return this.service.create(dto, user);
   }

@@ -148,7 +148,12 @@ export class EncountersService {
         where: { appointmentId, deletedAt: null },
         select: SELECT,
       });
-      if (existing) return existing;
+      if (existing) {
+        if (existing.doctorId === doctorId) return existing;
+        throw new ConflictException(
+          'An encounter for this appointment already exists for a different doctor.',
+        );
+      }
     }
 
     // Prefill vitals and chief complaint from nurse triage data when the DTO omits them.

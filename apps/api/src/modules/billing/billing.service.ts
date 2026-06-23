@@ -238,13 +238,43 @@ export class BillingService {
     const limit = query.limit ?? 20;
     const skip = (page - 1) * limit;
 
+    const isClinicalRole = caller.role === UserRole.DOCTOR || caller.role === UserRole.NURSE;
+
+    // DOCTOR/NURSE never see the org-wide, all-time list the billing roles get —
+    // narrow to patients with an appointment in the (defaulted-to-today) window,
+    // and pin the invoice date filter to that same window.
+    let clinicalPatientWhere: { patientId: string } | { patientId: { in: string[] } } | {} = {};
+    let dateFilter = this.createdAtFilter(query.from, query.to);
+
+    if (isClinicalRole) {
+      const { start, end } = this.resolveClinicalWindow(query.from, query.to);
+      dateFilter = { createdAt: { gte: start, lte: end } };
+      const scopedPatientIds = await this.resolveClinicalScopePatientIds(
+        caller,
+        query.branchId,
+        start,
+        end,
+      );
+      if (query.patientId) {
+        clinicalPatientWhere = scopedPatientIds.includes(query.patientId)
+          ? { patientId: query.patientId }
+          : { patientId: { in: [] } };
+      } else {
+        clinicalPatientWhere = { patientId: { in: scopedPatientIds } };
+      }
+    }
+
     const where = {
       ...(orgId ? { organizationId: orgId } : {}),
       ...(query.branchId ? { branchId: query.branchId } : {}),
-      ...(query.patientId ? { patientId: query.patientId } : {}),
+      ...(isClinicalRole
+        ? clinicalPatientWhere
+        : query.patientId
+          ? { patientId: query.patientId }
+          : {}),
       ...(query.status ? { status: query.status } : {}),
       deletedAt: null as null,
-      ...this.createdAtFilter(query.from, query.to),
+      ...dateFilter,
       ...(query.search
         ? {
             OR: [
@@ -275,12 +305,14 @@ export class BillingService {
   async findOne(id: string, caller: JwtPayload) {
     const invoice = await this.fetchInvoice(id);
     this.assertOrgAccess(invoice, caller);
+    await this.assertClinicalInvoiceAccess(invoice, caller);
     return invoice;
   }
 
   async getInvoiceForPdf(id: string, caller: JwtPayload) {
     const invoice = await this.fetchInvoice(id);
     this.assertOrgAccess(invoice, caller);
+    await this.assertClinicalInvoiceAccess(invoice, caller);
     const org = await this.prisma.organization.findUnique({
       where: { id: invoice.organizationId },
       select: { name: true, nameAr: true },
@@ -951,6 +983,98 @@ export class BillingService {
     if (caller.role !== UserRole.SUPER_ADMIN && invoice.organizationId !== caller.organizationId) {
       throw new ForbiddenException('Cannot access invoice from another organization');
     }
+  }
+
+  /**
+   * DOCTOR/NURSE pass the org-access check above but must not see invoices
+   * outside their clinical relationship to the patient. 404 (not 403) so
+   * existence of an out-of-scope invoice isn't disclosed.
+   */
+  private async assertClinicalInvoiceAccess(
+    invoice: { patientId: string; branchId: string | null },
+    caller: JwtPayload,
+  ): Promise<void> {
+    if (caller.role === UserRole.DOCTOR) {
+      const doctorProfile = await this.prisma.doctor.findFirst({
+        where: { userId: caller.sub, deletedAt: null },
+        select: { id: true },
+      });
+      const hasRelationship = doctorProfile
+        ? await this.prisma.appointment.findFirst({
+            where: { patientId: invoice.patientId, doctorId: doctorProfile.id, deletedAt: null },
+            select: { id: true },
+          })
+        : null;
+      if (!hasRelationship) throw new NotFoundException('Invoice not found');
+      return;
+    }
+
+    if (caller.role === UserRole.NURSE) {
+      if (caller.branchId && invoice.branchId && invoice.branchId !== caller.branchId) {
+        throw new NotFoundException('Invoice not found');
+      }
+    }
+  }
+
+  // Asia/Damascus = UTC+3, no DST since 2022 — hardcoded offset matches the
+  // same convention used in reports.service.ts's damascusDayBoundary().
+  private damascusTodayRange(): { start: Date; end: Date } {
+    const TZ_OFFSET_MS = 3 * 60 * 60 * 1000;
+    const now = new Date();
+    const damascusShifted = new Date(now.getTime() + TZ_OFFSET_MS);
+    const y = damascusShifted.getUTCFullYear();
+    const m = damascusShifted.getUTCMonth();
+    const d = damascusShifted.getUTCDate();
+    return {
+      start: new Date(Date.UTC(y, m, d, 0, 0, 0, 0) - TZ_OFFSET_MS),
+      end: new Date(Date.UTC(y, m, d, 23, 59, 59, 999) - TZ_OFFSET_MS),
+    };
+  }
+
+  private resolveClinicalWindow(from?: string, to?: string): { start: Date; end: Date } {
+    const today = this.damascusTodayRange();
+    return {
+      start: from ? new Date(from) : today.start,
+      end: to ? new Date(to) : today.end,
+    };
+  }
+
+  /**
+   * Patient IDs a DOCTOR/NURSE caller is allowed to see invoices for, given a date
+   * window — DOCTOR: patients with an appointment under their own doctor profile in
+   * the window; NURSE: patients with an appointment anywhere in the org in the window,
+   * narrowed by branch when one is available. Never falls back to all-time/org-wide.
+   */
+  private async resolveClinicalScopePatientIds(
+    caller: JwtPayload,
+    branchId: string | undefined,
+    start: Date,
+    end: Date,
+  ): Promise<string[]> {
+    const apptWhere: Prisma.AppointmentWhereInput = {
+      organizationId: caller.organizationId,
+      deletedAt: null,
+      scheduledAt: { gte: start, lte: end },
+    };
+
+    if (caller.role === UserRole.DOCTOR) {
+      const doctorProfile = await this.prisma.doctor.findFirst({
+        where: { userId: caller.sub, deletedAt: null },
+        select: { id: true },
+      });
+      if (!doctorProfile) return [];
+      apptWhere.doctorId = doctorProfile.id;
+    } else {
+      const effectiveBranchId = branchId ?? caller.branchId ?? undefined;
+      if (effectiveBranchId) apptWhere.branchId = effectiveBranchId;
+    }
+
+    const appts = await this.prisma.appointment.findMany({
+      where: apptWhere,
+      select: { patientId: true },
+      distinct: ['patientId'],
+    });
+    return appts.map((a) => a.patientId);
   }
 
   private async assertBranchBelongsToOrg(branchId: string, orgId: string): Promise<void> {

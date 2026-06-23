@@ -245,7 +245,6 @@ export class ReportsService {
     const baseWhere = {
       ...(orgId ? { organizationId: orgId } : {}),
       ...(query.branchId ? { branchId: query.branchId } : {}),
-      totalAmount: { gt: 0 },
       deletedAt: null as null,
     };
 

@@ -369,6 +369,76 @@ docker start sdhp_api
 # Verify uploads and downloads work in the application
 ```
 
+### 7.8 Offsite backup sync (Cloudflare R2)
+
+`docker/scripts/backup-offsite.sh` copies the local backup directory
+(`/var/backups/sdhp`) to a Cloudflare R2 bucket via `rclone`, run through the
+official `rclone/rclone` image — no host install required, same pattern as
+`backup-minio.sh`'s use of `mc`. It only ever copies; it never syncs, deletes,
+removes, or purges anything locally or remotely. Offsite retention (90 days)
+is enforced by an R2 bucket lifecycle rule, not by this script.
+
+**Required env vars** (kept in a separate `docker/.env.backup-offsite` file,
+`chmod 600`, root-owned — deliberately not merged into `.env.production` so
+this job never has access to application secrets it doesn't need):
+
+| Variable | Used by | Source |
+|---|---|---|
+| `OFFSITE_BUCKET` | `backup-offsite.sh` | `.env.backup-offsite` |
+| `OFFSITE_ENDPOINT` | `backup-offsite.sh` | `.env.backup-offsite` (`https://<account_id>.r2.cloudflarestorage.com`) |
+| `OFFSITE_REGION` | `backup-offsite.sh` | `.env.backup-offsite` (default: `auto`) |
+| `OFFSITE_ACCESS_KEY_ID` | `backup-offsite.sh` | `.env.backup-offsite` — R2 token scoped to this bucket only |
+| `OFFSITE_SECRET_ACCESS_KEY` | `backup-offsite.sh` | `.env.backup-offsite` — R2 token scoped to this bucket only |
+| `BACKUP_DIR` | `backup-offsite.sh` | shared with local backups, default `/var/backups/sdhp` |
+
+The R2 API token should be an **Object Read & Write token scoped to this one
+bucket** (not Read-only/PutObject-only — `rclone copy` needs to list and
+read remote objects to determine what's already present, not just write).
+It must not have access to any other bucket or account-level permissions.
+
+**Cron entry** — append to the existing `/etc/cron.d/sdhp-backup`:
+
+```sh
+# Offsite backup sync — 03:00 UTC daily (after PG 02:00 and MinIO 02:30 local backups)
+0 3 * * * root set -a; . /opt/sdhp/docker/.env.backup-offsite; set +a; /opt/sdhp/docker/scripts/backup-offsite.sh >> /var/log/sdhp-backup-offsite.log 2>&1
+```
+
+> Confirm the host's system timezone is actually UTC before relying on
+> `0 3 * * *` meaning 03:00 UTC — if cron runs in server-local time and the
+> host is not UTC, adjust the hour accordingly so this still lands after the
+> 02:00/02:30 local backup jobs complete.
+
+**Verification** (read-only, safe to run anytime):
+
+```sh
+set -a; . /opt/sdhp/docker/.env.backup-offsite; set +a
+
+# List recent objects in the offsite bucket
+docker run --rm \
+  -e RCLONE_CONFIG_OFFSITE_TYPE=s3 -e RCLONE_CONFIG_OFFSITE_PROVIDER=Cloudflare \
+  -e RCLONE_CONFIG_OFFSITE_ACCESS_KEY_ID="$OFFSITE_ACCESS_KEY_ID" \
+  -e RCLONE_CONFIG_OFFSITE_SECRET_ACCESS_KEY="$OFFSITE_SECRET_ACCESS_KEY" \
+  -e RCLONE_CONFIG_OFFSITE_ENDPOINT="$OFFSITE_ENDPOINT" -e RCLONE_CONFIG_OFFSITE_REGION="$OFFSITE_REGION" \
+  rclone/rclone lsl "offsite:$OFFSITE_BUCKET/sdhp-backups" | tail -20
+
+# Confirm today's local pgdump made it offsite
+docker run --rm [same -e flags as above] \
+  rclone/rclone lsf "offsite:$OFFSITE_BUCKET/sdhp-backups" | grep "$(date +%Y%m%d)"
+
+# Tail the sync log
+tail -20 /var/log/sdhp-backup-offsite.log
+```
+
+**Retrieving an offsite backup** (only needed if the local copy is also
+lost): download the specific file, then feed it into the existing,
+unmodified `restore.sh`/`restore-minio.sh` exactly as with a local backup:
+
+```sh
+docker run --rm [same -e flags as above] \
+  --volume /var/backups/sdhp:/data \
+  rclone/rclone copy "offsite:$OFFSITE_BUCKET/sdhp-backups/sdhp_YYYYMMDD_HHMMSS.pgdump" /data
+```
+
 ---
 
 ## 8. Updating the Application

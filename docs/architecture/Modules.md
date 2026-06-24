@@ -16,7 +16,7 @@ All modules are registered in `apps/api/src/app.module.ts`. Route prefix for the
 | `departments` | — | Org departments |
 | `doctors` | — | Doctor profile, 1:1 with `User` |
 | `doctor-schedules` | — (exported for `appointments` to consume) | Weekly availability + exceptions |
-| `employees` | `AuditLogsModule`, `StorageModule`, `UsersModule` | HR core: profiles, documents, attendance, leave |
+| `employees` | `AuditLogsModule`, `StorageModule`, `UsersModule` | HR core: profiles, documents, attendance, leave, payroll |
 | `patients` | `AuditLogsModule`, `MedicalTimelineModule` | Patient records + cross-org linking |
 | `allergies` | `AuditLogsModule` | Nested under patients |
 | `appointments` | `MedicalTimelineModule`, `AuditLogsModule`, `DoctorSchedulesModule`, `BillingModule`, `SubscriptionAccessModule` | Booking + slot validation |
@@ -80,6 +80,7 @@ These are imported by domain modules rather than being domain concerns themselve
 - `AttendanceRecord` is one row per employee per calendar date, manually entered by ORG_ADMIN (no biometric/device integration confirmed). `organizationId` is denormalized onto both `AttendanceRecord` and `LeaveRequest`, always derived server-side from the linked `EmployeeProfile` — never trusted from client input (explicit schema comments on both models).
 - Approving a `LeaveRequest` does **not** automatically update `EmployeeProfile.employmentStatus` — kept as a deliberately separate manual control (schema comment).
 - Not gated by `SubscriptionGuard` — HR access continues even if a clinic's SaaS subscription lapses.
+- **Payroll** (`PayrollController`/`PayrollService`, also registered in `EmployeesModule`): full `DRAFT → APPROVED → PAID`/`CANCELLED` run lifecycle, route prefix `/payroll/runs`. Generated per org/year/month, snapshotting each active employee's `baseSalary`/currency at generation time; per-line additions/deductions editable only while DRAFT, with `netSalary` always recomputed server-side via `Prisma.Decimal`. Every transition is audit-logged. SUPER_ADMIN/ORG_ADMIN only — explicitly bookkeeping-only, `markPaid` does not execute a real payment or touch Billing/Invoices.
 
 ### Patients
 - Route prefix `/patients`. Includes a cross-organization linking feature: `GET /patients/check-duplicate`, `GET /patients/platform-candidates`, `GET /patients/pending-links`, `POST /patients/link-request`, `POST /patients/verify-link` (6-digit code), `DELETE /patients/pending-links/:id`. This implements the "patient becomes platform-level identity, ClinicPatient becomes the clinic relationship" model from project history (Phase 126).

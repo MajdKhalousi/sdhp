@@ -169,7 +169,7 @@ Next.js App Router under a `[locale]` segment (`ar` default, `en` via `/en/*` pr
 
 ## 8. Deployment Architecture Summary
 
-Dev: only `postgres`, `redis`, `minio` run in Docker; `apps/api` and `apps/web` run via `pnpm dev` directly on the host. Prod (`docker-compose.prod.yml`): 8 services — `postgres`, `redis`, `minio`, `minio-init` (bucket bootstrap), `api`, `web`, `nginx` (only internet-facing service, TLS via Let's Encrypt/certbot), `certbot` (renewal loop). Two Docker networks (`internal`, `external`) isolate the database tier from the internet. Full detail in [Deployment.md](Deployment.md).
+Dev: only `postgres`, `redis`, `minio` run in Docker; `apps/api` and `apps/web` run via `pnpm dev` directly on the host. Prod (`docker-compose.prod.yml`): 8 services — `postgres`, `redis`, `minio`, `minio-init` (bucket bootstrap), `api`, `web`, `nginx` (only internet-facing service, TLS via Let's Encrypt/certbot), `certbot` (renewal loop). Two Docker networks (`internal`, `external`) isolate the database tier from the internet. **Phase 149B:** prod is pinned to its own explicit Compose project name (`sdhp_prod`) and its three data volumes are pinned by exact name — fixing a real incident where dev and prod, both defaulting to the same derived project name and identical container names, caused dev's `docker compose up` to silently replace prod's live containers. Full detail in [Deployment.md](Deployment.md).
 
 ## 9. Known Architectural Notes / TODOs
 

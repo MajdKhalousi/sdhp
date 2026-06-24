@@ -34,7 +34,8 @@
 | Follow-ups & Reminders | Foundation Exists | **High** |
 | Billing & Invoicing | Production Ready | Low |
 | Clinic Settings & Catalog | Production Ready | Low |
-| HR (Employees, Attendance, Leave, Documents) | Mostly Complete | Medium |
+| HR (Employees, Attendance, Leave, Documents) | Mostly Complete | Low-Medium |
+| Payroll Calculation & Payroll Runs | Mostly Complete | Low-Medium |
 | Reports & Analytics | Production Ready | Low |
 | Dashboard (Today Hub) | Production Ready | Low |
 | Audit Logs | Mostly Complete | Medium |
@@ -80,18 +81,18 @@
 ### B1. Patients (Records)
 - **Classification:** Production Ready
 - **Current state:** Full CRUD, auto-MRN, demographic + bilingual fields, soft delete, cross-organization linking (`ClinicPatient`, link-request/verify-code flow) fully shipped per project history (Phase 126B/C/D all closed, backfill complete, all 10 patient-adjacent modules use `assertPatientLinkedToOrg`).
-- **Missing work:** Phase 126E ("Platform Patient Search & Duplicate Detection") was explicitly left at the planning stage per project history — no implementation. This is an enhancement on top of an already-working core, not a core gap.
+- **Missing work:** (1) Phase 126E ("Platform Patient Search & Duplicate Detection") — cross-organization duplicate detection — was explicitly left at the planning stage per project history; no implementation. (2) Phase 155 audit finding: even within a single organization, duplicate phone numbers are not detected/flagged at patient creation — a repeat patient can end up with two separate `Patient` records under the same clinic if front-desk staff don't recognize them. This is a smaller, same-org version of the same underlying problem as (1) and was not previously documented.
 - **Business value:** Critical — the central record every other clinical module hangs off of.
-- **Technical complexity:** Core: done. Duplicate-detection enhancement: Medium (fuzzy matching on name/DOB/national ID across orgs).
-- **Recommended priority:** Low for the core; Medium if duplicate patient records across clinics are becoming an observed operational problem.
+- **Technical complexity:** Core: done. Cross-org duplicate-detection: Medium (fuzzy matching on name/DOB/national ID across orgs). Same-org phone-duplicate warning: Low (exact-match check against an existing indexed column, warn-and-confirm rather than hard-block).
+- **Recommended priority:** Low for the core; Medium for the same-org phone check (Phase 155 flagged it as cheap to close); Medium for cross-org if duplicate patient records across clinics are becoming an observed operational problem.
 
 ### B2. Appointments
 - **Classification:** Production Ready
 - **Current state:** Full status workflow (`SCHEDULED→...→COMPLETED`/`CANCELLED`/`NO_SHOW`), double-booking prevention, slot validation against Doctor Schedules, subscription-gated writes. 20/20 backend tests per project history.
-- **Missing work:** None identified.
+- **Missing work:** Phase 155 audit finding (UX, not a functional bug): booking a walk-in or appointment requires front-desk staff to manually find a free slot by trial and error — the backend already has all the conflict data needed to compute this, but there's no "next available slot" suggestion surfaced in the booking UI. Observed firsthand as real friction during a rehearsal of the full reception workflow.
 - **Business value:** Critical — core scheduling workflow.
-- **Technical complexity:** N/A.
-- **Recommended priority:** Low.
+- **Technical complexity:** Low-Medium for the next-available-slot affordance — mostly a UI addition, possibly backed by one small new read endpoint.
+- **Recommended priority:** Low for the core; Medium for the next-available-slot UX improvement, given it's cheap relative to the daily friction it removes.
 
 ### B3. Doctor Scheduling
 - **Classification:** Production Ready
@@ -187,7 +188,7 @@
 
 ### C1. Billing & Invoicing
 - **Classification:** Production Ready
-- **Current state:** Full `DRAFT→ISSUED→PARTIALLY_PAID→PAID/CANCELLED` lifecycle, atomic item/payment operations, auto-invoice-on-checkin (policy-configurable), invoice PDF generation, payment void with reason tracking, daily cashier summary, 36/36 backend tests. Multiple production-verified phases (134A, 134A-fix, 135A).
+- **Current state:** Full `DRAFT→ISSUED→PARTIALLY_PAID→PAID/CANCELLED` lifecycle, atomic item/payment operations, auto-invoice-on-checkin (policy-configurable), invoice PDF generation, payment void with reason tracking, daily cashier summary, 36/36 backend tests. Multiple production-verified phases (134A, 134A-fix, 135A). **Phase 154B (deployed and production-verified):** DOCTOR/NURSE remain technically allowed at the controller-role level on `GET /invoices` (and `:id`/`:id/pdf`) because the doctor-queue and queue-board screens legitimately depend on it for today's invoice-status badges — but service-layer clinical-scope narrowing now restricts what they actually see: DOCTOR is scoped to patients with appointments under their own doctor profile, NURSE to patients with appointments in their org/branch, both within a default-to-today date window; out-of-scope detail/PDF access returns 404 (not 403) to avoid disclosing existence. Billing roles (SUPER_ADMIN/ORG_ADMIN/ACCOUNTANT/SECRETARY) are unchanged. The same phase also removed a `totalAmount: { gt: 0 }` filter from the Billing Report's invoice-count query, so it now agrees with the Cashier Summary's count even when zero-charge (Free Visit) invoices exist.
 - **Missing work:** No online/card payment gateway integration — payments are recorded manually (cash/card/bank-transfer/insurance/other as a label, not processed through a gateway). This was flagged as a future "Phase 2: Monetization" item in an earlier project audit; status since then not re-confirmed in this pass.
 - **Business value:** Critical — revenue cycle.
 - **Technical complexity:** Current scope: N/A. Payment gateway integration: High (PCI scope, reconciliation, webhooks, partial-refund handling).
@@ -207,11 +208,19 @@
 
 ### D1. HR — Employee Profiles, Attendance, Leave, Documents
 - **Classification:** Mostly Complete
-- **Current state:** This is the most recently and actively developed area of the system — the last 5 commits before this audit are all HR phases (147D through 147G: schema, frontend, attendance/leave UX, dashboard metrics). `EmployeeProfile` deliberately decoupled from `User` (supports HR-only staff with no login). Attendance is one-record-per-day manual entry; Leave requests have a full create/decide/respond workflow. Employee Document upload is **confirmed fully implemented** (audited 2026-06-21 — presigned upload/download/list/delete, with ACCOUNTANT deliberately excluded from document access for privacy reasons).
-- **Missing work:** (1) No biometric/device attendance integration — entry is manual by design, a real scaling limitation for larger staff counts. (2) No payroll calculation/payroll-run engine — `baseSalary` is stored but nothing computes net pay, deductions, or generates payslips. (3) Approving a leave request does not cascade to `employmentStatus` (deliberate per a schema comment, but worth confirming this matches actual HR-process expectations as the feature matures).
+- **Current state:** `EmployeeProfile` deliberately decoupled from `User` (supports HR-only staff with no login). Attendance is one-record-per-day manual entry; Leave requests have a full create/decide/respond workflow. Employee Document upload is **confirmed fully implemented** (re-verified directly against `employees-documents.controller.ts` during the Phase 157B documentation pass — `POST upload-url`, `POST` register, `GET` list, `GET :id/download-url`, `DELETE :id` all present — with ACCOUNTANT deliberately excluded from document access for privacy reasons).
+- **Missing work:** (1) No biometric/device attendance integration — entry is manual by design, a real scaling limitation for larger staff counts. (2) Approving a leave request does not cascade to `employmentStatus` (deliberate per a schema comment, but worth confirming this matches actual HR-process expectations as the feature matures). Payroll calculation is no longer missing from this area — see D2.
 - **Business value:** High — staff cost and compliance (attendance/leave records) are major operational concerns for any clinic of meaningful size.
-- **Technical complexity:** Biometric integration: Medium-High (device/vendor-dependent). Payroll engine: High (tax/deduction rules are jurisdiction-specific and easy to get expensively wrong).
-- **Recommended priority:** Medium — given the visible recent investment here, this looks like an active roadmap track already; the natural next increment is likely payroll calculation if that's the product direction, but that should be a deliberate scoping decision, not an assumed default.
+- **Technical complexity:** Biometric integration: Medium-High (device/vendor-dependent).
+- **Recommended priority:** Low-Medium — the active build-out (D1, D2) is largely done; biometric integration is the only real remaining gap, and only relevant at larger staff counts.
+
+### D2. Payroll Calculation & Payroll Runs
+- **Classification:** Mostly Complete
+- **Current state:** Re-verified directly against code during the Phase 157B documentation pass (`payroll.controller.ts`, `payroll.service.ts`, `apps/web/src/app/[locale]/dashboard/hr/payroll/page.tsx`, `payroll-runs-table.tsx`, `use-payroll.ts`) — this is a real, working capability, not a stub. Full lifecycle `DRAFT → APPROVED → PAID` (or `CANCELLED`), generated per organization/year/month, snapshotting each active employee's `baseSalary` and currency at generation time so later salary changes don't retroactively alter a past run. Per-line additions/deductions are editable only while `DRAFT`, with `netSalary` always recomputed server-side using `Prisma.Decimal` arithmetic (never floating-point). Every state transition (generate/update-line/approve/mark-paid/cancel) writes an audit log entry. Org-scoped, SUPER_ADMIN/ORG_ADMIN only — ACCOUNTANT and clinical roles have zero access by deliberate design, consistent with the rest of HR's privacy posture. Generation fails loudly (no run created) if any active employee is missing a `baseSalary`, rather than silently skipping them.
+- **Missing work:** This is explicitly **bookkeeping only by design** — `markPaid` does not execute a real payment or touch billing/invoices/cashier (an in-code comment confirms this is intentional, not an oversight). No automated backend test file was found for this module (`*.spec.ts`), unlike most other modules in this codebase which cite specific test counts — a confidence gap, not a confirmed functional one, and the reason this is classified Mostly Complete rather than Production Ready (same standard already applied to Clinical Reports, B10).
+- **Business value:** High — closes the most visible gap HR had relative to its own apparent scope.
+- **Technical complexity:** N/A for current scope; real payment execution (if ever desired) would be High complexity and a deliberate, separate decision, not an extension of this bookkeeping feature.
+- **Recommended priority:** Low-Medium — primarily to close the test-coverage confidence gap; no missing functionality identified for the bookkeeping scope this was built for.
 
 ---
 
@@ -236,7 +245,7 @@
 ### E3. Audit Logs
 - **Classification:** Mostly Complete
 - **Current state:** Read API is solid (SUPER_ADMIN only, filterable by org/user/action/resource/date, 14/14 backend tests, immutable by design). Writer coverage has expanded incrementally across many phases — confirmed present for: auth (login/logout), billing (invoice create/issue/cancel, payment create), patients (create/update/soft-delete), labs and radiology (create/status-transition/result-or-report-entered/reviewed/soft-delete), prescriptions and appointments (create/status-transition/update/soft-delete), medical files (download access).
-- **Missing work:** Writer coverage was built module-by-module over many incremental phases rather than as a single cross-cutting interceptor; this pass did not re-verify that **every** mutating endpoint across **all** ~30 modules (e.g. Employees/HR, Clinic Settings, Doctor Schedules, Visit Types/Services) writes an audit entry. Given `EmployeesModule` does import `AuditLogsModule`, some coverage likely exists there too, but exhaustive per-endpoint confirmation was out of scope for this pass.
+- **Missing work:** Writer coverage was built module-by-module over many incremental phases rather than as a single cross-cutting interceptor. Phase 155's real-clinic-readiness audit confirmed (not just flagged as unconfirmed) a concrete gap: `doctor-schedules.service.ts`, `branches.service.ts`, `departments.service.ts`, and `clinic-settings.service.ts` have **zero** audit-log coverage — changing a doctor's working hours or clinic configuration leaves no record of who changed it or when, which matters in a healthcare setting where schedule changes affect patient access to care. (Employees/HR and Payroll do write audit entries — confirmed directly in the Phase 157B documentation pass; the gap is specifically the four config-oriented services above.)
 - **Business value:** High — compliance and incident-investigation capability, especially given this handles medical records.
 - **Technical complexity:** Low-Medium to close remaining gaps (the writer service and pattern are already established; it's a matter of injecting it into any modules that still lack it).
 - **Recommended priority:** Medium — worth a dedicated sweep to confirm 100% coverage of sensitive write paths, given the compliance value, but not urgent (no confirmed gap, just unconfirmed completeness).
@@ -299,6 +308,23 @@
 
 ### Note: Redundant Placeholder Folders
 `staff` and `staff-scheduling` (`apps/api/src/modules/staff/`, `apps/api/src/modules/staff-scheduling/`) are also confirmed `.gitkeep`-only placeholders, but unlike G1-G4 above, these do **not** represent missing functionality — their intended purpose is already fully served elsewhere: staff accounts by `UsersModule` (A2) and staff scheduling/attendance/leave by `EmployeesModule` (D1). These two folders are most likely dead naming artifacts from an earlier architectural plan that was superseded. Recommend deleting them (a documentation/repo-hygiene action, not a feature gap) rather than carrying them on any future roadmap.
+
+---
+
+## H. Operational Readiness (Phase 155/156 Audit)
+
+Not a product-feature gap in the sense of A-G above — this section covers infrastructure/process findings from a dedicated "is this ready for real daily clinic use, unattended" audit (Phase 155), distinct from the per-module feature classification this document otherwise uses.
+
+### H1. Backup & Disaster Recovery
+- **Local automated backups:** Phase 155 identified the absence of *verified* automated backups as the single P0 finding of that audit — full data loss with no recovery path is categorically worse than any feature gap above. Phase 156A re-verified this directly against the production host and found the local backup system already correctly installed and healthy: `/etc/cron.d/sdhp-backup` exists with daily PostgreSQL (`02:00`) and MinIO (`02:30`) backup jobs, the latest backups at the time passed `pg_restore --list` integrity verification, and 30-day retention is functioning (no stale backups found). Full detail: [Deployment.md](Deployment.md) §6.
+- **Offsite replication:** Phase 156C designed and committed an offsite-copy script (`docker/scripts/backup-offsite.sh`, `rclone copy`-only, no sync/delete, Cloudflare R2 target) plus its documentation in `docker/DEPLOY.md` §7.8 — but this exists **repo-only**. No `.env.backup-offsite` file, R2 bucket, scoped credential, or cron entry has been created on the production host. This is a deliberate operator decision to defer offsite setup until real/pilot clinic data exists, not an oversight. Full detail: [Deployment.md](Deployment.md) §6.
+
+### H2. Other Phase 155 Findings Not Captured Elsewhere in This Document
+- **Follow-up reminder delivery** — already fully captured under B13; no new information from Phase 155.
+- **Audit trail gaps on configuration changes** — already captured under E3 (strengthened from "unconfirmed" to "confirmed" by this audit).
+- **Duplicate-phone detection within one organization** — already captured under B1.
+- **Reception next-available-slot UX friction** — already captured under B2.
+- **Employee document upload** — Phase 155 initially flagged this as possibly incomplete; **re-verified directly against code during the Phase 157B documentation pass and confirmed fully implemented** (see D1). This was a false alarm, not a real gap — the stale `schema.prisma` comment that previously misled an earlier audit pass (see [Architecture Audit Report.md](Architecture%20Audit%20Report.md) §6) appears to have caused the same confusion again; worth fixing that comment the next time `schema.prisma` is touched for any reason.
 
 ---
 

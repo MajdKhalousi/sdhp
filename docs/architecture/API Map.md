@@ -67,6 +67,17 @@
 | GET/POST/PATCH | `/employees/:employeeProfileId/leave-requests` | Per-employee leave requests (`leave.controller.ts`) |
 | GET/PATCH | `/leave-requests` | Org-wide leave queue (second controller in same file, for approvals) |
 
+## Payroll
+| Method | Path | Notes |
+|---|---|---|
+| POST | `/payroll/runs` | SA/OA. Generates a DRAFT run for one org/year/month, snapshotting active employees' base salary |
+| GET | `/payroll/runs` | SA/OA. Org-scoped list, filterable by year/month/status |
+| GET | `/payroll/runs/:id` | SA/OA |
+| PATCH | `/payroll/runs/:id/lines/:lineId` | SA/OA. Additions/deductions/notes — DRAFT only; `netSalary` always recomputed server-side |
+| PATCH | `/payroll/runs/:id/approve` | SA/OA. DRAFT → APPROVED |
+| PATCH | `/payroll/runs/:id/mark-paid` | SA/OA. APPROVED → PAID — bookkeeping only, does not execute a real payment |
+| PATCH | `/payroll/runs/:id/cancel` | SA/OA. DRAFT or APPROVED → CANCELLED, with reason |
+
 ## Patients
 | Method | Path | Notes |
 |---|---|---|
@@ -167,8 +178,8 @@
 | Method | Path | Notes |
 |---|---|---|
 | POST | `/invoices` | Creates DRAFT |
-| GET | `/invoices`, `/invoices/:id` | |
-| GET | `/invoices/:id/pdf` | Puppeteer/Chromium render |
+| GET | `/invoices`, `/invoices/:id` | DOCTOR/NURSE technically pass the role check but are clinically scoped server-side as of Phase 154B — see [Permissions Matrix.md](Permissions%20Matrix.md). Out-of-scope `:id` access returns 404, not 403. |
+| GET | `/invoices/:id/pdf` | Puppeteer/Chromium render; same clinical-scope narrowing applies |
 | PATCH | `/invoices/:id` | DRAFT only |
 | POST | `/invoices/:id/items` | DRAFT only |
 | DELETE | `/invoices/:id/items/:itemId` | DRAFT only |

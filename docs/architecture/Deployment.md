@@ -124,8 +124,11 @@ exec node dist/src/main.js
 | `backup-minio.sh` | `mc mirror` via `docker run --network container:sdhp_minio` to `/var/backups/sdhp/minio_<timestamp>/`; atomic `.tmp` → final rename on success; prunes old dirs |
 | `restore.sh` | Drops + recreates the Postgres DB, restores from a `.pgdump` path argument via `pg_restore`; requires a typed `yes` confirmation — destructive |
 | `restore-minio.sh` | `mc mirror --overwrite` from a backup dir argument; requires typed `yes`; warns to stop the API container first; does not delete bucket objects absent from the backup |
+| `backup-offsite.sh` | **(Phase 156C, repo-only — see below)** `rclone copy` (never sync/delete) of `/var/backups/sdhp` to a Cloudflare R2 bucket, run via the throwaway `rclone/rclone` image; credentials only ever passed as container env vars, never written to a config file |
 
-Per project memory, a cron schedule (`/etc/cron.d/sdhp-backup`) runs Postgres backup at 02:00, MinIO backup at 02:30, and an nginx cert-reload check at 03:15 (all UTC, per the deployed configuration as of 2026-06-17 — re-verify on the actual host before relying on these times).
+**Local backup cron — confirmed live and healthy (Phase 156A, verified directly against the production host, superseding the earlier "re-verify on the host" hedge):** `/etc/cron.d/sdhp-backup` exists and is active. PostgreSQL backup runs daily at 02:00, MinIO backup runs daily at 02:30. At verification time, the latest `.pgdump` passed `pg_restore --list` with exit code 0, retention showed no backups older than 30 days, and the local backup directory totaled 4.7M. (Historical MinIO credential errors appeared earlier in the logs, but the two most recent runs at verification time both succeeded — worth a periodic glance, not currently a blocker.)
+
+**Offsite replication (Phase 156C) — exists repo-only, not yet installed in production:** `docker/scripts/backup-offsite.sh` and its full runbook (`docker/DEPLOY.md` §7.8 — required env vars, R2 credential scope, cron entry, verification/retrieval commands) are committed and ready to deploy, but no `.env.backup-offsite` file, R2 bucket, scoped credential, or cron entry exists on the production host yet. This is a **deliberate operator decision** to defer offsite setup until real/pilot clinic data exists, not an oversight — local backups (verified above) are the current sole recovery mechanism, and a single host/disk failure would still take backups down with the primary data until offsite is actually installed.
 
 ## 7. Deployment Runbook (`docker/DEPLOY.md`) — Section Map
 
@@ -152,7 +155,9 @@ Per project memory, a cron schedule (`/etc/cron.d/sdhp-backup`) runs Postgres ba
 
 ## 9. TODO / Unknown
 
-- Current/live state of the cron schedule on the actual production host — this document reflects what project memory recorded as of 2026-06-17; re-verify with `crontab -l` / `/etc/cron.d/sdhp-backup` on the host before relying on exact times.
 - Contents/role of `packages/shared` in the build — not inspected in this pass.
+- Whether the historical MinIO credential errors noted in §6 recur — worth a periodic log check, not currently blocking.
 
 ~~Whether Redis is actually consumed by any API code path~~ — **resolved by audit, 2026-06-21**: confirmed not consumed. See [Architecture Audit Report.md](Architecture%20Audit%20Report.md) §1.
+
+~~Current/live state of the cron schedule on the actual production host~~ — **resolved by direct verification, Phase 156A**: confirmed installed and healthy. See §6 above.

@@ -53,6 +53,8 @@ flowchart TD
 | Auth | `/(auth)/login` |
 | Print (URL-invisible route group, no nav) | `/encounter/[id]/print`, `/invoice/[id]/print`, `/subscription-payments/[organizationId]/[paymentId]/print` |
 
+**Phase 150B-3A:** five dashboard detail/action pages (`doctor/encounter/[id]`, `invoices/[id]`, `appointments/[id]`, and two others) were reachable by direct URL with no page-level role check — sidebar hiding doesn't stop direct navigation, and the backend 401/403 arrives only after the page has already rendered. All five now have the same inline guard pattern already used elsewhere, reusing existing role-constant sets rather than inventing new ones.
+
 Note: `/dashboard/settings/employees` and `/dashboard/settings/staff` are both confirmed **client-redirect stubs** (verified by reading both `page.tsx` files) — they exist only to keep old bookmarks working. `employees` redirects to `/dashboard/hr/employees` (moved in Phase 145C) and `staff` redirects to `/dashboard/hr/accounts` (moved in Phase 146D-146G). HR (`/dashboard/hr/*`) is the current home for both employee profiles and login accounts.
 
 ## 2. Layout & Guard Chain (protected routes)

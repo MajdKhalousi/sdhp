@@ -42,8 +42,8 @@ flowchart TB
     end
 
     subgraph HRBLOCK["HR / EMPLOYEES"]
-        EMP["Employee Profiles\n(decoupled from User login)\n+ Attendance (manual) + Leave + Documents\nMOSTLY COMPLETE — active development"]
-        PAYROLL["Payroll calculation\nNOT STARTED\n(baseSalary stored, nothing computes pay)"]
+        EMP["Employee Profiles\n(decoupled from User login)\n+ Attendance (manual) + Leave + Documents\nMOSTLY COMPLETE"]
+        PAYROLL["Payroll Runs\nMOSTLY COMPLETE\n(full DRAFT to APPROVED to PAID lifecycle,\nbookkeeping only by design, no confirmed tests)"]
     end
 
     subgraph REPORTSG["REPORTS"]
@@ -83,7 +83,7 @@ flowchart TB
     ENCOUNTER --> INVOICE
     INVOICE --> PAYMENT
     ORG --> EMP
-    EMP -.->|"not built"| PAYROLL
+    EMP --> PAYROLL
     ORG --> REPORT
     ORG --> GAUDIT
     ORG -.->|"no schema, no module, no UI"| INVENTORY
@@ -98,10 +98,10 @@ flowchart TB
     classDef notstarted fill:#f8d7da,stroke:#dc3545,color:#721c24,stroke-width:1px,stroke-dasharray: 4 3
 
     class SA,ONBOARD,SUBPAY,GAUDIT,ORG,BRANCHDEPT,AUTH,USERS,ROLES,PATIENT,CLINICPATIENT,APPT,ENCOUNTER,INVOICE,PAYMENT,REPORT ready
-    class EMP mostly
+    class EMP,PAYROLL mostly
     class FOLLOWUP,PORTAL foundation
     class NOTIF,AIASSIST,ROOMS placeholder
-    class INVENTORY,PAYROLL notstarted
+    class INVENTORY notstarted
 
     subgraph LEGEND["LEGEND"]
         L1["Production Ready"]:::ready

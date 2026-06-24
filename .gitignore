@@ -65,6 +65,9 @@ docker/.env.production
 !apps/**/.env.example
 !docker/.env.example
 
+# Local demo-tenant credential handoff — never committed
+.demo-credentials-local.txt
+
 # Certificates
 *.pem
 *.key

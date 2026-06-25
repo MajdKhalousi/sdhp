@@ -53,6 +53,7 @@ coverage/
 
 # SSL / Certbot
 docker/certbot/
+docker/certbot-staging/
 certbot/
 letsencrypt/
 
@@ -62,6 +63,7 @@ letsencrypt/
 docker/.env.production
 !.env.example
 !.env.production.example
+!.env.staging.example
 !apps/**/.env.example
 !docker/.env.example
 

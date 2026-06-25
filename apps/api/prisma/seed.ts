@@ -10,6 +10,8 @@ import {
   PaymentMethod,
   ClinicalReportStatus,
   VisitTypeCode,
+  ClinicPatientLinkType,
+  ClinicPatientStatus,
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
@@ -164,7 +166,7 @@ async function main() {
     },
   });
 
-  await prisma.user.upsert({
+  const orgAdminUser = await prisma.user.upsert({
     where: { phone: '+963912345678' },
     update: { passwordHash, firstName: 'Ahmad', lastName: 'Khalil' },
     create: {
@@ -741,6 +743,43 @@ async function main() {
       bloodType: 'O+',
     },
   }).catch(() => null);
+
+  // ── Clinic Patient Links ───────────────────────────────────────────────────
+  // The real create-patient flow (patients.service.ts) always creates a
+  // ClinicPatient row in the same transaction as the Patient — GET /patients
+  // is driven entirely by ClinicPatient, not Patient. This seed creates
+  // Patient rows directly via prisma.patient.upsert(), bypassing that service
+  // layer, so it must replicate the link here or seeded patients are
+  // invisible to the API despite existing in the database.
+  const seededPatients = [
+    saraMahmoud, khalidMousa, nourIbrahim, tariqSaleh, linaAhmad,
+    mohammadDiab, rimaHamdan, baselHaddad, hanaYousef, wissamKhoury,
+    ahmadRashid, fatimaNasser, yousefKhatib, mariamAziz, hassanBarakat,
+    dimaKassab, mazenAlAmin, rimShaaban, karimNassar, lailaFakhoury,
+  ].filter((p): p is NonNullable<typeof p> => p !== null);
+
+  for (const patient of seededPatients) {
+    await prisma.clinicPatient.upsert({
+      where: {
+        organizationId_patientId: {
+          organizationId: patient.organizationId,
+          patientId: patient.id,
+        },
+      },
+      update: {},
+      create: {
+        organizationId: patient.organizationId,
+        patientId: patient.id,
+        mrn: patient.mrn,
+        linkType: ClinicPatientLinkType.CLINIC_CREATED,
+        status: ClinicPatientStatus.ACTIVE,
+        linkedById: orgAdminUser.id,
+        linkedAt: patient.createdAt ?? new Date(),
+        lastVisitAt: null,
+        deletedAt: null,
+      },
+    });
+  }
 
   // ── Allergies ──────────────────────────────────────────────────────────────
   const khalidAllergyExists = await prisma.allergy.findFirst({

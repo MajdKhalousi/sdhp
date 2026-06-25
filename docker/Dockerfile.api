@@ -8,6 +8,13 @@ ENV PATH="$PNPM_HOME:$PATH"
 
 RUN corepack enable && corepack prepare pnpm@11.1.2 --activate
 
+# Required so native dependencies (e.g. bcrypt) can compile from source when
+# no prebuilt binary matches this exact Alpine/musl/Node ABI combination —
+# without these, pnpm's allowBuilds for bcrypt still runs the build script,
+# but it has nothing to compile with, and silently leaves the native
+# binding missing while the rest of the package installs fine.
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json .npmrc ./

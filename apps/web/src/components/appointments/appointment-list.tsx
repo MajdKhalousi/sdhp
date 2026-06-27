@@ -19,6 +19,7 @@ import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
 import type { Appointment, AppointmentStatus } from '@/types/appointment';
 import type { InvoiceStatus } from '@/types/invoice';
 import { formatDateTimeDisplay } from '@/lib/format-date';
+import { formatAmount } from '@/lib/format-currency';
 
 const CONFIRM_ELIGIBLE: AppointmentStatus[]    = ['SCHEDULED'];
 const CHECKIN_ELIGIBLE: AppointmentStatus[]    = ['SCHEDULED', 'CONFIRMED'];
@@ -36,6 +37,25 @@ const ALL_STATUSES: AppointmentStatus[] = [
 
 function todayStr() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Damascus' });
+}
+
+// Mirrors cashier-view.tsx's working start-of-day/end-of-day pattern — the backend's
+// createdAtFilter does a literal Date parse with no day-boundary adjustment, so a bare
+// YYYY-MM-DD passed as both from/to collapses to a near-zero-width midnight window.
+function dayBoundsToIso(dateStr: string): { from: string; to: string } {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return {
+    from: new Date(y, m - 1, d, 0, 0, 0, 0).toISOString(),
+    to: new Date(y, m - 1, d, 23, 59, 59, 999).toISOString(),
+  };
+}
+
+interface InvoiceSummary {
+  id: string;
+  status: InvoiceStatus;
+  totalAmount: number;
+  paidAmount: number;
+  remainingAmount: number;
 }
 
 const LIMIT = 20;
@@ -70,15 +90,30 @@ export function AppointmentList() {
   const { data: visitTypesData } = useVisitTypesList();
 
   const invoiceFilterDate = date || todayStr();
+  const { from: invoiceFrom, to: invoiceTo } = dayBoundsToIso(invoiceFilterDate);
   const { data: invoicesData } = useInvoices(
-    { from: invoiceFilterDate, to: invoiceFilterDate, limit: 100 },
+    { from: invoiceFrom, to: invoiceTo, limit: 100 },
     { enabled: canSeeBilling },
   );
   const invoiceByApptId = useMemo(() => {
-    const map = new Map<string, InvoiceStatus>();
+    const map = new Map<string, InvoiceSummary>();
     if (!invoicesData?.data) return map;
     for (const inv of invoicesData.data) {
-      if (inv.appointmentId) map.set(inv.appointmentId, inv.status);
+      // Invoices arrive newest-first. Skip CANCELLED entirely (an appointment with
+      // only cancelled invoices should fall through to "No invoice"), and keep the
+      // first (i.e. newest) non-CANCELLED invoice per appointment — never overwrite
+      // it with an older one.
+      if (!inv.appointmentId || inv.status === 'CANCELLED') continue;
+      if (map.has(inv.appointmentId)) continue;
+      const totalAmount = parseFloat(inv.totalAmount);
+      const paidAmount = parseFloat(inv.paidAmount);
+      map.set(inv.appointmentId, {
+        id: inv.id,
+        status: inv.status,
+        totalAmount,
+        paidAmount,
+        remainingAmount: Math.max(0, totalAmount - paidAmount),
+      });
     }
     return map;
   }, [invoicesData]);
@@ -273,7 +308,9 @@ export function AppointmentList() {
             </tr>
           </thead>
           <tbody>
-            {data.data.map((appt) => (
+            {data.data.map((appt) => {
+              const invoiceSummary = invoiceByApptId.get(appt.id);
+              return (
               <tr
                 key={appt.id}
                 className="border-t border-border transition-colors hover:bg-muted/20"
@@ -308,8 +345,22 @@ export function AppointmentList() {
                   <td className="px-4 py-3">
                     {invoicesData === undefined ? (
                       <span className="text-xs text-muted-foreground/40">—</span>
-                    ) : invoiceByApptId.has(appt.id) ? (
-                      <InvoiceStatusBadge status={invoiceByApptId.get(appt.id)!} />
+                    ) : invoiceSummary ? (
+                      <div className="flex flex-col items-start gap-1">
+                        <InvoiceStatusBadge status={invoiceSummary.status} />
+                        {(invoiceSummary.status === 'ISSUED' || invoiceSummary.status === 'PARTIALLY_PAID') &&
+                          invoiceSummary.remainingAmount > 0 && (
+                            <span className="text-xs text-muted-foreground" dir="ltr">
+                              {formatAmount(invoiceSummary.remainingAmount, locale)}
+                            </span>
+                          )}
+                        <Link
+                          href={`/dashboard/invoices/${invoiceSummary.id}`}
+                          className="text-xs text-muted-foreground underline hover:no-underline"
+                        >
+                          {tCommon('actions.view')}
+                        </Link>
+                      </div>
                     ) : (
                       <span className="text-xs text-muted-foreground/60">
                         {t('list.invoiceStatus.noInvoice' as Parameters<typeof t>[0])}
@@ -352,7 +403,8 @@ export function AppointmentList() {
                   </div>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
         </div>

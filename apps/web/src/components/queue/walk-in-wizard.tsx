@@ -150,6 +150,7 @@ export function WalkInWizard({ initialPatientId, onClose }: WalkInWizardProps = 
     setGate({ kind: 'closed' });
     qc.invalidateQueries({ queryKey: ['queue'] });
     qc.invalidateQueries({ queryKey: ['appointments'] });
+    qc.invalidateQueries({ queryKey: ['invoices'] });
     onClose ? onClose() : router.push('/dashboard/queue');
   }
 

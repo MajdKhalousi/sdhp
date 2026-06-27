@@ -41,6 +41,7 @@ export function CheckInButton({ appointmentId, onSuccess }: CheckInButtonProps) 
     setGate({ kind: 'closed' });
     qc.invalidateQueries({ queryKey: ['queue'] });
     qc.invalidateQueries({ queryKey: ['appointments'] });
+    qc.invalidateQueries({ queryKey: ['invoices'] });
     onSuccess?.();
   }
 

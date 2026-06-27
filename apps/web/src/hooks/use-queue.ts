@@ -38,13 +38,16 @@ export function useQueueEntry(id: string) {
   });
 }
 
-export function useCheckIn() {
+export function useCheckIn(options: { autoInvalidate?: boolean } = {}) {
+  const { autoInvalidate = true } = options;
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (dto: CreateQueueEntryDto) => api.post<CheckInResult>('/v1/queue', dto),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['queue'] });
-      qc.invalidateQueries({ queryKey: ['appointments'] });
+      if (autoInvalidate) {
+        qc.invalidateQueries({ queryKey: ['queue'] });
+        qc.invalidateQueries({ queryKey: ['appointments'] });
+      }
     },
   });
 }

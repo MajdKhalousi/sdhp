@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Link } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useCheckIn } from '@/hooks/use-queue';
@@ -31,7 +32,12 @@ export function CheckInButton({ appointmentId, onSuccess }: CheckInButtonProps) 
   const [error, setError] = useState('');
   const [isDuplicate, setIsDuplicate] = useState(false);
   const [gate, setGate] = useState<GateState>({ kind: 'closed' });
-  const { mutate, isPending } = useCheckIn();
+  const qc = useQueryClient();
+  // autoInvalidate is disabled here because invalidating ['queue']/['appointments']
+  // immediately would refetch and re-render this row away before the payment gate
+  // panel below has a chance to show — invalidation is done manually once the gate
+  // resolves (see resolveGate below).
+  const { mutate, isPending } = useCheckIn({ autoInvalidate: false });
 
   // useInvoice must be called unconditionally (React hook rules) — it already disables
   // itself internally when passed an empty id, so pass '' whenever no invoice should
@@ -39,6 +45,13 @@ export function CheckInButton({ appointmentId, onSuccess }: CheckInButtonProps) 
   const collectingInvoiceId = gate.kind === 'collecting' ? gate.readiness.invoiceId ?? '' : '';
   const { data: invoice, isLoading: invoiceLoading, isError: invoiceError } =
     useInvoice(collectingInvoiceId);
+
+  function resolveGate() {
+    setGate({ kind: 'closed' });
+    qc.invalidateQueries({ queryKey: ['queue'] });
+    qc.invalidateQueries({ queryKey: ['appointments'] });
+    onSuccess?.();
+  }
 
   function handleCheckIn() {
     setError('');
@@ -53,7 +66,7 @@ export function CheckInButton({ appointmentId, onSuccess }: CheckInButtonProps) 
           } else if (readiness.readiness === 'READINESS_UNKNOWN') {
             setGate({ kind: 'unknown' });
           } else {
-            onSuccess?.();
+            resolveGate();
           }
         },
         onError: (e) => {
@@ -65,16 +78,6 @@ export function CheckInButton({ appointmentId, onSuccess }: CheckInButtonProps) 
         },
       },
     );
-  }
-
-  function handleContinueWithoutPayment() {
-    setGate({ kind: 'closed' });
-    onSuccess?.();
-  }
-
-  function handlePaymentSuccess() {
-    setGate({ kind: 'closed' });
-    onSuccess?.();
   }
 
   return (
@@ -131,7 +134,7 @@ export function CheckInButton({ appointmentId, onSuccess }: CheckInButtonProps) 
             )}
             <button
               type="button"
-              onClick={handleContinueWithoutPayment}
+              onClick={resolveGate}
               className="h-7 rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent"
             >
               {tGate('continueWithoutPayment')}
@@ -154,7 +157,7 @@ export function CheckInButton({ appointmentId, onSuccess }: CheckInButtonProps) 
               <p className="text-destructive">{tGate('invoiceLoadError')}</p>
               <button
                 type="button"
-                onClick={handleContinueWithoutPayment}
+                onClick={resolveGate}
                 className="h-7 rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent"
               >
                 {tGate('continueWithoutPayment')}
@@ -164,7 +167,7 @@ export function CheckInButton({ appointmentId, onSuccess }: CheckInButtonProps) 
           {!invoiceLoading && !invoiceError && invoice && (
             <IssueAndPayDialog
               invoice={invoice}
-              onSuccess={handlePaymentSuccess}
+              onSuccess={resolveGate}
               onCancel={() => setGate({ kind: 'unpaid', readiness: gate.readiness })}
             />
           )}
@@ -177,7 +180,7 @@ export function CheckInButton({ appointmentId, onSuccess }: CheckInButtonProps) 
           <p className="text-muted-foreground">{tGate('unknownBody')}</p>
           <button
             type="button"
-            onClick={handleContinueWithoutPayment}
+            onClick={resolveGate}
             className="h-7 rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent"
           >
             {tGate('continueWithoutPayment')}

@@ -3,7 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import type { UseMutationResult } from '@tanstack/react-query';
-import type { BillingPolicy, UpdateBillingPolicyDto } from '@/types/billing-policy';
+import type { AppointmentPaymentPolicy, BillingPolicy, UpdateBillingPolicyDto } from '@/types/billing-policy';
+
+const APPOINTMENT_PAYMENT_POLICIES: AppointmentPaymentPolicy[] = [
+  'NONE',
+  'OPTIONAL_PREPAYMENT',
+  'DEPOSIT_REQUIRED',
+  'FULL_PREPAYMENT_REQUIRED',
+];
 
 function inputClass(hasError?: boolean): string {
   const base =
@@ -67,6 +74,7 @@ interface FormErrors {
   followUpDiscountPercent?: string;
   defaultDueDateDays?: string;
   noShowFeeAmount?: string;
+  appointmentDepositPercent?: string;
 }
 
 interface Props {
@@ -83,6 +91,8 @@ export function BillingPolicyForm({ policy, update }: Props) {
     freeFollowUpWindowDays: String(policy.freeFollowUpWindowDays),
     followUpDiscountPercent: String(policy.followUpDiscountPercent),
     requirePaymentBeforeEncounter: policy.requirePaymentBeforeEncounter,
+    appointmentPaymentPolicy: policy.appointmentPaymentPolicy,
+    appointmentDepositPercent: String(policy.appointmentDepositPercent),
     defaultDueDateDays: String(policy.defaultDueDateDays),
     noShowFeeAmount: String(policy.noShowFeeAmount),
   });
@@ -97,6 +107,8 @@ export function BillingPolicyForm({ policy, update }: Props) {
       freeFollowUpWindowDays: String(policy.freeFollowUpWindowDays),
       followUpDiscountPercent: String(policy.followUpDiscountPercent),
       requirePaymentBeforeEncounter: policy.requirePaymentBeforeEncounter,
+      appointmentPaymentPolicy: policy.appointmentPaymentPolicy,
+      appointmentDepositPercent: String(policy.appointmentDepositPercent),
       defaultDueDateDays: String(policy.defaultDueDateDays),
       noShowFeeAmount: String(policy.noShowFeeAmount),
     });
@@ -123,6 +135,12 @@ export function BillingPolicyForm({ policy, update }: Props) {
     if (isNaN(due) || due < 0) errs.defaultDueDateDays = t('validation.dueDateMin');
     const fee = parseFloat(values.noShowFeeAmount);
     if (isNaN(fee) || fee < 0) errs.noShowFeeAmount = t('validation.noShowFeeMin');
+    const deposit = parseFloat(values.appointmentDepositPercent);
+    if (isNaN(deposit) || deposit < 0 || deposit > 100) {
+      errs.appointmentDepositPercent = t('validation.depositRange');
+    } else if (values.appointmentPaymentPolicy === 'DEPOSIT_REQUIRED' && deposit <= 0) {
+      errs.appointmentDepositPercent = t('validation.depositRequiredPositive');
+    }
     return errs;
   }
 
@@ -142,6 +160,8 @@ export function BillingPolicyForm({ policy, update }: Props) {
         freeFollowUpWindowDays: parseInt(values.freeFollowUpWindowDays, 10),
         followUpDiscountPercent: parseFloat(values.followUpDiscountPercent),
         requirePaymentBeforeEncounter: values.requirePaymentBeforeEncounter,
+        appointmentPaymentPolicy: values.appointmentPaymentPolicy,
+        appointmentDepositPercent: parseFloat(values.appointmentDepositPercent),
         defaultDueDateDays: parseInt(values.defaultDueDateDays, 10),
         noShowFeeAmount: parseFloat(values.noShowFeeAmount),
       });
@@ -249,6 +269,40 @@ export function BillingPolicyForm({ policy, update }: Props) {
                 onChange={(v) => set('requirePaymentBeforeEncounter', v)}
                 disabled={isPending}
               />
+            </div>
+
+            <div className="max-w-xs">
+              <FieldLabel>{t('fields.appointmentPaymentPolicy')}</FieldLabel>
+              <select
+                value={values.appointmentPaymentPolicy}
+                onChange={(e) => set('appointmentPaymentPolicy', e.target.value as AppointmentPaymentPolicy)}
+                className={inputClass()}
+                disabled={isPending}
+              >
+                {APPOINTMENT_PAYMENT_POLICIES.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {t(`fields.appointmentPaymentPolicyOptions.${opt}`)}
+                  </option>
+                ))}
+              </select>
+              <FieldHint>{t('fields.appointmentPaymentPolicyHint')}</FieldHint>
+            </div>
+
+            <div className="max-w-xs">
+              <FieldLabel>{t('fields.appointmentDepositPercent')}</FieldLabel>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                step={0.5}
+                value={values.appointmentDepositPercent}
+                onChange={(e) => set('appointmentDepositPercent', e.target.value)}
+                className={inputClass(!!errors.appointmentDepositPercent)}
+                disabled={isPending || values.appointmentPaymentPolicy !== 'DEPOSIT_REQUIRED'}
+                dir="ltr"
+              />
+              <FieldHint>{t('fields.appointmentDepositPercentHint')}</FieldHint>
+              <FieldError message={errors.appointmentDepositPercent} />
             </div>
 
             <div className="max-w-xs">

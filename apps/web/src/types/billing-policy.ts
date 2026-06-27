@@ -1,3 +1,9 @@
+export type AppointmentPaymentPolicy =
+  | 'NONE'
+  | 'OPTIONAL_PREPAYMENT'
+  | 'DEPOSIT_REQUIRED'
+  | 'FULL_PREPAYMENT_REQUIRED';
+
 export interface BillingPolicy {
   id: string;
   organizationId: string;
@@ -6,6 +12,8 @@ export interface BillingPolicy {
   freeFollowUpWindowDays: number;
   followUpDiscountPercent: number;
   requirePaymentBeforeEncounter: boolean;
+  appointmentPaymentPolicy: AppointmentPaymentPolicy;
+  appointmentDepositPercent: number;
   defaultDueDateDays: number;
   noShowFeeAmount: number;
   createdAt: string;
@@ -18,6 +26,8 @@ export interface UpdateBillingPolicyDto {
   freeFollowUpWindowDays?: number;
   followUpDiscountPercent?: number;
   requirePaymentBeforeEncounter?: boolean;
+  appointmentPaymentPolicy?: AppointmentPaymentPolicy;
+  appointmentDepositPercent?: number;
   defaultDueDateDays?: number;
   noShowFeeAmount?: number;
 }

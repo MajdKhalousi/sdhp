@@ -2149,6 +2149,16 @@
         "followUpDiscountPercentHint": "نسبة الخصم على زيارات المتابعة خارج النافذة المجانية (0 = بلا خصم)",
         "requirePaymentBeforeEncounter": "اشتراط الدفع قبل الاستشارة",
         "requirePaymentBeforeEncounterHint": "تنبيه فقط — لا يتم فرض هذا الخيار من قبل النظام حالياً.",
+        "appointmentPaymentPolicy": "سياسة دفع المواعيد",
+        "appointmentPaymentPolicyHint": "للتهيئة فقط حالياً — لا يتم فرضها عند الحجز بعد. ستُستخدم في تدفقات الحجز والدفع القادمة.",
+        "appointmentPaymentPolicyOptions": {
+          "NONE": "لا يُشترط دفع مسبق",
+          "OPTIONAL_PREPAYMENT": "دفع مسبق اختياري",
+          "DEPOSIT_REQUIRED": "تأمين مطلوب",
+          "FULL_PREPAYMENT_REQUIRED": "دفع كامل مطلوب مسبقاً"
+        },
+        "appointmentDepositPercent": "نسبة التأمين",
+        "appointmentDepositPercentHint": "نسبة من سعر الزيارة تُطلب كتأمين — تُطبّق فقط عند اختيار \"تأمين مطلوب\" أعلاه",
         "defaultDueDateDays": "تاريخ استحقاق الفاتورة",
         "defaultDueDateDaysHint": "أيام بعد الإصدار (0 = نفس اليوم)",
         "noShowFeeAmount": "رسوم الغياب",
@@ -2168,7 +2178,9 @@
         "windowMin": "لا يمكن أن تكون نافذة المتابعة المجانية سالبة.",
         "discountRange": "يجب أن يكون الخصم بين 0 و100.",
         "dueDateMin": "لا يمكن أن يكون عدد أيام الاستحقاق سالباً.",
-        "noShowFeeMin": "لا يمكن أن تكون رسوم الغياب سالبة."
+        "noShowFeeMin": "لا يمكن أن تكون رسوم الغياب سالبة.",
+        "depositRange": "يجب أن تكون نسبة التأمين بين 0 و100.",
+        "depositRequiredPositive": "يجب أن تكون نسبة التأمين أكبر من 0 عند اختيار \"تأمين مطلوب\"."
       }
     },
     "departments": {

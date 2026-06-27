@@ -2149,6 +2149,16 @@
         "followUpDiscountPercentHint": "% discount applied to follow-ups outside the free window (0 = no discount)",
         "requirePaymentBeforeEncounter": "Require payment before encounter",
         "requirePaymentBeforeEncounterHint": "Advisory only — not enforced by the system.",
+        "appointmentPaymentPolicy": "Appointment payment policy",
+        "appointmentPaymentPolicyHint": "Advisory/configuration only for now — not yet enforced at booking. Will be used by upcoming booking and payment flows.",
+        "appointmentPaymentPolicyOptions": {
+          "NONE": "No prepayment required",
+          "OPTIONAL_PREPAYMENT": "Optional prepayment",
+          "DEPOSIT_REQUIRED": "Deposit required",
+          "FULL_PREPAYMENT_REQUIRED": "Full prepayment required"
+        },
+        "appointmentDepositPercent": "Deposit percentage",
+        "appointmentDepositPercentHint": "% of the visit price required as a deposit — only applies when the policy above is \"Deposit required\"",
         "defaultDueDateDays": "Invoice due date",
         "defaultDueDateDaysHint": "days after issuance (0 = due same day)",
         "noShowFeeAmount": "No-show fee",
@@ -2168,7 +2178,9 @@
         "windowMin": "Free follow-up window cannot be negative.",
         "discountRange": "Discount must be between 0 and 100.",
         "dueDateMin": "Due date days cannot be negative.",
-        "noShowFeeMin": "No-show fee cannot be negative."
+        "noShowFeeMin": "No-show fee cannot be negative.",
+        "depositRange": "Deposit percentage must be between 0 and 100.",
+        "depositRequiredPositive": "Deposit percentage must be greater than 0 when the policy is \"Deposit required\"."
       }
     },
     "departments": {

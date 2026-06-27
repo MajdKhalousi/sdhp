@@ -20,6 +20,14 @@ import type { VisitType } from '@/types/clinic-settings';
 
 const CASHIER_SUMMARY_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
 
+// The Unbilled tab matches today's completed/in-progress appointments
+// against today's invoices, which requires reading raw appointment data.
+// GET /v1/appointments is role-gated server-side to SUPER_ADMIN, ORG_ADMIN,
+// SECRETARY, DOCTOR, NURSE (appointments.controller.ts) — ACCOUNTANT is
+// deliberately excluded there, same as from NAV_APPOINTMENTS_ROLES. This is
+// the subset of that list that can also reach the Cashier page at all.
+const CASHIER_UNBILLED_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY']);
+
 function formatAmount(value: string, locale: string): string {
   const num = parseFloat(value);
   if (isNaN(num)) return '— SYP';
@@ -400,8 +408,13 @@ export function CashierView() {
   const locale = useLocale();
   const user = useAuthStore((s) => s.user);
   const canSeeSummary = CASHIER_SUMMARY_ROLES.has(user?.role ?? '');
+  const canSeeUnbilled = CASHIER_UNBILLED_ROLES.has(user?.role ?? '');
 
   const [tab, setTab] = useState<'today' | 'outstanding' | 'unbilled'>('today');
+  // Defensive fallback (requirement 5): if tab state is ever 'unbilled' for a
+  // role without access — e.g. a stale value from before a role/permission
+  // change — render Today behavior instead of firing the appointments query.
+  const effectiveTab = tab === 'unbilled' && !canSeeUnbilled ? 'today' : tab;
   const [activeId, setActiveId] = useState<string | null>(null);
   const { from, to, dateStr } = useMemo(() => getTodayRange(), []);
 
@@ -412,7 +425,7 @@ export function CashierView() {
   const { data: cashierSummary } = useCashierSummary(dateStr, canSeeSummary);
 
   // Outstanding data — two queries, enabled when tab is 'outstanding'
-  const outstandingEnabled = tab === 'outstanding';
+  const outstandingEnabled = effectiveTab === 'outstanding';
   const issuedQuery = useInvoices({ status: 'ISSUED', limit: 100 }, { enabled: outstandingEnabled });
   const partialQuery = useInvoices({ status: 'PARTIALLY_PAID', limit: 100 }, { enabled: outstandingEnabled });
 
@@ -424,8 +437,10 @@ export function CashierView() {
     );
   }, [issuedQuery.data, partialQuery.data]);
 
-  // Unbilled data — enabled when tab is 'unbilled'
-  const unbilledEnabled = tab === 'unbilled';
+  // Unbilled data — enabled when tab is 'unbilled' AND the role can read
+  // appointments at all; ACCOUNTANT never fires this query (see
+  // CASHIER_UNBILLED_ROLES above).
+  const unbilledEnabled = canSeeUnbilled && effectiveTab === 'unbilled';
   const todayApptsQuery = useAppointments(
     { date: dateStr, status: ['COMPLETED', 'IN_PROGRESS'], limit: 100 },
     { enabled: unbilledEnabled },
@@ -456,7 +471,7 @@ export function CashierView() {
         onClick={() => switchTab('today')}
         className={cn(
           'flex-1 rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
-          tab === 'today'
+          effectiveTab === 'today'
             ? 'bg-background text-foreground shadow-sm'
             : 'text-muted-foreground hover:text-foreground',
         )}
@@ -467,7 +482,7 @@ export function CashierView() {
         onClick={() => switchTab('outstanding')}
         className={cn(
           'flex flex-1 items-center justify-center rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
-          tab === 'outstanding'
+          effectiveTab === 'outstanding'
             ? 'bg-background text-foreground shadow-sm'
             : 'text-muted-foreground hover:text-foreground',
         )}
@@ -479,23 +494,25 @@ export function CashierView() {
           </span>
         )}
       </button>
-      <button
-        onClick={() => switchTab('unbilled')}
-        className={cn(
-          'flex-1 rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
-          tab === 'unbilled'
-            ? 'bg-background text-foreground shadow-sm'
-            : 'text-muted-foreground hover:text-foreground',
-        )}
-      >
-        {t('tabs.unbilled')}
-      </button>
+      {canSeeUnbilled && (
+        <button
+          onClick={() => switchTab('unbilled')}
+          className={cn(
+            'flex-1 rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
+            effectiveTab === 'unbilled'
+              ? 'bg-background text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground',
+          )}
+        >
+          {t('tabs.unbilled')}
+        </button>
+      )}
     </div>
   );
 
   // ── Outstanding tab ────────────────────────────────────────────────────────
 
-  if (tab === 'outstanding') {
+  if (effectiveTab === 'outstanding') {
     const outLoading = issuedQuery.isLoading || partialQuery.isLoading;
     const outError = issuedQuery.isError || partialQuery.isError;
 
@@ -563,7 +580,7 @@ export function CashierView() {
 
   // ── Unbilled tab ──────────────────────────────────────────────────────────
 
-  if (tab === 'unbilled') {
+  if (effectiveTab === 'unbilled') {
     const unbilledLoading = todayApptsQuery.isLoading || todayInvoicesUnbilledQuery.isLoading;
     const unbilledError = todayApptsQuery.isError || todayInvoicesUnbilledQuery.isError;
 

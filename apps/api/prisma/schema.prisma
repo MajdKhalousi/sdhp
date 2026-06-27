@@ -1143,6 +1143,13 @@ enum PaymentMethod {
   OTHER
 }
 
+enum AppointmentPaymentPolicy {
+  NONE
+  OPTIONAL_PREPAYMENT
+  DEPOSIT_REQUIRED
+  FULL_PREPAYMENT_REQUIRED
+}
+
 model Invoice {
   id             String        @id @default(cuid())
   organizationId String
@@ -1246,6 +1253,8 @@ model BillingPolicy {
   freeFollowUpWindowDays        Int     @default(0)
   followUpDiscountPercent       Decimal @default(0) @db.Decimal(5, 2)
   requirePaymentBeforeEncounter Boolean @default(false)
+  appointmentPaymentPolicy      AppointmentPaymentPolicy @default(NONE)
+  appointmentDepositPercent     Decimal @default(0) @db.Decimal(5, 2)
   defaultDueDateDays            Int     @default(0)
   noShowFeeAmount               Decimal @default(0) @db.Decimal(10, 2)
   invoiceNumberPrefix           String  @default("INV")

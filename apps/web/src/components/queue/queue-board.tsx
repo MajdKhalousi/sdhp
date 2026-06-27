@@ -22,7 +22,9 @@ const SKIPPABLE: QueueStatus[] = ['WAITING', 'CALLED'];
 const TRIAGE_STATUSES: QueueStatus[] = ['WAITING', 'CALLED', 'IN_PROGRESS'];
 
 const QUEUE_OPERATE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY']);
-const QUEUE_MARK_DONE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY', 'NURSE']);
+// SECRETARY is deliberately excluded — may only call the next patient (WAITING -> CALLED),
+// never mark a visit DONE. See Phase 0E-C29-D.
+const QUEUE_MARK_DONE_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'NURSE']);
 
 function getTodayRange() {
   const now = new Date();
@@ -286,8 +288,11 @@ export function QueueBoard() {
             />
             {SKIPPABLE.includes(entry.status) && canOperateQueue && (
               <div className="flex items-center justify-end gap-2 px-1">
-                <AdvanceQueueButton entryId={entry.id} status={entry.status} />
-                <SkipQueueButton entryId={entry.id} />
+                {/* SECRETARY may only call WAITING -> CALLED, never CALLED -> IN_PROGRESS or SKIPPED. See Phase 0E-C29-D. */}
+                {(role !== 'SECRETARY' || entry.status === 'WAITING') && (
+                  <AdvanceQueueButton entryId={entry.id} status={entry.status} />
+                )}
+                {role !== 'SECRETARY' && <SkipQueueButton entryId={entry.id} />}
               </div>
             )}
             {entry.status === 'IN_PROGRESS' && canMarkDone && (

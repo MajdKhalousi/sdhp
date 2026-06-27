@@ -271,6 +271,10 @@ export class QueueService {
       }
     }
 
+    if (caller.role === UserRole.SECRETARY && dto.status !== QueueStatus.CALLED) {
+      throw new ForbiddenException('Secretaries may only call the next patient (set status to CALLED)');
+    }
+
     const calledAt =
       dto.status === QueueStatus.CALLED && !entry.calledAt ? new Date() : undefined;
     const completedAt =

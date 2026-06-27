@@ -91,10 +91,10 @@ export class QueueController {
 
   @Patch(':id')
   @Version('1')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR, UserRole.NURSE)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR, UserRole.NURSE, UserRole.SECRETARY)
   @ApiOperation({
     summary:
-      'Update queue entry status — CALLED auto-sets calledAt; DONE auto-sets completedAt. DOCTOR restricted to own appointment entries. NURSE: full org access.',
+      'Update queue entry status — CALLED auto-sets calledAt; DONE auto-sets completedAt. DOCTOR restricted to own appointment entries. NURSE: full org access. SECRETARY: may only set status to CALLED (call the next patient).',
   })
   @ApiNotFoundResponse({ description: 'Queue entry not found' })
   update(

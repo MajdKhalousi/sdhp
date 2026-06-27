@@ -47,6 +47,7 @@ Full detail: [Operating-Model.md](03-Engineering/Operating-Model.md).
 - No `git add .` / `git add -A` — stage specific files only.
 - Claude does not SSH and does not touch servers directly.
 - The user runs server commands manually; Claude/AI only proposes them.
+- If a phase changes a decision, environment state, workflow, architecture rule, API standard, operating standard, or source-of-truth reference, update the relevant docs in the same phase before closing it, or explicitly mark the docs update as deferred.
 
 ## Phase Workflow
 

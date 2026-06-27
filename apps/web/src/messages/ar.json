@@ -494,6 +494,20 @@
       "duplicate": "هذا المريض موجود بالفعل في الطابور.",
       "viewQueue": "عرض الطابور ←"
     },
+    "paymentGate": {
+      "title": "الدفع مطلوب قبل الزيارة",
+      "unknownTitle": "تعذّر التحقق من حالة الدفع",
+      "unknownBody": "تم تسجيل الوصول بنجاح، لكن تعذّر تأكيد حالة الدفع. يمكنك الاستمرار.",
+      "requiredAmount": "المطلوب",
+      "paidAmount": "المدفوع",
+      "remainingAmount": "المتبقي",
+      "invoiceStatus": "حالة الفاتورة",
+      "collectPaymentNow": "تحصيل الدفعة الآن",
+      "continueWithoutPayment": "الاستمرار دون دفع",
+      "loadingInvoice": "جاري تحميل الفاتورة…",
+      "invoiceLoadError": "تعذّر تحميل الفاتورة. يمكنك الاستمرار دون دفع.",
+      "noInvoiceAvailable": "لا توجد فاتورة متاحة لتحصيل الدفعة منها حالياً."
+    },
     "advance": {
       "callIn": "استدعِ",
       "begin": "ابدأ",

@@ -5,7 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InvoiceStatus, Prisma, UserRole } from '@prisma/client';
+import { AppointmentPaymentPolicy, InvoiceStatus, Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { assertPatientLinkedToOrg } from '../../common/helpers/patient-access.helper';
@@ -81,6 +81,8 @@ const BILLING_POLICY_SELECT = {
   freeFollowUpWindowDays: true,
   followUpDiscountPercent: true,
   requirePaymentBeforeEncounter: true,
+  appointmentPaymentPolicy: true,
+  appointmentDepositPercent: true,
   defaultDueDateDays: true,
   noShowFeeAmount: true,
   createdAt: true,
@@ -920,6 +922,25 @@ export class BillingService {
   }
 
   async upsertBillingPolicy(dto: UpdateBillingPolicyDto, caller: JwtPayload) {
+    // Cross-field sanity check must consider the resulting effective state, not dto in
+    // isolation — a PATCH may send only one of the two fields while the other was already
+    // saved from a prior call.
+    const current = await this.prisma.billingPolicy.findUnique({
+      where: { organizationId: caller.organizationId },
+      select: { appointmentPaymentPolicy: true, appointmentDepositPercent: true },
+    });
+
+    const effectivePolicy =
+      dto.appointmentPaymentPolicy ?? current?.appointmentPaymentPolicy ?? AppointmentPaymentPolicy.NONE;
+    const effectiveDepositPercent =
+      dto.appointmentDepositPercent ?? current?.appointmentDepositPercent?.toNumber() ?? 0;
+
+    if (effectivePolicy === AppointmentPaymentPolicy.DEPOSIT_REQUIRED && effectiveDepositPercent <= 0) {
+      throw new BadRequestException(
+        'appointmentDepositPercent must be greater than 0 when appointmentPaymentPolicy is DEPOSIT_REQUIRED',
+      );
+    }
+
     return this.prisma.billingPolicy.upsert({
       where: { organizationId: caller.organizationId },
       create: { organizationId: caller.organizationId, ...dto },

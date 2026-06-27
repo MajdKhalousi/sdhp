@@ -1,6 +1,7 @@
-import { IsBoolean, IsInt, IsNumber, IsOptional, IsString, Matches, Max, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, Matches, Max, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import { AppointmentPaymentPolicy } from '@prisma/client';
 
 export class UpdateBillingPolicyDto {
   @IsOptional()
@@ -34,6 +35,28 @@ export class UpdateBillingPolicyDto {
   @IsBoolean()
   @ApiPropertyOptional({ default: false, description: 'Show unpaid invoice warning before encounter — never blocks clinical access' })
   requirePaymentBeforeEncounter?: boolean;
+
+  @IsOptional()
+  @IsEnum(AppointmentPaymentPolicy)
+  @ApiPropertyOptional({
+    enum: AppointmentPaymentPolicy,
+    default: 'NONE',
+    description: 'Org-level appointment payment policy — advisory/configuration only, not enforced against booking in this phase',
+  })
+  appointmentPaymentPolicy?: AppointmentPaymentPolicy;
+
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(100)
+  @Type(() => Number)
+  @ApiPropertyOptional({
+    minimum: 0,
+    maximum: 100,
+    default: 0,
+    description: 'Deposit percentage required when appointmentPaymentPolicy is DEPOSIT_REQUIRED',
+  })
+  appointmentDepositPercent?: number;
 
   @IsOptional()
   @IsInt()

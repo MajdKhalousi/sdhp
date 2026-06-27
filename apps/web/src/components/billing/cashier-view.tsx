@@ -697,7 +697,7 @@ export function CashierView() {
               {cashierSummary.totalInvoiced > 0 && (
                 <span className="text-sm">
                   <span className="text-muted-foreground">{t('todaySummary.collectionRate')}:</span>{' '}
-                  <span className="font-semibold">{cashierSummary.collectionRate.toFixed(1)}%</span>
+                  <span className="font-semibold">{Number(cashierSummary.collectionRate ?? 0).toFixed(1)}%</span>
                 </span>
               )}
             </>
@@ -714,7 +714,7 @@ export function CashierView() {
         {cashierSummary && cashierSummary.totalCollected > 0 && (
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-border pt-2.5">
             <p className="text-xs font-medium text-muted-foreground">{t('todaySummary.paymentBreakdown')}:</p>
-            {(Object.entries(cashierSummary.paymentsByMethod) as [PaymentMethodKey, { count: number; amount: number }][])
+            {(Object.entries(cashierSummary.paymentsByMethod ?? {}) as [PaymentMethodKey, { count: number; amount: number }][])
               .filter(([, v]) => v.amount > 0)
               .map(([method, v]) => (
                 <span key={method} className="text-xs">

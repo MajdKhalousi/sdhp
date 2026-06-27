@@ -12,6 +12,7 @@ Index for operational documentation under EHOS — deployment, backups, staging,
 |---|---|
 | [Staging-Environment.md](Staging-Environment.md) | Staging URL, host, deploy path, deployment files, demo data policy, First Clinic Readiness Walkthrough result |
 | [Staging-Phase-Log.md](Staging-Phase-Log.md) | Closed-phase ledger for the staging environment (0E-C16 onward) |
+| [First-Clinic-Readiness-Gap-List.md](First-Clinic-Readiness-Gap-List.md) | Prioritized gap list (P0-P3) for taking the product from "staging works" to "ready for a first real/pilot clinic" |
 
 ## Production
 

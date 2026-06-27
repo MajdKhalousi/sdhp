@@ -1,14 +1,21 @@
 # Operations
 
-**Last updated:** Phase 0B
+**Last updated:** Phase 0E-C19
 
 ## Purpose
 
-Index for operational documentation under EHOS — deployment, backups, and production runbooks.
+Index for operational documentation under EHOS — deployment, backups, staging, and production runbooks.
 
-## Current Reference
+## Staging
 
-Operational detail already exists elsewhere; this Phase 0B pass does not duplicate it. Recorded in prior phases; re-verify before production operations — do not assume either document below reflects the live state of the production host without checking:
+| Document | Covers |
+|---|---|
+| [Staging-Environment.md](Staging-Environment.md) | Staging URL, host, deploy path, deployment files, demo data policy, First Clinic Readiness Walkthrough result |
+| [Staging-Phase-Log.md](Staging-Phase-Log.md) | Closed-phase ledger for the staging environment (0E-C16 onward) |
+
+## Production
+
+Operational detail already exists elsewhere; this index does not duplicate it. Recorded in prior phases; re-verify before production operations — do not assume either document below reflects the live state of the production host without checking:
 
 | Document | Covers |
 |---|---|
@@ -22,7 +29,7 @@ Operational detail already exists elsewhere; this Phase 0B pass does not duplica
 
 ## A Note on This Folder
 
-`04-Operations/` exists as a placeholder in the EHOS structure for now. Whether operational runbooks eventually migrate into this folder is a future decision, not part of Phase 0B.
+`04-Operations/` now holds real staging documentation (above). Production runbooks still live at `docker/DEPLOY.md` and `../architecture/Deployment.md` — whether those eventually migrate into this folder is a future decision, not part of Phase 0E-C19.
 
 ## Related
 

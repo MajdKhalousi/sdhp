@@ -1,12 +1,19 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useCreateAppointment, usePatientsList, useDoctorsList, useVisitTypesList } from '@/hooks/use-appointments';
 import { useCheckIn } from '@/hooks/use-queue';
+import { useInvoice } from '@/hooks/use-invoices';
 import { PatientCombobox } from '@/components/appointments/patient-combobox';
 import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
+import { formatAmount } from '@/lib/format-currency';
+import { Skeleton } from '@/components/ui/skeleton';
+import { InvoiceStatusBadge } from '@/components/billing/invoice-status-badge';
+import { IssueAndPayDialog } from '@/components/billing/issue-and-pay-dialog';
+import type { PaymentReadiness } from '@/types/queue';
 
 interface WalkInWizardProps {
   initialPatientId?: string;
@@ -41,13 +48,21 @@ const INITIAL: Step1Form = {
   visitTypeId: '',
 };
 
+type GateState =
+  | { kind: 'closed' }
+  | { kind: 'unpaid'; readiness: PaymentReadiness }
+  | { kind: 'unknown' }
+  | { kind: 'collecting'; readiness: PaymentReadiness };
+
 export function WalkInWizard({ initialPatientId, onClose }: WalkInWizardProps = {}) {
   const t = useTranslations('queue.walkIn');
   const tQueue = useTranslations('queue');
+  const tGate = useTranslations('queue.paymentGate');
   const tCommon = useTranslations('common');
   const tRoot = useTranslations();
   const router = useRouter();
   const locale = useLocale();
+  const qc = useQueryClient();
   const [step, setStep] = useState<1 | 2>(1);
   const [form, setForm] = useState<Step1Form>(() => ({
     ...INITIAL,
@@ -60,10 +75,21 @@ export function WalkInWizard({ initialPatientId, onClose }: WalkInWizardProps = 
 
   const { mutate: createAppt, isPending: creatingAppt, error: apptError } = useCreateAppointment();
   const [checkInConflict, setCheckInConflict] = useState(false);
-  const { mutate: checkIn, isPending: checkingIn, error: checkInError } = useCheckIn();
+  const [gate, setGate] = useState<GateState>({ kind: 'closed' });
+  // autoInvalidate is disabled here for the same reason as CheckInButton — invalidating
+  // ['queue']/['appointments'] immediately would refetch before the payment gate panel
+  // below has a chance to show. Invalidation happens manually in resolveGate.
+  const { mutate: checkIn, isPending: checkingIn, error: checkInError } = useCheckIn({ autoInvalidate: false });
   const { data: patientsData, isLoading: patientsLoading } = usePatientsList();
   const { data: doctorsData, isLoading: doctorsLoading } = useDoctorsList();
   const { data: visitTypesData, isLoading: visitTypesLoading } = useVisitTypesList();
+
+  // useInvoice must be called unconditionally (React hook rules) — it already disables
+  // itself internally when passed an empty id, so pass '' whenever no invoice should
+  // be fetched rather than skipping the call.
+  const collectingInvoiceId = gate.kind === 'collecting' ? gate.readiness.invoiceId ?? '' : '';
+  const { data: invoice, isLoading: invoiceLoading, isError: invoiceError } =
+    useInvoice(collectingInvoiceId);
 
   const activePatients = (patientsData?.data ?? []).filter((p) => p.isActive);
   const activeDoctors  = (doctorsData?.data  ?? []).filter((d) => d.isActive !== false);
@@ -129,12 +155,28 @@ export function WalkInWizard({ initialPatientId, onClose }: WalkInWizardProps = 
     );
   }
 
+  function resolveGate() {
+    setGate({ kind: 'closed' });
+    qc.invalidateQueries({ queryKey: ['queue'] });
+    qc.invalidateQueries({ queryKey: ['appointments'] });
+    onClose ? onClose() : router.push('/dashboard/queue');
+  }
+
   function handleCheckIn() {
     setCheckInConflict(false);
     checkIn(
       { appointmentId: createdAppointmentId },
       {
-        onSuccess: () => onClose ? onClose() : router.push('/dashboard/queue'),
+        onSuccess: (result) => {
+          const readiness = result.paymentReadiness;
+          if (readiness.readiness === 'DEPOSIT_UNPAID' || readiness.readiness === 'FULL_UNPAID') {
+            setGate({ kind: 'unpaid', readiness });
+          } else if (readiness.readiness === 'READINESS_UNKNOWN') {
+            setGate({ kind: 'unknown' });
+          } else {
+            resolveGate();
+          }
+        },
         onError: (e) => {
           if (e instanceof Error && e.name === 'ConflictError') {
             setCheckInConflict(true);
@@ -242,23 +284,121 @@ export function WalkInWizard({ initialPatientId, onClose }: WalkInWizardProps = 
           </div>
         )}
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleCheckIn}
-            disabled={checkingIn || checkInConflict}
-            className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {checkingIn ? t('actions.checkingIn') : t('actions.checkIn')}
-          </button>
-          <button
-            type="button"
-            onClick={() => onClose ? onClose() : router.push('/dashboard/queue')}
-            disabled={checkingIn}
-            className="inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-60"
-          >
-            {t('actions.backToQueue')}
-          </button>
-        </div>
+        {gate.kind === 'closed' && (
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleCheckIn}
+              disabled={checkingIn || checkInConflict}
+              className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {checkingIn ? t('actions.checkingIn') : t('actions.checkIn')}
+            </button>
+            <button
+              type="button"
+              onClick={() => onClose ? onClose() : router.push('/dashboard/queue')}
+              disabled={checkingIn}
+              className="inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-60"
+            >
+              {t('actions.backToQueue')}
+            </button>
+          </div>
+        )}
+
+        {gate.kind === 'unpaid' && (
+          <div className="space-y-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-900/40 dark:bg-amber-950/20">
+            <p className="font-semibold text-amber-800 dark:text-amber-300">{tGate('title')}</p>
+            <div className="space-y-1 text-amber-900/80 dark:text-amber-200/80">
+              {gate.readiness.requiredAmount !== null && (
+                <p>
+                  {tGate('requiredAmount')}:{' '}
+                  <span dir="ltr">{formatAmount(gate.readiness.requiredAmount, locale)}</span>
+                </p>
+              )}
+              <p>
+                {tGate('paidAmount')}:{' '}
+                <span dir="ltr">{formatAmount(gate.readiness.paidAmount, locale)}</span>
+              </p>
+              {gate.readiness.remainingAmount !== null && (
+                <p>
+                  {tGate('remainingAmount')}:{' '}
+                  <span dir="ltr">{formatAmount(gate.readiness.remainingAmount, locale)}</span>
+                </p>
+              )}
+              {gate.readiness.invoiceStatus && (
+                <p className="flex items-center gap-1.5">
+                  <span>{tGate('invoiceStatus')}:</span>
+                  <InvoiceStatusBadge status={gate.readiness.invoiceStatus} />
+                </p>
+              )}
+              {!gate.readiness.invoiceId && (
+                <p className="text-amber-700/70 dark:text-amber-400/70">{tGate('noInvoiceAvailable')}</p>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2 pt-1">
+              {gate.readiness.invoiceId && (
+                <button
+                  type="button"
+                  onClick={() => setGate({ kind: 'collecting', readiness: gate.readiness })}
+                  className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  {tGate('collectPaymentNow')}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={resolveGate}
+                className="inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent"
+              >
+                {tGate('continueWithoutPayment')}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {gate.kind === 'collecting' && (
+          <div>
+            {invoiceLoading && (
+              <div className="space-y-2 rounded-lg border bg-muted/20 p-3">
+                <p className="text-xs text-muted-foreground">{tGate('loadingInvoice')}</p>
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-8 w-full" />
+              </div>
+            )}
+            {!invoiceLoading && invoiceError && (
+              <div className="space-y-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">
+                <p className="text-destructive">{tGate('invoiceLoadError')}</p>
+                <button
+                  type="button"
+                  onClick={resolveGate}
+                  className="inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent"
+                >
+                  {tGate('continueWithoutPayment')}
+                </button>
+              </div>
+            )}
+            {!invoiceLoading && !invoiceError && invoice && (
+              <IssueAndPayDialog
+                invoice={invoice}
+                onSuccess={resolveGate}
+                onCancel={() => setGate({ kind: 'unpaid', readiness: gate.readiness })}
+              />
+            )}
+          </div>
+        )}
+
+        {gate.kind === 'unknown' && (
+          <div className="space-y-2 rounded-lg border bg-muted/30 p-3 text-sm">
+            <p className="font-semibold">{tGate('unknownTitle')}</p>
+            <p className="text-muted-foreground">{tGate('unknownBody')}</p>
+            <button
+              type="button"
+              onClick={resolveGate}
+              className="inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent"
+            >
+              {tGate('continueWithoutPayment')}
+            </button>
+          </div>
+        )}
       </div>
     );
   }

@@ -506,7 +506,13 @@
       "continueWithoutPayment": "Continue without payment",
       "loadingInvoice": "Loading invoice…",
       "invoiceLoadError": "Could not load the invoice. You can still continue without payment.",
-      "noInvoiceAvailable": "No invoice is available to collect payment against right now."
+      "noInvoiceAvailable": "No invoice is available to collect payment against right now.",
+      "confirmClose": {
+        "title": "Close payment collection?",
+        "body": "Any unsaved payment data will be lost.",
+        "continueClosing": "Continue closing",
+        "returnToPayment": "Return to payment"
+      }
     },
     "advance": {
       "callIn": "Call In",

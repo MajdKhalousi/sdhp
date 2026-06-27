@@ -506,7 +506,13 @@
       "continueWithoutPayment": "الاستمرار دون دفع",
       "loadingInvoice": "جاري تحميل الفاتورة…",
       "invoiceLoadError": "تعذّر تحميل الفاتورة. يمكنك الاستمرار دون دفع.",
-      "noInvoiceAvailable": "لا توجد فاتورة متاحة لتحصيل الدفعة منها حالياً."
+      "noInvoiceAvailable": "لا توجد فاتورة متاحة لتحصيل الدفعة منها حالياً.",
+      "confirmClose": {
+        "title": "إغلاق تحصيل الدفع؟",
+        "body": "سيتم فقدان أي بيانات دفع غير محفوظة.",
+        "continueClosing": "متابعة الإغلاق",
+        "returnToPayment": "العودة إلى الدفع"
+      }
     },
     "advance": {
       "callIn": "استدعِ",

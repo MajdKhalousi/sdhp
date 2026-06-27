@@ -285,25 +285,30 @@ Optional string fields (`bodyPart`, `testCode`, `description`, etc.) use `field 
 
 ## 8. Complete Event Type Reference
 
-Prisma enum: `MedicalTimelineEventType` (schema.prisma)
+Prisma enum: `MedicalTimelineEventType` (schema.prisma) — 18 values, all integrated. **Last verified: Phase 0E-C28-B, directly against `schema.prisma` and every emit call site in `apps/api/src/modules/*`.**
 
 | Event | Status | Trigger |
 |---|---|---|
-| `PATIENT_CREATED` | not integrated | patient registration |
-| `PATIENT_UPDATED` | not integrated | patient record update |
-| `PATIENT_ARCHIVED` | not integrated | patient soft-delete |
-| `APPOINTMENT_BOOKED` | integrated | appointment created |
-| `CHECKED_IN` | not integrated | patient check-in |
-| `QUEUE_JOINED` | not integrated | queue entry created |
+| `PATIENT_CREATED` | integrated | patient registration (`patients.service.ts`) |
+| `PATIENT_UPDATED` | integrated | patient record update (`patients.service.ts`) |
+| `PATIENT_ARCHIVED` | integrated | patient soft-delete (`patients.service.ts`) |
+| `APPOINTMENT_BOOKED` | integrated | appointment created (`appointments.service.ts`) |
+| `FOLLOW_UP_BOOKED` | integrated | appointment created with `sourceEncounterId` (`appointments.service.ts`) |
+| `CHECKED_IN` | integrated | patient check-in (`queue.service.ts`) |
+| `QUEUE_JOINED` | integrated | queue entry created (`queue.service.ts`) |
 | `ENCOUNTER_STARTED` | integrated | encounter created |
 | `ENCOUNTER_COMPLETED` | integrated | encounter closed / created with endedAt |
 | `PRESCRIPTION_ADDED` | integrated | prescription created |
 | `LAB_ORDERED` | integrated | lab order created |
 | `LAB_RESULT_ADDED` | integrated | lab result upserted |
+| `LAB_RESULT_REVIEWED` | integrated | lab result reviewed (`labs.service.ts`) |
 | `RADIOLOGY_ORDERED` | integrated | radiology order created |
-| `RADIOLOGY_RESULT_ADDED` | integrated | radiology report upserted |
-| `FILE_UPLOADED` | integrated | medical file registered |
-| `NOTE_ADDED` | not integrated | clinical note created (notes module not yet built) |
+| `RADIOLOGY_REPORT_ADDED` | integrated | radiology report upserted |
+| `RADIOLOGY_REPORT_REVIEWED` | integrated | radiology report reviewed (`radiology.service.ts`) |
+| `MEDICAL_FILE_UPLOADED` | integrated | medical file registered (`medical-files.service.ts`); also emitted by `clinical-reports.service.ts` when a finalized report is exported to PDF and saved as a `MedicalFile` |
+| `CLINICAL_REPORT_CREATED` | integrated | clinical report created (`clinical-reports.service.ts`) |
+
+`FILE_UPLOADED`, `RADIOLOGY_RESULT_ADDED`, and `NOTE_ADDED` — previously listed in this table — do not exist in the current schema enum. The first two were renamed (`MEDICAL_FILE_UPLOADED`, `RADIOLOGY_REPORT_ADDED`); `NOTE_ADDED` was removed (no notes module exists, and it is no longer a defined enum value).
 
 ---
 
@@ -612,32 +617,31 @@ The reader API gets richer, always-current data by querying domain tables direct
 
 ## 12. Integration Status
 
-### Writer integrations (commits on `master`)
+**Last verified: Phase 0E-C28-B**, by grepping every `timelineWriter.log(` call site directly in `apps/api/src/modules/*/*.service.ts` and cross-checking the `eventType` passed at each one against the current schema enum.
 
-| Commit | Module | Events |
-|---|---|---|
-| `cd13d92` | appointments | `APPOINTMENT_BOOKED` |
-| `3580cc1` | encounters | `ENCOUNTER_STARTED`, `ENCOUNTER_COMPLETED` |
-| `f99d2ef` | encounters (fix) | `ENCOUNTER_COMPLETED` emit correctness |
-| `13557a4` | prescriptions | `PRESCRIPTION_ADDED` |
-| `f661731` | labs | `LAB_ORDERED`, `LAB_RESULT_ADDED` |
-| `34f4409` | radiology | `RADIOLOGY_ORDERED`, `RADIOLOGY_RESULT_ADDED` |
-| `97e1cef` | medical-files | `FILE_UPLOADED` |
+### Writer integrations (modules with confirmed emit call sites)
 
-### Runtime verified (DB rows inspected)
-
-`PRESCRIPTION_ADDED`, `LAB_ORDERED`, `LAB_RESULT_ADDED`, `RADIOLOGY_ORDERED`, `RADIOLOGY_RESULT_ADDED`, `FILE_UPLOADED` — all verified with both `encounterId: null` and `encounterId: <id>` cases where applicable.
-
-### Not yet integrated (enum values with no emit code)
-
-| Event | Blocker |
+| Module | Events emitted |
 |---|---|
-| `PATIENT_CREATED` | patients module not wired |
-| `PATIENT_UPDATED` | patients module not wired |
-| `PATIENT_ARCHIVED` | patients module not wired |
-| `CHECKED_IN` | no check-in flow defined |
-| `QUEUE_JOINED` | no queue join event wired |
-| `NOTE_ADDED` | notes module does not exist yet |
+| appointments | `APPOINTMENT_BOOKED`, `FOLLOW_UP_BOOKED` |
+| encounters | `ENCOUNTER_STARTED`, `ENCOUNTER_COMPLETED` |
+| prescriptions | `PRESCRIPTION_ADDED` |
+| labs | `LAB_ORDERED`, `LAB_RESULT_ADDED`, `LAB_RESULT_REVIEWED` |
+| radiology | `RADIOLOGY_ORDERED`, `RADIOLOGY_REPORT_ADDED`, `RADIOLOGY_REPORT_REVIEWED` |
+| medical-files | `MEDICAL_FILE_UPLOADED` |
+| patients | `PATIENT_CREATED`, `PATIENT_UPDATED`, `PATIENT_ARCHIVED` |
+| queue | `CHECKED_IN`, `QUEUE_JOINED` |
+| clinical-reports | `CLINICAL_REPORT_CREATED`, `MEDICAL_FILE_UPLOADED` |
+
+This table replaces the previous commit-hash list, which had drifted out of sync with the modules actually wired — exact commit attribution was not re-derived in this pass; `git log -- <path>` is authoritative if that history is needed.
+
+### Not yet integrated
+
+**None.** Every value in the current 18-value `MedicalTimelineEventType` enum has a confirmed emit call site, as of this verification.
+
+### Known deviation from the documented writer pattern
+
+`clinical-reports.service.ts`'s two `timelineWriter.log(...)` calls use `void` instead of `await` — the only 2 of 18 call sites across the codebase that don't follow Rule 4 (§3/§4 above). Not a correctness risk (the writer never rethrows regardless), but worth fixing for consistency if this module is touched again.
 
 ---
 

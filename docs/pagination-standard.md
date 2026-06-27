@@ -272,7 +272,7 @@ When writing a `buildWhere` for a model without `deletedAt`, omit `deletedAt: nu
 
 ## Current Paginated Modules
 
-As of B6.C2:
+**Last verified:** Phase 0E-C28-B, against current `apps/api/src/modules/*` and `schema.prisma` directly.
 
 | Module        | Service file                                        | Query DTO                | Strong type              | buildWhere |
 |---------------|-----------------------------------------------------|--------------------------|--------------------------|------------|
@@ -285,8 +285,11 @@ As of B6.C2:
 | encounters    | `modules/encounters/encounters.service.ts`         | `EncounterQueryDto`      | `EncounterRecord`        | extracted  |
 | prescriptions | `modules/prescriptions/prescriptions.service.ts`   | `PrescriptionQueryDto`   | `PrescriptionRecord`     | extracted  |
 | queue         | `modules/queue/queue.service.ts`                   | `QueueQueryDto`          | `QueueEntryRecord`       | extracted  |
+| billing       | `modules/billing/billing.service.ts`               | `BillingQueryDto`        | `PaginatedResponse<any> & { totalPages: number }` | extracted  |
 
-Modules not yet paginated: `labs` (partial), `radiology` (partial), `billing` (partial), `allergies`.
+`billing.findAll()` now uses the full `skip`/`take`/`count` pattern (confirmed directly in code) — no longer partial.
+
+Modules not yet paginated (confirmed: bare `findMany()`, no `skip`/`take`/`count`, and — for `labs`/`radiology` — no `page`/`limit` fields on their query DTOs at all): `labs`, `radiology`, `allergies`.
 
 ---
 
@@ -305,4 +308,12 @@ Indexes added in migration `20260521011417_add_core_indexes` (backend-stabilizat
 
 `patients.organizationId` was intentionally omitted — already covered as the leading key of `@@unique([organizationId, mrn])`.
 
-Modules still lacking indexes: `encounters` (`organizationId`, `doctorId`, `patientId`), `users` (`organizationId`), `prescriptions` (`encounterId`).
+**Last verified:** Phase 0E-C28-B, directly against `schema.prisma`. The gap previously listed here is closed:
+
+| Table           | Indexes present (verified in `schema.prisma`) |
+|-----------------|---|
+| `encounters`    | `@@index([organizationId])`, `@@index([doctorId])`, `@@index([patientId])`, plus two composite indexes: `@@index([organizationId, followUpDate])`, `@@index([organizationId, doctorId, followUpDate])` |
+| `users`         | `@@index([organizationId])` |
+| `prescriptions` | `@@index([encounterId])` |
+
+No remaining known index gaps among the tables this document tracks.

@@ -64,7 +64,8 @@ export class QueueController {
   @ApiOperation({
     summary:
       'Check patient in — creates queue entry from an existing appointment. Ticket number auto-generated. Appointment status updated to IN_QUEUE. ' +
-      'Appointment scheduledAt must fall on the current Damascus business day.',
+      'Appointment scheduledAt must fall on the current Damascus business day. ' +
+      'Response includes paymentReadiness (advisory only — never blocks check-in).',
   })
   @ApiNotFoundResponse({ description: 'Appointment not found' })
   @ApiConflictResponse({ description: 'Queue entry already exists for this appointment' })

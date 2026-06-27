@@ -17,7 +17,19 @@ import { QueueQueryDto } from './dto/queue-query.dto';
 import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
 import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
 import { MedicalTimelineEventType } from '@prisma/client';
-import { BillingService } from '../billing/billing.service';
+import { BillingService, CheckInPaymentReadiness } from '../billing/billing.service';
+
+// Used only when getCheckInPaymentReadiness() itself throws unexpectedly — must never
+// assert NO_PAYMENT_REQUIRED, which would falsely claim a known, paid-up state.
+const DEGRADED_PAYMENT_READINESS: CheckInPaymentReadiness = {
+  policy: null,
+  requiredAmount: null,
+  paidAmount: 0,
+  remainingAmount: null,
+  invoiceId: null,
+  invoiceStatus: null,
+  readiness: 'READINESS_UNKNOWN',
+};
 
 const PATIENT_SELECT = {
   id: true,
@@ -226,7 +238,40 @@ export class QueueService {
           this.logger.error(`AUTO_INVOICE_FAILED appointmentId=${dto.appointmentId}`, err);
         });
 
-        return entry;
+        // Soft-gate readiness (Phase 0E-C29-L): advisory only, never blocks check-in.
+        // Safe to read now — the auto-invoice call above has already been awaited.
+        const paymentReadiness = await this.billingService
+          .getCheckInPaymentReadiness(dto.appointmentId, organizationId)
+          .catch((err) => {
+            this.logger.error(`PAYMENT_READINESS_FAILED appointmentId=${dto.appointmentId}`, err);
+            return DEGRADED_PAYMENT_READINESS;
+          });
+
+        if (
+          paymentReadiness.readiness === 'DEPOSIT_UNPAID' ||
+          paymentReadiness.readiness === 'FULL_UNPAID' ||
+          paymentReadiness.readiness === 'READINESS_UNKNOWN'
+        ) {
+          await this.auditWriter.log({
+            caller,
+            action: 'CHECK_IN_PAYMENT_REQUIREMENT_UNMET',
+            resource: 'queue_entry',
+            resourceId: entry.id,
+            newData: toSnapshot({
+              policy: paymentReadiness.policy,
+              requiredAmount: paymentReadiness.requiredAmount,
+              paidAmount: paymentReadiness.paidAmount,
+              remainingAmount: paymentReadiness.remainingAmount,
+              invoiceId: paymentReadiness.invoiceId,
+              invoiceStatus: paymentReadiness.invoiceStatus,
+              readiness: paymentReadiness.readiness,
+            }),
+          }).catch((err) => {
+            this.logger.error(`CHECK_IN_PAYMENT_AUDIT_FAILED appointmentId=${dto.appointmentId}`, err);
+          });
+        }
+
+        return { ...entry, paymentReadiness };
       } catch (e) {
         if (!(e instanceof Prisma.PrismaClientKnownRequestError) || e.code !== 'P2002') throw e;
 

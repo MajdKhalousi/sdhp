@@ -21,6 +21,32 @@ import { OutstandingPatientsQueryDto } from './dto/outstanding-patients-query.dt
 import { AuditLogsWriterService } from '../audit-logs/audit-logs-writer.service';
 import { PaginatedResponse } from '../../common/types/paginated-response.type';
 
+// ── Check-in payment readiness (Phase 0E-C29-L) ─────────────────────────────
+// Advisory-only soft-gate data surfaced on POST /v1/queue. Never persisted —
+// computed on read from BillingPolicy + the appointment-linked Invoice.
+
+export type CheckInReadinessState =
+  | 'NO_PAYMENT_REQUIRED'
+  | 'OPTIONAL_UNPAID'
+  | 'OPTIONAL_PAID'
+  | 'DEPOSIT_UNPAID'
+  | 'DEPOSIT_PAID'
+  | 'FULL_UNPAID'
+  | 'FULL_PAID'
+  // Reserved for an unexpected readiness-computation error (caller-side catch) — must
+  // never be conflated with NO_PAYMENT_REQUIRED, which asserts a known, paid-up state.
+  | 'READINESS_UNKNOWN';
+
+export interface CheckInPaymentReadiness {
+  policy: AppointmentPaymentPolicy | null;
+  requiredAmount: number | null;
+  paidAmount: number;
+  remainingAmount: number | null;
+  invoiceId: string | null;
+  invoiceStatus: InvoiceStatus | null;
+  readiness: CheckInReadinessState;
+}
+
 // ── Select constants ───────────────────────────────────────────────────────
 
 const USER_SELECT = {
@@ -947,6 +973,94 @@ export class BillingService {
       update: dto,
       select: BILLING_POLICY_SELECT,
     });
+  }
+
+  /**
+   * Computes appointment-payment readiness for the check-in soft-gate (Phase 0E-C29-L).
+   * Advisory only — never blocks check-in. May throw on an unexpected DB error; the
+   * caller (QueueService.create()) catches this and converts it to a READINESS_UNKNOWN
+   * result rather than letting it fail check-in. Expected to be read immediately after
+   * the appointment-linked invoice is guaranteed to exist (i.e. after
+   * autoCreateInvoiceForAppointment has already been awaited).
+   */
+  async getCheckInPaymentReadiness(
+    appointmentId: string,
+    organizationId: string,
+  ): Promise<CheckInPaymentReadiness> {
+    const policyRow = await this.prisma.billingPolicy.upsert({
+      where: { organizationId },
+      create: { organizationId },
+      update: {},
+      select: { appointmentPaymentPolicy: true, appointmentDepositPercent: true },
+    });
+    const policy = policyRow.appointmentPaymentPolicy;
+    const depositPercent = policyRow.appointmentDepositPercent.toNumber();
+
+    const invoice = await this.prisma.invoice.findFirst({
+      where: { appointmentId, organizationId, deletedAt: null, status: { not: InvoiceStatus.CANCELLED } },
+      select: { id: true, status: true, totalAmount: true, paidAmount: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!invoice) {
+      // No invoice exists yet (e.g. auto-create failed and was swallowed) — degrade safely,
+      // never claim a required amount we cannot actually back with invoice data.
+      if (policy === AppointmentPaymentPolicy.NONE) {
+        return {
+          policy, requiredAmount: null, paidAmount: 0, remainingAmount: null,
+          invoiceId: null, invoiceStatus: null, readiness: 'NO_PAYMENT_REQUIRED',
+        };
+      }
+      if (policy === AppointmentPaymentPolicy.OPTIONAL_PREPAYMENT) {
+        return {
+          policy, requiredAmount: null, paidAmount: 0, remainingAmount: null,
+          invoiceId: null, invoiceStatus: null, readiness: 'OPTIONAL_UNPAID',
+        };
+      }
+      return {
+        policy, requiredAmount: null, paidAmount: 0, remainingAmount: null,
+        invoiceId: null, invoiceStatus: null,
+        readiness: policy === AppointmentPaymentPolicy.DEPOSIT_REQUIRED ? 'DEPOSIT_UNPAID' : 'FULL_UNPAID',
+      };
+    }
+
+    const paidAmount = invoice.paidAmount.toNumber();
+    const invoiceId = invoice.id;
+    const invoiceStatus = invoice.status;
+
+    if (policy === AppointmentPaymentPolicy.NONE) {
+      return {
+        policy, requiredAmount: null, paidAmount, remainingAmount: null,
+        invoiceId, invoiceStatus, readiness: 'NO_PAYMENT_REQUIRED',
+      };
+    }
+
+    if (policy === AppointmentPaymentPolicy.OPTIONAL_PREPAYMENT) {
+      return {
+        policy, requiredAmount: null, paidAmount, remainingAmount: null,
+        invoiceId, invoiceStatus, readiness: paidAmount > 0 ? 'OPTIONAL_PAID' : 'OPTIONAL_UNPAID',
+      };
+    }
+
+    // DEPOSIT_REQUIRED / FULL_PREPAYMENT_REQUIRED — amounts derive only from this invoice's
+    // totalAmount (the auto-created base-appointment-fee line item), never from labs/radiology.
+    const total = invoice.totalAmount.toNumber();
+    const requiredAmount = policy === AppointmentPaymentPolicy.DEPOSIT_REQUIRED
+      ? total * (depositPercent / 100)
+      : total;
+    const isPaid = paidAmount >= requiredAmount;
+
+    return {
+      policy,
+      requiredAmount,
+      paidAmount,
+      remainingAmount: Math.max(0, requiredAmount - paidAmount),
+      invoiceId,
+      invoiceStatus,
+      readiness: policy === AppointmentPaymentPolicy.DEPOSIT_REQUIRED
+        ? (isPaid ? 'DEPOSIT_PAID' : 'DEPOSIT_UNPAID')
+        : (isPaid ? 'FULL_PAID' : 'FULL_UNPAID'),
+    };
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────

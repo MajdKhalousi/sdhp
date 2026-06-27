@@ -1,3 +1,6 @@
+import type { AppointmentPaymentPolicy } from '@/types/billing-policy';
+import type { InvoiceStatus } from '@/types/invoice';
+
 export type QueueStatus = 'WAITING' | 'CALLED' | 'IN_PROGRESS' | 'DONE' | 'SKIPPED';
 
 interface PatientRef {
@@ -48,6 +51,32 @@ export interface QueueEntry {
   createdAt: string;
   updatedAt: string;
   appointment: AppointmentRef;
+}
+
+// paymentReadiness is returned only by POST /v1/queue (check-in) — GET /v1/queue and
+// GET /v1/queue/:id do not include it, so it is intentionally absent from QueueEntry.
+export type CheckInReadinessState =
+  | 'NO_PAYMENT_REQUIRED'
+  | 'OPTIONAL_UNPAID'
+  | 'OPTIONAL_PAID'
+  | 'DEPOSIT_UNPAID'
+  | 'DEPOSIT_PAID'
+  | 'FULL_UNPAID'
+  | 'FULL_PAID'
+  | 'READINESS_UNKNOWN';
+
+export interface PaymentReadiness {
+  policy: AppointmentPaymentPolicy | null;
+  requiredAmount: number | null;
+  paidAmount: number;
+  remainingAmount: number | null;
+  invoiceId: string | null;
+  invoiceStatus: InvoiceStatus | null;
+  readiness: CheckInReadinessState;
+}
+
+export interface CheckInResult extends QueueEntry {
+  paymentReadiness: PaymentReadiness;
 }
 
 export interface QueueQuery {

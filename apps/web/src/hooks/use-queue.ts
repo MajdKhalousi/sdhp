@@ -7,6 +7,7 @@ import type {
   CreateQueueEntryDto,
   UpdateQueueEntryDto,
   TriageQueueEntryDto,
+  CheckInResult,
 } from '@/types/queue';
 
 export function useQueue(query: QueueQuery = {}) {
@@ -40,7 +41,7 @@ export function useQueueEntry(id: string) {
 export function useCheckIn() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (dto: CreateQueueEntryDto) => api.post<QueueEntry>('/v1/queue', dto),
+    mutationFn: (dto: CreateQueueEntryDto) => api.post<CheckInResult>('/v1/queue', dto),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['queue'] });
       qc.invalidateQueries({ queryKey: ['appointments'] });

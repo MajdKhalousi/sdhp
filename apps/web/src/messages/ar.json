@@ -1411,7 +1411,10 @@
         "MEDICAL_FILE": "الملفات",
         "CLINICAL_REPORT_CREATED": "التقارير",
         "INVOICE_ISSUED": "الفواتير",
-        "PAYMENT_RECORDED": "الدفعات"
+        "PAYMENT_RECORDED": "الدفعات",
+        "SERVICE_REQUESTED": "طلبات الخدمات",
+        "SERVICE_EXECUTED": "تنفيذ الخدمة",
+        "SERVICE_CANCELLED": "إلغاء الخدمة"
       },
       "fromAriaLabel": "من تاريخ",
       "toAriaLabel": "إلى تاريخ"
@@ -1438,6 +1441,15 @@
       "clinicalReport": "تقرير سريري",
       "invoice": "فاتورة",
       "payment": "دفعة",
+      "serviceRequested": "تم طلب الخدمة",
+      "serviceExecuted": "تم تنفيذ الخدمة",
+      "serviceCancelled": "تم إلغاء الخدمة",
+      "requestedBy": "طلب بواسطة {name}",
+      "doctor": "الطبيب: {name}",
+      "quantity": "الكمية: {count}",
+      "serviceNotes": "ملاحظات: {notes}",
+      "executedBy": "نُفّذ بواسطة {name}",
+      "cancelReason": "سبب الإلغاء: {reason}",
       "inProgress": "قيد التنفيذ",
       "diagnosisOnRecord": "التشخيص مسجّل",
       "uploadedBy": "رُفع بواسطة {uploader}",

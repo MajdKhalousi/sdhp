@@ -1411,7 +1411,10 @@
         "MEDICAL_FILE": "Files",
         "CLINICAL_REPORT_CREATED": "Reports",
         "INVOICE_ISSUED": "Invoices",
-        "PAYMENT_RECORDED": "Payments"
+        "PAYMENT_RECORDED": "Payments",
+        "SERVICE_REQUESTED": "Service Requests",
+        "SERVICE_EXECUTED": "Service Executed",
+        "SERVICE_CANCELLED": "Service Cancelled"
       },
       "fromAriaLabel": "From date",
       "toAriaLabel": "To date"
@@ -1438,6 +1441,15 @@
       "clinicalReport": "Clinical Report",
       "invoice": "Invoice",
       "payment": "Payment",
+      "serviceRequested": "Service Requested",
+      "serviceExecuted": "Service Executed",
+      "serviceCancelled": "Service Cancelled",
+      "requestedBy": "Requested by {name}",
+      "doctor": "Doctor: {name}",
+      "quantity": "Quantity: {count}",
+      "serviceNotes": "Notes: {notes}",
+      "executedBy": "Executed by {name}",
+      "cancelReason": "Cancel reason: {reason}",
       "inProgress": "In Progress",
       "diagnosisOnRecord": "Diagnosis on record",
       "uploadedBy": "Uploaded by {uploader}",

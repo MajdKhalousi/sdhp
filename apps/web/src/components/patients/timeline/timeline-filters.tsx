@@ -13,6 +13,9 @@ const ALL_TYPES: TimelineEventType[] = [
   'CLINICAL_REPORT_CREATED',
   'INVOICE_ISSUED',
   'PAYMENT_RECORDED',
+  'SERVICE_REQUESTED',
+  'SERVICE_EXECUTED',
+  'SERVICE_CANCELLED',
 ];
 
 interface Props {

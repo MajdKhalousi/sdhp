@@ -3,6 +3,7 @@ import { UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { assertPatientLinkedToOrg } from '../../common/helpers/patient-access.helper';
+import { ServiceExecutionStatus } from '@prisma/client';
 import {
   ClinicalReportEventData,
   EncounterEventData,
@@ -13,6 +14,9 @@ import {
   PaymentEventData,
   PrescriptionEventData,
   RadiologyOrderEventData,
+  ServiceCancelledEventData,
+  ServiceExecutedEventData,
+  ServiceRequestedEventData,
   TimelineEvent,
   TimelineEventSource,
   TimelineEventType,
@@ -124,6 +128,21 @@ const PAYMENT_TIMELINE_SELECT = {
   receivedBy: { select: { id: true, firstName: true, lastName: true } },
 } as const;
 
+const SERVICE_REQUEST_TIMELINE_SELECT = {
+  id: true,
+  requestedServiceName: true,
+  quantity: true,
+  notes: true,
+  executionStatus: true,
+  createdAt: true,
+  executedAt: true,
+  cancelledAt: true,
+  cancelReason: true,
+  requestedBy: { select: { id: true, firstName: true, lastName: true } },
+  executedBy: { select: { id: true, firstName: true, lastName: true } },
+  doctor: { select: DOCTOR_REF_SELECT },
+} as const;
+
 // ── Source metadata ────────────────────────────────────────────────────────────
 
 const SOURCES: Record<TimelineEventType, TimelineEventSource> = {
@@ -135,6 +154,9 @@ const SOURCES: Record<TimelineEventType, TimelineEventSource> = {
   [TimelineEventType.CLINICAL_REPORT_CREATED]: { module: 'clinical-reports', entity: 'ClinicalReport' },
   [TimelineEventType.INVOICE_ISSUED]:          { module: 'billing',          entity: 'Invoice' },
   [TimelineEventType.PAYMENT_RECORDED]:        { module: 'billing',          entity: 'Payment' },
+  [TimelineEventType.SERVICE_REQUESTED]:       { module: 'medical-service-requests', entity: 'MedicalServiceRequest' },
+  [TimelineEventType.SERVICE_EXECUTED]:        { module: 'medical-service-requests', entity: 'MedicalServiceRequest' },
+  [TimelineEventType.SERVICE_CANCELLED]:       { module: 'medical-service-requests', entity: 'MedicalServiceRequest' },
 };
 
 const ALL_EVENT_TYPES: TimelineEventType[] = Object.values(TimelineEventType);
@@ -180,6 +202,13 @@ export class MedicalTimelineService {
       fetchers.push(this.fetchInvoices(patientId, organizationId, dateFilter));
     if (types.includes(TimelineEventType.PAYMENT_RECORDED))
       fetchers.push(this.fetchPayments(patientId, organizationId, dateFilter));
+    const serviceRequestTypes = [
+      TimelineEventType.SERVICE_REQUESTED,
+      TimelineEventType.SERVICE_EXECUTED,
+      TimelineEventType.SERVICE_CANCELLED,
+    ].filter((t) => types.includes(t));
+    if (serviceRequestTypes.length > 0)
+      fetchers.push(this.fetchServiceRequestEvents(patientId, organizationId, dateFilter, serviceRequestTypes));
 
     const allEvents = (await Promise.all(fetchers)).flat();
     allEvents.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
@@ -539,6 +568,101 @@ export class MedicalTimelineService {
         },
       } satisfies PaymentEventData,
     }));
+  }
+
+  private async fetchServiceRequestEvents(
+    patientId: string,
+    organizationId: string | undefined,
+    dateFilter: DateRangeFilter | undefined,
+    types: TimelineEventType[],
+  ): Promise<TimelineEvent[]> {
+    const rows = await this.prisma.medicalServiceRequest.findMany({
+      where: {
+        patientId,
+        ...(organizationId ? { organizationId } : {}),
+        deletedAt: null,
+      },
+      select: SERVICE_REQUEST_TIMELINE_SELECT,
+    });
+
+    const events: TimelineEvent[] = [];
+
+    for (const r of rows) {
+      if (types.includes(TimelineEventType.SERVICE_REQUESTED)) {
+        events.push({
+          type: TimelineEventType.SERVICE_REQUESTED,
+          id: r.id,
+          timestamp: r.createdAt,
+          source: SOURCES[TimelineEventType.SERVICE_REQUESTED],
+          data: {
+            requestId: r.id,
+            requestedServiceName: r.requestedServiceName,
+            requestedBy: {
+              id: r.requestedBy.id,
+              firstName: r.requestedBy.firstName,
+              lastName: r.requestedBy.lastName,
+            },
+            doctor: r.doctor
+              ? {
+                  id: r.doctor.id,
+                  firstName: r.doctor.user.firstName,
+                  lastName: r.doctor.user.lastName,
+                  specialization: r.doctor.specialization,
+                }
+              : null,
+            quantity: r.quantity,
+            notes: r.notes,
+          } satisfies ServiceRequestedEventData,
+        });
+      }
+
+      if (
+        types.includes(TimelineEventType.SERVICE_EXECUTED) &&
+        r.executionStatus === ServiceExecutionStatus.COMPLETED &&
+        r.executedAt !== null
+      ) {
+        events.push({
+          type: TimelineEventType.SERVICE_EXECUTED,
+          id: r.id,
+          timestamp: r.executedAt,
+          source: SOURCES[TimelineEventType.SERVICE_EXECUTED],
+          data: {
+            requestId: r.id,
+            requestedServiceName: r.requestedServiceName,
+            executedBy: r.executedBy
+              ? { id: r.executedBy.id, firstName: r.executedBy.firstName, lastName: r.executedBy.lastName }
+              : null,
+            executedAt: r.executedAt,
+          } satisfies ServiceExecutedEventData,
+        });
+      }
+
+      if (
+        types.includes(TimelineEventType.SERVICE_CANCELLED) &&
+        r.executionStatus === ServiceExecutionStatus.CANCELLED &&
+        r.cancelledAt !== null
+      ) {
+        events.push({
+          type: TimelineEventType.SERVICE_CANCELLED,
+          id: r.id,
+          timestamp: r.cancelledAt,
+          source: SOURCES[TimelineEventType.SERVICE_CANCELLED],
+          data: {
+            requestId: r.id,
+            requestedServiceName: r.requestedServiceName,
+            cancelReason: r.cancelReason,
+            cancelledAt: r.cancelledAt,
+          } satisfies ServiceCancelledEventData,
+        });
+      }
+    }
+
+    if (!dateFilter) return events;
+    return events.filter((e) => {
+      if (dateFilter.gte && e.timestamp.getTime() < dateFilter.gte.getTime()) return false;
+      if (dateFilter.lte && e.timestamp.getTime() > dateFilter.lte.getTime()) return false;
+      return true;
+    });
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────

@@ -6,7 +6,10 @@ export type TimelineEventType =
   | 'MEDICAL_FILE'
   | 'CLINICAL_REPORT_CREATED'
   | 'INVOICE_ISSUED'
-  | 'PAYMENT_RECORDED';
+  | 'PAYMENT_RECORDED'
+  | 'SERVICE_REQUESTED'
+  | 'SERVICE_EXECUTED'
+  | 'SERVICE_CANCELLED';
 
 export type LabOrderStatus =
   | 'ORDERED'
@@ -145,6 +148,29 @@ export interface PaymentEventData {
   receivedBy: { id: string; firstName: string; lastName: string };
 }
 
+export interface ServiceRequestedEventData {
+  requestId: string;
+  requestedServiceName: string;
+  requestedBy: { id: string; firstName: string; lastName: string };
+  doctor: { id: string; firstName: string; lastName: string; specialization: string | null } | null;
+  quantity: number;
+  notes: string | null;
+}
+
+export interface ServiceExecutedEventData {
+  requestId: string;
+  requestedServiceName: string;
+  executedBy: { id: string; firstName: string; lastName: string } | null;
+  executedAt: string;
+}
+
+export interface ServiceCancelledEventData {
+  requestId: string;
+  requestedServiceName: string;
+  cancelReason: string | null;
+  cancelledAt: string;
+}
+
 export type TimelineEvent =
   | { type: 'ENCOUNTER';               id: string; timestamp: string; source: TimelineEventSource; data: EncounterEventData }
   | { type: 'PRESCRIPTION';            id: string; timestamp: string; source: TimelineEventSource; data: PrescriptionEventData }
@@ -153,7 +179,10 @@ export type TimelineEvent =
   | { type: 'MEDICAL_FILE';            id: string; timestamp: string; source: TimelineEventSource; data: MedicalFileEventData }
   | { type: 'CLINICAL_REPORT_CREATED'; id: string; timestamp: string; source: TimelineEventSource; data: ClinicalReportEventData }
   | { type: 'INVOICE_ISSUED';          id: string; timestamp: string; source: TimelineEventSource; data: InvoiceEventData }
-  | { type: 'PAYMENT_RECORDED';        id: string; timestamp: string; source: TimelineEventSource; data: PaymentEventData };
+  | { type: 'PAYMENT_RECORDED';        id: string; timestamp: string; source: TimelineEventSource; data: PaymentEventData }
+  | { type: 'SERVICE_REQUESTED';       id: string; timestamp: string; source: TimelineEventSource; data: ServiceRequestedEventData }
+  | { type: 'SERVICE_EXECUTED';        id: string; timestamp: string; source: TimelineEventSource; data: ServiceExecutedEventData }
+  | { type: 'SERVICE_CANCELLED';       id: string; timestamp: string; source: TimelineEventSource; data: ServiceCancelledEventData };
 
 export interface PatientTimelineSummary {
   id: string;

@@ -9,6 +9,7 @@ import { MedicalFileCard } from './medical-file-card';
 import { ClinicalReportCard } from './clinical-report-card';
 import { InvoiceCard } from './invoice-card';
 import { PaymentCard } from './payment-card';
+import { ServiceRequestedCard, ServiceExecutedCard, ServiceCancelledCard } from './service-request-card';
 import { formatTime } from './format-time';
 
 interface Props {
@@ -34,6 +35,12 @@ export const TimelineEventCard = memo(function TimelineEventCard({ event }: Prop
       return <InvoiceCard event={event} />;
     case 'PAYMENT_RECORDED':
       return <PaymentCard event={event} />;
+    case 'SERVICE_REQUESTED':
+      return <ServiceRequestedCard event={event} />;
+    case 'SERVICE_EXECUTED':
+      return <ServiceExecutedCard event={event} />;
+    case 'SERVICE_CANCELLED':
+      return <ServiceCancelledCard event={event} />;
     default: {
       const unknown = event as unknown as { type: string; timestamp: string };
       return (

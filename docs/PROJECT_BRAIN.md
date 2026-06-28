@@ -24,6 +24,7 @@ Covers the full patient visit lifecycle inside a clinic — registration → boo
 - **Production** is updated as of **Phase 0E-C24**.
 - Production currently contains **demo/internal data only** — no real clinic data yet.
 - **Phase 0E-C26** (production cleanup/re-baseline) is **deferred until a real clinic actually exists** — not yet started.
+- **`MedicalServiceRequest`** (closed 2026-06-28) — full feature closed: backend lifecycle, billing link, patient-profile tab, timeline integration, and a cross-patient work queue, verified on staging. See `elaji-planning/ELAJI_IMPLEMENTATION_ROADMAP.md`'s Sprint 3 closure for what shipped, behavior by role, and known limitations.
 - Full detail: [Environment-Registry.md](04-Operations/Environment-Registry.md), [Staging-Phase-Log.md](04-Operations/Staging-Phase-Log.md), [First-Clinic-Readiness-Gap-List.md](04-Operations/First-Clinic-Readiness-Gap-List.md).
 
 ## AI Collaboration Model

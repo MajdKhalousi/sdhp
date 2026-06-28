@@ -2,6 +2,8 @@
 
 **Status:** Active — first 5 sprints drafted, derived from `ELAJI_GAP_ANALYSIS.md`'s gap table and domain model section (first pass, 2026-06-28).
 
+**Update (2026-06-28):** Sprint 1 (timeline financial events) and Sprint 3 (`MedicalServiceRequest`) are both **closed** — see each sprint's entry below for what shipped. Sprint 3 in particular grew well beyond its original "design + schema only" scope into a full feature (execution lifecycle, billing link, patient-profile UI, timeline integration, and a cross-patient work queue) across a sequence of sub-sprints tracked in chat as 2.1–2.5 and 3 — that sub-numbering is session-local bookkeeping, not a renumbering of this document's Sprint 1–5 list.
+
 ## Purpose
 
 The actual build roadmap for Elaji Health, derived from `ELAJI_GAP_ANALYSIS.md` decisions. This document is where MedPro-informed research turns into committed, sequenced Elaji work — phases, priority, and scope.
@@ -13,6 +15,8 @@ This document does not itself authorize implementation. Per the project's standa
 ## First 5 Implementation Sprints
 
 ### Sprint 1 — Financial events on the patient medical timeline
+
+**Status: Closed (2026-06-28).** Shipped as planned, with one course-correction: `MedicalTimelineEvent`/`MedicalTimelineEventType` turned out to be a write-only mechanism never read anywhere in the backend. The actual fix extended the real, rendered timeline path instead — `TimelineEventType` (plain TS enum) and `MedicalTimelineService.getPatientTimeline()`'s derived-on-read fetchers — meaning no schema/migration was needed at all, contrary to this section's original "Database/schema impact" assumption below.
 
 - **Goal:** Add `INVOICE_ISSUED` and `PAYMENT_RECORDED` to `MedicalTimelineEventType`, and write a `MedicalTimelineEvent` whenever an invoice is issued or a payment is recorded, so financial activity becomes visible on the existing patient timeline.
 - **Why now:** Smallest, lowest-risk gap identified in the entire pass (`ELAJI_GAP_ANALYSIS.md` §4). Purely additive — no existing behavior changes, no existing data reinterpreted.
@@ -38,6 +42,8 @@ This document does not itself authorize implementation. Per the project's standa
 
 ### Sprint 3 — `MedicalServiceRequest` execution tracking (design + schema only, no UI yet)
 
+**Status: Closed (2026-06-28) — scope grew well beyond this entry.** See the "Sprint 3 — Closure" subsection immediately below for what actually shipped: the UI, billing link, and timeline integration originally deferred here were all completed, plus a cross-patient work queue that wasn't part of the original plan at all.
+
 - **Goal:** Design and, if approved, add a `MedicalServiceRequest` model that tracks a requested service's execution status independently of its payment status — the clearest concrete domain gap identified (`ELAJI_GAP_ANALYSIS.md` §4).
 - **Why now:** This is the single largest confirmed structural gap, but it's also the riskiest to rush — it needs its own status-lifecycle design (requested → in progress → completed? or just a boolean?) before any schema work, consistent with this report's own open questions.
 - **Files likely affected:** `apps/api/prisma/schema.prisma` (new model), a new `medical-service-requests` module (controller/service/DTOs) if approved, `apps/web/src/components/patients/*` for a future request-list view (deferred to a later sprint — this sprint is schema/backend only).
@@ -47,6 +53,53 @@ This document does not itself authorize implementation. Per the project's standa
 - **Permission/audit impact:** Needs explicit role-gate decisions (who can request a service, who can mark it executed — likely DOCTOR/NURSE/TECHNICIAN for execution, SECRETARY/ORG_ADMIN for requesting) and audit logging on creation/status changes, consistent with how invoices/payments are already audited.
 - **Tests/checks:** New endpoint tests for create/list/status-transition, tenant-isolation test (cross-org access denied), role-gate tests.
 - **Acceptance criteria:** A service request can be created against a patient, tracked through an execution status independent of any invoice's payment status, and is fully tenant- and role-scoped — with no UI yet (UI is a follow-on sprint).
+
+#### Sprint 3 — Closure (2026-06-28)
+
+**Status: Closed.** Implemented well beyond the original "schema + backend only" scope above — the original plan's deferred UI/lifecycle/billing-link/timeline work all shipped in the same overall effort, as a sequence of sub-sprints (session-tracked as 2.1–2.5 and 3; not a renumbering of this roadmap).
+
+**1. What was shipped**
+
+| Sub-sprint | Delivered |
+|---|---|
+| 2.1 | `MedicalServiceRequest` model + `ServiceExecutionStatus` enum (`REQUESTED`/`IN_PROGRESS`/`COMPLETED`/`CANCELLED`), price/name snapshot at request time, create/list/detail endpoints |
+| 2.2 | Execute and Cancel lifecycle endpoints (`PATCH :id/execute`, `PATCH :id/cancel`), required `cancelReason` on cancel |
+| 2.3 | Billing link — `POST :id/bill`, attaches a request to an existing DRAFT invoice as a billed `InvoiceItem` inside one atomic transaction (no orphan-item risk); `paymentStatus` is always derived live from the linked invoice's status, never stored |
+| 2.4 | Patient Profile "Medical Services" tab — request/execute/cancel/bill UI, role-gated actions, reuses existing `ServicePicker`/`useDoctorsList`/`usePatientInvoices` |
+| 2.5 | Timeline integration — `SERVICE_REQUESTED`/`SERVICE_EXECUTED`/`SERVICE_CANCELLED` added to the patient timeline, derived-on-read (no new write path, no `MedicalTimelineEvent` rows) |
+| 3 | Medical Services Work Queue — cross-patient worklist page (`/dashboard/medical-services-queue`) for staff to manage requests without opening each patient profile; extended the existing list endpoint to support an org/branch-wide mode rather than adding a new endpoint |
+| — | Staging deployment verified end-to-end: request → execute → bill-to-draft-invoice → payment status transitions DRAFT→ISSUED live → double-bill rejected → cancelled requests cannot be billed |
+
+No schema changes were needed for 2.2 through 3 — only 2.1 introduced the table/migration; everything after it (execution, billing link, timeline, queue) was additive backend logic and frontend work against that one model.
+
+**2. Current behavior by role**
+
+| Role | Request | Execute | Cancel | Bill | Read (tab/queue) |
+|---|---|---|---|---|---|
+| SUPER_ADMIN | ✅ | ✅ | ✅ | ✅ | ✅ |
+| ORG_ADMIN | ✅ | ✅ | ✅ | ✅ | ✅ |
+| DOCTOR | ✅ | ✅ | ✅ | — | ✅ |
+| NURSE | — | ✅ | — | — | ✅ |
+| SECRETARY | ✅ | — | ✅ | — | ✅ |
+| ACCOUNTANT | — | — | — | ✅ | ✅ |
+| TECHNICIAN | — | ✅ | — | — | ✅ |
+
+Billing is intentionally **not** available to SECRETARY, matching the pre-existing billing add-item permission policy this feature reuses. The cross-patient Work Queue exposes the same Execute/Cancel actions as the patient-profile tab but deliberately excludes Bill (see Known Limitations).
+
+The Work Queue page itself is reachable by SUPER_ADMIN/ORG_ADMIN/DOCTOR/NURSE/TECHNICIAN/SECRETARY, but **SUPER_ADMIN is omitted from the sidebar nav entry** — consistent with this codebase's existing convention of keeping operational worklists (check-in queue, doctor queue, lab/radiology worklists) out of the platform-operator's sidebar while still allowing direct URL access.
+
+**3. Known limitations**
+
+- **Work Queue status filtering is partly client-side, after pagination.** The backend paginates the org-wide query (`skip`/`take`, default limit 100); the Active/Completed/Cancelled view toggle then filters within whatever page is already loaded, rather than the backend filtering by status before paginating. At single-clinic, today-scoped query volumes this is unlikely to matter, but on a wide date range or high-volume org it could show fewer rows than actually exist on the current page.
+- **`doctorId` has no dedicated database index.** The Work Queue's doctor filter works correctly but isn't backed by an index — acceptable at current expected row counts, worth revisiting if doctor-filtered queries become a heavily-used path.
+- **Billing remains patient-profile-context only.** The Work Queue intentionally has no Bill action — billing still requires selecting a patient-specific DRAFT invoice (via the existing patient-profile dialog), which the queue does not surface inline. This was a deliberate scope decision (see Sprint 3 planning), not an oversight: building a cross-patient bill flow would have meant fetching each row's patient's invoices on demand, a meaningfully bigger and unproven UI pattern with no existing precedent in this codebase. The Work Queue links out to the patient profile for billing instead.
+
+**4. Recommended next sprint options**
+
+- **Add a dedicated `doctorId` index** on `MedicalServiceRequest` if/when the Work Queue's doctor filter sees real usage — small, low-risk, additive migration.
+- **Revisit Work Queue pagination** if a clinic's daily request volume regularly exceeds the default page size — options include raising the default limit, or restructuring to filter-then-paginate server-side (would require the backend to accept the same multi-status filter the queue's view toggle uses today only client-side).
+- **Decide whether to bring billing into the Work Queue** once there's a clearer cross-patient invoice-selection pattern elsewhere in the app to reuse — currently deferred, not ruled out.
+- Resume the original roadmap's still-open items: **Sprint 4** (prescription templates) and **Sprint 5** (clinic-level field visibility design) below, neither of which has been started.
 
 ### Sprint 4 — Prescription templates
 
@@ -85,7 +138,7 @@ Reasons:
 - It has no dependency on any open design question — unlike Sprints 3 and 5, which explicitly require a decision (service-request lifecycle shape; clinic-config scope) before work can safely start.
 - It is independently valuable regardless of which later sprint gets prioritized next, since several other gaps (service requests, prescriptions) would themselves eventually want timeline visibility too — doing this first makes those additions trivial later instead of needing their own enum/timeline-wiring work.
 
-This sprint has not been implemented. Per standard phase workflow, the next step (if approved) is a dedicated Planning phase for Sprint 1, not direct implementation.
+**Status: Closed (2026-06-28).** This reasoning is preserved as the historical record of why Sprint 1 was picked first; the actual implementation note lives with Sprint 1's entry above. Note that the implementation found `MedicalTimelineEvent` to be a write-only, never-read mechanism — the real fix extended the actually-rendered `TimelineEventType`/`MedicalTimelineService` path instead, not the one assumed in this section's original reasoning.
 
 ---
 

@@ -31,6 +31,7 @@ import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { ClinicSettingsModule } from './modules/clinic-settings/clinic-settings.module';
 import { VisitTypesModule } from './modules/visit-types/visit-types.module';
 import { ServicesModule } from './modules/services/services.module';
+import { MedicalServiceRequestsModule } from './modules/medical-service-requests/medical-service-requests.module';
 import { DoctorSchedulesModule } from './modules/doctor-schedules/doctor-schedules.module';
 import { FollowupsModule } from './modules/followups/followups.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
@@ -72,6 +73,7 @@ import { SubscriptionAccessModule } from './common/subscription/subscription-acc
     ClinicSettingsModule,
     VisitTypesModule,
     ServicesModule,
+    MedicalServiceRequestsModule,
     DoctorSchedulesModule,
     FollowupsModule,
     DashboardModule,

@@ -122,6 +122,13 @@ enum ClinicalReportStatus {
   FINALIZED
 }
 
+enum ServiceExecutionStatus {
+  REQUESTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
 enum VisitTypeCode {
   CONSULTATION
   FOLLOW_UP
@@ -197,30 +204,31 @@ model Organization {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  branches              Branch[]
-  users                 User[]
-  departments           Department[]
-  patients              Patient[]
-  appointments          Appointment[]
-  queueEntries          QueueEntry[]
-  auditLogs             AuditLog[]
-  labOrders             LabOrder[]
-  radiologyOrders       RadiologyOrder[]
-  medicalFiles          MedicalFile[]
-  invoices              Invoice[]
-  medicalTimelineEvents MedicalTimelineEvent[]
-  clinicalReports       ClinicalReport[]
-  clinicSettings        ClinicSettings?
-  visitTypes            VisitType[]
-  services              Service[]
-  followUpReminders     FollowUpReminder[]
-  billingPolicy         BillingPolicy?
-  clinicPatients        ClinicPatient[]
-  subscriptionPayments  SubscriptionPayment[]
-  employeeProfiles      EmployeeProfile[]
-  attendanceRecords     AttendanceRecord[]
-  leaveRequests         LeaveRequest[]
-  payrollRuns           PayrollRun[]
+  branches               Branch[]
+  users                  User[]
+  departments            Department[]
+  patients               Patient[]
+  appointments           Appointment[]
+  queueEntries           QueueEntry[]
+  auditLogs              AuditLog[]
+  labOrders              LabOrder[]
+  radiologyOrders        RadiologyOrder[]
+  medicalFiles           MedicalFile[]
+  invoices               Invoice[]
+  medicalTimelineEvents  MedicalTimelineEvent[]
+  clinicalReports        ClinicalReport[]
+  clinicSettings         ClinicSettings?
+  visitTypes             VisitType[]
+  services               Service[]
+  followUpReminders      FollowUpReminder[]
+  billingPolicy          BillingPolicy?
+  clinicPatients         ClinicPatient[]
+  subscriptionPayments   SubscriptionPayment[]
+  employeeProfiles       EmployeeProfile[]
+  attendanceRecords      AttendanceRecord[]
+  leaveRequests          LeaveRequest[]
+  payrollRuns            PayrollRun[]
+  medicalServiceRequests MedicalServiceRequest[]
 
   @@map("organizations")
 }
@@ -269,14 +277,15 @@ model Branch {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization     Organization      @relation(fields: [organizationId], references: [id])
-  users            User[]
-  departments      Department[]
-  appointments     Appointment[]
-  labOrders        LabOrder[]
-  radiologyOrders  RadiologyOrder[]
-  invoices         Invoice[]
-  employeeProfiles EmployeeProfile[]
+  organization           Organization            @relation(fields: [organizationId], references: [id])
+  users                  User[]
+  departments            Department[]
+  appointments           Appointment[]
+  labOrders              LabOrder[]
+  radiologyOrders        RadiologyOrder[]
+  invoices               Invoice[]
+  employeeProfiles       EmployeeProfile[]
+  medicalServiceRequests MedicalServiceRequest[]
 
   @@index([organizationId])
   @@map("branches")
@@ -305,27 +314,29 @@ model User {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization                Organization           @relation(fields: [organizationId], references: [id])
-  branch                      Branch?                @relation(fields: [branchId], references: [id])
-  doctor                      Doctor?
-  auditLogs                   AuditLog[]
-  uploadedFiles               MedicalFile[]
-  createdInvoices             Invoice[]              @relation("InvoicesCreated")
-  receivedPayments            Payment[]              @relation("PaymentsReceived")
-  voidedPayments              Payment[]              @relation("PaymentsVoided")
-  timelineEventsCreated       MedicalTimelineEvent[] @relation("TimelineEventsCreated")
-  createdClinicalReports      ClinicalReport[]
-  linkedClinicPatients        ClinicPatient[]        @relation("ClinicPatientLinkedBy")
-  createdSubscriptionPayments SubscriptionPayment[]
-  employeeProfile             EmployeeProfile?
-  uploadedEmployeeDocuments   EmployeeDocument[]
-  recordedAttendanceRecords   AttendanceRecord[]
-  createdLeaveRequests        LeaveRequest[]         @relation("LeaveCreatedBy")
-  decidedLeaveRequests        LeaveRequest[]         @relation("LeaveDecidedBy")
-  generatedPayrollRuns        PayrollRun[]           @relation("PayrollGeneratedBy")
-  approvedPayrollRuns         PayrollRun[]           @relation("PayrollApprovedBy")
-  paidPayrollRuns             PayrollRun[]           @relation("PayrollPaidBy")
-  cancelledPayrollRuns        PayrollRun[]           @relation("PayrollCancelledBy")
+  organization                    Organization            @relation(fields: [organizationId], references: [id])
+  branch                          Branch?                 @relation(fields: [branchId], references: [id])
+  doctor                          Doctor?
+  auditLogs                       AuditLog[]
+  uploadedFiles                   MedicalFile[]
+  createdInvoices                 Invoice[]               @relation("InvoicesCreated")
+  receivedPayments                Payment[]               @relation("PaymentsReceived")
+  voidedPayments                  Payment[]               @relation("PaymentsVoided")
+  timelineEventsCreated           MedicalTimelineEvent[]  @relation("TimelineEventsCreated")
+  createdClinicalReports          ClinicalReport[]
+  linkedClinicPatients            ClinicPatient[]         @relation("ClinicPatientLinkedBy")
+  createdSubscriptionPayments     SubscriptionPayment[]
+  employeeProfile                 EmployeeProfile?
+  uploadedEmployeeDocuments       EmployeeDocument[]
+  recordedAttendanceRecords       AttendanceRecord[]
+  createdLeaveRequests            LeaveRequest[]          @relation("LeaveCreatedBy")
+  decidedLeaveRequests            LeaveRequest[]          @relation("LeaveDecidedBy")
+  generatedPayrollRuns            PayrollRun[]            @relation("PayrollGeneratedBy")
+  approvedPayrollRuns             PayrollRun[]            @relation("PayrollApprovedBy")
+  paidPayrollRuns                 PayrollRun[]            @relation("PayrollPaidBy")
+  cancelledPayrollRuns            PayrollRun[]            @relation("PayrollCancelledBy")
+  requestedMedicalServiceRequests MedicalServiceRequest[] @relation("MedicalServiceRequestsRequestedBy")
+  executedMedicalServiceRequests  MedicalServiceRequest[] @relation("MedicalServiceRequestsExecutedBy")
 
   @@index([organizationId])
   @@map("users")
@@ -383,6 +394,7 @@ model Doctor {
   reviewedRadiologyReports RadiologyReport[]         @relation("RadiologyReportsReviewed")
   schedules                DoctorSchedule[]
   scheduleExceptions       DoctorScheduleException[]
+  medicalServiceRequests   MedicalServiceRequest[]
 
   @@map("doctors")
 }
@@ -686,18 +698,19 @@ model Patient {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization      Organization           @relation(fields: [organizationId], references: [id])
-  allergies         Allergy[]
-  appointments      Appointment[]
-  encounters        Encounter[]
-  labOrders         LabOrder[]
-  radiologyOrders   RadiologyOrder[]
-  medicalFiles      MedicalFile[]
-  invoices          Invoice[]
-  clinicalReports   ClinicalReport[]
-  timelineEvents    MedicalTimelineEvent[]
-  followUpReminders FollowUpReminder[]
-  clinicLinks       ClinicPatient[]
+  organization           Organization            @relation(fields: [organizationId], references: [id])
+  allergies              Allergy[]
+  appointments           Appointment[]
+  encounters             Encounter[]
+  labOrders              LabOrder[]
+  radiologyOrders        RadiologyOrder[]
+  medicalFiles           MedicalFile[]
+  invoices               Invoice[]
+  clinicalReports        ClinicalReport[]
+  timelineEvents         MedicalTimelineEvent[]
+  followUpReminders      FollowUpReminder[]
+  clinicLinks            ClinicPatient[]
+  medicalServiceRequests MedicalServiceRequest[]
 
   @@unique([organizationId, mrn])
   @@index([organizationId])
@@ -805,16 +818,17 @@ model Appointment {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization    Organization       @relation(fields: [organizationId], references: [id])
-  branch          Branch?            @relation(fields: [branchId], references: [id])
-  patient         Patient            @relation(fields: [patientId], references: [id])
-  doctor          Doctor             @relation(fields: [doctorId], references: [id])
-  visitType       VisitType?         @relation(fields: [visitTypeId], references: [id])
-  sourceEncounter Encounter?         @relation("FollowUpAppointments", fields: [sourceEncounterId], references: [id])
-  queueEntry      QueueEntry?
-  encounter       Encounter?
-  invoices        Invoice[]
-  reminders       FollowUpReminder[]
+  organization           Organization            @relation(fields: [organizationId], references: [id])
+  branch                 Branch?                 @relation(fields: [branchId], references: [id])
+  patient                Patient                 @relation(fields: [patientId], references: [id])
+  doctor                 Doctor                  @relation(fields: [doctorId], references: [id])
+  visitType              VisitType?              @relation(fields: [visitTypeId], references: [id])
+  sourceEncounter        Encounter?              @relation("FollowUpAppointments", fields: [sourceEncounterId], references: [id])
+  queueEntry             QueueEntry?
+  encounter              Encounter?
+  invoices               Invoice[]
+  reminders              FollowUpReminder[]
+  medicalServiceRequests MedicalServiceRequest[]
 
   @@index([organizationId])
   @@index([doctorId])
@@ -877,17 +891,18 @@ model Encounter {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  patient              Patient            @relation(fields: [patientId], references: [id])
-  doctor               Doctor             @relation(fields: [doctorId], references: [id])
-  appointment          Appointment?       @relation(fields: [appointmentId], references: [id])
-  followUpAppointments Appointment[]      @relation("FollowUpAppointments")
-  prescriptions        Prescription[]
-  labOrders            LabOrder[]
-  radiologyOrders      RadiologyOrder[]
-  medicalFiles         MedicalFile[]
-  invoices             Invoice[]
-  clinicalReports      ClinicalReport[]
-  reminders            FollowUpReminder[]
+  patient                Patient                 @relation(fields: [patientId], references: [id])
+  doctor                 Doctor                  @relation(fields: [doctorId], references: [id])
+  appointment            Appointment?            @relation(fields: [appointmentId], references: [id])
+  followUpAppointments   Appointment[]           @relation("FollowUpAppointments")
+  prescriptions          Prescription[]
+  labOrders              LabOrder[]
+  radiologyOrders        RadiologyOrder[]
+  medicalFiles           MedicalFile[]
+  invoices               Invoice[]
+  clinicalReports        ClinicalReport[]
+  reminders              FollowUpReminder[]
+  medicalServiceRequests MedicalServiceRequest[]
 
   @@index([organizationId])
   @@index([doctorId])
@@ -1210,9 +1225,10 @@ model InvoiceItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  invoice   Invoice    @relation(fields: [invoiceId], references: [id])
-  visitType VisitType? @relation(fields: [visitTypeId], references: [id])
-  service   Service?   @relation(fields: [serviceId], references: [id])
+  invoice               Invoice                @relation(fields: [invoiceId], references: [id])
+  visitType             VisitType?             @relation(fields: [visitTypeId], references: [id])
+  service               Service?               @relation(fields: [serviceId], references: [id])
+  medicalServiceRequest MedicalServiceRequest?
 
   @@index([invoiceId])
   @@index([visitTypeId])
@@ -1247,18 +1263,18 @@ model Payment {
 }
 
 model BillingPolicy {
-  id                            String  @id @default(cuid())
-  organizationId                String  @unique
-  autoCreateInvoiceOnCheckin    Boolean @default(true)
-  freeFollowUpWindowDays        Int     @default(0)
-  followUpDiscountPercent       Decimal @default(0) @db.Decimal(5, 2)
-  requirePaymentBeforeEncounter Boolean @default(false)
+  id                            String                   @id @default(cuid())
+  organizationId                String                   @unique
+  autoCreateInvoiceOnCheckin    Boolean                  @default(true)
+  freeFollowUpWindowDays        Int                      @default(0)
+  followUpDiscountPercent       Decimal                  @default(0) @db.Decimal(5, 2)
+  requirePaymentBeforeEncounter Boolean                  @default(false)
   appointmentPaymentPolicy      AppointmentPaymentPolicy @default(NONE)
-  appointmentDepositPercent     Decimal @default(0) @db.Decimal(5, 2)
-  defaultDueDateDays            Int     @default(0)
-  noShowFeeAmount               Decimal @default(0) @db.Decimal(10, 2)
-  invoiceNumberPrefix           String  @default("INV")
-  nextInvoiceSequence           Int     @default(0)
+  appointmentDepositPercent     Decimal                  @default(0) @db.Decimal(5, 2)
+  defaultDueDateDays            Int                      @default(0)
+  noShowFeeAmount               Decimal                  @default(0) @db.Decimal(10, 2)
+  invoiceNumberPrefix           String                   @default("INV")
+  nextInvoiceSequence           Int                      @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1370,13 +1386,63 @@ model Service {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization Organization  @relation(fields: [organizationId], references: [id])
-  department   Department?   @relation(fields: [departmentId], references: [id])
-  invoiceItems InvoiceItem[]
+  organization           Organization            @relation(fields: [organizationId], references: [id])
+  department             Department?             @relation(fields: [departmentId], references: [id])
+  invoiceItems           InvoiceItem[]
+  medicalServiceRequests MedicalServiceRequest[]
 
   @@unique([organizationId, code])
   @@index([organizationId])
   @@map("services")
+}
+
+// ─────────────────────────────────────────────
+// MEDICAL SERVICE REQUESTS
+// ─────────────────────────────────────────────
+
+model MedicalServiceRequest {
+  id                   String                 @id @default(cuid())
+  organizationId       String
+  branchId             String?
+  patientId            String
+  serviceId            String
+  appointmentId        String?
+  encounterId          String?
+  invoiceItemId        String?                @unique
+  requestedById        String
+  doctorId             String?
+  requestedServiceName String
+  requestedUnitPrice   Decimal                @db.Decimal(10, 2)
+  quantity             Int                    @default(1)
+  notes                String?
+  executionStatus      ServiceExecutionStatus @default(REQUESTED)
+  executedAt           DateTime?
+  executedById         String?
+  cancelledAt          DateTime?
+  cancelReason         String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  branch       Branch?      @relation(fields: [branchId], references: [id])
+  patient      Patient      @relation(fields: [patientId], references: [id])
+  service      Service      @relation(fields: [serviceId], references: [id])
+  appointment  Appointment? @relation(fields: [appointmentId], references: [id])
+  encounter    Encounter?   @relation(fields: [encounterId], references: [id])
+  invoiceItem  InvoiceItem? @relation(fields: [invoiceItemId], references: [id])
+  doctor       Doctor?      @relation(fields: [doctorId], references: [id])
+  requestedBy  User         @relation("MedicalServiceRequestsRequestedBy", fields: [requestedById], references: [id])
+  executedBy   User?        @relation("MedicalServiceRequestsExecutedBy", fields: [executedById], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, patientId, deletedAt])
+  @@index([serviceId])
+  @@index([appointmentId])
+  @@index([encounterId])
+  @@index([organizationId, executionStatus])
+  @@map("medical_service_requests")
 }
 
 // ─────────────────────────────────────────────

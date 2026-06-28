@@ -92,6 +92,21 @@ const GROUP_ORDER: NavGroupKey[] = [
   'profile',
 ];
 
+// One representative icon per group row — distinct from each item's own
+// icon, defined separately here rather than derived from NAV_ITEMS so item
+// meaning/data is never touched for a purely presentational concern.
+const GROUP_ICONS: Record<NavGroupKey, React.ComponentType<{ className?: string }>> = {
+  main: LayoutDashboard,
+  patients: Users,
+  appointmentsQueue: Calendar,
+  medicalWork: Stethoscope,
+  billingCashier: CreditCard,
+  admin: Briefcase,
+  settings: Settings,
+  platform: Building2,
+  profile: CircleUser,
+};
+
 const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard',                      icon: LayoutDashboard, roles: NAV_DASHBOARD_ROLES,             group: 'main' },
   { href: '/dashboard/today',                icon: ListChecks,      roles: NAV_TODAY_ROLES,                 group: 'main' },
@@ -149,7 +164,7 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
   const guard = useUnsavedGuardStore();
   const { user } = useAuthStore();
   const role = user?.role ?? '';
-  const openGroups = useSidebarUiStore((s) => s.openGroups);
+  const openGroup = useSidebarUiStore((s) => s.openGroup);
   const toggleGroup = useSidebarUiStore((s) => s.toggleGroup);
 
   // Close drawer on Escape key
@@ -239,12 +254,16 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
 
       {/* Navigation */}
       <nav className="flex-1 overflow-auto py-4">
-        <div className="space-y-2 px-3">
+        <div className="space-y-1 px-3">
           {visibleGroups.map(({ groupKey, items }) => {
             // Active group is force-open regardless of persisted/manual
-            // state — see the activeGroupKey comment above.
-            const isOpen = openGroups.includes(groupKey) || groupKey === activeGroupKey;
+            // state — see the activeGroupKey comment above. At most two
+            // groups can ever be open: the active one + the single
+            // manually-open one (single-open accordion).
+            const isActiveGroup = groupKey === activeGroupKey;
+            const isOpen = groupKey === openGroup || isActiveGroup;
             const panelId = `nav-group-panel-${groupKey}`;
+            const GroupIcon = GROUP_ICONS[groupKey];
 
             return (
               <div key={groupKey}>
@@ -253,15 +272,21 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
                   onClick={() => toggleGroup(groupKey)}
                   aria-expanded={isOpen}
                   aria-controls={panelId}
-                  className="flex w-full items-center justify-between rounded-md px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-sidebar-foreground/40 transition-colors hover:text-sidebar-foreground/70"
+                  className={cn(
+                    'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    isActiveGroup
+                      ? 'bg-sidebar-accent/60 text-sidebar-foreground'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                  )}
                 >
-                  <span>{t(`groups.${groupKey}`)}</span>
+                  <GroupIcon className="h-4 w-4 shrink-0" />
+                  <span className="flex-1 text-start">{t(`groups.${groupKey}`)}</span>
                   <ChevronDown
-                    className={cn('h-3 w-3 shrink-0 transition-transform', isOpen && 'rotate-180')}
+                    className={cn('h-4 w-4 shrink-0 transition-transform', isOpen && 'rotate-180')}
                   />
                 </button>
                 {isOpen && (
-                  <ul id={panelId} className="mt-1 space-y-0.5">
+                  <ul id={panelId} className="mt-1 space-y-0.5 ps-7">
                     {items.map((item) => {
                       const Icon = item.icon;
                       const isActive = isNavItemActive(item.href, pathname);

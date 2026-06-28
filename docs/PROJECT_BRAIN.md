@@ -27,6 +27,14 @@ Covers the full patient visit lifecycle inside a clinic — registration → boo
 - **`MedicalServiceRequest`** (closed 2026-06-28) — full feature closed: backend lifecycle, billing link, patient-profile tab, timeline integration, and a cross-patient work queue, verified on staging. See `elaji-planning/ELAJI_IMPLEMENTATION_ROADMAP.md`'s Sprint 3 closure for what shipped, behavior by role, and known limitations.
 - Full detail: [Environment-Registry.md](04-Operations/Environment-Registry.md), [Staging-Phase-Log.md](04-Operations/Staging-Phase-Log.md), [First-Clinic-Readiness-Gap-List.md](04-Operations/First-Clinic-Readiness-Gap-List.md).
 
+## Competitor Awareness: MedPro
+
+- MedPro is a direct/near-direct competitor with broad ERP-style clinic coverage (patients, billing, inventory, accounting, settings).
+- Elaji should differentiate through modern UX, clean workflow, security, audit logs, tenant isolation, and clinical timeline — not feature-count parity.
+- Do not copy MedPro's UI complexity.
+- Do not expand into inventory or full accounting before the Healthcare Core MVP (patient → appointment/queue → visit → encounter → prescription → billing → timeline → reports → audit logs) is strong.
+- Full detail: [strategy/COMPETITOR_MEDPRO_AUDIT.md](strategy/COMPETITOR_MEDPRO_AUDIT.md).
+
 ## AI Collaboration Model
 
 | Role | Who | Function |
@@ -77,3 +85,4 @@ Full 11-step version (idea through close-phase, with business/architecture revie
 - [04-Operations/First-Clinic-Readiness-Gap-List.md](04-Operations/First-Clinic-Readiness-Gap-List.md)
 - [DEMO_USERS.md](../DEMO_USERS.md) — demo/staging account directory (not production credentials)
 - [docker/DEPLOY.md](../docker/DEPLOY.md) — production deployment runbook
+- [strategy/COMPETITOR_MEDPRO_AUDIT.md](strategy/COMPETITOR_MEDPRO_AUDIT.md) — competitor audit and strategic positioning vs. MedPro

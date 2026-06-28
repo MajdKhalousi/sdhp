@@ -311,7 +311,7 @@ export function MedicalServicesQueuePanel() {
           <input
             type="text"
             value={patientSearch}
-            onChange={(e) => setPatientSearch(e.target.value)}
+            onChange={(e) => { setPatientSearch(e.target.value); setPage(1); }}
             placeholder={t('filter.searchPlaceholder')}
             className="h-7 w-full rounded-md border bg-background ps-7 pe-3 text-xs outline-none transition-colors focus:ring-2 focus:ring-ring"
           />
@@ -453,6 +453,27 @@ export function MedicalServicesQueuePanel() {
   }
 
   if (visibleRequests.length === 0) {
+    // Distinguish "nothing exists for this date/scope" from "filters/search
+    // hid everything that was actually loaded" — mirrors lab-worklist-panel.tsx.
+    let emptyTitle: string;
+    let emptySubtitle: string;
+    if (patientSearch && searchFiltered.length === 0) {
+      emptyTitle = t('empty.withSearch');
+      emptySubtitle = t('empty.withSearchSub');
+    } else if (allRequests.length === 0) {
+      emptyTitle = t('empty.title');
+      emptySubtitle = t('empty.subtitle');
+    } else if (viewMode === 'active') {
+      emptyTitle = t('empty.noActive');
+      emptySubtitle = t('empty.noActiveSub');
+    } else if (viewMode === 'completed') {
+      emptyTitle = t('empty.noCompleted');
+      emptySubtitle = t('empty.noCompletedSub');
+    } else {
+      emptyTitle = t('empty.noCancelled');
+      emptySubtitle = t('empty.noCancelledSub');
+    }
+
     return (
       <div className="space-y-4">
         {header}
@@ -460,8 +481,8 @@ export function MedicalServicesQueuePanel() {
         {countRow}
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
           <ClipboardList className="h-8 w-8 text-muted-foreground/50" />
-          <p className="text-sm font-medium">{t('empty.title')}</p>
-          <p className="text-xs text-muted-foreground">{t('empty.subtitle')}</p>
+          <p className="text-sm font-medium">{emptyTitle}</p>
+          <p className="text-xs text-muted-foreground">{emptySubtitle}</p>
         </div>
       </div>
     );

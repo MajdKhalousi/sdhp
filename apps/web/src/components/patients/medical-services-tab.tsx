@@ -117,9 +117,9 @@ function MedicalServiceRequestCard({ request, canExecute, canCancel, canBill, on
         </span>
       </div>
 
-      <p className="font-medium text-sm text-foreground">{request.requestedServiceName}</p>
+      <p className="mb-1.5 font-medium text-sm text-foreground">{request.requestedServiceName}</p>
 
-      <div className="mt-1.5 flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Badge variant={EXECUTION_STATUS_VARIANT[request.executionStatus]}>
           {t(`executionStatus.${request.executionStatus}` as Parameters<typeof t>[0])}
         </Badge>
@@ -131,7 +131,7 @@ function MedicalServiceRequestCard({ request, canExecute, canCancel, canBill, on
         )}
       </div>
 
-      <div className="mt-1.5 space-y-0.5 text-xs text-muted-foreground">
+      <div className="mt-2 space-y-0.5 border-t border-border/60 pt-2 text-xs text-muted-foreground">
         <p>{t('requestedBy')}: {requestedByName}</p>
         {doctorName && <p>{t('doctor')}: {doctorName}</p>}
         {request.notes && <p>{t('notes')}: {request.notes}</p>}
@@ -142,6 +142,11 @@ function MedicalServiceRequestCard({ request, canExecute, canCancel, canBill, on
 
       {actionError && <p className="mt-2 text-xs text-destructive">{actionError}</p>}
 
+      {/*
+        While isCancelling is true, Execute/Cancel/Bill are intentionally
+        hidden — forces finishing or explicitly leaving the cancel flow
+        instead of taking another action mid-decision.
+      */}
       {(showExecute || showCancel || showBill) && !isCancelling && (
         <div className="mt-3 flex items-center gap-2">
           {showExecute && (

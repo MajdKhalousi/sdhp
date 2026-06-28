@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation';
 import { usePatientInvoices } from '@/hooks/use-invoices';
 import { useBillMedicalServiceRequest } from '@/hooks/use-medical-service-requests';
 import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
+import { useToast } from '@/hooks/use-toast';
 
 interface Props {
   patientId: string;
@@ -23,6 +24,7 @@ export function BillMedicalServiceRequestDialog({ patientId, requestId, onClose 
   const { data: invoices, isLoading: invoicesLoading } = usePatientInvoices(patientId);
   const draftInvoices = (invoices ?? []).filter((inv) => inv.status === 'DRAFT');
 
+  const { toast } = useToast();
   const { mutate, isPending, error: mutationError } = useBillMedicalServiceRequest();
 
   function handleSubmit(e: React.FormEvent) {
@@ -33,7 +35,12 @@ export function BillMedicalServiceRequestDialog({ patientId, requestId, onClose 
     }
     mutate(
       { id: requestId, patientId, payload: { invoiceId } },
-      { onSuccess: onClose },
+      {
+        onSuccess: () => {
+          toast({ title: t('billSuccess'), variant: 'success' });
+          onClose();
+        },
+      },
     );
   }
 

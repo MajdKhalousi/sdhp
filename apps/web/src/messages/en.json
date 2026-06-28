@@ -1780,6 +1780,7 @@
       "notesPlaceholder": "Optional",
       "submit": "Request Service",
       "submitting": "Requesting…",
+      "createSuccess": "Service request created.",
       "validation": {
         "serviceRequired": "Please select a service.",
         "quantityMin": "Quantity must be at least 1."
@@ -1794,6 +1795,7 @@
       "createInvoiceLink": "Create Invoice",
       "submit": "Bill Request",
       "submitting": "Billing…",
+      "billSuccess": "Medical service request billed.",
       "validation": {
         "invoiceRequired": "Please select a draft invoice."
       }
@@ -1850,8 +1852,16 @@
       "occurred": "An error occurred."
     },
     "empty": {
-      "title": "No active medical service requests",
-      "subtitle": "There are no medical service requests matching the selected filters."
+      "title": "No medical service requests for this date range",
+      "subtitle": "There are no medical service requests matching the selected filters.",
+      "withSearch": "No matching patients",
+      "withSearchSub": "Try a different name or MRN.",
+      "noActive": "No active medical service requests",
+      "noActiveSub": "Nothing is currently requested or in progress for this date range.",
+      "noCompleted": "No completed medical service requests",
+      "noCompletedSub": "Nothing has been completed yet for this date range.",
+      "noCancelled": "No cancelled medical service requests",
+      "noCancelledSub": "Nothing has been cancelled for this date range."
     },
     "counter": "{count, plural, one {# request} other {# requests}}",
     "pagination": {

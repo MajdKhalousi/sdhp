@@ -6,6 +6,7 @@ import { useCreateMedicalServiceRequest } from '@/hooks/use-medical-service-requ
 import { useDoctorsList } from '@/hooks/use-appointments';
 import { ServicePicker } from '@/components/billing/service-picker';
 import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
+import { useToast } from '@/hooks/use-toast';
 import type { Service } from '@/types/clinic-settings';
 
 interface Props {
@@ -26,6 +27,7 @@ export function MedicalServiceRequestForm({ patientId, onClose }: Props) {
   const { data: doctorsData, isLoading: doctorsLoading } = useDoctorsList();
   const activeDoctors = doctorsData?.data.filter((d) => d.isActive !== false) ?? [];
 
+  const { toast } = useToast();
   const { mutate, isPending, error: mutationError } = useCreateMedicalServiceRequest();
 
   function handleServiceChange(id: string, _service: Service | null) {
@@ -54,7 +56,12 @@ export function MedicalServiceRequestForm({ patientId, onClose }: Props) {
         quantity: qty,
         ...(notes ? { notes } : {}),
       },
-      { onSuccess: onClose },
+      {
+        onSuccess: () => {
+          toast({ title: t('createSuccess'), variant: 'success' });
+          onClose();
+        },
+      },
     );
   }
 

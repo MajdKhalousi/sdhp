@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { ServiceExecutionStatus, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { PaginatedResponse } from '../../common/types/paginated-response.type';
@@ -7,6 +7,7 @@ import { assertPatientLinkedToOrg } from '../../common/helpers/patient-access.he
 import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
 import { CreateMedicalServiceRequestDto } from './dto/create-medical-service-request.dto';
 import { MedicalServiceRequestQueryDto } from './dto/medical-service-request-query.dto';
+import { CancelMedicalServiceRequestDto } from './dto/cancel-medical-service-request.dto';
 
 const SELECT = {
   id: true,
@@ -142,6 +143,75 @@ export class MedicalServiceRequestsService {
   }
 
   async findOne(id: string, caller: JwtPayload) {
+    return this.resolveScoped(id, caller);
+  }
+
+  async execute(id: string, caller: JwtPayload) {
+    const request = await this.resolveScoped(id, caller);
+    this.assertTransitionable(request.executionStatus, 'executed');
+
+    const result = await this.prisma.medicalServiceRequest.update({
+      where: { id },
+      data: {
+        executionStatus: ServiceExecutionStatus.COMPLETED,
+        executedAt: new Date(),
+        executedById: caller.sub,
+      },
+      select: SELECT,
+    });
+
+    await this.auditWriter.log({
+      caller,
+      action: 'MEDICAL_SERVICE_REQUEST_EXECUTED',
+      resource: 'medicalServiceRequest',
+      resourceId: id,
+      oldData: toSnapshot({ executionStatus: request.executionStatus }),
+      newData: toSnapshot({
+        executionStatus: result.executionStatus,
+        executedAt: result.executedAt,
+        executedById: result.executedById,
+      }),
+    });
+
+    return result;
+  }
+
+  async cancel(id: string, dto: CancelMedicalServiceRequestDto, caller: JwtPayload) {
+    const request = await this.resolveScoped(id, caller);
+    this.assertTransitionable(request.executionStatus, 'cancelled');
+
+    const cancelReason = dto.cancelReason.trim();
+    if (!cancelReason) throw new BadRequestException('cancelReason must not be empty');
+
+    const result = await this.prisma.medicalServiceRequest.update({
+      where: { id },
+      data: {
+        executionStatus: ServiceExecutionStatus.CANCELLED,
+        cancelledAt: new Date(),
+        cancelReason,
+      },
+      select: SELECT,
+    });
+
+    await this.auditWriter.log({
+      caller,
+      action: 'MEDICAL_SERVICE_REQUEST_CANCELLED',
+      resource: 'medicalServiceRequest',
+      resourceId: id,
+      oldData: toSnapshot({ executionStatus: request.executionStatus }),
+      newData: toSnapshot({
+        executionStatus: result.executionStatus,
+        cancelledAt: result.cancelledAt,
+        cancelReason: result.cancelReason,
+      }),
+    });
+
+    return result;
+  }
+
+  // ── Private helpers ────────────────────────────────────────────────────────
+
+  private async resolveScoped(id: string, caller: JwtPayload) {
     const request = await this.prisma.medicalServiceRequest.findFirst({
       where: { id, deletedAt: null },
       select: SELECT,
@@ -156,7 +226,16 @@ export class MedicalServiceRequestsService {
     return request;
   }
 
-  // ── Private helpers ────────────────────────────────────────────────────────
+  private assertTransitionable(
+    current: ServiceExecutionStatus,
+    targetVerb: 'executed' | 'cancelled',
+  ): void {
+    if (current !== ServiceExecutionStatus.REQUESTED && current !== ServiceExecutionStatus.IN_PROGRESS) {
+      throw new BadRequestException(
+        `Only REQUESTED or IN_PROGRESS requests can be ${targetVerb} (current status: ${current})`,
+      );
+    }
+  }
 
   private async resolveCreateOrgId(
     dto: CreateMedicalServiceRequestDto,

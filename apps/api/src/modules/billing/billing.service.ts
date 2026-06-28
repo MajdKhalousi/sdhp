@@ -428,9 +428,53 @@ export class BillingService {
       unitPrice = dto.unitPrice;
     }
 
-    const qty = dto.quantity ?? 1;
-    const discount = dto.discount ?? 0;
-    const totalPrice = qty * unitPrice - discount;
+    const { invoice: updatedInvoice } = await this.prisma.$transaction((tx) =>
+      this.createInvoiceItemTx(tx, invoiceId, {
+        serviceId: resolvedServiceId,
+        description,
+        quantity: dto.quantity ?? 1,
+        unitPrice,
+        discount: dto.discount ?? 0,
+        notes: dto.notes,
+      }),
+    );
+
+    return updatedInvoice;
+  }
+
+  /**
+   * Shared item-creation core for addItem() and cross-module callers (e.g.
+   * MedicalServiceRequestsService.bill()) that must create an InvoiceItem and
+   * update the parent Invoice's totals atomically alongside other writes of
+   * their own. Takes a transaction client so the caller controls the
+   * transaction boundary — this method never opens its own transaction.
+   *
+   * Re-validates DRAFT status from a fresh read inside the given tx, so it is
+   * safe even when the caller already checked status outside the transaction
+   * (closes the race window between that check and the actual write).
+   */
+  async createInvoiceItemTx(
+    tx: Prisma.TransactionClient,
+    invoiceId: string,
+    input: {
+      serviceId?: string;
+      description: string;
+      quantity: number;
+      unitPrice: number;
+      discount: number;
+      notes?: string;
+    },
+  ) {
+    const invoice = await tx.invoice.findFirst({
+      where: { id: invoiceId, deletedAt: null },
+      select: INVOICE_SELECT,
+    });
+    if (!invoice) throw new NotFoundException('Invoice not found');
+    if (invoice.status !== InvoiceStatus.DRAFT) {
+      throw new BadRequestException('Items can only be added to DRAFT invoices');
+    }
+
+    const totalPrice = input.quantity * input.unitPrice - input.discount;
     if (totalPrice < 0) throw new BadRequestException('Item total price cannot be negative');
 
     const currentSubtotal = invoice.subtotal.toNumber();
@@ -438,27 +482,27 @@ export class BillingService {
     const newSubtotal = currentSubtotal + totalPrice;
     const newTotalAmount = newSubtotal - currentDiscount;
 
-    const [, updatedInvoice] = await this.prisma.$transaction([
-      this.prisma.invoiceItem.create({
-        data: {
-          invoiceId,
-          serviceId: resolvedServiceId,
-          description,
-          quantity: qty,
-          unitPrice,
-          discount,
-          totalPrice,
-          notes: dto.notes,
-        },
-      }),
-      this.prisma.invoice.update({
-        where: { id: invoiceId },
-        data: { subtotal: newSubtotal, totalAmount: newTotalAmount },
-        select: INVOICE_SELECT,
-      }),
-    ]);
+    const item = await tx.invoiceItem.create({
+      data: {
+        invoiceId,
+        serviceId: input.serviceId,
+        description: input.description,
+        quantity: input.quantity,
+        unitPrice: input.unitPrice,
+        discount: input.discount,
+        totalPrice,
+        notes: input.notes,
+      },
+      select: ITEM_SELECT,
+    });
 
-    return updatedInvoice;
+    const updatedInvoice = await tx.invoice.update({
+      where: { id: invoiceId },
+      data: { subtotal: newSubtotal, totalAmount: newTotalAmount },
+      select: INVOICE_SELECT,
+    });
+
+    return { item, invoice: updatedInvoice };
   }
 
   async removeItem(invoiceId: string, itemId: string, caller: JwtPayload) {

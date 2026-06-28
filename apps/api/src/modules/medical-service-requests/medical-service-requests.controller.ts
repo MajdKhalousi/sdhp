@@ -13,6 +13,7 @@ import { MedicalServiceRequestsService } from './medical-service-requests.servic
 import { CreateMedicalServiceRequestDto } from './dto/create-medical-service-request.dto';
 import { MedicalServiceRequestQueryDto } from './dto/medical-service-request-query.dto';
 import { CancelMedicalServiceRequestDto } from './dto/cancel-medical-service-request.dto';
+import { BillMedicalServiceRequestDto } from './dto/bill-medical-service-request.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
@@ -90,5 +91,19 @@ export class MedicalServiceRequestsController {
     @CurrentUser() user: JwtPayload,
   ) {
     return this.service.cancel(id, dto, user);
+  }
+
+  @Post(':id/bill')
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.ACCOUNTANT)
+  @ApiOperation({ summary: 'Link a medical service request to an existing DRAFT invoice as a billed item.' })
+  @ApiOkResponse({ description: 'Medical service request billed' })
+  @ApiNotFoundResponse({ description: 'Medical service request or invoice not found' })
+  bill(
+    @Param('id') id: string,
+    @Body() dto: BillMedicalServiceRequestDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.service.bill(id, dto, user);
   }
 }

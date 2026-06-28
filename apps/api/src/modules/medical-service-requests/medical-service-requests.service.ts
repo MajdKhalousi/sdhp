@@ -1,13 +1,15 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { ServiceExecutionStatus, UserRole } from '@prisma/client';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { InvoiceStatus, ServiceExecutionStatus, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { assertPatientLinkedToOrg } from '../../common/helpers/patient-access.helper';
 import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
+import { BillingService } from '../billing/billing.service';
 import { CreateMedicalServiceRequestDto } from './dto/create-medical-service-request.dto';
 import { MedicalServiceRequestQueryDto } from './dto/medical-service-request-query.dto';
 import { CancelMedicalServiceRequestDto } from './dto/cancel-medical-service-request.dto';
+import { BillMedicalServiceRequestDto } from './dto/bill-medical-service-request.dto';
 
 const SELECT = {
   id: true,
@@ -36,13 +38,17 @@ const SELECT = {
   doctor: {
     select: { id: true, specialization: true, user: { select: { id: true, firstName: true, lastName: true } } },
   },
+  invoiceItem: { select: { invoice: { select: { status: true } } } },
 } as const;
+
+type RequestWithInvoiceItem = { invoiceItemId: string | null; invoiceItem: { invoice: { status: InvoiceStatus } } | null };
 
 @Injectable()
 export class MedicalServiceRequestsService {
   constructor(
     private prisma: PrismaService,
     private auditWriter: AuditLogsWriterService,
+    private billingService: BillingService,
   ) {}
 
   async create(dto: CreateMedicalServiceRequestDto, caller: JwtPayload) {
@@ -103,7 +109,7 @@ export class MedicalServiceRequestsService {
       }),
     });
 
-    return result;
+    return this.toResponse(result);
   }
 
   async findAll(
@@ -139,11 +145,11 @@ export class MedicalServiceRequestsService {
       this.prisma.medicalServiceRequest.count({ where }),
     ]);
 
-    return { data, total, page, limit };
+    return { data: data.map((r) => this.toResponse(r)), total, page, limit };
   }
 
   async findOne(id: string, caller: JwtPayload) {
-    return this.resolveScoped(id, caller);
+    return this.toResponse(await this.resolveScoped(id, caller));
   }
 
   async execute(id: string, caller: JwtPayload) {
@@ -173,7 +179,7 @@ export class MedicalServiceRequestsService {
       }),
     });
 
-    return result;
+    return this.toResponse(result);
   }
 
   async cancel(id: string, dto: CancelMedicalServiceRequestDto, caller: JwtPayload) {
@@ -206,10 +212,84 @@ export class MedicalServiceRequestsService {
       }),
     });
 
-    return result;
+    return this.toResponse(result);
+  }
+
+  async bill(id: string, dto: BillMedicalServiceRequestDto, caller: JwtPayload) {
+    const request = await this.resolveScoped(id, caller);
+
+    if (request.invoiceItemId) {
+      throw new BadRequestException('Medical service request is already billed');
+    }
+    if (request.executionStatus === ServiceExecutionStatus.CANCELLED) {
+      throw new BadRequestException('Cancelled requests cannot be billed');
+    }
+
+    const invoice = await this.prisma.invoice.findFirst({
+      where: { id: dto.invoiceId, deletedAt: null },
+      select: { id: true, organizationId: true, patientId: true },
+    });
+    if (
+      !invoice ||
+      invoice.organizationId !== request.organizationId ||
+      invoice.patientId !== request.patientId
+    ) {
+      throw new NotFoundException('Invoice not found');
+    }
+
+    const { item } = await this.prisma.$transaction(async (tx) => {
+      const created = await this.billingService.createInvoiceItemTx(tx, dto.invoiceId, {
+        serviceId: request.serviceId,
+        description: request.requestedServiceName,
+        quantity: request.quantity,
+        unitPrice: request.requestedUnitPrice.toNumber(),
+        discount: 0,
+      });
+
+      const guarded = await tx.medicalServiceRequest.updateMany({
+        where: { id: request.id, invoiceItemId: null },
+        data: { invoiceItemId: created.item.id },
+      });
+      if (guarded.count !== 1) {
+        throw new ConflictException('Medical service request was already billed');
+      }
+
+      return created;
+    });
+
+    const result = await this.prisma.medicalServiceRequest.findFirst({
+      where: { id: request.id },
+      select: SELECT,
+    });
+    if (!result) throw new NotFoundException('Medical service request not found');
+
+    await this.auditWriter.log({
+      caller,
+      action: 'MEDICAL_SERVICE_REQUEST_BILLED',
+      resource: 'medicalServiceRequest',
+      resourceId: id,
+      newData: toSnapshot({
+        invoiceId: dto.invoiceId,
+        invoiceItemId: item.id,
+        requestedServiceName: request.requestedServiceName,
+        requestedUnitPrice: request.requestedUnitPrice.toString(),
+        quantity: request.quantity,
+        totalPrice: item.totalPrice.toString(),
+      }),
+    });
+
+    return this.toResponse(result);
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────
+
+  private toResponse<T extends RequestWithInvoiceItem>(request: T) {
+    const { invoiceItem, ...rest } = request;
+    return {
+      ...rest,
+      paymentStatus: request.invoiceItemId ? invoiceItem!.invoice.status : ('UNBILLED' as const),
+    };
+  }
 
   private async resolveScoped(id: string, caller: JwtPayload) {
     const request = await this.prisma.medicalServiceRequest.findFirst({

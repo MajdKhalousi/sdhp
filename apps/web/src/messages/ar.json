@@ -1408,7 +1408,9 @@
         "LAB_ORDER": "طلبات المختبر",
         "RADIOLOGY_ORDER": "الأشعة",
         "MEDICAL_FILE": "الملفات",
-        "CLINICAL_REPORT_CREATED": "التقارير"
+        "CLINICAL_REPORT_CREATED": "التقارير",
+        "INVOICE_ISSUED": "الفواتير",
+        "PAYMENT_RECORDED": "الدفعات"
       },
       "fromAriaLabel": "من تاريخ",
       "toAriaLabel": "إلى تاريخ"
@@ -1433,6 +1435,8 @@
       "radiology": "أشعة",
       "file": "ملف",
       "clinicalReport": "تقرير سريري",
+      "invoice": "فاتورة",
+      "payment": "دفعة",
       "inProgress": "قيد التنفيذ",
       "diagnosisOnRecord": "التشخيص مسجّل",
       "uploadedBy": "رُفع بواسطة {uploader}",

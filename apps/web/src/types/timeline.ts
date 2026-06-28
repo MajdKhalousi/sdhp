@@ -4,7 +4,9 @@ export type TimelineEventType =
   | 'LAB_ORDER'
   | 'RADIOLOGY_ORDER'
   | 'MEDICAL_FILE'
-  | 'CLINICAL_REPORT_CREATED';
+  | 'CLINICAL_REPORT_CREATED'
+  | 'INVOICE_ISSUED'
+  | 'PAYMENT_RECORDED';
 
 export type LabOrderStatus =
   | 'ORDERED'
@@ -123,13 +125,35 @@ export interface ClinicalReportEventData {
   createdBy: { id: string; firstName: string; lastName: string } | null;
 }
 
+export interface InvoiceEventData {
+  invoiceId: string;
+  invoiceNumber: string;
+  status: 'DRAFT' | 'ISSUED' | 'PARTIALLY_PAID' | 'PAID' | 'CANCELLED';
+  totalAmount: string;
+  paidAmount: string;
+  issuedAt: string;
+  appointmentId: string | null;
+  encounterId: string | null;
+}
+
+export interface PaymentEventData {
+  paymentId: string;
+  invoiceId: string;
+  amount: string;
+  method: 'CASH' | 'CARD' | 'BANK_TRANSFER' | 'INSURANCE' | 'OTHER';
+  voided: boolean;
+  receivedBy: { id: string; firstName: string; lastName: string };
+}
+
 export type TimelineEvent =
   | { type: 'ENCOUNTER';               id: string; timestamp: string; source: TimelineEventSource; data: EncounterEventData }
   | { type: 'PRESCRIPTION';            id: string; timestamp: string; source: TimelineEventSource; data: PrescriptionEventData }
   | { type: 'LAB_ORDER';               id: string; timestamp: string; source: TimelineEventSource; data: LabOrderEventData }
   | { type: 'RADIOLOGY_ORDER';         id: string; timestamp: string; source: TimelineEventSource; data: RadiologyOrderEventData }
   | { type: 'MEDICAL_FILE';            id: string; timestamp: string; source: TimelineEventSource; data: MedicalFileEventData }
-  | { type: 'CLINICAL_REPORT_CREATED'; id: string; timestamp: string; source: TimelineEventSource; data: ClinicalReportEventData };
+  | { type: 'CLINICAL_REPORT_CREATED'; id: string; timestamp: string; source: TimelineEventSource; data: ClinicalReportEventData }
+  | { type: 'INVOICE_ISSUED';          id: string; timestamp: string; source: TimelineEventSource; data: InvoiceEventData }
+  | { type: 'PAYMENT_RECORDED';        id: string; timestamp: string; source: TimelineEventSource; data: PaymentEventData };
 
 export interface PatientTimelineSummary {
   id: string;

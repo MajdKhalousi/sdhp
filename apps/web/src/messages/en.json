@@ -1408,7 +1408,9 @@
         "LAB_ORDER": "Lab Orders",
         "RADIOLOGY_ORDER": "Radiology",
         "MEDICAL_FILE": "Files",
-        "CLINICAL_REPORT_CREATED": "Reports"
+        "CLINICAL_REPORT_CREATED": "Reports",
+        "INVOICE_ISSUED": "Invoices",
+        "PAYMENT_RECORDED": "Payments"
       },
       "fromAriaLabel": "From date",
       "toAriaLabel": "To date"
@@ -1433,6 +1435,8 @@
       "radiology": "Radiology",
       "file": "File",
       "clinicalReport": "Clinical Report",
+      "invoice": "Invoice",
+      "payment": "Payment",
       "inProgress": "In Progress",
       "diagnosisOnRecord": "Diagnosis on record",
       "uploadedBy": "Uploaded by {uploader}",

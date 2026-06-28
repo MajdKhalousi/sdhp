@@ -11,6 +11,8 @@ const ALL_TYPES: TimelineEventType[] = [
   'RADIOLOGY_ORDER',
   'MEDICAL_FILE',
   'CLINICAL_REPORT_CREATED',
+  'INVOICE_ISSUED',
+  'PAYMENT_RECORDED',
 ];
 
 interface Props {

@@ -1,4 +1,4 @@
-import { ClinicalReportStatus, LabOrderStatus, MedicalFileCategory, Prisma, RadiologyOrderStatus, UserRole } from '@prisma/client';
+import { ClinicalReportStatus, InvoiceStatus, LabOrderStatus, MedicalFileCategory, PaymentMethod, Prisma, RadiologyOrderStatus, UserRole } from '@prisma/client';
 
 export enum TimelineEventType {
   ENCOUNTER               = 'ENCOUNTER',
@@ -7,6 +7,8 @@ export enum TimelineEventType {
   RADIOLOGY_ORDER         = 'RADIOLOGY_ORDER',
   MEDICAL_FILE            = 'MEDICAL_FILE',
   CLINICAL_REPORT_CREATED = 'CLINICAL_REPORT_CREATED',
+  INVOICE_ISSUED          = 'INVOICE_ISSUED',
+  PAYMENT_RECORDED        = 'PAYMENT_RECORDED',
 }
 
 export interface TimelineEventSource {
@@ -83,13 +85,35 @@ export interface ClinicalReportEventData {
   createdBy: { id: string; firstName: string; lastName: string; role: UserRole };
 }
 
+export interface InvoiceEventData {
+  invoiceId: string;
+  invoiceNumber: string;
+  status: InvoiceStatus;
+  totalAmount: Prisma.Decimal;
+  paidAmount: Prisma.Decimal;
+  issuedAt: Date;
+  appointmentId: string | null;
+  encounterId: string | null;
+}
+
+export interface PaymentEventData {
+  paymentId: string;
+  invoiceId: string;
+  amount: Prisma.Decimal;
+  method: PaymentMethod;
+  voided: boolean;
+  receivedBy: { id: string; firstName: string; lastName: string };
+}
+
 export type TimelineEvent =
   | { type: TimelineEventType.ENCOUNTER;               id: string; timestamp: Date; source: TimelineEventSource; data: EncounterEventData }
   | { type: TimelineEventType.PRESCRIPTION;            id: string; timestamp: Date; source: TimelineEventSource; data: PrescriptionEventData }
   | { type: TimelineEventType.LAB_ORDER;               id: string; timestamp: Date; source: TimelineEventSource; data: LabOrderEventData }
   | { type: TimelineEventType.RADIOLOGY_ORDER;         id: string; timestamp: Date; source: TimelineEventSource; data: RadiologyOrderEventData }
   | { type: TimelineEventType.MEDICAL_FILE;            id: string; timestamp: Date; source: TimelineEventSource; data: MedicalFileEventData }
-  | { type: TimelineEventType.CLINICAL_REPORT_CREATED; id: string; timestamp: Date; source: TimelineEventSource; data: ClinicalReportEventData };
+  | { type: TimelineEventType.CLINICAL_REPORT_CREATED; id: string; timestamp: Date; source: TimelineEventSource; data: ClinicalReportEventData }
+  | { type: TimelineEventType.INVOICE_ISSUED;          id: string; timestamp: Date; source: TimelineEventSource; data: InvoiceEventData }
+  | { type: TimelineEventType.PAYMENT_RECORDED;        id: string; timestamp: Date; source: TimelineEventSource; data: PaymentEventData };
 
 export interface PatientTimelineSummary {
   id: string;

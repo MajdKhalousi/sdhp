@@ -7,6 +7,8 @@ import { LabOrderCard } from './lab-order-card';
 import { RadiologyOrderCard } from './radiology-order-card';
 import { MedicalFileCard } from './medical-file-card';
 import { ClinicalReportCard } from './clinical-report-card';
+import { InvoiceCard } from './invoice-card';
+import { PaymentCard } from './payment-card';
 import { formatTime } from './format-time';
 
 interface Props {
@@ -28,6 +30,10 @@ export const TimelineEventCard = memo(function TimelineEventCard({ event }: Prop
       return <MedicalFileCard event={event} />;
     case 'CLINICAL_REPORT_CREATED':
       return <ClinicalReportCard event={event} />;
+    case 'INVOICE_ISSUED':
+      return <InvoiceCard event={event} />;
+    case 'PAYMENT_RECORDED':
+      return <PaymentCard event={event} />;
     default: {
       const unknown = event as unknown as { type: string; timestamp: string };
       return (

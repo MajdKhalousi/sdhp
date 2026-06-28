@@ -6,9 +6,11 @@ import { assertPatientLinkedToOrg } from '../../common/helpers/patient-access.he
 import {
   ClinicalReportEventData,
   EncounterEventData,
+  InvoiceEventData,
   LabOrderEventData,
   MedicalFileEventData,
   PatientTimelineResponse,
+  PaymentEventData,
   PrescriptionEventData,
   RadiologyOrderEventData,
   TimelineEvent,
@@ -101,6 +103,27 @@ const CLINICAL_REPORT_TIMELINE_SELECT = {
   createdBy: { select: { id: true, firstName: true, lastName: true, role: true } },
 } as const;
 
+const INVOICE_TIMELINE_SELECT = {
+  id: true,
+  invoiceNumber: true,
+  status: true,
+  totalAmount: true,
+  paidAmount: true,
+  issuedAt: true,
+  appointmentId: true,
+  encounterId: true,
+} as const;
+
+const PAYMENT_TIMELINE_SELECT = {
+  id: true,
+  invoiceId: true,
+  amount: true,
+  method: true,
+  paidAt: true,
+  voidedAt: true,
+  receivedBy: { select: { id: true, firstName: true, lastName: true } },
+} as const;
+
 // ── Source metadata ────────────────────────────────────────────────────────────
 
 const SOURCES: Record<TimelineEventType, TimelineEventSource> = {
@@ -110,6 +133,8 @@ const SOURCES: Record<TimelineEventType, TimelineEventSource> = {
   [TimelineEventType.RADIOLOGY_ORDER]:         { module: 'radiology',        entity: 'RadiologyOrder' },
   [TimelineEventType.MEDICAL_FILE]:            { module: 'medical-files',    entity: 'MedicalFile' },
   [TimelineEventType.CLINICAL_REPORT_CREATED]: { module: 'clinical-reports', entity: 'ClinicalReport' },
+  [TimelineEventType.INVOICE_ISSUED]:          { module: 'billing',          entity: 'Invoice' },
+  [TimelineEventType.PAYMENT_RECORDED]:        { module: 'billing',          entity: 'Payment' },
 };
 
 const ALL_EVENT_TYPES: TimelineEventType[] = Object.values(TimelineEventType);
@@ -151,6 +176,10 @@ export class MedicalTimelineService {
       fetchers.push(this.fetchMedicalFiles(patientId, organizationId, dateFilter));
     if (types.includes(TimelineEventType.CLINICAL_REPORT_CREATED))
       fetchers.push(this.fetchClinicalReports(patientId, organizationId, dateFilter));
+    if (types.includes(TimelineEventType.INVOICE_ISSUED))
+      fetchers.push(this.fetchInvoices(patientId, organizationId, dateFilter));
+    if (types.includes(TimelineEventType.PAYMENT_RECORDED))
+      fetchers.push(this.fetchPayments(patientId, organizationId, dateFilter));
 
     const allEvents = (await Promise.all(fetchers)).flat();
     allEvents.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
@@ -439,6 +468,76 @@ export class MedicalTimelineService {
           role: r.createdBy.role,
         },
       } satisfies ClinicalReportEventData,
+    }));
+  }
+
+  private async fetchInvoices(
+    patientId: string,
+    organizationId: string | undefined,
+    dateFilter: DateRangeFilter | undefined,
+  ): Promise<TimelineEvent[]> {
+    const rows = await this.prisma.invoice.findMany({
+      where: {
+        patientId,
+        ...(organizationId ? { organizationId } : {}),
+        deletedAt: null,
+        issuedAt: { not: null, ...dateFilter },
+      },
+      select: INVOICE_TIMELINE_SELECT,
+    });
+
+    return rows.map((i): TimelineEvent => ({
+      type: TimelineEventType.INVOICE_ISSUED,
+      id: i.id,
+      timestamp: i.issuedAt!,
+      source: SOURCES[TimelineEventType.INVOICE_ISSUED],
+      data: {
+        invoiceId: i.id,
+        invoiceNumber: i.invoiceNumber,
+        status: i.status,
+        totalAmount: i.totalAmount,
+        paidAmount: i.paidAmount,
+        issuedAt: i.issuedAt!,
+        appointmentId: i.appointmentId,
+        encounterId: i.encounterId,
+      } satisfies InvoiceEventData,
+    }));
+  }
+
+  private async fetchPayments(
+    patientId: string,
+    organizationId: string | undefined,
+    dateFilter: DateRangeFilter | undefined,
+  ): Promise<TimelineEvent[]> {
+    const rows = await this.prisma.payment.findMany({
+      where: {
+        invoice: {
+          patientId,
+          ...(organizationId ? { organizationId } : {}),
+          deletedAt: null,
+        },
+        ...(dateFilter ? { paidAt: dateFilter } : {}),
+      },
+      select: PAYMENT_TIMELINE_SELECT,
+    });
+
+    return rows.map((p): TimelineEvent => ({
+      type: TimelineEventType.PAYMENT_RECORDED,
+      id: p.id,
+      timestamp: p.paidAt,
+      source: SOURCES[TimelineEventType.PAYMENT_RECORDED],
+      data: {
+        paymentId: p.id,
+        invoiceId: p.invoiceId,
+        amount: p.amount,
+        method: p.method,
+        voided: p.voidedAt !== null,
+        receivedBy: {
+          id: p.receivedBy.id,
+          firstName: p.receivedBy.firstName,
+          lastName: p.receivedBy.lastName,
+        },
+      } satisfies PaymentEventData,
     }));
   }
 

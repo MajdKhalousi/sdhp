@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useUnsavedGuardStore } from '@/store/unsaved-guard';
+import { useSidebarUiStore } from '@/store/sidebar-ui';
 import {
   Activity,
   LayoutDashboard,
@@ -29,6 +30,7 @@ import {
   ScrollText,
   Briefcase,
   ListTodo,
+  ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
@@ -117,6 +119,23 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard/profile',              icon: CircleUser,      roles: NAV_PROFILE_ROLES,               group: 'profile' },
 ];
 
+// Shared by both the per-item highlight and the active-group lookup below —
+// must stay byte-for-byte the same logic in both places, so it's extracted
+// once instead of duplicated.
+function isNavItemActive(href: string, pathname: string): boolean {
+  if (href === '/dashboard') return pathname === '/dashboard';
+  if (href === '/dashboard/doctor') {
+    return (
+      pathname === '/dashboard/doctor' ||
+      (pathname.startsWith('/dashboard/doctor/') && !pathname.startsWith('/dashboard/doctor/queue'))
+    );
+  }
+  if (href === '/dashboard/settings/clinic') {
+    return pathname.startsWith('/dashboard/settings/');
+  }
+  return pathname === href || pathname.startsWith(href + '/');
+}
+
 interface SidebarProps {
   isMobileDrawer?: boolean;
   onClose?: () => void;
@@ -130,6 +149,8 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
   const guard = useUnsavedGuardStore();
   const { user } = useAuthStore();
   const role = user?.role ?? '';
+  const openGroups = useSidebarUiStore((s) => s.openGroups);
+  const toggleGroup = useSidebarUiStore((s) => s.toggleGroup);
 
   // Close drawer on Escape key
   useEffect(() => {
@@ -188,6 +209,13 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
     }))
     .filter((group) => group.items.length > 0);
 
+  // Recomputed from the live pathname on every render — the active route's
+  // group must always be open, even if it was previously closed/never
+  // opened in persisted state.
+  const activeGroupKey = visibleGroups.find((group) =>
+    group.items.some((item) => isNavItemActive(item.href, pathname)),
+  )?.groupKey;
+
   const asideClass = isMobileDrawer
     ? `fixed inset-y-0 z-50 flex w-64 flex-col border-r bg-sidebar ${locale === 'ar' ? 'right-0' : 'left-0'}`
     : 'flex h-screen w-64 flex-col border-r bg-sidebar';
@@ -211,52 +239,62 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
 
       {/* Navigation */}
       <nav className="flex-1 overflow-auto py-4">
-        <div className="space-y-4 px-3">
-          {visibleGroups.map(({ groupKey, items }) => (
-            <div key={groupKey}>
-              <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-sidebar-foreground/40">
-                {t(`groups.${groupKey}`)}
-              </p>
-              <ul className="space-y-0.5">
-                {items.map((item) => {
-                  const Icon = item.icon;
-                  const isActive =
-                    item.href === '/dashboard'
-                      ? pathname === '/dashboard'
-                      : item.href === '/dashboard/doctor'
-                      ? pathname === '/dashboard/doctor' ||
-                        (pathname.startsWith('/dashboard/doctor/') && !pathname.startsWith('/dashboard/doctor/queue'))
-                      : item.href === '/dashboard/settings/clinic'
-                      ? pathname.startsWith('/dashboard/settings/')
-                      : pathname === item.href || pathname.startsWith(item.href + '/');
+        <div className="space-y-2 px-3">
+          {visibleGroups.map(({ groupKey, items }) => {
+            // Active group is force-open regardless of persisted/manual
+            // state — see the activeGroupKey comment above.
+            const isOpen = openGroups.includes(groupKey) || groupKey === activeGroupKey;
+            const panelId = `nav-group-panel-${groupKey}`;
 
-                  return (
-                    <li key={item.href}>
-                      <Link
-                        href={item.href}
-                        locale={locale}
-                        onClick={(e) => {
-                          if (guard.enabled) {
-                            e.preventDefault();
-                            guard.requestNavigate(() => router.push(item.href));
-                          }
-                        }}
-                        className={cn(
-                          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                          isActive
-                            ? 'bg-primary text-primary-foreground'
-                            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-                        )}
-                      >
-                        <Icon className="h-4 w-4 shrink-0" />
-                        {navItemLabels[item.href]}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
+            return (
+              <div key={groupKey}>
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(groupKey)}
+                  aria-expanded={isOpen}
+                  aria-controls={panelId}
+                  className="flex w-full items-center justify-between rounded-md px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-sidebar-foreground/40 transition-colors hover:text-sidebar-foreground/70"
+                >
+                  <span>{t(`groups.${groupKey}`)}</span>
+                  <ChevronDown
+                    className={cn('h-3 w-3 shrink-0 transition-transform', isOpen && 'rotate-180')}
+                  />
+                </button>
+                {isOpen && (
+                  <ul id={panelId} className="mt-1 space-y-0.5">
+                    {items.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = isNavItemActive(item.href, pathname);
+
+                      return (
+                        <li key={item.href}>
+                          <Link
+                            href={item.href}
+                            locale={locale}
+                            onClick={(e) => {
+                              if (guard.enabled) {
+                                e.preventDefault();
+                                guard.requestNavigate(() => router.push(item.href));
+                              }
+                            }}
+                            className={cn(
+                              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                              isActive
+                                ? 'bg-primary text-primary-foreground'
+                                : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                            )}
+                          >
+                            <Icon className="h-4 w-4 shrink-0" />
+                            {navItemLabels[item.href]}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
         </div>
       </nav>
 

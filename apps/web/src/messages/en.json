@@ -78,7 +78,7 @@
       "profile": "My Profile"
     },
     "groups": {
-      "main": "Main",
+      "main": "Overview",
       "patients": "Patients",
       "appointmentsQueue": "Appointments & Queue",
       "medicalWork": "Medical Work",

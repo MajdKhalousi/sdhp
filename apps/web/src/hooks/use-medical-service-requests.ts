@@ -24,6 +24,13 @@ export interface MedicalServiceRequestDoctorRef {
   user: MedicalServiceRequestUserRef;
 }
 
+export interface MedicalServiceRequestPatientRef {
+  id: string;
+  firstName: string;
+  lastName: string;
+  mrn: string;
+}
+
 export interface MedicalServiceRequest {
   id: string;
   organizationId: string;
@@ -47,6 +54,7 @@ export interface MedicalServiceRequest {
   createdAt: string;
   updatedAt: string;
   service: MedicalServiceRequestServiceRef;
+  patient: MedicalServiceRequestPatientRef;
   requestedBy: MedicalServiceRequestUserRef;
   doctor: MedicalServiceRequestDoctorRef | null;
   paymentStatus: MedicalServiceRequestPaymentStatus;
@@ -87,6 +95,50 @@ export function usePatientMedicalServiceRequests(patientId: string) {
   });
 }
 
+export interface MedicalServiceRequestWorklistQuery {
+  executionStatus?: ServiceExecutionStatus;
+  serviceId?: string;
+  doctorId?: string;
+  branchId?: string;
+  organizationId?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  limit?: number;
+}
+
+export function useMedicalServiceRequestsWorklist(query: MedicalServiceRequestWorklistQuery = {}) {
+  const { executionStatus, serviceId, doctorId, branchId, organizationId, from, to, page, limit } = query;
+  return useQuery({
+    queryKey: [
+      'medical-service-requests-worklist',
+      executionStatus,
+      serviceId,
+      doctorId,
+      branchId,
+      organizationId,
+      from,
+      to,
+      page,
+      limit,
+    ],
+    queryFn: () =>
+      api.get<PaginatedMedicalServiceRequestsResponse>('/v1/medical-service-requests', {
+        ...(executionStatus ? { executionStatus } : {}),
+        ...(serviceId ? { serviceId } : {}),
+        ...(doctorId ? { doctorId } : {}),
+        ...(branchId ? { branchId } : {}),
+        ...(organizationId ? { organizationId } : {}),
+        ...(from ? { from } : {}),
+        ...(to ? { to } : {}),
+        ...(page !== undefined ? { page } : {}),
+        ...(limit !== undefined ? { limit } : {}),
+      }),
+    staleTime: 15_000,
+    refetchInterval: 30_000,
+  });
+}
+
 export function useCreateMedicalServiceRequest() {
   const qc = useQueryClient();
   return useMutation({
@@ -105,6 +157,7 @@ export function useExecuteMedicalServiceRequest() {
       api.patch<MedicalServiceRequest>(`/v1/medical-service-requests/${id}/execute`, {}),
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ['patient-medical-service-requests', variables.patientId] });
+      qc.invalidateQueries({ queryKey: ['medical-service-requests-worklist'] });
     },
   });
 }
@@ -122,6 +175,7 @@ export function useCancelMedicalServiceRequest() {
     }) => api.patch<MedicalServiceRequest>(`/v1/medical-service-requests/${id}/cancel`, payload),
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ['patient-medical-service-requests', variables.patientId] });
+      qc.invalidateQueries({ queryKey: ['medical-service-requests-worklist'] });
     },
   });
 }

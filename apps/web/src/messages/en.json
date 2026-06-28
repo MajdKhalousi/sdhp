@@ -60,6 +60,7 @@
       "doctorQueue": "Doctor Queue",
       "technicianLabs": "Lab Worklist",
       "technicianRadiology": "Radiology Worklist",
+      "medicalServicesQueue": "Medical Services Queue",
       "cashier": "Cashier",
       "invoices": "Invoices",
       "billingReports": "Billing Reports",
@@ -1796,6 +1797,67 @@
       "validation": {
         "invoiceRequired": "Please select a draft invoice."
       }
+    }
+  },
+  "medicalServicesQueue": {
+    "pageTitle": "Medical Services Queue",
+    "pageSubtitle": "Manage requested medical services across patients without opening each profile.",
+    "panelTitle": "Work Queue",
+    "autoRefresh": "Refreshes automatically every 30 seconds",
+    "refreshLabel": "Refresh",
+    "requestedBy": "Requested by",
+    "doctor": "Doctor",
+    "cancelReasonLabel": "Cancel reason",
+    "cancelReasonPromptLabel": "Reason for cancellation",
+    "cancelReasonPlaceholder": "e.g. Patient declined",
+    "filter": {
+      "active": "Active",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "searchPlaceholder": "Search patient name or MRN…",
+      "from": "From",
+      "to": "To",
+      "today": "Today",
+      "allServices": "All services",
+      "allDoctors": "All doctors",
+      "allBranches": "All branches",
+      "allOrganizations": "All organizations"
+    },
+    "executionStatus": {
+      "REQUESTED": "Requested",
+      "IN_PROGRESS": "In Progress",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
+    },
+    "statusCounts": {
+      "requested": "{count} requested",
+      "inProgress": "{count} in progress",
+      "completed": "{count} completed",
+      "cancelled": "{count} cancelled"
+    },
+    "actions": {
+      "execute": "Execute",
+      "executing": "Executing…",
+      "cancel": "Cancel",
+      "cancelling": "Cancelling…",
+      "confirmCancel": "Confirm Cancellation"
+    },
+    "validation": {
+      "cancelReasonRequired": "A cancellation reason is required."
+    },
+    "error": {
+      "loadFailed": "Failed to load the work queue.",
+      "occurred": "An error occurred."
+    },
+    "empty": {
+      "title": "No active medical service requests",
+      "subtitle": "There are no medical service requests matching the selected filters."
+    },
+    "counter": "{count, plural, one {# request} other {# requests}}",
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next",
+      "pageOf": "Page {page} of {totalPages}"
     }
   },
   "invoice": {

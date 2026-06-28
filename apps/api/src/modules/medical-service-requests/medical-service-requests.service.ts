@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InvoiceStatus, ServiceExecutionStatus, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
@@ -34,6 +34,7 @@ const SELECT = {
   createdAt: true,
   updatedAt: true,
   service: { select: { id: true, name: true, nameAr: true, code: true } },
+  patient: { select: { id: true, firstName: true, lastName: true, mrn: true } },
   requestedBy: { select: { id: true, firstName: true, lastName: true } },
   doctor: {
     select: { id: true, specialization: true, user: { select: { id: true, firstName: true, lastName: true } } },
@@ -116,22 +117,55 @@ export class MedicalServiceRequestsService {
     query: MedicalServiceRequestQueryDto,
     caller: JwtPayload,
   ): Promise<PaginatedResponse<unknown>> {
-    const patient = await this.prisma.patient.findFirst({
-      where: { id: query.patientId, deletedAt: null },
-      select: { id: true },
-    });
-    if (!patient) throw new NotFoundException('Patient not found');
-    await assertPatientLinkedToOrg(this.prisma, query.patientId, caller);
-
-    const organizationId = caller.role !== UserRole.SUPER_ADMIN ? caller.organizationId : undefined;
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
     const skip = (page - 1) * limit;
 
+    // Patient-scoped mode — exact existing behavior, unchanged.
+    if (query.patientId) {
+      const patient = await this.prisma.patient.findFirst({
+        where: { id: query.patientId, deletedAt: null },
+        select: { id: true },
+      });
+      if (!patient) throw new NotFoundException('Patient not found');
+      await assertPatientLinkedToOrg(this.prisma, query.patientId, caller);
+
+      const organizationId = caller.role !== UserRole.SUPER_ADMIN ? caller.organizationId : undefined;
+
+      const where = {
+        patientId: query.patientId,
+        ...(organizationId ? { organizationId } : {}),
+        deletedAt: null,
+      };
+
+      const [data, total] = await Promise.all([
+        this.prisma.medicalServiceRequest.findMany({
+          where,
+          select: SELECT,
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit,
+        }),
+        this.prisma.medicalServiceRequest.count({ where }),
+      ]);
+
+      return { data: data.map((r) => this.toResponse(r)), total, page, limit };
+    }
+
+    // Org/branch-wide work-queue mode — no patientId, scoped by organization only.
+    const orgId = this.resolveReadOrgId(query, caller);
+    if (query.branchId && orgId) {
+      await this.assertBranchBelongsToOrg(query.branchId, orgId);
+    }
+
     const where = {
-      patientId: query.patientId,
-      ...(organizationId ? { organizationId } : {}),
+      ...(orgId ? { organizationId: orgId } : {}),
+      ...(query.branchId ? { branchId: query.branchId } : {}),
+      ...(query.executionStatus ? { executionStatus: query.executionStatus } : {}),
+      ...(query.serviceId ? { serviceId: query.serviceId } : {}),
+      ...(query.doctorId ? { doctorId: query.doctorId } : {}),
       deletedAt: null,
+      ...this.createdAtFilter(query.from, query.to),
     };
 
     const [data, total] = await Promise.all([
@@ -376,5 +410,23 @@ export class MedicalServiceRequestsService {
       select: { id: true },
     });
     if (!doctor) throw new BadRequestException('Doctor does not belong to this organization');
+  }
+
+  private resolveReadOrgId(query: MedicalServiceRequestQueryDto, caller: JwtPayload): string | undefined {
+    if (caller.role === UserRole.SUPER_ADMIN) return query.organizationId;
+    if (query.organizationId && query.organizationId !== caller.organizationId) {
+      throw new ForbiddenException('Cannot access medical service requests for another organization');
+    }
+    return caller.organizationId;
+  }
+
+  private createdAtFilter(from?: string, to?: string) {
+    if (!from && !to) return {};
+    return {
+      createdAt: {
+        ...(from ? { gte: new Date(from) } : {}),
+        ...(to ? { lte: new Date(to) } : {}),
+      },
+    };
   }
 }

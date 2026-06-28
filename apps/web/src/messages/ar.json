@@ -60,6 +60,7 @@
       "doctorQueue": "طابور الطبيب",
       "technicianLabs": "قائمة عمل المختبر",
       "technicianRadiology": "قائمة عمل الأشعة",
+      "medicalServicesQueue": "قائمة عمل الخدمات الطبية",
       "cashier": "الصندوق",
       "invoices": "الفواتير",
       "billingReports": "تقارير الفوترة",
@@ -1796,6 +1797,67 @@
       "validation": {
         "invoiceRequired": "يرجى اختيار فاتورة مسودة."
       }
+    }
+  },
+  "medicalServicesQueue": {
+    "pageTitle": "قائمة عمل الخدمات الطبية",
+    "pageSubtitle": "إدارة طلبات الخدمات الطبية عبر المرضى دون فتح كل ملف على حدة.",
+    "panelTitle": "قائمة العمل",
+    "autoRefresh": "تُحدَّث تلقائياً كل 30 ثانية",
+    "refreshLabel": "تحديث",
+    "requestedBy": "طلب بواسطة",
+    "doctor": "الطبيب",
+    "cancelReasonLabel": "سبب الإلغاء",
+    "cancelReasonPromptLabel": "سبب الإلغاء",
+    "cancelReasonPlaceholder": "مثال: رفض المريض",
+    "filter": {
+      "active": "نشطة",
+      "completed": "منجزة",
+      "cancelled": "ملغاة",
+      "searchPlaceholder": "ابحث باسم المريض أو رقم السجل…",
+      "from": "من",
+      "to": "إلى",
+      "today": "اليوم",
+      "allServices": "جميع الخدمات",
+      "allDoctors": "جميع الأطباء",
+      "allBranches": "جميع الفروع",
+      "allOrganizations": "جميع المنظمات"
+    },
+    "executionStatus": {
+      "REQUESTED": "مطلوبة",
+      "IN_PROGRESS": "قيد التنفيذ",
+      "COMPLETED": "منجزة",
+      "CANCELLED": "ملغاة"
+    },
+    "statusCounts": {
+      "requested": "{count} مطلوبة",
+      "inProgress": "{count} قيد التنفيذ",
+      "completed": "{count} منجزة",
+      "cancelled": "{count} ملغاة"
+    },
+    "actions": {
+      "execute": "تنفيذ",
+      "executing": "جارٍ التنفيذ…",
+      "cancel": "إلغاء",
+      "cancelling": "جارٍ الإلغاء…",
+      "confirmCancel": "تأكيد الإلغاء"
+    },
+    "validation": {
+      "cancelReasonRequired": "سبب الإلغاء مطلوب."
+    },
+    "error": {
+      "loadFailed": "فشل تحميل قائمة العمل.",
+      "occurred": "حدث خطأ ما."
+    },
+    "empty": {
+      "title": "لا توجد طلبات خدمات طبية نشطة",
+      "subtitle": "لا توجد طلبات خدمات طبية مطابقة للفلاتر المحددة."
+    },
+    "counter": "{count, plural, one {# طلب} other {# طلبات}}",
+    "pagination": {
+      "prev": "السابق",
+      "next": "التالي",
+      "pageOf": "صفحة {page} من {totalPages}"
     }
   },
   "invoice": {

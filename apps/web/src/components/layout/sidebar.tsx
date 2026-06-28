@@ -28,6 +28,7 @@ import {
   Wallet,
   ScrollText,
   Briefcase,
+  ListTodo,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
@@ -42,6 +43,7 @@ import {
   NAV_MY_FOLLOW_UPS_ROLES,
   NAV_TECHNICIAN_LABS_ROLES,
   NAV_TECHNICIAN_RADIOLOGY_ROLES,
+  NAV_MEDICAL_SERVICES_QUEUE_ROLES,
   NAV_FOLLOW_UPS_ROLES,
   NAV_CASHIER_ROLES,
   NAV_INVOICES_ROLES,
@@ -74,6 +76,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard/my-follow-ups',        icon: BookMarked,      roles: NAV_MY_FOLLOW_UPS_ROLES },
   { href: '/dashboard/technician/labs',      icon: FlaskConical,    roles: NAV_TECHNICIAN_LABS_ROLES },
   { href: '/dashboard/technician/radiology', icon: ScanLine,        roles: NAV_TECHNICIAN_RADIOLOGY_ROLES },
+  { href: '/dashboard/medical-services-queue', icon: ListTodo,      roles: NAV_MEDICAL_SERVICES_QUEUE_ROLES },
   { href: '/dashboard/follow-ups',           icon: CalendarClock,   roles: NAV_FOLLOW_UPS_ROLES },
   { href: '/dashboard/cashier',              icon: CreditCard,      roles: NAV_CASHIER_ROLES },
   { href: '/dashboard/invoices',             icon: Receipt,         roles: NAV_INVOICES_ROLES },
@@ -132,6 +135,7 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
     '/dashboard/doctor/queue':         t('items.doctorQueue'),
     '/dashboard/technician/labs':      t('items.technicianLabs'),
     '/dashboard/technician/radiology': t('items.technicianRadiology'),
+    '/dashboard/medical-services-queue': t('items.medicalServicesQueue'),
     '/dashboard/my-follow-ups':         t('items.myFollowUps'),
     '/dashboard/follow-ups':            t('items.followUps'),
     '/dashboard/cashier':              t('items.cashier'),

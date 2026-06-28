@@ -17,6 +17,7 @@ export const NAV_DOCTOR_QUEUE_ROLES: readonly string[]        = ['ORG_ADMIN', 'D
 export const NAV_MY_FOLLOW_UPS_ROLES: readonly string[]       = ['DOCTOR'];
 export const NAV_TECHNICIAN_LABS_ROLES: readonly string[]     = ['ORG_ADMIN', 'TECHNICIAN'];
 export const NAV_TECHNICIAN_RADIOLOGY_ROLES: readonly string[]= ['ORG_ADMIN', 'TECHNICIAN'];
+export const NAV_MEDICAL_SERVICES_QUEUE_ROLES: readonly string[] = ['ORG_ADMIN', 'DOCTOR', 'NURSE', 'TECHNICIAN', 'SECRETARY'];
 export const NAV_FOLLOW_UPS_ROLES: readonly string[]          = ['ORG_ADMIN', 'BRANCH_ADMIN', 'NURSE', 'SECRETARY'];
 export const NAV_CASHIER_ROLES: readonly string[]             = ['ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY'];
 export const NAV_INVOICES_ROLES: readonly string[]            = ['ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY'];
@@ -140,6 +141,14 @@ export const ENCOUNTER_DETAIL_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN'
 // ─── Technician worklist pages ────────────────────────────────────────────────
 
 export const TECHNICIAN_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'TECHNICIAN']);
+
+// ─── Medical services work queue page access ─────────────────────────────────
+// SUPER_ADMIN included here even though it's excluded from
+// NAV_MEDICAL_SERVICES_QUEUE_ROLES above — mirrors TECHNICIAN_ACCESS_ROLES'
+// direct-URL-access convention.
+export const MEDICAL_SERVICES_QUEUE_ACCESS_ROLES = new Set([
+  'SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'TECHNICIAN', 'SECRETARY',
+]);
 
 // ─── Billing & cashier page access ───────────────────────────────────────────
 

@@ -31,6 +31,7 @@ import { LabOrdersTab } from '@/components/patients/lab-orders-tab';
 import { RadiologyOrdersTab } from '@/components/patients/radiology-orders-tab';
 import { ClinicalReportsTab } from '@/components/patients/clinical-reports-tab';
 import { InvoicesTab } from '@/components/patients/invoices-tab';
+import { MedicalServicesTab } from '@/components/patients/medical-services-tab';
 import { PatientAppointmentsTab } from '@/components/patients/patient-appointments-tab';
 import { PatientClinicalSummary } from '@/components/patients/patient-clinical-summary';
 import { PatientSafetyAlerts } from '@/components/patients/patient-safety-alerts';
@@ -325,6 +326,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
     { value: 'radiology',     label: t('detail.tabs.radiology')     },
     { value: 'files',         label: t('detail.tabs.files')         },
     { value: 'reports',       label: t('detail.tabs.reports')       },
+    { value: 'medical-services', label: t('detail.tabs.medicalServices') },
     { value: 'invoices',      label: t('detail.tabs.invoices')      },
   ];
 
@@ -535,6 +537,10 @@ export default function PatientPage({ params }: { params: { id: string } }) {
 
         <TabPanel value="reports" activeValue={activeTab}>
           <ClinicalReportsTab patientId={id} />
+        </TabPanel>
+
+        <TabPanel value="medical-services" activeValue={activeTab}>
+          <MedicalServicesTab patientId={id} />
         </TabPanel>
 
         <TabPanel value="invoices" activeValue={activeTab}>

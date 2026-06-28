@@ -1052,7 +1052,8 @@
         "reports": "Reports",
         "invoices": "Invoices",
         "appointments": "Appointments",
-        "followUps": "Follow-Ups"
+        "followUps": "Follow-Ups",
+        "medicalServices": "Medical Services"
       },
       "followUps": {
         "empty": "No follow-up records for this patient."
@@ -1718,6 +1719,71 @@
       "pending": "Pending",
       "completedToday": "Completed Today",
       "searchPlaceholder": "Search patient name or MRN…"
+    }
+  },
+  "medicalServiceRequests": {
+    "cardLabel": "Service Request",
+    "empty": "No medical service requests for this patient.",
+    "requestedBy": "Requested by",
+    "doctor": "Doctor",
+    "notes": "Notes",
+    "quantityPrefix": "Qty",
+    "cancelReasonLabel": "Cancel reason",
+    "cancelReasonPromptLabel": "Reason for cancellation",
+    "cancelReasonPlaceholder": "e.g. Patient declined",
+    "executionStatus": {
+      "REQUESTED": "Requested",
+      "IN_PROGRESS": "In Progress",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
+    },
+    "paymentStatus": {
+      "UNBILLED": "Unbilled",
+      "DRAFT": "Draft",
+      "ISSUED": "Issued",
+      "PARTIALLY_PAID": "Partially Paid",
+      "PAID": "Paid",
+      "CANCELLED": "Cancelled"
+    },
+    "actions": {
+      "request": "Request Service",
+      "execute": "Execute",
+      "executing": "Executing…",
+      "cancel": "Cancel",
+      "cancelling": "Cancelling…",
+      "confirmCancel": "Confirm Cancellation",
+      "bill": "Bill"
+    },
+    "validation": {
+      "cancelReasonRequired": "A cancellation reason is required."
+    },
+    "form": {
+      "title": "Request Medical Service",
+      "doctorLabel": "Doctor",
+      "loadingDoctors": "Loading doctors…",
+      "noDoctorSelected": "No doctor selected",
+      "quantityLabel": "Quantity",
+      "notesLabel": "Notes",
+      "notesPlaceholder": "Optional",
+      "submit": "Request Service",
+      "submitting": "Requesting…",
+      "validation": {
+        "serviceRequired": "Please select a service.",
+        "quantityMin": "Quantity must be at least 1."
+      }
+    },
+    "bill": {
+      "title": "Bill to Invoice",
+      "invoiceLabel": "Draft Invoice",
+      "invoicePlaceholder": "Select a draft invoice",
+      "loadingInvoices": "Loading invoices…",
+      "noDraftInvoices": "This patient has no draft invoices. Create one first.",
+      "createInvoiceLink": "Create Invoice",
+      "submit": "Bill Request",
+      "submitting": "Billing…",
+      "validation": {
+        "invoiceRequired": "Please select a draft invoice."
+      }
     }
   },
   "invoice": {

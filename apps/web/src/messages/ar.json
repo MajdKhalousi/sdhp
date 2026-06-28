@@ -1052,7 +1052,8 @@
         "reports": "التقارير",
         "invoices": "الفواتير",
         "appointments": "المواعيد",
-        "followUps": "المتابعات"
+        "followUps": "المتابعات",
+        "medicalServices": "الخدمات الطبية"
       },
       "followUps": {
         "empty": "لا توجد سجلات متابعة لهذا المريض."
@@ -1718,6 +1719,71 @@
       "pending": "معلّق",
       "completedToday": "مكتمل اليوم",
       "searchPlaceholder": "ابحث باسم المريض أو رقم السجل…"
+    }
+  },
+  "medicalServiceRequests": {
+    "cardLabel": "طلب خدمة",
+    "empty": "لا توجد طلبات خدمات طبية لهذا المريض.",
+    "requestedBy": "طلب بواسطة",
+    "doctor": "الطبيب",
+    "notes": "ملاحظات",
+    "quantityPrefix": "الكمية",
+    "cancelReasonLabel": "سبب الإلغاء",
+    "cancelReasonPromptLabel": "سبب الإلغاء",
+    "cancelReasonPlaceholder": "مثال: رفض المريض",
+    "executionStatus": {
+      "REQUESTED": "مطلوبة",
+      "IN_PROGRESS": "قيد التنفيذ",
+      "COMPLETED": "منجزة",
+      "CANCELLED": "ملغاة"
+    },
+    "paymentStatus": {
+      "UNBILLED": "غير مفوترة",
+      "DRAFT": "مسودة",
+      "ISSUED": "صادرة",
+      "PARTIALLY_PAID": "مدفوعة جزئياً",
+      "PAID": "مدفوعة",
+      "CANCELLED": "ملغاة"
+    },
+    "actions": {
+      "request": "طلب خدمة",
+      "execute": "تنفيذ",
+      "executing": "جارٍ التنفيذ…",
+      "cancel": "إلغاء",
+      "cancelling": "جارٍ الإلغاء…",
+      "confirmCancel": "تأكيد الإلغاء",
+      "bill": "فوترة"
+    },
+    "validation": {
+      "cancelReasonRequired": "سبب الإلغاء مطلوب."
+    },
+    "form": {
+      "title": "طلب خدمة طبية",
+      "doctorLabel": "الطبيب",
+      "loadingDoctors": "جارٍ تحميل الأطباء…",
+      "noDoctorSelected": "لم يتم اختيار طبيب",
+      "quantityLabel": "الكمية",
+      "notesLabel": "ملاحظات",
+      "notesPlaceholder": "اختياري",
+      "submit": "طلب الخدمة",
+      "submitting": "جارٍ الطلب…",
+      "validation": {
+        "serviceRequired": "يرجى اختيار خدمة.",
+        "quantityMin": "يجب أن تكون الكمية 1 على الأقل."
+      }
+    },
+    "bill": {
+      "title": "فوترة إلى فاتورة",
+      "invoiceLabel": "فاتورة مسودة",
+      "invoicePlaceholder": "اختر فاتورة مسودة",
+      "loadingInvoices": "جارٍ تحميل الفواتير…",
+      "noDraftInvoices": "لا توجد فواتير مسودة لهذا المريض. أنشئ فاتورة أولاً.",
+      "createInvoiceLink": "إنشاء فاتورة",
+      "submit": "فوترة الطلب",
+      "submitting": "جارٍ الفوترة…",
+      "validation": {
+        "invoiceRequired": "يرجى اختيار فاتورة مسودة."
+      }
     }
   },
   "invoice": {

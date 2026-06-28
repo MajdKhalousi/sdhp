@@ -59,37 +59,62 @@ import {
   NAV_PROFILE_ROLES,
 } from '@/lib/permissions';
 
+// Group keys map 1:1 to nav.groups.* i18n labels. Order here is render order.
+type NavGroupKey =
+  | 'main'
+  | 'patients'
+  | 'appointmentsQueue'
+  | 'medicalWork'
+  | 'billingCashier'
+  | 'admin'
+  | 'settings'
+  | 'platform'
+  | 'profile';
+
 type NavItem = {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   roles: readonly string[];
+  group: NavGroupKey;
 };
 
+const GROUP_ORDER: NavGroupKey[] = [
+  'main',
+  'patients',
+  'appointmentsQueue',
+  'medicalWork',
+  'billingCashier',
+  'admin',
+  'settings',
+  'platform',
+  'profile',
+];
+
 const NAV_ITEMS: NavItem[] = [
-  { href: '/dashboard',                      icon: LayoutDashboard, roles: NAV_DASHBOARD_ROLES },
-  { href: '/dashboard/today',                icon: ListChecks,      roles: NAV_TODAY_ROLES },
-  { href: '/dashboard/patients',             icon: Users,           roles: NAV_PATIENTS_ROLES },
-  { href: '/dashboard/appointments',         icon: Calendar,        roles: NAV_APPOINTMENTS_ROLES },
-  { href: '/dashboard/queue',                icon: ListOrdered,     roles: NAV_QUEUE_ROLES },
-  { href: '/dashboard/doctor',               icon: Stethoscope,     roles: NAV_DOCTOR_WORKSPACE_ROLES },
-  { href: '/dashboard/doctor/queue',         icon: ClipboardList,   roles: NAV_DOCTOR_QUEUE_ROLES },
-  { href: '/dashboard/my-follow-ups',        icon: BookMarked,      roles: NAV_MY_FOLLOW_UPS_ROLES },
-  { href: '/dashboard/technician/labs',      icon: FlaskConical,    roles: NAV_TECHNICIAN_LABS_ROLES },
-  { href: '/dashboard/technician/radiology', icon: ScanLine,        roles: NAV_TECHNICIAN_RADIOLOGY_ROLES },
-  { href: '/dashboard/medical-services-queue', icon: ListTodo,      roles: NAV_MEDICAL_SERVICES_QUEUE_ROLES },
-  { href: '/dashboard/follow-ups',           icon: CalendarClock,   roles: NAV_FOLLOW_UPS_ROLES },
-  { href: '/dashboard/cashier',              icon: CreditCard,      roles: NAV_CASHIER_ROLES },
-  { href: '/dashboard/invoices',             icon: Receipt,         roles: NAV_INVOICES_ROLES },
-  { href: '/dashboard/reports/billing',      icon: BarChart2,       roles: NAV_BILLING_REPORTS_ROLES },
-  { href: '/dashboard/doctors',              icon: UserCog,         roles: NAV_DOCTORS_ROLES },
-  { href: '/dashboard/platform/overview',      icon: Building2,     roles: NAV_PLATFORM_ROLES },
-  { href: '/dashboard/platform/organizations', icon: List,          roles: NAV_PLATFORM_ORGANIZATIONS_ROLES },
-  { href: '/dashboard/platform/payments',      icon: Wallet,        roles: NAV_PLATFORM_PAYMENTS_ROLES },
-  { href: '/dashboard/platform/audit-logs',    icon: ScrollText,    roles: NAV_PLATFORM_AUDIT_LOGS_ROLES },
-  { href: '/dashboard/platform/users',         icon: Users,         roles: NAV_PLATFORM_USERS_ROLES },
-  { href: '/dashboard/hr',                   icon: Briefcase,       roles: NAV_HR_ROLES },
-  { href: '/dashboard/settings/clinic',      icon: Settings,        roles: NAV_SETTINGS_ROLES },
-  { href: '/dashboard/profile',              icon: CircleUser,      roles: NAV_PROFILE_ROLES },
+  { href: '/dashboard',                      icon: LayoutDashboard, roles: NAV_DASHBOARD_ROLES,             group: 'main' },
+  { href: '/dashboard/today',                icon: ListChecks,      roles: NAV_TODAY_ROLES,                 group: 'main' },
+  { href: '/dashboard/patients',             icon: Users,           roles: NAV_PATIENTS_ROLES,              group: 'patients' },
+  { href: '/dashboard/follow-ups',           icon: CalendarClock,   roles: NAV_FOLLOW_UPS_ROLES,            group: 'patients' },
+  { href: '/dashboard/my-follow-ups',        icon: BookMarked,      roles: NAV_MY_FOLLOW_UPS_ROLES,         group: 'patients' },
+  { href: '/dashboard/appointments',         icon: Calendar,        roles: NAV_APPOINTMENTS_ROLES,          group: 'appointmentsQueue' },
+  { href: '/dashboard/queue',                icon: ListOrdered,     roles: NAV_QUEUE_ROLES,                 group: 'appointmentsQueue' },
+  { href: '/dashboard/doctor/queue',         icon: ClipboardList,   roles: NAV_DOCTOR_QUEUE_ROLES,          group: 'appointmentsQueue' },
+  { href: '/dashboard/doctor',               icon: Stethoscope,     roles: NAV_DOCTOR_WORKSPACE_ROLES,      group: 'medicalWork' },
+  { href: '/dashboard/technician/labs',      icon: FlaskConical,    roles: NAV_TECHNICIAN_LABS_ROLES,       group: 'medicalWork' },
+  { href: '/dashboard/technician/radiology', icon: ScanLine,        roles: NAV_TECHNICIAN_RADIOLOGY_ROLES,  group: 'medicalWork' },
+  { href: '/dashboard/medical-services-queue', icon: ListTodo,      roles: NAV_MEDICAL_SERVICES_QUEUE_ROLES, group: 'medicalWork' },
+  { href: '/dashboard/cashier',              icon: CreditCard,      roles: NAV_CASHIER_ROLES,               group: 'billingCashier' },
+  { href: '/dashboard/invoices',             icon: Receipt,         roles: NAV_INVOICES_ROLES,              group: 'billingCashier' },
+  { href: '/dashboard/reports/billing',      icon: BarChart2,       roles: NAV_BILLING_REPORTS_ROLES,       group: 'billingCashier' },
+  { href: '/dashboard/doctors',              icon: UserCog,         roles: NAV_DOCTORS_ROLES,               group: 'admin' },
+  { href: '/dashboard/hr',                   icon: Briefcase,       roles: NAV_HR_ROLES,                    group: 'admin' },
+  { href: '/dashboard/settings/clinic',      icon: Settings,        roles: NAV_SETTINGS_ROLES,              group: 'settings' },
+  { href: '/dashboard/platform/overview',      icon: Building2,     roles: NAV_PLATFORM_ROLES,              group: 'platform' },
+  { href: '/dashboard/platform/organizations', icon: List,          roles: NAV_PLATFORM_ORGANIZATIONS_ROLES, group: 'platform' },
+  { href: '/dashboard/platform/payments',      icon: Wallet,        roles: NAV_PLATFORM_PAYMENTS_ROLES,     group: 'platform' },
+  { href: '/dashboard/platform/audit-logs',    icon: ScrollText,    roles: NAV_PLATFORM_AUDIT_LOGS_ROLES,   group: 'platform' },
+  { href: '/dashboard/platform/users',         icon: Users,         roles: NAV_PLATFORM_USERS_ROLES,        group: 'platform' },
+  { href: '/dashboard/profile',              icon: CircleUser,      roles: NAV_PROFILE_ROLES,               group: 'profile' },
 ];
 
 interface SidebarProps {
@@ -154,6 +179,15 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
 
   const visibleItems = NAV_ITEMS.filter((item) => item.roles.includes(role));
 
+  // Group visible items in GROUP_ORDER order; groups with zero visible
+  // items are omitted entirely so a role never sees an empty section header.
+  const visibleGroups = GROUP_ORDER
+    .map((groupKey) => ({
+      groupKey,
+      items: visibleItems.filter((item) => item.group === groupKey),
+    }))
+    .filter((group) => group.items.length > 0);
+
   const asideClass = isMobileDrawer
     ? `fixed inset-y-0 z-50 flex w-64 flex-col border-r bg-sidebar ${locale === 'ar' ? 'right-0' : 'left-0'}`
     : 'flex h-screen w-64 flex-col border-r bg-sidebar';
@@ -177,44 +211,53 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
 
       {/* Navigation */}
       <nav className="flex-1 overflow-auto py-4">
-        <ul className="space-y-0.5 px-3">
-          {visibleItems.map((item) => {
-            const Icon = item.icon;
-            const isActive =
-              item.href === '/dashboard'
-                ? pathname === '/dashboard'
-                : item.href === '/dashboard/doctor'
-                ? pathname === '/dashboard/doctor' ||
-                  (pathname.startsWith('/dashboard/doctor/') && !pathname.startsWith('/dashboard/doctor/queue'))
-                : item.href === '/dashboard/settings/clinic'
-                ? pathname.startsWith('/dashboard/settings/')
-                : pathname === item.href || pathname.startsWith(item.href + '/');
+        <div className="space-y-4 px-3">
+          {visibleGroups.map(({ groupKey, items }) => (
+            <div key={groupKey}>
+              <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-sidebar-foreground/40">
+                {t(`groups.${groupKey}`)}
+              </p>
+              <ul className="space-y-0.5">
+                {items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive =
+                    item.href === '/dashboard'
+                      ? pathname === '/dashboard'
+                      : item.href === '/dashboard/doctor'
+                      ? pathname === '/dashboard/doctor' ||
+                        (pathname.startsWith('/dashboard/doctor/') && !pathname.startsWith('/dashboard/doctor/queue'))
+                      : item.href === '/dashboard/settings/clinic'
+                      ? pathname.startsWith('/dashboard/settings/')
+                      : pathname === item.href || pathname.startsWith(item.href + '/');
 
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  locale={locale}
-                  onClick={(e) => {
-                    if (guard.enabled) {
-                      e.preventDefault();
-                      guard.requestNavigate(() => router.push(item.href));
-                    }
-                  }}
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-                  )}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  {navItemLabels[item.href]}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        locale={locale}
+                        onClick={(e) => {
+                          if (guard.enabled) {
+                            e.preventDefault();
+                            guard.requestNavigate(() => router.push(item.href));
+                          }
+                        }}
+                        className={cn(
+                          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                          isActive
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                        )}
+                      >
+                        <Icon className="h-4 w-4 shrink-0" />
+                        {navItemLabels[item.href]}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
       </nav>
 
       {/* Footer */}

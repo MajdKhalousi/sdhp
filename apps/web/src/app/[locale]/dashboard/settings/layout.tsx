@@ -1,25 +1,15 @@
 'use client';
 
-import { useEffect } from 'react';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { Tabs, type TabItem } from '@/components/ui/tabs';
-import { useAuthStore } from '@/store/auth';
+import { RoleGuard } from '@/components/layout/role-guard';
 import { SETTINGS_ACCESS_ROLES } from '@/lib/permissions';
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
   const t = useTranslations('settings');
   const router = useRouter();
   const pathname = usePathname();
-  const { user } = useAuthStore();
-
-  useEffect(() => {
-    if (user && !SETTINGS_ACCESS_ROLES.has(user.role)) {
-      router.replace('/dashboard');
-    }
-  }, [user, router]);
-
-  if (!user || !SETTINGS_ACCESS_ROLES.has(user.role)) return null;
 
   const activeTab = pathname.startsWith('/dashboard/settings/visit-types')
     ? 'visit-types'
@@ -40,16 +30,18 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="overflow-x-auto">
-        <Tabs
-          tabs={TABS}
-          value={activeTab}
-          onChange={(v) => router.push(`/dashboard/settings/${v}`)}
-          aria-label="Settings sections"
-        />
+    <RoleGuard allowedRoles={SETTINGS_ACCESS_ROLES}>
+      <div className="space-y-6">
+        <div className="overflow-x-auto">
+          <Tabs
+            tabs={TABS}
+            value={activeTab}
+            onChange={(v) => router.push(`/dashboard/settings/${v}`)}
+            aria-label="Settings sections"
+          />
+        </div>
+        <div>{children}</div>
       </div>
-      <div>{children}</div>
-    </div>
+    </RoleGuard>
   );
 }

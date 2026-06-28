@@ -76,6 +76,17 @@
       "myFollowUps": "مراجعاتي",
       "today": "اليوم",
       "profile": "ملفي الشخصي"
+    },
+    "groups": {
+      "main": "الرئيسية",
+      "patients": "المرضى",
+      "appointmentsQueue": "المواعيد والطابور",
+      "medicalWork": "العمل الطبي",
+      "billingCashier": "الفوترة والصندوق",
+      "admin": "الإدارة",
+      "settings": "الإعدادات",
+      "platform": "المنصة",
+      "profile": "ملفي الشخصي"
     }
   },
   "dashboard": {
@@ -2120,9 +2131,7 @@
       "visitTypes": "أنواع الزيارات",
       "services": "الخدمات",
       "billing": "الفواتير",
-      "departments": "الأقسام",
-      "staff": "الموظفون",
-      "employees": "السجلات الوظيفية"
+      "departments": "الأقسام"
     },
     "clinic": {
       "title": "إعدادات العيادة",

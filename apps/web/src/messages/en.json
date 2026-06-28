@@ -76,6 +76,17 @@
       "myFollowUps": "My Follow-ups",
       "today": "Today",
       "profile": "My Profile"
+    },
+    "groups": {
+      "main": "Main",
+      "patients": "Patients",
+      "appointmentsQueue": "Appointments & Queue",
+      "medicalWork": "Medical Work",
+      "billingCashier": "Billing & Cashier",
+      "admin": "Admin",
+      "settings": "Settings",
+      "platform": "Platform",
+      "profile": "Profile"
     }
   },
   "dashboard": {
@@ -2120,9 +2131,7 @@
       "visitTypes": "Visit Types",
       "services": "Services",
       "billing": "Billing",
-      "departments": "Departments",
-      "staff": "Staff",
-      "employees": "Employees"
+      "departments": "Departments"
     },
     "clinic": {
       "title": "Clinic Settings",

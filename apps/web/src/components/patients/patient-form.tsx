@@ -15,6 +15,7 @@ interface PatientFormProps {
   onSubmit: (data: CreatePatientInput | UpdatePatientInput) => Promise<void> | void;
   onCancel?: () => void;
   onDirtyChange?: (dirty: boolean) => void;
+  onPhoneChange?: (phone: string) => void;
   isSubmitting?: boolean;
 }
 
@@ -140,6 +141,7 @@ export function PatientForm({
   onSubmit,
   onCancel,
   onDirtyChange,
+  onPhoneChange,
   isSubmitting = false,
 }: PatientFormProps) {
   const t = useTranslations('patient.form');
@@ -162,6 +164,9 @@ export function PatientForm({
     setValues((prev) => ({ ...prev, [field]: value }));
     if (field in errors) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+    if (field === 'phone') {
+      onPhoneChange?.(value);
     }
   }
 

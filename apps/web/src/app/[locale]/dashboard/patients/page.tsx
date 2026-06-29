@@ -214,6 +214,16 @@ export default function PatientsPage() {
     setVerifySuccess(false);
   }
 
+  // The duplicate warning is keyed to the phone value it was computed for.
+  // If staff edits the phone after a warning is shown, the old acknowledgement
+  // ("Create Anyway") must not apply to the new value — dismiss it and force a
+  // fresh check on the next submit instead of silently creating against stale data.
+  function handlePhoneChange(phone: string) {
+    if (pendingPayload && phone !== pendingPayload.phone) {
+      handleCancelDuplicateWarning();
+    }
+  }
+
   async function handleRequestLink() {
     if (!pendingPayload) return;
     if (verifyCloseTimerRef.current) {
@@ -340,6 +350,7 @@ export default function PatientsPage() {
             onSubmit={handleCreate}
             onCancel={requestCloseCreateForm}
             onDirtyChange={setIsCreateFormDirty}
+            onPhoneChange={handlePhoneChange}
             isSubmitting={createPatient.isPending || checkDuplicate.isPending || checkPlatformCandidates.isPending || linkRequest.isPending || verifyLink.isPending}
           />
         </div>

@@ -58,6 +58,7 @@
       "queue": "Queue",
       "doctorWorkspace": "Doctor Workspace",
       "reportsSummary": "Reports Summary",
+      "reportsAppointments": "Appointment Reports",
       "doctorQueue": "Doctor Queue",
       "technicianLabs": "Lab Worklist",
       "technicianRadiology": "Radiology Worklist",
@@ -3409,6 +3410,35 @@
     },
     "errors": {
       "loadFailed": "Failed to load reports summary"
+    },
+    "forbidden": "You do not have permission to view this page"
+  },
+  "reportsAppointments": {
+    "title": "Appointment Reports",
+    "subtitle": "Appointment activity for your organization",
+    "period": "Period",
+    "today": "Today",
+    "last7Days": "Last 7 Days",
+    "last30Days": "Last 30 Days",
+    "custom": "Custom Range",
+    "from": "From",
+    "to": "To",
+    "clearDates": "Clear",
+    "customRangePrompt": "Choose a start and end date to see this period's report",
+    "cards": {
+      "total": "Total Appointments",
+      "today": "Appointments Today",
+      "upcoming": "Upcoming Appointments",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "noShow": "No Show"
+    },
+    "breakdowns": {
+      "byStatus": "Appointments by Status",
+      "empty": "No data for this period"
+    },
+    "errors": {
+      "loadFailed": "Failed to load appointment reports"
     },
     "forbidden": "You do not have permission to view this page"
   },

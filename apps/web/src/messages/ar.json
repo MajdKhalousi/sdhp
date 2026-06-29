@@ -58,6 +58,7 @@
       "queue": "الطابور",
       "doctorWorkspace": "غرفة الطبيب",
       "reportsSummary": "ملخص التقارير",
+      "reportsAppointments": "تقارير المواعيد",
       "doctorQueue": "طابور الطبيب",
       "technicianLabs": "قائمة عمل المختبر",
       "technicianRadiology": "قائمة عمل الأشعة",
@@ -3409,6 +3410,35 @@
     },
     "errors": {
       "loadFailed": "تعذر تحميل ملخص التقارير"
+    },
+    "forbidden": "ليس لديك صلاحية لعرض هذه الصفحة"
+  },
+  "reportsAppointments": {
+    "title": "تقارير المواعيد",
+    "subtitle": "نشاط المواعيد في المنظمة",
+    "period": "الفترة",
+    "today": "اليوم",
+    "last7Days": "آخر 7 أيام",
+    "last30Days": "آخر 30 يومًا",
+    "custom": "فترة مخصصة",
+    "from": "من",
+    "to": "إلى",
+    "clearDates": "مسح",
+    "customRangePrompt": "اختر تاريخ بداية ونهاية لعرض تقرير هذه الفترة",
+    "cards": {
+      "total": "إجمالي المواعيد",
+      "today": "مواعيد اليوم",
+      "upcoming": "المواعيد القادمة",
+      "completed": "مكتملة",
+      "cancelled": "ملغاة",
+      "noShow": "لم يحضر"
+    },
+    "breakdowns": {
+      "byStatus": "المواعيد حسب الحالة",
+      "empty": "لا توجد بيانات لهذه الفترة"
+    },
+    "errors": {
+      "loadFailed": "تعذر تحميل تقارير المواعيد"
     },
     "forbidden": "ليس لديك صلاحية لعرض هذه الصفحة"
   },

@@ -41,3 +41,37 @@ export function useReportsSummary(params: ReportsSummaryParams = {}, enabled = t
     enabled,
   });
 }
+
+export interface AppointmentsReport {
+  organizationId: string | null;
+  branchId: string | null;
+  period: { from: string | null; to: string | null };
+  total: number;
+  today: number;
+  upcoming: number;
+  completed: number;
+  cancelled: number;
+  noShow: number;
+  byStatus: Record<string, number>;
+}
+
+export interface AppointmentsReportParams {
+  from?: string;
+  to?: string;
+  branchId?: string;
+}
+
+export function useAppointmentsReport(params: AppointmentsReportParams = {}, enabled = true) {
+  const { from, to, branchId } = params;
+  return useQuery({
+    queryKey: ['reports-appointments', from, to, branchId],
+    queryFn: () =>
+      api.get<AppointmentsReport>('/v1/reports/appointments', {
+        ...(from ? { from } : {}),
+        ...(to ? { to } : {}),
+        ...(branchId ? { branchId } : {}),
+      }),
+    staleTime: 30_000,
+    enabled,
+  });
+}

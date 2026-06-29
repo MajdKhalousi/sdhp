@@ -3403,8 +3403,6 @@
       "activePatients": "Active Patients",
       "appointmentsToday": "Appointments Today",
       "appointmentsUpcoming": "Appointments Upcoming",
-      "encountersTotal": "Encounters Total",
-      "prescriptionsTotal": "Prescriptions Total",
       "queueTotal": "Queue Total"
     },
     "breakdowns": {

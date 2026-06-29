@@ -3403,8 +3403,6 @@
       "activePatients": "المرضى النشطون",
       "appointmentsToday": "مواعيد اليوم",
       "appointmentsUpcoming": "المواعيد القادمة",
-      "encountersTotal": "إجمالي الزيارات",
-      "prescriptionsTotal": "إجمالي الوصفات",
       "queueTotal": "إجمالي الطابور"
     },
     "breakdowns": {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from '@/i18n/navigation';
-import { Users, UserCheck, CalendarClock, CalendarPlus, Stethoscope, ClipboardList, ListOrdered, Briefcase } from 'lucide-react';
+import { Users, UserCheck, CalendarClock, CalendarPlus, ListOrdered, Briefcase } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { useReportsSummary } from '@/hooks/use-reports';
@@ -204,7 +204,7 @@ export default function ReportsSummaryPage() {
         </div>
       ) : isLoading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
+          {[1, 2, 3, 4, 5, 6].map((i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
         </div>
       ) : isError ? (
         <div className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3">
@@ -218,8 +218,6 @@ export default function ReportsSummaryPage() {
             <MetricCard label={t('cards.activePatients')} value={report.patients.active} locale={locale} icon={UserCheck} />
             <MetricCard label={t('cards.appointmentsToday')} value={report.appointments.today} locale={locale} icon={CalendarClock} />
             <MetricCard label={t('cards.appointmentsUpcoming')} value={report.appointments.upcoming} locale={locale} icon={CalendarPlus} />
-            <MetricCard label={t('cards.encountersTotal')} value={report.encounters.total} locale={locale} icon={Stethoscope} />
-            <MetricCard label={t('cards.prescriptionsTotal')} value={report.prescriptions.total} locale={locale} icon={ClipboardList} />
             <MetricCard label={t('cards.queueTotal')} value={report.queue.total} locale={locale} icon={ListOrdered} />
           </div>
 

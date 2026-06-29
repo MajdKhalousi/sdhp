@@ -1063,6 +1063,7 @@
         "reports": "التقارير",
         "invoices": "الفواتير",
         "appointments": "المواعيد",
+        "visits": "الزيارات",
         "followUps": "المتابعات",
         "medicalServices": "الخدمات الطبية"
       },
@@ -1293,6 +1294,9 @@
       "invoiceCount": "عدد الفواتير",
       "oldestUnpaid": "أقدم فاتورة غير مدفوعة",
       "viewInvoices": "عرض الفواتير ←"
+    },
+    "encountersTab": {
+      "empty": "لا توجد زيارات مسجلة بعد."
     },
     "duplicate": {
       "heading": "قد يكون المريض مسجلًا مسبقًا",

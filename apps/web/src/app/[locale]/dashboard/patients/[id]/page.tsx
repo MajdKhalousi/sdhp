@@ -16,6 +16,7 @@ import {
   RECEPTION_ACTION_ROLES,
   INVOICE_CREATE_ROLES,
   INVOICE_READ_ROLES,
+  ENCOUNTER_DETAIL_ACCESS_ROLES,
 } from '@/lib/permissions';
 import { useAllergies } from '@/hooks/use-allergies';
 import { usePatientLabOrders } from '@/hooks/use-labs';
@@ -33,6 +34,7 @@ import { ClinicalReportsTab } from '@/components/patients/clinical-reports-tab';
 import { InvoicesTab } from '@/components/patients/invoices-tab';
 import { MedicalServicesTab } from '@/components/patients/medical-services-tab';
 import { PatientAppointmentsTab } from '@/components/patients/patient-appointments-tab';
+import { PatientEncountersTab } from '@/components/patients/patient-encounters-tab';
 import { PatientClinicalSummary } from '@/components/patients/patient-clinical-summary';
 import { PatientSafetyAlerts } from '@/components/patients/patient-safety-alerts';
 import { PatientVisitStatus } from '@/components/patients/patient-visit-status';
@@ -250,6 +252,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
   const canCheckIn         = user ? RECEPTION_ACTION_ROLES.has(user.role) : false;
   const canCreateInvoice       = user ? INVOICE_CREATE_ROLES.has(user.role) : false;
   const canViewPatientInvoices = user ? INVOICE_READ_ROLES.has(user.role) : false;
+  const canSeeEncounters       = user ? ENCOUNTER_DETAIL_ACCESS_ROLES.has(user.role) : false;
   const canSeeVisitStatus      = user ? PATIENT_SAFETY_ALERT_ROLES.has(user.role) : false;
 
   useEffect(() => {
@@ -319,6 +322,7 @@ export default function PatientPage({ params }: { params: { id: string } }) {
   const TABS: TabItem[] = [
     { value: 'overview',      label: t('detail.tabs.overview')      },
     { value: 'appointments',  label: t('detail.tabs.appointments')  },
+    ...(canSeeEncounters ? [{ value: 'visits', label: t('detail.tabs.visits') }] : []),
     ...(canSeeSafetyAlerts ? [{ value: 'follow-ups', label: t('detail.tabs.followUps') }] : []),
     { value: 'timeline',      label: t('detail.tabs.timeline')      },
     { value: 'prescriptions', label: t('detail.tabs.prescriptions') },
@@ -504,6 +508,12 @@ export default function PatientPage({ params }: { params: { id: string } }) {
         <TabPanel value="appointments" activeValue={activeTab}>
           <PatientAppointmentsTab patientId={id} />
         </TabPanel>
+
+        {canSeeEncounters && (
+          <TabPanel value="visits" activeValue={activeTab}>
+            <PatientEncountersTab patientId={id} />
+          </TabPanel>
+        )}
 
         {canSeeSafetyAlerts && (
           <TabPanel value="follow-ups" activeValue={activeTab}>

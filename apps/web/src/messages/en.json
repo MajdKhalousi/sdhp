@@ -1063,6 +1063,7 @@
         "reports": "Reports",
         "invoices": "Invoices",
         "appointments": "Appointments",
+        "visits": "Visits",
         "followUps": "Follow-Ups",
         "medicalServices": "Medical Services"
       },
@@ -1293,6 +1294,9 @@
       "invoiceCount": "Invoices",
       "oldestUnpaid": "Oldest unpaid",
       "viewInvoices": "View invoices →"
+    },
+    "encountersTab": {
+      "empty": "No visits recorded yet."
     },
     "duplicate": {
       "heading": "Possible duplicate patient",

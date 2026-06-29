@@ -34,7 +34,6 @@ interface FormState {
   address: string;
   city: string;
   bloodType: string;
-  allergies: string;
   chronicDiseases: string;
   emergencyContactName: string;
   emergencyContactPhone: string;
@@ -81,7 +80,6 @@ function initState(mode: 'create' | 'edit', p?: Patient): FormState {
       address: p.address ?? '',
       city: p.city ?? '',
       bloodType: p.bloodType ?? '',
-      allergies: '',
       chronicDiseases: p.chronicDiseases ?? '',
       emergencyContactName: p.emergencyContactName ?? p.emergencyName ?? '',
       emergencyContactPhone: p.emergencyContactPhone ?? p.emergencyPhone ?? '',
@@ -104,7 +102,6 @@ function initState(mode: 'create' | 'edit', p?: Patient): FormState {
     address: '',
     city: '',
     bloodType: '',
-    allergies: '',
     chronicDiseases: '',
     emergencyContactName: '',
     emergencyContactPhone: '',
@@ -474,18 +471,6 @@ export function PatientForm({
         <div className="rounded-xl border bg-card p-6 shadow-sm">
           <h2 className="mb-4 text-sm font-semibold text-muted-foreground">{t('sections.medical')}</h2>
           <div className="grid grid-cols-1 gap-4">
-
-            <div>
-              <FieldLabel>{t('fields.allergies')}</FieldLabel>
-              <textarea
-                value={values.allergies}
-                onChange={(e) => set('allergies', e.target.value)}
-                className={`${inputClass()} resize-none`}
-                rows={2}
-                placeholder={t('placeholders.allergies')}
-                disabled={isSubmitting}
-              />
-            </div>
 
             <div>
               <FieldLabel>{t('fields.chronicDiseases')}</FieldLabel>

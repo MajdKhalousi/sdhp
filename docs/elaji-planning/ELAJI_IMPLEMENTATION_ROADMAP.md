@@ -229,6 +229,47 @@ No central `AuditAction` enum exists — every module uses raw string literals f
 
 ---
 
+### Sprint 8 — Reports / Clinic Intelligence v1 (current slice)
+
+**Status: Closed (2026-06-29).** Verified on Staging end-to-end (commit `df79828` confirmed as Staging HEAD, web container healthy, logs clean). This slice consumed two endpoints that already existed on the backend (`reports.controller.ts`/`reports.service.ts` already had six: `summary`, `appointments`, `clinical`, `queue`, `billing`, `cashier-summary`) — only `summary` and `appointments` got frontend pages and one small backend fix in this slice. `clinical`, `queue`, and deeper analytics remain backend-only, deliberately deferred (see below).
+
+**1. What shipped**
+
+| Phase | Commit | What |
+|---|---|---|
+| C39B | `d3e59b8` | Backend-only: `/v1/reports/summary`'s `patients.total`/`patients.active` counts now respect the requested `from`/`to` period, matching the same `createdAtFilter` pattern every other metric in that endpoint already used. No endpoint, DTO, or response-shape change. |
+| C39C | `e38e9de` | Added `/dashboard/reports/summary`, a new frontend page consuming the existing `GET /v1/reports/summary`. |
+| C39D | `81a19a4` | Added `/dashboard/reports/appointments`, a new frontend page consuming the existing `GET /v1/reports/appointments`. |
+| C39D-Polish | `83e77d6` | UX fix: removed appointment-specific duplication (Appointments Total card, Appointments by Status panel) from Reports Summary once Appointment Reports existed as the dedicated detail page. |
+| C39E | `df79828` | Consolidated the sidebar to a single "Reports"/"التقارير" entry; added local in-page tabs ("Summary"/"ملخص" and "Appointments"/"المواعيد") so the two routes are reachable without separate sidebar clutter. |
+
+**2. Current behavior**
+
+- **Reports Summary** (`/dashboard/reports/summary`) is now a high-level, cross-domain operational overview: Staff total, Patients total, Active patients, Appointments today, Appointments upcoming, Encounters total, Prescriptions total, Queue total, plus a Queue by Status breakdown. It deliberately does **not** show detailed appointment-status breakdowns anymore — that's Appointment Reports' job.
+- **Appointment Reports** (`/dashboard/reports/appointments`) is the detailed, appointment-focused page: total, today, upcoming, completed, cancelled, noShow, and an Appointments by Status breakdown using the existing `appointment.status.*` i18n labels.
+- Both pages share the same date-preset pattern (today / last 7 days / last 30 days / custom) and the same role guard.
+- The sidebar shows exactly one "Reports" item (under the medical-work group); it stays highlighted while on either route. A shared `ReportsTabs` component (`apps/web/src/components/reports/reports-tabs.tsx`) provides local navigation between the two pages once inside the Reports area.
+- **Billing Reports** (`/dashboard/reports/billing`) is unrelated to this slice — separate route, separate sidebar entry under billing/cashier, separate role set (`ORG_ADMIN`, `ACCOUNTANT`), untouched throughout C39B–E.
+
+**3. Permissions/RBAC — unchanged**
+
+- Backend `@Roles()` for `GET /reports/summary` and `GET /reports/appointments` were not touched: both remain `SUPER_ADMIN, ORG_ADMIN, DOCTOR`.
+- Frontend page-level access (`REPORTS_SUMMARY_ACCESS_ROLES`, `REPORTS_APPOINTMENTS_ACCESS_ROLES` in `apps/web/src/lib/permissions.ts`) matches the backend role set exactly on both pages.
+- `BRANCH_ADMIN` was not added to either page or to the sidebar.
+- The single sidebar nav entry follows the existing clinic-nav convention of excluding `SUPER_ADMIN` (same pattern already used by Billing Reports and Doctor Workspace) — this is a pre-existing convention, not new in this slice, and does not affect the page-level guard, which still allows `SUPER_ADMIN` on direct URL access.
+
+**4. Explicitly deferred (not started)**
+
+- Clinical Reports page (backend `GET /reports/clinical` exists, unconsumed by any frontend page).
+- Queue Reports page (backend `GET /reports/queue` exists, unconsumed).
+- Top doctors by completed visits — no existing data path supports this; would need new aggregation.
+- Service/category summary — same reason, no existing data path.
+- Export / report-builder of any kind.
+- A full BI / custom report builder.
+- Any backend RBAC broadening — no role was added or widened anywhere in this slice.
+
+---
+
 ## Recommended First Sprint
 
 **Sprint 1 — Financial events on the patient medical timeline.**

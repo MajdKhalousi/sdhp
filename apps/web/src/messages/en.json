@@ -751,7 +751,9 @@
         "dosageLabel": "Dosage",
         "frequencyLabel": "Frequency",
         "durationLabel": "Duration",
-        "instructionsLabel": "Instructions"
+        "instructionsLabel": "Instructions",
+        "quantityShort": "Qty",
+        "refillsShort": "Refills"
       },
       "placeholders": {
         "medication": "e.g. Amoxicillin 500mg",

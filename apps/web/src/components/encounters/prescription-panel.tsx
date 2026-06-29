@@ -179,7 +179,13 @@ export function PrescriptionPanel({ encounterId, readOnly }: Props) {
       )}
 
       {prescriptions.map((rx) => {
-        const details = [rx.dosage, rx.frequency, rx.duration].filter(Boolean).join(' · ');
+        const details = [
+          rx.dosage,
+          rx.frequency,
+          rx.duration,
+          rx.quantity ? `${t('fields.quantityShort')} ${rx.quantity}` : null,
+          rx.refillsLeft > 0 ? `${t('fields.refillsShort')} ${rx.refillsLeft}` : null,
+        ].filter(Boolean).join(' · ');
         const isConfirming = confirmDeleteId === rx.id;
         return (
           <div

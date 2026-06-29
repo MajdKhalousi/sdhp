@@ -751,7 +751,9 @@
         "dosageLabel": "الجرعة",
         "frequencyLabel": "التكرار",
         "durationLabel": "المدة",
-        "instructionsLabel": "التعليمات"
+        "instructionsLabel": "التعليمات",
+        "quantityShort": "الكمية",
+        "refillsShort": "التجديد"
       },
       "placeholders": {
         "medication": "مثال: أموكسيسيلين 500mg",

@@ -253,21 +253,26 @@ export function DuplicateWarning({
         </div>
       )}
 
+      {matches.length > 0 && (
+        <div className="space-y-1">
+          {anyLinked && (
+            <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
+              {t('alreadyLinkedNote')}
+            </p>
+          )}
+          <p className="text-xs text-muted-foreground">{t('confirmHelper')}</p>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-2">
-        {anyLinked ? (
-          <p className="text-xs text-amber-700 dark:text-amber-400">
-            {t('alreadyLinkedNote')}
-          </p>
-        ) : (
-          <button
-            type="button"
-            onClick={onCreateAnyway}
-            disabled={isCreating}
-            className="inline-flex h-8 items-center rounded-md bg-amber-600 px-3 text-xs font-medium text-white transition-colors hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-amber-700 dark:hover:bg-amber-600"
-          >
-            {t('actions.createAnyway')}
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={onCreateAnyway}
+          disabled={isCreating}
+          className="inline-flex h-8 items-center rounded-md bg-amber-600 px-3 text-xs font-medium text-white transition-colors hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-amber-700 dark:hover:bg-amber-600"
+        >
+          {t('actions.createAnyway')}
+        </button>
         <button
           type="button"
           onClick={onCancel}

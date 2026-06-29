@@ -17,6 +17,7 @@ interface PatientFormProps {
   onDirtyChange?: (dirty: boolean) => void;
   onPhoneChange?: (phone: string) => void;
   isSubmitting?: boolean;
+  submitDisabled?: boolean;
 }
 
 interface FormState {
@@ -143,6 +144,7 @@ export function PatientForm({
   onDirtyChange,
   onPhoneChange,
   isSubmitting = false,
+  submitDisabled = false,
 }: PatientFormProps) {
   const t = useTranslations('patient.form');
   const [values, setValues] = useState<FormState>(() => initState(mode, initialPatient));
@@ -544,7 +546,7 @@ export function PatientForm({
           )}
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || submitDisabled}
             className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
           >
             {isSubmitting

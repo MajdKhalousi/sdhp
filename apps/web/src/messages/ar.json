@@ -1321,6 +1321,7 @@
       "archivedBadge": "مؤرشف",
       "alreadyInClinicBadge": "مسجل في عيادتك",
       "alreadyLinkedNote": "هذا المريض مسجل بالفعل في عيادتك. افتح الملف الموجود بدلاً من إنشاء سجل مكرر.",
+      "confirmHelper": "تأكد من أن هذا ليس نفس المريض قبل المتابعة.",
       "reasons": {
         "nationalId": "رقم هوية مطابق",
         "phone": "رقم هاتف مطابق",
@@ -1328,7 +1329,7 @@
         "nameAndDob": "اسم وتاريخ ميلاد مطابقان"
       },
       "actions": {
-        "createAnyway": "إنشاء على أي حال",
+        "createAnyway": "إنشاء سجل جديد على أي حال",
         "viewPatient": "عرض الملف"
       },
       "platform": {

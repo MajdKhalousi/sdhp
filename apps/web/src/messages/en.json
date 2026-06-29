@@ -1321,6 +1321,7 @@
       "archivedBadge": "Archived",
       "alreadyInClinicBadge": "Already in your clinic",
       "alreadyLinkedNote": "This patient is already registered in your clinic. Open the existing record instead of creating a duplicate.",
+      "confirmHelper": "Make sure this isn't the same patient before continuing.",
       "reasons": {
         "nationalId": "Same national ID",
         "phone": "Same phone number",

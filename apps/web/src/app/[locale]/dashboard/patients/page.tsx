@@ -352,6 +352,7 @@ export default function PatientsPage() {
             onDirtyChange={setIsCreateFormDirty}
             onPhoneChange={handlePhoneChange}
             isSubmitting={createPatient.isPending || checkDuplicate.isPending || checkPlatformCandidates.isPending || linkRequest.isPending || verifyLink.isPending}
+            submitDisabled={duplicateMatches.length > 0 || platformCandidates.length > 0}
           />
         </div>
       )}

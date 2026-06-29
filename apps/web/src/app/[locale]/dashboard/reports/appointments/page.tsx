@@ -7,6 +7,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { useAppointmentsReport } from '@/hooks/use-reports';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ReportsTabs } from '@/components/reports/reports-tabs';
 import { REPORTS_APPOINTMENTS_ACCESS_ROLES } from '@/lib/permissions';
 
 type Preset = 'today' | 'last7Days' | 'last30Days' | 'custom';
@@ -136,6 +137,8 @@ export default function ReportsAppointmentsPage() {
 
   return (
     <div className="space-y-6">
+      <ReportsTabs />
+
       <div>
         <h1 className="text-xl font-semibold">{t('title')}</h1>
         <p className="text-sm text-muted-foreground">{t('subtitle')}</p>

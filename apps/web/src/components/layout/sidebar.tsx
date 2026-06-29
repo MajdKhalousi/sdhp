@@ -20,7 +20,6 @@ import {
   Receipt,
   BarChart2,
   LineChart,
-  CalendarRange,
   Settings,
   UserCog,
   CalendarClock,
@@ -53,7 +52,6 @@ import {
   NAV_INVOICES_ROLES,
   NAV_BILLING_REPORTS_ROLES,
   NAV_REPORTS_SUMMARY_ROLES,
-  NAV_REPORTS_APPOINTMENTS_ROLES,
   NAV_DOCTORS_ROLES,
   NAV_PLATFORM_ROLES,
   NAV_PLATFORM_ORGANIZATIONS_ROLES,
@@ -122,7 +120,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard/doctor/queue',         icon: ClipboardList,   roles: NAV_DOCTOR_QUEUE_ROLES,          group: 'appointmentsQueue' },
   { href: '/dashboard/doctor',               icon: Stethoscope,     roles: NAV_DOCTOR_WORKSPACE_ROLES,      group: 'medicalWork' },
   { href: '/dashboard/reports/summary',      icon: LineChart,       roles: NAV_REPORTS_SUMMARY_ROLES,       group: 'medicalWork' },
-  { href: '/dashboard/reports/appointments', icon: CalendarRange,   roles: NAV_REPORTS_APPOINTMENTS_ROLES,  group: 'medicalWork' },
   { href: '/dashboard/technician/labs',      icon: FlaskConical,    roles: NAV_TECHNICIAN_LABS_ROLES,       group: 'medicalWork' },
   { href: '/dashboard/technician/radiology', icon: ScanLine,        roles: NAV_TECHNICIAN_RADIOLOGY_ROLES,  group: 'medicalWork' },
   { href: '/dashboard/medical-services-queue', icon: ListTodo,      roles: NAV_MEDICAL_SERVICES_QUEUE_ROLES, group: 'medicalWork' },
@@ -153,6 +150,11 @@ function isNavItemActive(href: string, pathname: string): boolean {
   }
   if (href === '/dashboard/settings/clinic') {
     return pathname.startsWith('/dashboard/settings/');
+  }
+  if (href === '/dashboard/reports/summary') {
+    // Single sidebar entry covers the Summary/Appointments hub (see ReportsTabs).
+    // Excludes /dashboard/reports/billing, which keeps its own separate nav entry.
+    return pathname === '/dashboard/reports/summary' || pathname === '/dashboard/reports/appointments';
   }
   return pathname === href || pathname.startsWith(href + '/');
 }
@@ -199,8 +201,7 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
     '/dashboard/appointments':         t('items.appointments'),
     '/dashboard/queue':                t('items.queue'),
     '/dashboard/doctor':               t('items.doctorWorkspace'),
-    '/dashboard/reports/summary':      t('items.reportsSummary'),
-    '/dashboard/reports/appointments': t('items.reportsAppointments'),
+    '/dashboard/reports/summary':      t('items.reports'),
     '/dashboard/doctor/queue':         t('items.doctorQueue'),
     '/dashboard/technician/labs':      t('items.technicianLabs'),
     '/dashboard/technician/radiology': t('items.technicianRadiology'),

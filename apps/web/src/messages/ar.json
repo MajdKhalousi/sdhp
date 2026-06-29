@@ -57,8 +57,7 @@
       "appointments": "المواعيد",
       "queue": "الطابور",
       "doctorWorkspace": "غرفة الطبيب",
-      "reportsSummary": "ملخص التقارير",
-      "reportsAppointments": "تقارير المواعيد",
+      "reports": "التقارير",
       "doctorQueue": "طابور الطبيب",
       "technicianLabs": "قائمة عمل المختبر",
       "technicianRadiology": "قائمة عمل الأشعة",
@@ -3379,6 +3378,11 @@
     "forbidden": "ليس لديك صلاحية لعرض هذه الصفحة",
     "encounterDate": "الزيارة",
     "doctorPrefix": "د."
+  },
+  "reportsNav": {
+    "title": "التقارير",
+    "summary": "ملخص",
+    "appointments": "المواعيد"
   },
   "reportsSummary": {
     "title": "ملخص التقارير",

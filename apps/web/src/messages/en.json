@@ -57,8 +57,7 @@
       "appointments": "Appointments",
       "queue": "Queue",
       "doctorWorkspace": "Doctor Workspace",
-      "reportsSummary": "Reports Summary",
-      "reportsAppointments": "Appointment Reports",
+      "reports": "Reports",
       "doctorQueue": "Doctor Queue",
       "technicianLabs": "Lab Worklist",
       "technicianRadiology": "Radiology Worklist",
@@ -3379,6 +3378,11 @@
     "forbidden": "You do not have permission to view this page",
     "encounterDate": "Encounter",
     "doctorPrefix": "Dr."
+  },
+  "reportsNav": {
+    "title": "Reports",
+    "summary": "Summary",
+    "appointments": "Appointments"
   },
   "reportsSummary": {
     "title": "Reports Summary",

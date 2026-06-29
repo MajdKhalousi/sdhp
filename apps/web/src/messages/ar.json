@@ -57,6 +57,7 @@
       "appointments": "المواعيد",
       "queue": "الطابور",
       "doctorWorkspace": "غرفة الطبيب",
+      "reportsSummary": "ملخص التقارير",
       "doctorQueue": "طابور الطبيب",
       "technicianLabs": "قائمة عمل المختبر",
       "technicianRadiology": "قائمة عمل الأشعة",
@@ -3377,6 +3378,39 @@
     "forbidden": "ليس لديك صلاحية لعرض هذه الصفحة",
     "encounterDate": "الزيارة",
     "doctorPrefix": "د."
+  },
+  "reportsSummary": {
+    "title": "ملخص التقارير",
+    "subtitle": "نظرة عامة على عمليات المنظمة",
+    "period": "الفترة",
+    "today": "اليوم",
+    "last7Days": "آخر 7 أيام",
+    "last30Days": "آخر 30 يومًا",
+    "custom": "فترة مخصصة",
+    "from": "من",
+    "to": "إلى",
+    "clearDates": "مسح",
+    "customRangePrompt": "اختر تاريخ بداية ونهاية لعرض ملخص هذه الفترة",
+    "cards": {
+      "staffTotal": "إجمالي الموظفين",
+      "patientsTotal": "إجمالي المرضى",
+      "activePatients": "المرضى النشطون",
+      "appointmentsTotal": "إجمالي المواعيد",
+      "appointmentsToday": "مواعيد اليوم",
+      "appointmentsUpcoming": "المواعيد القادمة",
+      "encountersTotal": "إجمالي الزيارات",
+      "prescriptionsTotal": "إجمالي الوصفات",
+      "queueTotal": "إجمالي الطابور"
+    },
+    "breakdowns": {
+      "appointmentsByStatus": "المواعيد حسب الحالة",
+      "queueByStatus": "الطابور حسب الحالة",
+      "empty": "لا توجد بيانات لهذه الفترة"
+    },
+    "errors": {
+      "loadFailed": "تعذر تحميل ملخص التقارير"
+    },
+    "forbidden": "ليس لديك صلاحية لعرض هذه الصفحة"
   },
   "billingReports": {
     "title": "تقارير الفوترة",

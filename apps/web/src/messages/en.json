@@ -57,6 +57,7 @@
       "appointments": "Appointments",
       "queue": "Queue",
       "doctorWorkspace": "Doctor Workspace",
+      "reportsSummary": "Reports Summary",
       "doctorQueue": "Doctor Queue",
       "technicianLabs": "Lab Worklist",
       "technicianRadiology": "Radiology Worklist",
@@ -3377,6 +3378,39 @@
     "forbidden": "You do not have permission to view this page",
     "encounterDate": "Encounter",
     "doctorPrefix": "Dr."
+  },
+  "reportsSummary": {
+    "title": "Reports Summary",
+    "subtitle": "Operational overview for your organization",
+    "period": "Period",
+    "today": "Today",
+    "last7Days": "Last 7 Days",
+    "last30Days": "Last 30 Days",
+    "custom": "Custom Range",
+    "from": "From",
+    "to": "To",
+    "clearDates": "Clear",
+    "customRangePrompt": "Choose a start and end date to see this period's summary",
+    "cards": {
+      "staffTotal": "Staff Total",
+      "patientsTotal": "Patients Total",
+      "activePatients": "Active Patients",
+      "appointmentsTotal": "Appointments Total",
+      "appointmentsToday": "Appointments Today",
+      "appointmentsUpcoming": "Appointments Upcoming",
+      "encountersTotal": "Encounters Total",
+      "prescriptionsTotal": "Prescriptions Total",
+      "queueTotal": "Queue Total"
+    },
+    "breakdowns": {
+      "appointmentsByStatus": "Appointments by Status",
+      "queueByStatus": "Queue by Status",
+      "empty": "No data for this period"
+    },
+    "errors": {
+      "loadFailed": "Failed to load reports summary"
+    },
+    "forbidden": "You do not have permission to view this page"
   },
   "billingReports": {
     "title": "Billing Reports",

@@ -22,6 +22,11 @@ export const NAV_FOLLOW_UPS_ROLES: readonly string[]          = ['ORG_ADMIN', 'B
 export const NAV_CASHIER_ROLES: readonly string[]             = ['ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY'];
 export const NAV_INVOICES_ROLES: readonly string[]            = ['ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY'];
 export const NAV_BILLING_REPORTS_ROLES: readonly string[]     = ['ORG_ADMIN', 'ACCOUNTANT'];
+// SUPER_ADMIN intentionally excluded here too, consistent with every other
+// clinic-operational nav role list (see the 134A note above) — mirrors
+// backend @Roles(SUPER_ADMIN, ORG_ADMIN, DOCTOR) on GET /reports/summary
+// minus SUPER_ADMIN, since SUPER_ADMIN doesn't get clinic-operational nav.
+export const NAV_REPORTS_SUMMARY_ROLES: readonly string[]     = ['ORG_ADMIN', 'DOCTOR'];
 export const NAV_DOCTORS_ROLES: readonly string[]             = ['ORG_ADMIN'];
 export const NAV_PLATFORM_ROLES: readonly string[]            = ['SUPER_ADMIN'];
 export const NAV_PLATFORM_ORGANIZATIONS_ROLES: readonly string[] = ['SUPER_ADMIN'];
@@ -166,6 +171,10 @@ export const MEDICAL_SERVICES_QUEUE_ACCESS_ROLES = new Set([
 
 export const BILLING_ACCESS_ROLES        = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY']);
 export const BILLING_REPORT_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT']);
+
+// Page-level access for /dashboard/reports/summary — mirrors backend
+// @Roles(SUPER_ADMIN, ORG_ADMIN, DOCTOR) on GET /reports/summary exactly.
+export const REPORTS_SUMMARY_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR']);
 
 // Read-only invoice access: patient-scoped endpoints only (invoices tab + outstanding balance on patient profile).
 // Global /invoices list remains gated on BILLING_ACCESS_ROLES (org-wide, not doctor-scoped).

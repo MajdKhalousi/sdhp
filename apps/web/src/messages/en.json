@@ -1276,7 +1276,8 @@
       "lastChiefComplaint": "Last Chief Complaint",
       "lastHpi": "Last HPI",
       "lastTreatmentPlan": "Last Treatment Plan",
-      "fromPreviousVisit": "From previous visit:"
+      "fromPreviousVisit": "From previous visit:",
+      "lastPrescription": "Last prescription"
     },
     "safety": {
       "heading": "Safety Alerts",

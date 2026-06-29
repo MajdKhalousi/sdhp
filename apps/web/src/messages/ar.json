@@ -1276,7 +1276,8 @@
       "lastChiefComplaint": "آخر شكوى رئيسية",
       "lastHpi": "آخر تاريخ مرض حالي",
       "lastTreatmentPlan": "آخر خطة علاج",
-      "fromPreviousVisit": "من زيارة سابقة:"
+      "fromPreviousVisit": "من زيارة سابقة:",
+      "lastPrescription": "آخر وصفة"
     },
     "safety": {
       "heading": "تنبيهات المريض",

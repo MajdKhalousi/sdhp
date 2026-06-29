@@ -56,10 +56,16 @@ export function PatientClinicalSummary({ patientId, onViewHistory }: Props) {
     isError: radError,
   } = usePatientRadiologyOrders(patientId);
 
+  const {
+    data: prescriptionTimeline,
+    isLoading: prescriptionLoading,
+    isError: prescriptionError,
+  } = usePatientTimeline(patientId, { types: ['PRESCRIPTION'], limit: 1 });
+
   if (!hasClinicalRole) return null;
 
-  const isLoading = timelineLoading || labsLoading || radLoading;
-  const allFailed = timelineError && labsError && radError;
+  const isLoading = timelineLoading || labsLoading || radLoading || prescriptionLoading;
+  const allFailed = timelineError && labsError && radError && prescriptionError;
 
   if (isLoading) {
     return <Skeleton className="h-28 w-full rounded-xl" />;
@@ -93,6 +99,12 @@ export function PatientClinicalSummary({ patientId, onViewHistory }: Props) {
 
   const pendingLabs = (labs ?? []).filter((l) => PENDING_LAB_STATUSES.has(l.status)).length;
   const pendingRad = (radOrders ?? []).filter((r) => PENDING_RADIOLOGY_STATUSES.has(r.status)).length;
+
+  const lastPrescriptionEvent = prescriptionTimeline?.data?.[0];
+  const lastRx = lastPrescriptionEvent?.type === 'PRESCRIPTION' ? lastPrescriptionEvent.data : null;
+  const lastRxDetails = lastRx
+    ? [lastRx.dosage, lastRx.frequency, lastRx.duration].filter(Boolean).join(' · ')
+    : '';
 
   const hasAnyData = enc || pendingLabs > 0 || pendingRad > 0;
 
@@ -155,6 +167,25 @@ export function PatientClinicalSummary({ patientId, onViewHistory }: Props) {
               label={t('pendingRadiology')}
               value={radError ? na : String(pendingRad)}
             />
+
+            {lastRx && (
+              <SnapshotRow
+                label={t('lastPrescription')}
+                value={
+                  <span>
+                    <span dir="auto">{lastRx.medication}</span>
+                    {lastRxDetails && (
+                      <span
+                        className="block text-xs font-normal text-muted-foreground text-start"
+                        dir="auto"
+                      >
+                        {lastRxDetails}
+                      </span>
+                    )}
+                  </span>
+                }
+              />
+            )}
           </div>
 
           {(cEnc?.chiefComplaint || cEnc?.historyOfPresentIllness || cEnc?.treatmentPlan) && (

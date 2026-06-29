@@ -52,6 +52,13 @@ Roles, abbreviated: **SA**=SUPER_ADMIN, **OA**=ORG_ADMIN, **BA**=BRANCH_ADMIN, *
 | **Allergies** GET/POST/PATCH | ✓ | ✓ | | ✓ | ✓ | | | |
 | **Allergies** DELETE | ✓ | ✓ | | ✓ | | | | |
 | **Prescriptions** all verbs | ✓ | ✓ | | ✓ | | | | |
+| **Prescription Templates** GET (list/:id) | ✓ | ✓ | | ✓ | | | | |
+| **Prescription Templates** POST/PATCH/DELETE | ✓ | ✓ | | | | | | |
+| **Medical Service Requests** GET (list/:id) | ✓ | ✓ | | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **Medical Service Requests** POST (request) / PATCH :id/cancel | ✓ | ✓ | | ✓ | | ✓ | | |
+| **Medical Service Requests** PATCH :id/execute | ✓ | ✓ | | ✓ | ✓ | | | ✓ |
+| **Medical Service Requests** POST :id/bill | ✓ | ✓ | | | | | ✓ | |
+| **Medical Timeline** GET :patientId/timeline | ✓ | ✓ | | ✓ | ✓ | | | |
 | **Employees (HR)** GET | ✓ | ✓ | | | | | ✓ | |
 | **Employees (HR)** POST/PATCH/DELETE/restore | ✓ | ✓ | | | | | | |
 | **Employee Documents** all verbs (upload-url, register, list, download-url, delete) | ✓ | ✓ | | | | | | |
@@ -80,11 +87,23 @@ Roles, abbreviated: **SA**=SUPER_ADMIN, **OA**=ORG_ADMIN, **BA**=BRANCH_ADMIN, *
 
 **Note — Billing/Invoices clinical-scope narrowing (Phase 154B, deployed and production-verified):** DOCTOR and NURSE remain technically allowed at the controller-role level on `GET /invoices` (and `:id`/`:id/pdf`) — the ✓ marks above are still accurate as a yes/no role check — because the doctor-queue and queue-board frontend screens legitimately depend on this endpoint for today's invoice-status badges. What changed is service-layer behavior the boolean matrix above can't show: DOCTOR's results are scoped to patients with appointments under their own doctor profile; NURSE's results are scoped to patients with appointments in their org/branch; both default to a today-only date window. Out-of-scope invoice detail/PDF access returns **404, not 403**, to avoid disclosing that the invoice exists at all. Billing roles (SUPER_ADMIN/ORG_ADMIN/ACCOUNTANT/SECRETARY) are unaffected.
 
+**Note — three rows added 2026-06-29 (Phase 0E-C38B), verified directly against their controllers:** `prescription-templates`, `medical-service-requests`, and `medical-timeline` were added during Phase 0E-C32/C32-adjacent work and had not yet been added to this matrix — a routine documentation lag, not a code defect (consistent with this project's established practice of not always updating this specific doc the same phase a module ships). Confirmed via direct `@Roles(` read of each controller at verification time; none of the three grant `BRANCH_ADMIN`.
+
 **Notes (verified directly against `followups.controller.ts`):**
 - `BRANCH_ADMIN` **is** a real, actively-granted role on the Follow-ups module — confirmed via direct read of `apps/api/src/modules/followups/followups.controller.ts`: every endpoint's `@Roles()` list includes `UserRole.BRANCH_ADMIN`. This corrects an earlier draft of this document that flagged BRANCH_ADMIN as unconfirmed.
 - Follow-ups `GET` endpoints additionally allow `DOCTOR` (read own patients only, per controller `@ApiOperation` summary text); the reminder-mutation endpoints (`POST`/`PATCH`) explicitly **exclude** DOCTOR (per controller comment: "DOCTOR excluded").
 - Reminder creation only queues a `PENDING` record — controller doc comment explicitly states "no actual sending" — confirming the note in [Modules.md](Modules.md) that delivery (SMS/WhatsApp/Email) is not implemented.
 - Codebase-wide grep for `UserRole.BRANCH_ADMIN` (run directly, not sampled) found it in exactly 5 controllers: `followups`, `clinic-settings`, `doctor-schedules`, `services`, `visit-types`. In the latter four it only appears on the already-broad read endpoints (these are the "open to most roles" GET rows in this matrix). It does **not** appear in patients, appointments, encounters, billing, queue, or any other clinical/financial write path. BRANCH_ADMIN therefore has real but narrow backend reach today — mostly read access to reference data, plus full Follow-ups access.
+- Re-confirmed independently, Phase 0E-C38B (2026-06-29): exhaustive `grep -rn "BRANCH_ADMIN" apps/api/src` returns exactly the 12 lines across those same 5 files — no drift since the above was last verified. On the frontend, `BRANCH_ADMIN` similarly appears in only `NAV_FOLLOW_UPS_ROLES`, `FOLLOW_UP_PAGE_ROLES`, and `NAV_PROFILE_ROLES` — consistent with the backend footprint. One asymmetry worth noting (not a bug): `NAV_SETTINGS_ROLES` is `ORG_ADMIN`-only, so BRANCH_ADMIN has no sidebar/UI path to the Clinic Settings / Doctor Schedules / Services / Visit Types screens its backend role grants read access to — the backend is broader than what the frontend currently surfaces, which is the safe direction (nothing is reachable through the UI that the backend wouldn't also allow), just an unused grant rather than a gap.
+
+### BRANCH_ADMIN Scope Decision (Phase 0E-C38B, 2026-06-29)
+
+Recorded as an explicit governance decision, not just a description of current state:
+
+- **`BRANCH_ADMIN` is intentionally narrow today** — read access to a handful of reference/settings endpoints, plus full access to the Follow-ups module. It is **not** equivalent to `ORG_ADMIN` and must not be treated as a general-purpose admin role.
+- **It must not be broadened silently.** Adding `UserRole.BRANCH_ADMIN` to a new `@Roles()` list (or a new frontend permission constant) as a side effect of unrelated work is exactly the kind of permission drift this document exists to catch — don't do it as a convenience fix.
+- **Any future expansion of `BRANCH_ADMIN`** into clinical data (patients/encounters/prescriptions), billing, staff management, reports, or cross-branch operations requires its own explicit planning phase, and must change backend `@Roles()` and frontend permission constants together — never one without the other, consistent with how every other role boundary in this codebase is enforced in both layers.
+- **Frontend permission constants remain a UX layer only.** `apps/web/src/lib/permissions.ts` is defense-in-depth / navigation convenience — `RolesGuard` + `@Roles()` on the backend is the actual security boundary, exactly as already stated in §3 above. Any review of `BRANCH_ADMIN` (or any role) must check the backend first; the frontend gate is not evidence of what's actually enforced.
 
 ## 3. Frontend Permission Constants (`apps/web/src/lib/permissions.ts`)
 
@@ -138,4 +157,5 @@ Confirmed (audited 2026-06-21, [Architecture Audit Report.md](Architecture%20Aud
 ## 4. TODO / Unknown
 
 - Full per-endpoint role lists for `followups`, and exact role lists for a handful of less-traveled endpoints (e.g. `medical-files` PATCH vs the read endpoints) were generated by pattern search rather than line-by-line confirmation — treat this matrix as a strong starting map, re-grep `@Roles(` in the specific controller before making an access-control decision based on it.
-- Whether `BRANCH_ADMIN` has any real backend enforcement anywhere beyond the open-to-all-authenticated default.
+- ~~Whether `BRANCH_ADMIN` has any real backend enforcement anywhere beyond the open-to-all-authenticated default~~ — **resolved, Phase 0E-C38B (2026-06-29)**: yes, confirmed via direct, exhaustive grep against 5 specific controllers — see the BRANCH_ADMIN notes and Scope Decision above. This line was stale; the question had already been answered above it but the TODO wasn't removed at the time.
+- New modules added after this matrix's last full pass should be checked against the module list in `apps/api/src/modules/*` periodically — three were found missing and added in Phase 0E-C38B (`prescription-templates`, `medical-service-requests`, `medical-timeline`); there is no automated check that keeps this document in sync with new controllers.

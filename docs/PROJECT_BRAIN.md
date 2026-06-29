@@ -25,6 +25,7 @@ Covers the full patient visit lifecycle inside a clinic — registration → boo
 - Production currently contains **demo/internal data only** — no real clinic data yet.
 - **Phase 0E-C26** (production cleanup/re-baseline) is **deferred until a real clinic actually exists** — not yet started.
 - **`MedicalServiceRequest`** (closed 2026-06-28) — full feature closed: backend lifecycle, billing link, patient-profile tab, timeline integration, and a cross-patient work queue, verified on staging. See `elaji-planning/ELAJI_IMPLEMENTATION_ROADMAP.md`'s Sprint 3 closure for what shipped, behavior by role, and known limitations.
+- **Prescription Templates** (closed 2026-06-29) — clinic-wide templates managed in Settings by admins, applied by doctors inside Encounter; quantity/refills visibility and related clinical-text RTL/bidi polish verified on staging. See `elaji-planning/ELAJI_IMPLEMENTATION_ROADMAP.md`'s Sprint 4 closure.
 - Full detail: [Environment-Registry.md](04-Operations/Environment-Registry.md), [Staging-Phase-Log.md](04-Operations/Staging-Phase-Log.md), [First-Clinic-Readiness-Gap-List.md](04-Operations/First-Clinic-Readiness-Gap-List.md).
 
 ## Competitor Awareness: MedPro

@@ -129,6 +129,8 @@ Hooks (`apps/web/src/hooks/use-*.ts`, ~32 files) wrap React Query per domain: pa
 - `dir={locale === 'ar' ? 'rtl' : 'ltr'}` set at the root `<html>` level.
 - Fonts: Inter (Latin) + Noto Sans Arabic.
 - Pattern in components: `useTranslations(namespace)`, `useLocale()`.
+- **Mixed-direction clinical text:** when a UI element pairs an Arabic label with a free-text clinical value that may be in either language, never apply `dir="auto"` to a single element containing both — keep label and value as separate elements, and scope `dir="auto"` to the value only. Applying it to the combined element lets the label's script skew the bidi algorithm's inference for the whole block.
+- **Multi-part joined detail strings** (e.g. dosage/frequency/duration joined with a separator): don't force the entire joined string into one `dir` (such as a blanket `dir="ltr"`) — each part may have its own independent direction, and forcing the whole string reorders parts unpredictably. Instead, render each part in its own bidi-isolated element (`<bdi>`), with the separator placed as literal markup between elements rather than baked into a pre-joined string.
 
 ## 7. Permissions on the Frontend
 

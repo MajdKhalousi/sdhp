@@ -113,6 +113,44 @@ The Work Queue page itself is reachable by SUPER_ADMIN/ORG_ADMIN/DOCTOR/NURSE/TE
 - **Tests/checks:** Create/list/use-template endpoint tests; manual check that using a template correctly pre-fills a new prescription without mutating the template.
 - **Acceptance criteria:** A doctor can save any prescription as a named template and create a new prescription from a saved template in under the time it takes to retype it.
 
+#### Sprint 4 — Closure (2026-06-29)
+
+**Status: Closed.** Shipped scope differs from the original plan above: instead of a doctor saving one of their own existing prescriptions as a template, templates ended up as **clinic-wide, admin-managed catalog entries** (created/edited in Settings, independent of any specific prescription), which doctors then **apply** inside an encounter rather than picking from a "use template" prompt during prescription creation. The underlying goal — turning a repeated medication set into a few clicks instead of retyping — is the same; the ownership/management model is different and, in practice, fits a multi-doctor clinic better than a per-doctor personal template would have.
+
+**1. What was shipped**
+
+| Phase | Delivered |
+|---|---|
+| C32A | `PrescriptionTemplate` / `PrescriptionTemplateItem` Prisma models (organization-scoped, soft-delete), `prescription-templates` module with full CRUD endpoints; `GET` readable by SUPER_ADMIN/ORG_ADMIN/DOCTOR, writes restricted to SUPER_ADMIN/ORG_ADMIN; DOCTOR is blocked from reading inactive templates via both the list and direct-by-id endpoints |
+| C32B | Settings UI for managing templates (`/dashboard/settings/prescription-templates`), reusing the existing inline-expandable-row table pattern, with dynamic add/remove medication rows per template |
+| C32C | "Apply Template" inside the Encounter prescription panel — each template item becomes an independent `Prescription` row via the existing single-item create endpoint, called once per item; appends only, never replaces or de-duplicates existing prescriptions; sequential apply with fail-fast partial-failure messaging |
+| C34 | Quantity and refills-left, already captured by C32A/C32C, made visible in the live Encounter prescription list (previously fetched but never rendered) |
+| C35 | Fixed a text-direction bug in the Patient Profile's prescription card (Timeline / Prescriptions tab) where dosage/frequency/duration were forced into a single `dir="ltr"` string, visually reordering Arabic content — replaced with per-segment bidi isolation |
+
+No bulk-apply backend endpoint was introduced for C32C — applying a template is purely a sequence of calls to the prescription endpoint that already existed.
+
+**2. Current behavior by role**
+
+| Role | Manage templates (Settings) | Read templates | Apply inside Encounter |
+|---|---|---|---|
+| SUPER_ADMIN | ✅ | ✅ (incl. inactive) | ✅ |
+| ORG_ADMIN | ✅ | ✅ (incl. inactive) | ✅ |
+| DOCTOR | — | ✅ (active only) | ✅ |
+
+- Templates are **organization-scoped** — no cross-org visibility.
+- Templates do **not** store `patientId` or `encounterId` — they are a reusable catalog, not tied to any specific patient or visit.
+- Applying a template **appends** new `Prescription` rows; it never replaces or removes existing prescriptions on the encounter.
+
+**3. Known limitations**
+
+- The Patient Timeline / Prescriptions-tab `PrescriptionCard` still does **not** show quantity or refills-left, even for prescriptions created by applying a template. This is because its data source — `PrescriptionEventData`, produced by the medical-timeline projection — never included those fields to begin with, and widening that projection was explicitly out of scope for C32–C35. The live Encounter prescription panel (C34) is the only surface that shows them today.
+
+**4. Recommended next sprint options**
+
+- Widen the medical-timeline `PrescriptionEventData` projection (backend) to include `quantity`/`refillsLeft`, then update `PrescriptionCard` to display them — closes the gap noted above.
+- Prescription/PDF or clinical-report polish, if a future need to print/export prescriptions (with or without template provenance) arises.
+- Lab/radiology order templates, following the same clinic-wide-catalog pattern established here, if doctors request the same time-saving for those order types.
+
 ### Sprint 5 — Clinic-level patient-file field visibility (design only)
 
 - **Goal:** Produce a concrete design (not implementation) for whether/how Elaji should support per-clinic toggling of which clinical fields appear on the patient file, addressing the largest remaining MedPro-inspired gap (`ELAJI_GAP_ANALYSIS.md` §2, video 06).

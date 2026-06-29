@@ -2133,6 +2133,7 @@
       "clinic": "Clinic",
       "visitTypes": "Visit Types",
       "services": "Services",
+      "prescriptionTemplates": "Prescription Templates",
       "billing": "Billing",
       "departments": "Departments"
     },
@@ -2313,6 +2314,79 @@
         "loadFailed": "Failed to load services",
         "saveFailed": "Failed to save service",
         "deleteFailed": "Failed to delete service"
+      }
+    },
+    "prescriptionTemplates": {
+      "title": "Prescription Templates",
+      "subtitle": "Manage reusable medication sets doctors can apply to a prescription",
+      "newTemplate": "Add Template",
+      "showInactive": "Show inactive",
+      "delete": "Delete",
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "columns": {
+        "name": "Name",
+        "items": "Medications",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "form": {
+        "createTitle": "Add Template",
+        "editTitle": "Edit Template",
+        "fields": {
+          "name": "Name (English)",
+          "nameAr": "Name (Arabic)",
+          "isActive": "Active"
+        },
+        "placeholders": {
+          "name": "e.g. Common Cold Pack",
+          "nameAr": "e.g. حزمة نزلة البرد"
+        },
+        "items": {
+          "heading": "Medications",
+          "addMedication": "Add Medication",
+          "removeMedication": "Remove",
+          "fields": {
+            "medication": "Medication",
+            "dosage": "Dosage",
+            "frequency": "Frequency",
+            "duration": "Duration",
+            "instructions": "Instructions",
+            "quantity": "Quantity",
+            "refillsLeft": "Refills"
+          },
+          "placeholders": {
+            "medication": "e.g. Amoxicillin 500mg",
+            "dosage": "e.g. 500mg",
+            "frequency": "e.g. Three times daily",
+            "duration": "e.g. 7 days",
+            "instructions": "e.g. Take with food"
+          }
+        },
+        "actions": {
+          "save": "Save",
+          "saving": "Saving…",
+          "create": "Create",
+          "creating": "Creating…"
+        },
+        "validation": {
+          "nameRequired": "Name is required.",
+          "medicationRequired": "Medication name is required.",
+          "atLeastOneItem": "At least one medication is required."
+        }
+      },
+      "deleteConfirm": "Delete this template?",
+      "deleting": "Deleting…",
+      "empty": {
+        "heading": "No prescription templates configured",
+        "subtext": "Add the first template to get started."
+      },
+      "error": {
+        "loadFailed": "Failed to load prescription templates",
+        "saveFailed": "Failed to save prescription template",
+        "deleteFailed": "Failed to delete prescription template"
       }
     },
     "billing": {

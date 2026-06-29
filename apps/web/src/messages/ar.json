@@ -2133,6 +2133,7 @@
       "clinic": "العيادة",
       "visitTypes": "أنواع الزيارات",
       "services": "الخدمات",
+      "prescriptionTemplates": "قوالب الوصفات",
       "billing": "الفواتير",
       "departments": "الأقسام"
     },
@@ -2313,6 +2314,79 @@
         "loadFailed": "فشل تحميل الخدمات",
         "saveFailed": "فشل حفظ الخدمة",
         "deleteFailed": "فشل حذف الخدمة"
+      }
+    },
+    "prescriptionTemplates": {
+      "title": "قوالب الوصفات",
+      "subtitle": "إدارة مجموعات الأدوية القابلة لإعادة الاستخدام التي يمكن للطبيب تطبيقها على وصفة طبية",
+      "newTemplate": "إضافة قالب",
+      "showInactive": "عرض غير النشطة",
+      "delete": "حذف",
+      "status": {
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
+      "columns": {
+        "name": "الاسم",
+        "items": "الأدوية",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "form": {
+        "createTitle": "إضافة قالب",
+        "editTitle": "تعديل القالب",
+        "fields": {
+          "name": "الاسم (إنجليزي)",
+          "nameAr": "الاسم (عربي)",
+          "isActive": "نشط"
+        },
+        "placeholders": {
+          "name": "مثال: Common Cold Pack",
+          "nameAr": "مثال: حزمة نزلة البرد"
+        },
+        "items": {
+          "heading": "الأدوية",
+          "addMedication": "إضافة دواء",
+          "removeMedication": "إزالة",
+          "fields": {
+            "medication": "الدواء",
+            "dosage": "الجرعة",
+            "frequency": "التكرار",
+            "duration": "المدة",
+            "instructions": "التعليمات",
+            "quantity": "الكمية",
+            "refillsLeft": "مرات التجديد"
+          },
+          "placeholders": {
+            "medication": "مثال: أموكسيسيلين 500 ملغ",
+            "dosage": "مثال: 500 ملغ",
+            "frequency": "مثال: ثلاث مرات يومياً",
+            "duration": "مثال: 7 أيام",
+            "instructions": "مثال: تؤخذ مع الطعام"
+          }
+        },
+        "actions": {
+          "save": "حفظ",
+          "saving": "جاري الحفظ…",
+          "create": "إنشاء",
+          "creating": "جاري الإنشاء…"
+        },
+        "validation": {
+          "nameRequired": "الاسم مطلوب.",
+          "medicationRequired": "اسم الدواء مطلوب.",
+          "atLeastOneItem": "مطلوب دواء واحد على الأقل."
+        }
+      },
+      "deleteConfirm": "حذف هذا القالب؟",
+      "deleting": "جاري الحذف…",
+      "empty": {
+        "heading": "لم يتم ضبط أي قوالب وصفات",
+        "subtext": "أضف أول قالب للبدء."
+      },
+      "error": {
+        "loadFailed": "فشل تحميل قوالب الوصفات",
+        "saveFailed": "فشل حفظ قالب الوصفة",
+        "deleteFailed": "فشل حذف قالب الوصفة"
       }
     },
     "billing": {

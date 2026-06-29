@@ -18,6 +18,8 @@ const ALL_TYPES: TimelineEventType[] = [
   'SERVICE_CANCELLED',
 ];
 
+const BILLING_TYPES: TimelineEventType[] = ['INVOICE_ISSUED', 'PAYMENT_RECORDED'];
+
 interface Props {
   selectedTypes: TimelineEventType[];
   onTypesChange(types: TimelineEventType[]): void;
@@ -49,6 +51,20 @@ export function TimelineFilters({
     }
   }
 
+  const isBillingSelected = BILLING_TYPES.every((type) => selectedTypes.includes(type));
+
+  function toggleBilling() {
+    if (disabled) return;
+    if (isBillingSelected) {
+      onTypesChange(selectedTypes.filter((type) => !BILLING_TYPES.includes(type)));
+    } else {
+      onTypesChange([
+        ...selectedTypes,
+        ...BILLING_TYPES.filter((type) => !selectedTypes.includes(type)),
+      ]);
+    }
+  }
+
   return (
     <div className={cn('flex flex-wrap items-center gap-3', disabled && 'opacity-60 pointer-events-none')}>
       <div className="flex flex-wrap items-center gap-1.5">
@@ -63,6 +79,18 @@ export function TimelineFilters({
           )}
         >
           {t('filter.all')}
+        </button>
+        <button
+          type="button"
+          onClick={toggleBilling}
+          className={cn(
+            'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+            isBillingSelected
+              ? 'border-primary bg-primary text-primary-foreground'
+              : 'border-border bg-transparent text-muted-foreground hover:bg-accent hover:text-foreground',
+          )}
+        >
+          {t('filter.billing')}
         </button>
         {ALL_TYPES.map((type) => {
           const isSelected = selectedTypes.includes(type);

@@ -1433,6 +1433,7 @@
   "timeline": {
     "filter": {
       "all": "الكل",
+      "billing": "الفوترة",
       "types": {
         "ENCOUNTER": "الزيارات",
         "PRESCRIPTION": "الوصفات",

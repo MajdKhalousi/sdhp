@@ -1433,6 +1433,7 @@
   "timeline": {
     "filter": {
       "all": "All",
+      "billing": "Billing",
       "types": {
         "ENCOUNTER": "Encounters",
         "PRESCRIPTION": "Prescriptions",

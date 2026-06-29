@@ -152,9 +152,13 @@ function isNavItemActive(href: string, pathname: string): boolean {
     return pathname.startsWith('/dashboard/settings/');
   }
   if (href === '/dashboard/reports/summary') {
-    // Single sidebar entry covers the Summary/Appointments hub (see ReportsTabs).
+    // Single sidebar entry covers the Summary/Appointments/Visits hub (see ReportsTabs).
     // Excludes /dashboard/reports/billing, which keeps its own separate nav entry.
-    return pathname === '/dashboard/reports/summary' || pathname === '/dashboard/reports/appointments';
+    return (
+      pathname === '/dashboard/reports/summary' ||
+      pathname === '/dashboard/reports/appointments' ||
+      pathname === '/dashboard/reports/clinical'
+    );
   }
   return pathname === href || pathname.startsWith(href + '/');
 }

@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 const REPORTS_TABS = [
   { href: '/dashboard/reports/summary', key: 'summary' },
   { href: '/dashboard/reports/appointments', key: 'appointments' },
+  { href: '/dashboard/reports/clinical', key: 'clinical' },
 ] as const;
 
 export function ReportsTabs() {

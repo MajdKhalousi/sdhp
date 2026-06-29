@@ -3382,7 +3382,8 @@
   "reportsNav": {
     "title": "Reports",
     "summary": "Summary",
-    "appointments": "Appointments"
+    "appointments": "Appointments",
+    "clinical": "Visits"
   },
   "reportsSummary": {
     "title": "Reports Summary",
@@ -3441,6 +3442,31 @@
     },
     "errors": {
       "loadFailed": "Failed to load appointment reports"
+    },
+    "forbidden": "You do not have permission to view this page"
+  },
+  "reportsClinical": {
+    "title": "Visit Reports",
+    "subtitle": "Visit documentation and prescription activity for your organization",
+    "period": "Period",
+    "today": "Today",
+    "last7Days": "Last 7 Days",
+    "last30Days": "Last 30 Days",
+    "custom": "Custom Range",
+    "from": "From",
+    "to": "To",
+    "clearDates": "Clear",
+    "customRangePrompt": "Choose a start and end date to see this period's report",
+    "cards": {
+      "total": "Total Visits",
+      "withDiagnosis": "Visits with Diagnosis",
+      "withTreatmentPlan": "Visits with Treatment Plan",
+      "withoutDiagnosis": "Visits without Diagnosis",
+      "prescriptionsTotal": "Total Prescriptions",
+      "prescriptionsWithRefills": "Prescriptions with Refills"
+    },
+    "errors": {
+      "loadFailed": "Failed to load visit reports"
     },
     "forbidden": "You do not have permission to view this page"
   },

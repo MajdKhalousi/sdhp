@@ -183,6 +183,10 @@ export const REPORTS_SUMMARY_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN',
 // @Roles(SUPER_ADMIN, ORG_ADMIN, DOCTOR) on GET /reports/appointments exactly.
 export const REPORTS_APPOINTMENTS_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR']);
 
+// Page-level access for /dashboard/reports/clinical (displayed as "Visit Reports") —
+// mirrors backend @Roles(SUPER_ADMIN, ORG_ADMIN, DOCTOR) on GET /reports/clinical exactly.
+export const REPORTS_CLINICAL_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR']);
+
 // Read-only invoice access: patient-scoped endpoints only (invoices tab + outstanding balance on patient profile).
 // Global /invoices list remains gated on BILLING_ACCESS_ROLES (org-wide, not doctor-scoped).
 export const INVOICE_READ_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'ACCOUNTANT', 'SECRETARY', 'DOCTOR']);

@@ -75,3 +75,40 @@ export function useAppointmentsReport(params: AppointmentsReportParams = {}, ena
     enabled,
   });
 }
+
+export interface ClinicalReport {
+  organizationId: string | null;
+  branchId: string | null;
+  period: { from: string | null; to: string | null };
+  encounters: {
+    total: number;
+    withDiagnosis: number;
+    withTreatmentPlan: number;
+    withoutDiagnosis: number;
+  };
+  prescriptions: {
+    total: number;
+    withRefills: number;
+  };
+}
+
+export interface ClinicalReportParams {
+  from?: string;
+  to?: string;
+  branchId?: string;
+}
+
+export function useClinicalReport(params: ClinicalReportParams = {}, enabled = true) {
+  const { from, to, branchId } = params;
+  return useQuery({
+    queryKey: ['reports-clinical', from, to, branchId],
+    queryFn: () =>
+      api.get<ClinicalReport>('/v1/reports/clinical', {
+        ...(from ? { from } : {}),
+        ...(to ? { to } : {}),
+        ...(branchId ? { branchId } : {}),
+      }),
+    staleTime: 30_000,
+    enabled,
+  });
+}

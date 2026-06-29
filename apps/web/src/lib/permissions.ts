@@ -138,6 +138,18 @@ export const RECEPTION_ACTION_ROLES    = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'S
 // ACCOUNTANT has no clinical encounter access at any level.
 export const ENCOUNTER_DETAIL_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY']);
 
+// ─── Patient profile tab access (0E-C31) ─────────────────────────────────────
+// Each mirrors the @Roles() list of the exact backend endpoint the tab calls,
+// so a tab never renders for a role that would 403 opening it. Timeline and
+// Prescriptions both call GET /patients/:id/timeline (medical-timeline.controller.ts)
+// and so both reuse CLINICAL_ROLES above rather than a separate constant —
+// if that endpoint's roles ever change, update both call sites together.
+export const PATIENT_APPOINTMENTS_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'SECRETARY', 'DOCTOR', 'NURSE']);
+export const PATIENT_LABS_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'TECHNICIAN', 'SECRETARY']);
+export const PATIENT_RADIOLOGY_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'TECHNICIAN', 'SECRETARY']);
+export const PATIENT_FILES_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY', 'TECHNICIAN']);
+export const PATIENT_REPORTS_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'DOCTOR', 'NURSE', 'SECRETARY']);
+
 // ─── Technician worklist pages ────────────────────────────────────────────────
 
 export const TECHNICIAN_ACCESS_ROLES = new Set(['SUPER_ADMIN', 'ORG_ADMIN', 'TECHNICIAN']);

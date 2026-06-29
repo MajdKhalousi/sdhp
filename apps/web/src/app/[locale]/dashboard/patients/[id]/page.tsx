@@ -17,6 +17,11 @@ import {
   INVOICE_CREATE_ROLES,
   INVOICE_READ_ROLES,
   ENCOUNTER_DETAIL_ACCESS_ROLES,
+  PATIENT_APPOINTMENTS_ACCESS_ROLES,
+  PATIENT_LABS_ACCESS_ROLES,
+  PATIENT_RADIOLOGY_ACCESS_ROLES,
+  PATIENT_FILES_ACCESS_ROLES,
+  PATIENT_REPORTS_ACCESS_ROLES,
 } from '@/lib/permissions';
 import { useAllergies } from '@/hooks/use-allergies';
 import { usePatientLabOrders } from '@/hooks/use-labs';
@@ -254,6 +259,13 @@ export default function PatientPage({ params }: { params: { id: string } }) {
   const canViewPatientInvoices = user ? INVOICE_READ_ROLES.has(user.role) : false;
   const canSeeEncounters       = user ? ENCOUNTER_DETAIL_ACCESS_ROLES.has(user.role) : false;
   const canSeeVisitStatus      = user ? PATIENT_SAFETY_ALERT_ROLES.has(user.role) : false;
+  const canSeeAppointments = user ? PATIENT_APPOINTMENTS_ACCESS_ROLES.has(user.role) : false;
+  const canSeeTimeline     = hasClinicalRole;
+  const canSeePrescriptions = hasClinicalRole;
+  const canSeeLabs         = user ? PATIENT_LABS_ACCESS_ROLES.has(user.role) : false;
+  const canSeeRadiology    = user ? PATIENT_RADIOLOGY_ACCESS_ROLES.has(user.role) : false;
+  const canSeeFiles        = user ? PATIENT_FILES_ACCESS_ROLES.has(user.role) : false;
+  const canSeeReports      = user ? PATIENT_REPORTS_ACCESS_ROLES.has(user.role) : false;
 
   useEffect(() => {
     if (user && !NAV_PATIENTS_ROLES.includes(user.role)) {
@@ -321,15 +333,15 @@ export default function PatientPage({ params }: { params: { id: string } }) {
 
   const TABS: TabItem[] = [
     { value: 'overview',      label: t('detail.tabs.overview')      },
-    { value: 'appointments',  label: t('detail.tabs.appointments')  },
+    ...(canSeeAppointments ? [{ value: 'appointments', label: t('detail.tabs.appointments') }] : []),
     ...(canSeeEncounters ? [{ value: 'visits', label: t('detail.tabs.visits') }] : []),
     ...(canSeeSafetyAlerts ? [{ value: 'follow-ups', label: t('detail.tabs.followUps') }] : []),
-    { value: 'timeline',      label: t('detail.tabs.timeline')      },
-    { value: 'prescriptions', label: t('detail.tabs.prescriptions') },
-    { value: 'labs',          label: t('detail.tabs.labs')          },
-    { value: 'radiology',     label: t('detail.tabs.radiology')     },
-    { value: 'files',         label: t('detail.tabs.files')         },
-    { value: 'reports',       label: t('detail.tabs.reports')       },
+    ...(canSeeTimeline ? [{ value: 'timeline', label: t('detail.tabs.timeline') }] : []),
+    ...(canSeePrescriptions ? [{ value: 'prescriptions', label: t('detail.tabs.prescriptions') }] : []),
+    ...(canSeeLabs ? [{ value: 'labs', label: t('detail.tabs.labs') }] : []),
+    ...(canSeeRadiology ? [{ value: 'radiology', label: t('detail.tabs.radiology') }] : []),
+    ...(canSeeFiles ? [{ value: 'files', label: t('detail.tabs.files') }] : []),
+    ...(canSeeReports ? [{ value: 'reports', label: t('detail.tabs.reports') }] : []),
     { value: 'medical-services', label: t('detail.tabs.medicalServices') },
     { value: 'invoices',      label: t('detail.tabs.invoices')      },
   ];
@@ -505,9 +517,11 @@ export default function PatientPage({ params }: { params: { id: string } }) {
           </div>
         </TabPanel>
 
-        <TabPanel value="appointments" activeValue={activeTab}>
-          <PatientAppointmentsTab patientId={id} />
-        </TabPanel>
+        {canSeeAppointments && (
+          <TabPanel value="appointments" activeValue={activeTab}>
+            <PatientAppointmentsTab patientId={id} />
+          </TabPanel>
+        )}
 
         {canSeeEncounters && (
           <TabPanel value="visits" activeValue={activeTab}>
@@ -521,33 +535,45 @@ export default function PatientPage({ params }: { params: { id: string } }) {
           </TabPanel>
         )}
 
-        <TabPanel value="timeline" activeValue={activeTab}>
-          <TimelineTab patientId={id} />
-        </TabPanel>
+        {canSeeTimeline && (
+          <TabPanel value="timeline" activeValue={activeTab}>
+            <TimelineTab patientId={id} />
+          </TabPanel>
+        )}
 
-        <TabPanel value="prescriptions" activeValue={activeTab}>
-          <ClinicalTypeTab
-            patientId={id}
-            type="PRESCRIPTION"
-            emptyMessage={t('detail.clinicalTab.emptyPrescriptions')}
-          />
-        </TabPanel>
+        {canSeePrescriptions && (
+          <TabPanel value="prescriptions" activeValue={activeTab}>
+            <ClinicalTypeTab
+              patientId={id}
+              type="PRESCRIPTION"
+              emptyMessage={t('detail.clinicalTab.emptyPrescriptions')}
+            />
+          </TabPanel>
+        )}
 
-        <TabPanel value="labs" activeValue={activeTab}>
-          <LabOrdersTab patientId={id} />
-        </TabPanel>
+        {canSeeLabs && (
+          <TabPanel value="labs" activeValue={activeTab}>
+            <LabOrdersTab patientId={id} />
+          </TabPanel>
+        )}
 
-        <TabPanel value="radiology" activeValue={activeTab}>
-          <RadiologyOrdersTab patientId={id} />
-        </TabPanel>
+        {canSeeRadiology && (
+          <TabPanel value="radiology" activeValue={activeTab}>
+            <RadiologyOrdersTab patientId={id} />
+          </TabPanel>
+        )}
 
-        <TabPanel value="files" activeValue={activeTab}>
-          <FilesTab patientId={id} />
-        </TabPanel>
+        {canSeeFiles && (
+          <TabPanel value="files" activeValue={activeTab}>
+            <FilesTab patientId={id} />
+          </TabPanel>
+        )}
 
-        <TabPanel value="reports" activeValue={activeTab}>
-          <ClinicalReportsTab patientId={id} />
-        </TabPanel>
+        {canSeeReports && (
+          <TabPanel value="reports" activeValue={activeTab}>
+            <ClinicalReportsTab patientId={id} />
+          </TabPanel>
+        )}
 
         <TabPanel value="medical-services" activeValue={activeTab}>
           <MedicalServicesTab patientId={id} />

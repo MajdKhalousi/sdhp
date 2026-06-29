@@ -163,6 +163,31 @@ No bulk-apply backend endpoint was introduced for C32C — applying a template i
 - **Tests/checks:** N/A — documentation-only sprint.
 - **Acceptance criteria:** A reviewed design note exists answering: per-clinic or per-tenant scope, predefined-toggle vs. custom-field support, historical-data behavior when a field is hidden, and required permissions — ready to become a future implementation sprint if and when a real clinic need confirms it's worth building.
 
+### Sprint 6 — Patient Medical File v2 (narrow improvements)
+
+**Status: Closed (2026-06-29).** Not part of the original 5-sprint plan above — opened, scoped, and closed within the same session, following the Prescription Templates arc (Sprint 4). Conceived as "Clinical Summary + Timeline filters," but planning (C37A) found the Patient Overview tab already covered most of the originally suggested scope (patient metadata, last visit/doctor, upcoming appointment, billing status summary all already existed across four separate existing cards). The shipped scope was deliberately narrowed to the one genuine gap plus one small Timeline UX gap, rather than building a redundant new "v2" surface.
+
+**1. What was shipped**
+
+| Phase | Delivered |
+|---|---|
+| C37A | Planning pass that found Patient Overview's `PatientHeader`/`PatientVisitStatus`/`PatientClinicalSummary`/`PatientOutstandingBalance` cards already covered nearly all originally-suggested Clinical Summary fields; narrowed scope to the one missing field (last prescription) plus one Timeline filter UX gap (no grouped Billing toggle) |
+| C37B | Added a "Last prescription" row to the existing `PatientClinicalSummary` — medication, dosage/frequency/duration when available, no quantity/refills; sourced from the existing tenant-scoped timeline endpoint (`usePatientTimeline(patientId, { types: ['PRESCRIPTION'], limit: 1 })`); hidden entirely (no placeholder) when no prescription exists |
+| C37C | Added a grouped "Billing" quick-filter button to the Patient Timeline filters — toggles `INVOICE_ISSUED` and `PAYMENT_RECORDED` together as one click; both individual type filters remain independently usable; no backend change, since both event types already existed |
+
+No backend endpoint, DTO, Prisma migration, or schema change was made anywhere in this sprint — both deliverables are presentation-layer additions over data/endpoints that already existed.
+
+**2. What was deliberately not built**
+
+- **No new Clinical Summary v2 component.** The existing `PatientClinicalSummary` was extended in place; no parallel or duplicate summary surface was created.
+- **No `APPOINTMENT` timeline event type.** Appointments are deliberately handled elsewhere (`PatientVisitStatus`'s upcoming-appointment card, the dedicated Appointments tab) — adding them to the medical timeline would be new backend projection work, not a polish pass, and risks duplicating those two existing surfaces. **This remains an open decision, not a rejection** — if a future need makes the case, it requires its own planning pass covering the backend projection change (`PrescriptionEventData`-style new event data shape, a `medical-timeline.service.ts` fetcher, a new card component).
+- **No "Notes" timeline filter.** There is no standalone clinical-note entity in this codebase — clinical notes live as fields embedded directly in `Encounter`, already represented by the existing `ENCOUNTER` timeline type. A literal "Notes" filter isn't recommended unless a real, standalone note entity is introduced first; until then, it would filter for a concept that doesn't actually exist as distinct data.
+
+**3. Verified on Staging**
+
+- C37B (commit `7964977`): patient with a prescription shows the row, patient without one hides it cleanly, Arabic/mixed-language text displays acceptably.
+- C37C (commit `dad5aea`): Billing quick-filter appears after "All", Arabic label displays correctly, selecting/deselecting it correctly shows/hides invoice and payment events together, date-range filtering continues to work alongside it.
+
 ---
 
 ## Recommended First Sprint

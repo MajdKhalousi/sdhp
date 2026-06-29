@@ -9,7 +9,7 @@ type Props = { event: Extract<TimelineEvent, { type: 'PRESCRIPTION' }> };
 export function PrescriptionCard({ event }: Props) {
   const t = useTranslations('timeline.cards');
   const { data } = event;
-  const details = [data.dosage, data.frequency, data.duration].filter(Boolean).join(' · ');
+  const detailParts = [data.dosage, data.frequency, data.duration].filter(Boolean);
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm border-s-4 border-s-green-400">
@@ -22,8 +22,15 @@ export function PrescriptionCard({ event }: Props) {
 
       <p className="font-medium text-sm text-foreground">{data.medication}</p>
 
-      {details && (
-        <p className="mt-1 text-xs text-muted-foreground" dir="ltr">{details}</p>
+      {detailParts.length > 0 && (
+        <p className="mt-1 text-xs text-muted-foreground text-start">
+          {detailParts.map((part, i) => (
+            <span key={i}>
+              {i > 0 && ' · '}
+              <bdi>{part}</bdi>
+            </span>
+          ))}
+        </p>
       )}
     </div>
   );

@@ -16,6 +16,7 @@ interface PatientFormProps {
   onCancel?: () => void;
   onDirtyChange?: (dirty: boolean) => void;
   onPhoneChange?: (phone: string) => void;
+  onAnyFieldChange?: () => void;
   isSubmitting?: boolean;
   submitDisabled?: boolean;
 }
@@ -143,6 +144,7 @@ export function PatientForm({
   onCancel,
   onDirtyChange,
   onPhoneChange,
+  onAnyFieldChange,
   isSubmitting = false,
   submitDisabled = false,
 }: PatientFormProps) {
@@ -170,6 +172,7 @@ export function PatientForm({
     if (field === 'phone') {
       onPhoneChange?.(value);
     }
+    onAnyFieldChange?.();
   }
 
   function validate(): FormErrors {

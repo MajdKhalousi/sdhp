@@ -1356,6 +1356,14 @@
         "requestNewCode": "Request new code"
       }
     },
+    "missingInfo": {
+      "heading": "Incomplete information",
+      "description": "Some sections of this patient's file are incomplete. You can complete them now or create the file and finish later.",
+      "actions": {
+        "complete": "Complete information",
+        "createAnyway": "Create Anyway"
+      }
+    },
     "unsaved": {
       "heading": "Unsaved patient information",
       "description": "You have entered patient information that has not been saved. If you leave now, these changes will be lost.",

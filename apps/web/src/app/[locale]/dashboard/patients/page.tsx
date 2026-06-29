@@ -11,6 +11,7 @@ import { usePatients, useCreatePatient, useDeletePatient, useCheckDuplicatePatie
 import { useToast } from '@/hooks/use-toast';
 import { PatientForm } from '@/components/patients/patient-form';
 import { DuplicateWarning } from '@/components/patients/duplicate-warning';
+import { MissingInfoWarning, type MissingSectionKey } from '@/components/patients/missing-info-warning';
 import { DiscardConfirm } from '@/components/patients/discard-confirm';
 import { useAuthStore } from '@/store/auth';
 import { useUnsavedGuardStore } from '@/store/unsaved-guard';
@@ -34,6 +35,29 @@ function computeAge(dob: string | null | undefined): number | null {
   const m = now.getMonth() - birth.getMonth();
   if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
   return age >= 0 ? age : null;
+}
+
+// Flags a section only when every field in it is empty — a partially filled
+// section is the staff's call, not something worth nagging about.
+// Note: "medical" only checks chronicDiseases — CreatePatientInput has no
+// `allergies` field at all (the form's Allergies textarea is never sent on
+// create), so allergies can't factor into this check without a separate,
+// out-of-scope payload/contract change.
+function computeMissingSections(payload: CreatePatientInput): MissingSectionKey[] {
+  const sections: MissingSectionKey[] = [];
+  if (!payload.fatherName && !payload.fatherNameAr && !payload.motherName && !payload.motherNameAr) {
+    sections.push('family');
+  }
+  if (!payload.nationalId && !payload.address && !payload.city && !payload.bloodType) {
+    sections.push('additional');
+  }
+  if (!payload.chronicDiseases) {
+    sections.push('medical');
+  }
+  if (!payload.emergencyName && !payload.emergencyPhone) {
+    sections.push('emergency');
+  }
+  return sections;
 }
 
 function formatShortDate(iso: string | null | undefined, locale: string): string | null {
@@ -69,6 +93,8 @@ export default function PatientsPage() {
   const [pendingPayload, setPendingPayload] = useState<CreatePatientInput | null>(null);
   const [duplicateMatches, setDuplicateMatches] = useState<DuplicateCandidate[]>([]);
   const [platformCandidates, setPlatformCandidates] = useState<PlatformCandidate[]>([]);
+  const [missingInfoPayload, setMissingInfoPayload] = useState<CreatePatientInput | null>(null);
+  const [missingSections, setMissingSections] = useState<MissingSectionKey[]>([]);
   const [linkRequestResult, setLinkRequestResult] = useState<LinkRequestResult | null>(null);
   const [verifyLinkError, setVerifyLinkError] = useState<string | null>(null);
   const [verifySuccess, setVerifySuccess] = useState(false);
@@ -146,6 +172,8 @@ export default function PatientsPage() {
     setLinkRequestResult(null);
     setVerifyLinkError(null);
     setVerifySuccess(false);
+    setMissingInfoPayload(null);
+    setMissingSections([]);
     setIsCreateFormDirty(false);
   }
 
@@ -189,6 +217,12 @@ export default function PatientsPage() {
         setPlatformCandidates(platformResult.candidates);
         return;
       }
+      const missing = computeMissingSections(payload);
+      if (missing.length > 0) {
+        setMissingInfoPayload(payload);
+        setMissingSections(missing);
+        return;
+      }
       await doCreate(payload);
     } catch (err) {
       setCreateError(err instanceof Error ? err.message : t('list.errors.createFailed'));
@@ -198,7 +232,37 @@ export default function PatientsPage() {
   async function handleCreateAnyway() {
     if (!pendingPayload) return;
     setCreateError(null);
-    await doCreate(pendingPayload);
+    const payload = pendingPayload;
+    handleCancelDuplicateWarning();
+    const missing = computeMissingSections(payload);
+    if (missing.length > 0) {
+      setMissingInfoPayload(payload);
+      setMissingSections(missing);
+      return;
+    }
+    await doCreate(payload);
+  }
+
+  function handleDismissMissingInfo() {
+    setMissingInfoPayload(null);
+    setMissingSections([]);
+  }
+
+  async function handleConfirmCreateDespiteMissingInfo() {
+    if (!missingInfoPayload) return;
+    setCreateError(null);
+    await doCreate(missingInfoPayload);
+  }
+
+  // Missing-section relevance depends on every field, unlike the duplicate
+  // warning (phone/name/DOB/nationalId only) — any edit invalidates a pending
+  // missing-section confirmation, but must never touch the separate, narrower
+  // duplicate-warning reset from C43B.
+  function handleAnyFieldChange() {
+    if (missingInfoPayload) {
+      setMissingInfoPayload(null);
+      setMissingSections([]);
+    }
   }
 
   function handleCancelDuplicateWarning() {
@@ -345,14 +409,23 @@ export default function PatientsPage() {
               verifySuccess={verifySuccess}
             />
           )}
+          {!guard.showConfirm && missingInfoPayload && (
+            <MissingInfoWarning
+              sections={missingSections}
+              onCreateAnyway={handleConfirmCreateDespiteMissingInfo}
+              onCancel={handleDismissMissingInfo}
+              isCreating={createPatient.isPending}
+            />
+          )}
           <PatientForm
             mode="create"
             onSubmit={handleCreate}
             onCancel={requestCloseCreateForm}
             onDirtyChange={setIsCreateFormDirty}
             onPhoneChange={handlePhoneChange}
+            onAnyFieldChange={handleAnyFieldChange}
             isSubmitting={createPatient.isPending || checkDuplicate.isPending || checkPlatformCandidates.isPending || linkRequest.isPending || verifyLink.isPending}
-            submitDisabled={duplicateMatches.length > 0 || platformCandidates.length > 0}
+            submitDisabled={duplicateMatches.length > 0 || platformCandidates.length > 0 || !!missingInfoPayload}
           />
         </div>
       )}

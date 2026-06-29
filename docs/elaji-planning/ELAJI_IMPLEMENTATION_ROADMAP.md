@@ -188,6 +188,45 @@ No backend endpoint, DTO, Prisma migration, or schema change was made anywhere i
 - C37B (commit `7964977`): patient with a prescription shows the row, patient without one hides it cleanly, Arabic/mixed-language text displays acceptably.
 - C37C (commit `dad5aea`): Billing quick-filter appears after "All", Arabic label displays correctly, selecting/deselecting it correctly shows/hides invoice and payment events together, date-range filtering continues to work alongside it.
 
+### Sprint 7 — Accounts, Profile, Password, and Permissions Cleanup
+
+**Status: Closed (2026-06-29).** A verification/cleanup arc, not a rebuild — not part of the original 5-sprint plan. Planning (C38A) found that profile management, self-service change-password, and admin staff-account CRUD were **already fully implemented**, both backend and frontend, before this arc started. No new feature was built; the work that followed was documentation verification and an explicit governance decision, not implementation.
+
+**1. What was found already complete (no code changes made)**
+
+- **Profile page** (`apps/web/src/app/[locale]/dashboard/profile/page.tsx`) — already shows name (EN/AR), phone, email, role, organization, branch, active status, last login, sourced from the already-existing `GET /v1/auth/me`.
+- **Self-service change password** — already wired end-to-end: `PATCH /v1/auth/me/password` (`auth.service.ts::changePassword`) verifies the current password, rejects mismatched confirmation, rejects reusing the same password, bcrypt-hashes at 12 rounds, writes a `PASSWORD_CHANGED` audit row, and the frontend forces a logout + redirect to `/login` after a successful change.
+- **Admin staff-account management** (`apps/web/src/components/settings/staff-table.tsx`, `apps/api/src/modules/users/*`) — already supports create, edit, activate/deactivate, soft-delete, restore, and admin-triggered password reset, with org-scoping, role-assignment restrictions (`ORG_ADMIN` cannot assign/promote to `SUPER_ADMIN`), and last-active-admin protection (can't deactivate/demote/delete the last `SUPER_ADMIN` platform-wide or the last `ORG_ADMIN` in an org).
+
+**2. C38B — Permissions Matrix verification + BRANCH_ADMIN scope decision**
+
+- Independently re-verified `BRANCH_ADMIN`'s footprint via exhaustive grep: full access to Follow-ups, read-only access to 4 reference/settings endpoint groups (`clinic-settings`, `doctor-schedules`, `services`, `visit-types`), nothing else — confirmed to match `Permissions Matrix.md`'s existing claims, no drift found.
+- Found and added 3 modules missing from the matrix entirely (`prescription-templates`, `medical-service-requests`, `medical-timeline`) — a documentation lag from the C32 arc, not a code defect.
+- Fixed one internally-stale, self-contradicting TODO line in the matrix.
+- Recorded an explicit governance decision: **`BRANCH_ADMIN` is intentionally narrow, not equivalent to `ORG_ADMIN`, and must not be broadened silently** — any future expansion requires its own planning phase touching backend `@Roles()` and frontend permission constants together. See `docs/architecture/Permissions Matrix.md`'s "BRANCH_ADMIN Scope Decision" section.
+
+**3. C38C — Audit log coverage verification**
+
+Verified which account/security actions are audited, with no code changes. Covered: self-service password change (`PASSWORD_CHANGED`), admin user creation (`USER_CREATED`), admin user update (`USER_UPDATED`), role changes (`USER_ROLE_CHANGED`, the most fully-instrumented with before/after values), deactivation via the dedicated path (`USER_DEACTIVATED`), reactivation/restore via the dedicated path (`USER_ACTIVATED`), soft-delete (covered by `USER_DEACTIVATED` — deactivation and soft-delete are the same backend operation in this domain model), admin password reset (`PASSWORD_RESET_BY_ADMIN`, never logs the temporary password), and login/logout (`LOGIN`/`LOGOUT`).
+
+**4. Deferred audit gaps (documented, not fixed)**
+
+| Gap | Priority | Reason deferred |
+|---|---|---|
+| Failed login attempts are not logged | Medium | Forensic/observability gap; partially mitigated by existing login-endpoint rate limiting |
+| Generic edit-form `isActive` toggle logs as `USER_UPDATED`, not a distinct `USER_ACTIVATED`/`USER_DEACTIVATED` | Medium | Observability gap only — the underlying access-control guard (last-active-admin protection) is correctly enforced regardless of which path is used |
+| `USER_CREATED`/`USER_UPDATED` carry no before/after field snapshot | Low | Functional but thin — actor/target/org/timestamp are always present |
+| `ipAddress`/`userAgent` columns exist on `AuditLog` but no call site populates them | Low | General gap, not account-specific; would need a cross-cutting change through every controller |
+| `ORG_ADMIN` cannot read its own organization's audit log (`SUPER_ADMIN`-only today) | Informational | An RBAC scope question, not an audit-coverage defect — deliberately left as a separate future decision, not part of this arc |
+
+No central `AuditAction` enum exists — every module uses raw string literals for the `action` field; consistency currently relies on convention, not the type system. Noted as an architectural characteristic, not something fixed in this arc.
+
+**5. Explicit decisions made**
+
+- No audit-code fixes in this arc — the medium/low-priority gaps above are real but non-critical; revisiting them is a separate, explicitly-scoped future phase, not an automatic next step.
+- No Redis-backed token revocation — `auth.service.ts::logout()`'s existing comment already documents this as deferred pending Redis integration; still not undertaken.
+- No auth/session/token logic changes, no RBAC behavior changes, no new roles, no renamed roles.
+
 ---
 
 ## Recommended First Sprint

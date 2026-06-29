@@ -18,6 +18,7 @@ import { PatientsModule } from './modules/patients/patients.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { QueueModule } from './modules/queue/queue.module';
 import { EncountersModule } from './modules/encounters/encounters.module';
+import { PrescriptionTemplatesModule } from './modules/prescription-templates/prescription-templates.module';
 import { PrescriptionsModule } from './modules/prescriptions/prescriptions.module';
 import { MedicalTimelineModule } from './modules/medical-timeline/medical-timeline.module';
 import { ReportsModule } from './modules/reports/reports.module';
@@ -60,6 +61,7 @@ import { SubscriptionAccessModule } from './common/subscription/subscription-acc
     AppointmentsModule,
     QueueModule,
     EncountersModule,
+    PrescriptionTemplatesModule,
     PrescriptionsModule,
     MedicalTimelineModule,
     ReportsModule,

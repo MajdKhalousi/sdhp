@@ -229,6 +229,7 @@ model Organization {
   leaveRequests          LeaveRequest[]
   payrollRuns            PayrollRun[]
   medicalServiceRequests MedicalServiceRequest[]
+  prescriptionTemplates  PrescriptionTemplate[]
 
   @@map("organizations")
 }
@@ -935,6 +936,46 @@ model Prescription {
 
   @@index([encounterId])
   @@map("prescriptions")
+}
+
+// Clinic-wide, reusable medication sets a doctor can apply to a prescription
+// during an encounter. Deliberately carries no patientId/encounterId — applying
+// a template means creating ordinary Prescription rows via the existing
+// POST /prescriptions endpoint, once per item; this model never touches a
+// patient's actual clinical record.
+model PrescriptionTemplate {
+  id             String  @id @default(cuid())
+  organizationId String
+  name           String
+  nameAr         String?
+  isActive       Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  organization Organization               @relation(fields: [organizationId], references: [id])
+  items        PrescriptionTemplateItem[]
+
+  @@index([organizationId])
+  @@map("prescription_templates")
+}
+
+model PrescriptionTemplateItem {
+  id           String  @id @default(cuid())
+  templateId   String
+  medication   String
+  dosage       String?
+  frequency    String?
+  duration     String?
+  instructions String?
+  quantity     Int?
+  refillsLeft  Int?
+
+  template PrescriptionTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+  @@map("prescription_template_items")
 }
 
 // ─────────────────────────────────────────────

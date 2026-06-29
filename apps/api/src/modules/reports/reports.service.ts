@@ -37,8 +37,17 @@ export class ReportsService {
       totalPrescriptions,
       queueGroups,
     ] = await Promise.all([
-      this.prisma.patient.count({ where: { ...(orgId ? { organizationId: orgId } : {}), deletedAt: null } }),
-      this.prisma.patient.count({ where: { ...(orgId ? { organizationId: orgId } : {}), deletedAt: null, isActive: true } }),
+      this.prisma.patient.count({
+        where: { ...(orgId ? { organizationId: orgId } : {}), deletedAt: null, ...this.createdAtFilter(from, to) },
+      }),
+      this.prisma.patient.count({
+        where: {
+          ...(orgId ? { organizationId: orgId } : {}),
+          deletedAt: null,
+          isActive: true,
+          ...this.createdAtFilter(from, to),
+        },
+      }),
 
       this.prisma.user.count({
         where: {

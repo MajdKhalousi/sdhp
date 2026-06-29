@@ -223,7 +223,7 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
           <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {t('detail.overview.chronicDiseases')}
           </p>
-          <p className="text-sm text-foreground">{patient.chronicDiseases}</p>
+          <p className="text-sm text-foreground text-start" dir="auto">{patient.chronicDiseases}</p>
         </div>
       )}
 
@@ -232,7 +232,7 @@ function OverviewTab({ patient, allergies }: { patient: Patient; allergies: Alle
           <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {t('detail.overview.clinicalNotes')}
           </p>
-          <p className="text-sm text-foreground">{patient.notes}</p>
+          <p className="text-sm text-foreground text-start" dir="auto">{patient.notes}</p>
         </div>
       )}
     </div>

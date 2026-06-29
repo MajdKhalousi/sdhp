@@ -168,19 +168,19 @@ export function PatientClinicalSummary({ patientId, onViewHistory }: Props) {
               {cEnc.chiefComplaint && (
                 <div className="flex flex-col gap-0.5">
                   <span className="text-xs text-muted-foreground">{t('lastChiefComplaint')}</span>
-                  <span className="text-sm text-foreground line-clamp-2">{cEnc.chiefComplaint}</span>
+                  <span className="text-sm text-foreground line-clamp-2 text-start" dir="auto">{cEnc.chiefComplaint}</span>
                 </div>
               )}
               {cEnc.historyOfPresentIllness && (
                 <div className="flex flex-col gap-0.5">
                   <span className="text-xs text-muted-foreground">{t('lastHpi')}</span>
-                  <span className="text-sm text-foreground line-clamp-2">{cEnc.historyOfPresentIllness}</span>
+                  <span className="text-sm text-foreground line-clamp-2 text-start" dir="auto">{cEnc.historyOfPresentIllness}</span>
                 </div>
               )}
               {cEnc.treatmentPlan && (
                 <div className="flex flex-col gap-0.5">
                   <span className="text-xs text-muted-foreground">{t('lastTreatmentPlan')}</span>
-                  <span className="text-sm text-foreground line-clamp-2">{cEnc.treatmentPlan}</span>
+                  <span className="text-sm text-foreground line-clamp-2 text-start" dir="auto">{cEnc.treatmentPlan}</span>
                 </div>
               )}
             </div>

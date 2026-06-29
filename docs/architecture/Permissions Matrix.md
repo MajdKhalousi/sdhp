@@ -124,7 +124,7 @@ The frontend re-implements its own role gating (navigation visibility, page guar
 | Follow-ups (org-wide) | ORG_ADMIN, BRANCH_ADMIN, NURSE, SECRETARY |
 | Cashier / Invoices | ORG_ADMIN, ACCOUNTANT, SECRETARY |
 | Billing Reports | ORG_ADMIN, ACCOUNTANT |
-| Reports (Summary/Appointments hub, Phase 0E-C39E) | ORG_ADMIN, DOCTOR |
+| Reports (Summary/Appointments/Visits hub, Phase 0E-C39E/C40B) | ORG_ADMIN, DOCTOR |
 | Doctors (management) | ORG_ADMIN only |
 | HR / Settings | ORG_ADMIN only |
 | Platform (Overview/Organizations/Payments/Audit Logs/Users) | SUPER_ADMIN only |
@@ -139,6 +139,7 @@ The frontend re-implements its own role gating (navigation visibility, page guar
 | `DOCTOR_WORKSPACE_ROLES` | SUPER_ADMIN, ORG_ADMIN, DOCTOR |
 | `REPORTS_SUMMARY_ACCESS_ROLES` | SUPER_ADMIN, ORG_ADMIN, DOCTOR |
 | `REPORTS_APPOINTMENTS_ACCESS_ROLES` | SUPER_ADMIN, ORG_ADMIN, DOCTOR |
+| `REPORTS_CLINICAL_ACCESS_ROLES` | SUPER_ADMIN, ORG_ADMIN, DOCTOR |
 | `MY_FOLLOW_UPS_ROLES` | DOCTOR |
 | `FOLLOW_UP_PAGE_ROLES` | SUPER_ADMIN, ORG_ADMIN, BRANCH_ADMIN, NURSE, SECRETARY |
 | `SETTINGS_ACCESS_ROLES` | SUPER_ADMIN, ORG_ADMIN |

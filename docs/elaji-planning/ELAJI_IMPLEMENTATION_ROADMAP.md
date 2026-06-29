@@ -270,6 +270,44 @@ No central `AuditAction` enum exists — every module uses raw string literals f
 
 ---
 
+### Sprint 9 — Visit Reports (Clinical) inside the Reports Hub
+
+**Status: Closed (2026-06-29).** Verified on Staging (commit `42ef2b0` confirmed as Staging HEAD, web container healthy, logs clean, page loads visually, Arabic/RTL acceptable, date filters work). Adds a third page to the Reports Hub established in Sprint 8, consuming an endpoint that already existed on the backend (`GET /v1/reports/clinical`) — no backend change.
+
+**1. What shipped**
+
+| Phase | Commit | What |
+|---|---|---|
+| C40A | — (planning only) | Confirmed `GET /v1/reports/clinical`'s exact response shape and `@Roles(SUPER_ADMIN, ORG_ADMIN, DOCTOR)`; decided on route `/dashboard/reports/clinical` with user-facing label "Visit Reports"/"تقارير الزيارات" (the product already uses "Visit" as its clinic-facing term, reserving "Encounter" for backend/data-model usage); decided to add a third local tab rather than a fourth sidebar item. |
+| C40B | `42ef2b0` | Added the Visit Reports page, a `useClinicalReport` hook, a third `ReportsTabs` entry ("Visits"/"الزيارات"), and a `REPORTS_CLINICAL_ACCESS_ROLES` permission constant. Extended the sidebar's existing 3-way active-state check (already covering summary/appointments) to a 3-way check covering summary/appointments/clinical — still excluding `/dashboard/reports/billing` by exact match, not prefix match. |
+
+**2. Current behavior**
+
+- **Visit Reports** (`/dashboard/reports/clinical`) shows exactly 6 cards, each a direct field from the existing response: Total Visits, Visits with Diagnosis, Visits with Treatment Plan, Visits without Diagnosis, Total Prescriptions, Prescriptions with Refills. No breakdown table (the response has no `byStatus`-style map) and no computed percentages or derived KPIs.
+- The Reports Hub now has three local tabs: Summary / ملخص, Appointments / المواعيد, Visits / الزيارات.
+- The sidebar still shows exactly one "Reports" entry; it's active on all three hub routes but **not** on `/dashboard/reports/billing`, which remains its own separate, untouched sidebar item and page.
+
+**3. Permissions/RBAC — unchanged**
+
+- Backend `@Roles()` for `GET /reports/clinical` was not touched: `SUPER_ADMIN, ORG_ADMIN, DOCTOR`.
+- `REPORTS_CLINICAL_ACCESS_ROLES` in `apps/web/src/lib/permissions.ts` matches that exactly.
+- `BRANCH_ADMIN` was not added anywhere in this slice.
+- No new sidebar nav-role constant was introduced — the hub's existing `NAV_REPORTS_SUMMARY_ROLES` (`ORG_ADMIN, DOCTOR`) continues to gate the single entry.
+
+**4. Documented existing characteristic (not changed)**
+
+`GET /v1/reports/clinical`'s encounter counts are branch-scoped when `branchId` is provided (Encounter has its own `branchId` column), but its prescription counts are organization-scoped only — the nested `encounter: { organizationId, ... }` filter inside `rxWhere` never adds `branchId`, even though the related Encounter has one. This was identified during C40A planning and treated as a documented characteristic, consistent with how Patient counts in `/reports/summary` are similarly org-only — not a bug fixed in this slice.
+
+**5. Explicitly deferred**
+
+- Trimming Reports Summary's "Encounters Total"/"Prescriptions Total" cards, which now duplicate two of Visit Reports' six metrics — intentionally left for a possible future polish phase, decided only after the new page was visible, the same way C39D-Polish followed C39D rather than being bundled into the initial build.
+- Any breakdown/table view for clinical/visit data.
+- Percentages or computed KPIs (e.g., a diagnosis-completion rate).
+- Top doctors by completed visits, service/category summary, export/report-builder, full BI/custom report builder.
+- Changing prescription counts to be branch-scoped — would require a backend change, out of scope for a frontend-only slice.
+
+---
+
 ## Recommended First Sprint
 
 **Sprint 1 — Financial events on the patient medical timeline.**

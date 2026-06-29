@@ -345,6 +345,46 @@ No backend, API, or RBAC files were touched in C41A or C41B. No new or modified 
 
 ---
 
+### Sprint 11 — Cashier/Billing Operational Polish
+
+**Status: Closed (2026-06-30).** A safety/UX review of the cashier and billing flow ahead of first real clinic trial usage, not a redesign. Planning found the flow already well-guarded; the only concrete gap was English-only backend error text reaching Arabic cashier sessions.
+
+**1. What shipped**
+
+| Phase | Commit | What |
+|---|---|---|
+| C42A | — (planning only) | Reviewed the full invoice lifecycle (DRAFT → ISSUED → PARTIALLY_PAID → PAID, with CANCELLED as a terminal off-ramp from DRAFT/ISSUED-unpaid only) and the Cashier Today/Outstanding action set against it. Confirmed zero-amount/zero-remaining handling, overpayment limits, and cancel/void exposure are all already correctly guarded — cancel and void are deliberately absent from Cashier Today and only reachable on the invoice detail page, which is itself role-restricted below SECRETARY. Confirmed tenant isolation (`assertOrgAccess`, `assertClinicalInvoiceAccess`) and RBAC alignment between backend `@Roles()` and frontend permission constants, with one exception noted below. Confirmed all six billing mutations are audit-logged. Recommended the smallest fix that mattered for clinic-trial safety: friendly, localized error text for the handful of cashier-triggerable `BadRequestException` messages. |
+| C42B | `031006e` | Added a small matcher table to `getFriendlyApiErrorMessage` mapping five exact (one prefix-matched, for a dynamic amount) backend billing error strings to a new top-level `billing.errors.*` i18n namespace, in both locales. No backend, billing-logic, RBAC, or tolerance changes — purely a display-text lookup, verified to not collide with any other domain's error strings sharing the same helper. |
+
+**2. Current cashier/billing safety status**
+
+- Invoice/payment lifecycle and action visibility matrix reviewed end-to-end; no ungated state or action found.
+- Zero-amount, zero-remaining, and overpayment are all guarded in both the UI and the backend (backend is authoritative via DTO validation and service-level checks).
+- Cancel and void remain detail-page-only, not exposed in Cashier Today — unchanged, confirmed still the case after C42B.
+- Tenant isolation and RBAC reviewed and found correct, with SECRETARY deliberately narrower than ACCOUNTANT for edit/cancel/void/analytics actions.
+- All six billing mutations (`INVOICE_CREATED`, `INVOICE_ISSUED`, `INVOICE_CANCELLED`, `INVOICE_SETTLED_NO_CHARGE`, `PAYMENT_CREATED`, `PAYMENT_VOIDED`) are audit-logged.
+- Cashier-facing billing errors for the cases above are now localized and friendly instead of raw backend exception text.
+
+**3. Staging verification — with an accuracy note**
+
+The Arabic overpayment scenario tested on staging (entering 140 against a 135 remaining balance) showed `"المبلغ يتجاوز الرصيد المتبقي."` — this is the **pre-existing** client-side validation message (`invoice.payment.validation.amountExceedsRemaining`), which fires before the request ever reaches the backend. It confirms the cashier-facing Arabic experience is friendly for the most common real-world overpayment path, but it did **not** independently exercise C42B's new backend-error-mapping keys (`billing.errors.*`), since the client-side guard intercepted first. Those new keys only activate when a request actually reaches the backend and is rejected — e.g. a stale remaining-balance value, or any of the other four mapped messages (empty-invoice, no-charge-on-nonzero-total, wrong invoice state, zero-remaining). This distinction is recorded here rather than overstated, consistent with this project's source-of-truth discipline.
+
+**4. No runtime/backend changes**
+
+No backend billing logic, invoice/payment state, RBAC, or payment-amount tolerance was changed anywhere in C42A or C42B.
+
+**5. Explicitly deferred**
+
+- Aligning the frontend's `+0.001` payment-amount tolerance with the backend's strict check.
+- Whether to add NURSE to `INVOICE_READ_ROLES` on the frontend (backend already permits NURSE reads — this is a capability gap in the safe direction, not a security issue, and needs its own explicit decision).
+- Refactoring `RecordPaymentForm` vs `IssueAndPayDialog`'s duplicated form logic.
+- Exposing cancel/void in Cashier Today.
+- Any new invoice/payment states.
+- Billing Reports redesign.
+- Full accounting/inventory/finance features.
+
+---
+
 ## Recommended First Sprint
 
 **Sprint 1 — Financial events on the patient medical timeline.**

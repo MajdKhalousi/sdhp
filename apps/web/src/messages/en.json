@@ -4296,5 +4296,14 @@
     "errors": {
       "writeBlocked": "This action is unavailable because your organization's subscription needs attention. Please contact platform administration."
     }
+  },
+  "billing": {
+    "errors": {
+      "amountExceedsRemaining": "The amount entered is more than the invoice's remaining balance.",
+      "noRemainingBalance": "There is no remaining balance to collect on this invoice.",
+      "emptyInvoice": "Add at least one item before issuing this invoice.",
+      "noChargeRequiresZeroTotal": "This invoice can only be settled as no-charge if its total is zero.",
+      "invalidState": "This action can't be done in the invoice's current state."
+    }
   }
 }

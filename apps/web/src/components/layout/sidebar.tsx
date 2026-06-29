@@ -255,18 +255,52 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
       {/* Navigation */}
       <nav className="flex-1 overflow-auto py-4">
         <div className="space-y-1 px-3">
-          {visibleGroups.map(({ groupKey, items }) => {
+          {visibleGroups.flatMap(({ groupKey, items }) => {
+            // 'main' (Dashboard/Today) never gets a shared group header —
+            // each visible item renders as its own flat top-level row using
+            // its own icon/label, regardless of how many items are visible.
+            // These are primary destinations, not a "section."
+            if (groupKey === 'main') {
+              return items.map((item) => {
+                const Icon = item.icon;
+                const isActive = isNavItemActive(item.href, pathname);
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    locale={locale}
+                    onClick={(e) => {
+                      if (guard.enabled) {
+                        e.preventDefault();
+                        guard.requestNavigate(() => router.push(item.href));
+                      }
+                    }}
+                    className={cn(
+                      'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                    )}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {navItemLabels[item.href]}
+                  </Link>
+                );
+              });
+            }
+
             const GroupIcon = GROUP_ICONS[groupKey];
 
-            // Single-item groups (Settings, Profile) render as plain
+            // Single-item groups (Settings, Profile, or any group reduced
+            // to one visible item for a given role) render as plain
             // direct-navigation rows — an accordion that only ever reveals
-            // one child is pure overhead, and it's also what caused the
-            // group label vs. item label duplication for these two groups.
+            // one child is pure overhead.
             if (items.length === 1) {
               const item = items[0];
               const isActive = isNavItemActive(item.href, pathname);
 
-              return (
+              return [
                 <Link
                   key={groupKey}
                   href={item.href}
@@ -286,31 +320,28 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
                 >
                   <GroupIcon className="h-4 w-4 shrink-0" />
                   <span className="flex-1 text-start">{t(`groups.${groupKey}`)}</span>
-                </Link>
-              );
+                </Link>,
+              ];
             }
 
             // Active group is force-open regardless of persisted/manual
             // state — see the activeGroupKey comment above. At most two
             // groups can ever be open: the active one + the single
-            // manually-open one (single-open accordion).
-            const isActiveGroup = groupKey === activeGroupKey;
-            const isOpen = groupKey === openGroup || isActiveGroup;
+            // manually-open one (single-open accordion). The header itself
+            // carries no persistent active styling — only hover and chevron
+            // rotation — so the active child link stays the one strong
+            // highlight in the sidebar.
+            const isOpen = groupKey === openGroup || groupKey === activeGroupKey;
             const panelId = `nav-group-panel-${groupKey}`;
 
-            return (
+            return [
               <div key={groupKey}>
                 <button
                   type="button"
                   onClick={() => toggleGroup(groupKey)}
                   aria-expanded={isOpen}
                   aria-controls={panelId}
-                  className={cn(
-                    'flex w-full items-center gap-3 rounded-lg border-s-2 px-3 py-2 text-sm font-medium transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-                    isActiveGroup
-                      ? 'border-primary bg-sidebar-accent/30 text-sidebar-foreground'
-                      : 'border-transparent text-sidebar-foreground/70',
-                  )}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                 >
                   <GroupIcon className="h-4 w-4 shrink-0" />
                   <span className="flex-1 text-start">{t(`groups.${groupKey}`)}</span>
@@ -350,8 +381,8 @@ export function Sidebar({ isMobileDrawer = false, onClose }: SidebarProps = {}) 
                     })}
                   </ul>
                 )}
-              </div>
-            );
+              </div>,
+            ];
           })}
         </div>
       </nav>

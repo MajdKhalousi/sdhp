@@ -308,6 +308,43 @@ No central `AuditAction` enum exists — every module uses raw string literals f
 
 ---
 
+### Sprint 10 — Reports Hub UX / Information Architecture Polish
+
+**Status: Closed (2026-06-29).** Verified on Staging (commit `444ecd1` confirmed as Staging HEAD, web rebuild/restart succeeded, Summary visually shows 6 cards + Queue by Status only, Appointment Reports and Visit Reports both still work, Arabic/RTL acceptable). A UX/IA review of the Reports Hub built across Sprints 8–9, not a new feature.
+
+**1. What shipped**
+
+| Phase | Commit | What |
+|---|---|---|
+| C41A | — (planning only) | Reviewed the Reports Hub's information architecture and found Reports Summary duplicating two exact metrics ("Encounters Total"/"Prescriptions Total") already owned by Visit Reports. Decided Summary should stay a lightweight, cross-domain front door rather than a second copy of any detailed tab. Also evaluated and explicitly deferred Queue Reports (because `/reports/queue` returns nothing Summary doesn't already surface) and a Billing-Reports-into-the-hub migration (different audience/role model, no stated need). |
+| C41B | `444ecd1` | Removed exactly the two duplicate cards from Reports Summary. No hook, API, permissions, sidebar, or `ReportsTabs` changes — a pure render-layer trim. |
+
+**2. Current Reports Hub structure**
+
+- **Summary / ملخص** — lightweight cross-domain overview. Shows: Staff total, Patients total, Active patients, Appointments today, Appointments upcoming, Queue total, plus a Queue by Status breakdown. Intentionally no longer shows Encounters/Visits Total or Prescriptions Total — those totals are owned by Visit Reports and were exact duplicates with no added value on Summary.
+- **Appointments / المواعيد** — unchanged, remains the detailed appointment report (total/today/upcoming/completed/cancelled/noShow + Appointments by Status).
+- **Visits / الزيارات** — unchanged, remains the detailed visit/prescription activity report (6 cards: Total Visits, Visits with Diagnosis, Visits with Treatment Plan, Visits without Diagnosis, Total Prescriptions, Prescriptions with Refills).
+- **Billing Reports** — remains separate, under Billing/Cashier, unaffected by this slice; serves a different primary audience (`ORG_ADMIN, ACCOUNTANT`) than the Reports Hub's nav convention (`ORG_ADMIN, DOCTOR`).
+
+**3. Rationale**
+
+Summary's two removed cards were exact-value duplicates of Visit Reports' totals for the same period — unlike Appointments Today/Upcoming, which remain on Summary deliberately as "right now" cross-domain signals distinct in purpose from Appointment Reports' full period breakdown. The dividing line going forward: Summary keeps metrics with no detailed-tab home, or genuine at-a-glance/current-state value; detailed tabs own their domain's full totals and breakdowns.
+
+**4. Permissions/RBAC — unchanged**
+
+No backend, API, or RBAC files were touched in C41A or C41B. No new or modified permission constant — `REPORTS_SUMMARY_ACCESS_ROLES`, `REPORTS_APPOINTMENTS_ACCESS_ROLES`, and `REPORTS_CLINICAL_ACCESS_ROLES` are all exactly as documented after Sprint 9.
+
+**5. Explicitly deferred**
+
+- Queue Reports as a separate tab — `/reports/queue` would add nothing Summary doesn't already show; revisit only if a real future need (e.g. branch-level queue trend, which the endpoint doesn't even support yet) emerges.
+- Migrating Billing Reports into the Reports Hub — different audience and role model, no concrete justification found.
+- Clinical/visit breakdowns beyond the existing 6 direct-field cards.
+- Percentages or computed KPIs.
+- Top doctors by completed visits, service/category summary, export/report-builder, full BI/custom report builder.
+- Any RBAC broadening.
+
+---
+
 ## Recommended First Sprint
 
 **Sprint 1 — Financial events on the patient medical timeline.**

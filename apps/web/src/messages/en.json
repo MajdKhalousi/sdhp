@@ -3396,7 +3396,6 @@
       "staffTotal": "Staff Total",
       "patientsTotal": "Patients Total",
       "activePatients": "Active Patients",
-      "appointmentsTotal": "Appointments Total",
       "appointmentsToday": "Appointments Today",
       "appointmentsUpcoming": "Appointments Upcoming",
       "encountersTotal": "Encounters Total",
@@ -3404,7 +3403,6 @@
       "queueTotal": "Queue Total"
     },
     "breakdowns": {
-      "appointmentsByStatus": "Appointments by Status",
       "queueByStatus": "Queue by Status",
       "empty": "No data for this period"
     },

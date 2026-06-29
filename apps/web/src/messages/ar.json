@@ -3396,7 +3396,6 @@
       "staffTotal": "إجمالي الموظفين",
       "patientsTotal": "إجمالي المرضى",
       "activePatients": "المرضى النشطون",
-      "appointmentsTotal": "إجمالي المواعيد",
       "appointmentsToday": "مواعيد اليوم",
       "appointmentsUpcoming": "المواعيد القادمة",
       "encountersTotal": "إجمالي الزيارات",
@@ -3404,7 +3403,6 @@
       "queueTotal": "إجمالي الطابور"
     },
     "breakdowns": {
-      "appointmentsByStatus": "المواعيد حسب الحالة",
       "queueByStatus": "الطابور حسب الحالة",
       "empty": "لا توجد بيانات لهذه الفترة"
     },

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from '@/i18n/navigation';
-import { Users, UserCheck, Calendar, CalendarClock, CalendarPlus, Stethoscope, ClipboardList, ListOrdered, Briefcase } from 'lucide-react';
+import { Users, UserCheck, CalendarClock, CalendarPlus, Stethoscope, ClipboardList, ListOrdered, Briefcase } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuthStore } from '@/store/auth';
 import { useReportsSummary } from '@/hooks/use-reports';
@@ -58,20 +58,18 @@ function MetricCard({ label, value, locale, icon: Icon }: MetricCardProps) {
   );
 }
 
-function StatusBreakdown({
+function QueueStatusBreakdown({
   title,
   byStatus,
-  statusNamespace,
   locale,
   emptyLabel,
 }: {
   title: string;
   byStatus: Record<string, number>;
-  statusNamespace: 'appointment.status' | 'queue.status';
   locale: string;
   emptyLabel: string;
 }) {
-  const t = useTranslations(statusNamespace);
+  const t = useTranslations('queue.status');
   const entries = Object.entries(byStatus);
 
   return (
@@ -203,7 +201,7 @@ export default function ReportsSummaryPage() {
         </div>
       ) : isLoading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
         </div>
       ) : isError ? (
         <div className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3">
@@ -215,7 +213,6 @@ export default function ReportsSummaryPage() {
             <MetricCard label={t('cards.staffTotal')} value={report.staff.totalUsers} locale={locale} icon={Briefcase} />
             <MetricCard label={t('cards.patientsTotal')} value={report.patients.total} locale={locale} icon={Users} />
             <MetricCard label={t('cards.activePatients')} value={report.patients.active} locale={locale} icon={UserCheck} />
-            <MetricCard label={t('cards.appointmentsTotal')} value={report.appointments.total} locale={locale} icon={Calendar} />
             <MetricCard label={t('cards.appointmentsToday')} value={report.appointments.today} locale={locale} icon={CalendarClock} />
             <MetricCard label={t('cards.appointmentsUpcoming')} value={report.appointments.upcoming} locale={locale} icon={CalendarPlus} />
             <MetricCard label={t('cards.encountersTotal')} value={report.encounters.total} locale={locale} icon={Stethoscope} />
@@ -224,17 +221,9 @@ export default function ReportsSummaryPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <StatusBreakdown
-              title={t('breakdowns.appointmentsByStatus')}
-              byStatus={report.appointments.byStatus}
-              statusNamespace="appointment.status"
-              locale={locale}
-              emptyLabel={t('breakdowns.empty')}
-            />
-            <StatusBreakdown
+            <QueueStatusBreakdown
               title={t('breakdowns.queueByStatus')}
               byStatus={report.queue.byStatus}
-              statusNamespace="queue.status"
               locale={locale}
               emptyLabel={t('breakdowns.empty')}
             />

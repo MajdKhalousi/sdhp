@@ -766,6 +766,18 @@
       "error": {
         "addFailed": "فشل إضافة الدواء",
         "deleteFailed": "فشل حذف الدواء"
+      },
+      "applyTemplate": "تطبيق قالب",
+      "template": {
+        "heading": "اختر قالباً",
+        "empty": "لا توجد قوالب نشطة متاحة.",
+        "itemCount": "{count} أدوية",
+        "viewItems": "عرض الأدوية",
+        "apply": "تطبيق",
+        "applying": "جاري التطبيق…",
+        "appliedPartial": "تم تطبيق {done} من {total} أدوية. فشل عند: {medication}.",
+        "error": "فشل تطبيق القالب",
+        "loadFailed": "فشل تحميل القوالب"
       }
     },
     "labOrders": {

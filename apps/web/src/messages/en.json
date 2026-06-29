@@ -766,6 +766,18 @@
       "error": {
         "addFailed": "Failed to add medication",
         "deleteFailed": "Failed to remove medication"
+      },
+      "applyTemplate": "Apply Template",
+      "template": {
+        "heading": "Select a template",
+        "empty": "No active templates available.",
+        "itemCount": "{count} medications",
+        "viewItems": "View medications",
+        "apply": "Apply",
+        "applying": "Applying…",
+        "appliedPartial": "Applied {done} of {total} medications. Failed on: {medication}.",
+        "error": "Failed to apply template",
+        "loadFailed": "Failed to load templates"
       }
     },
     "labOrders": {

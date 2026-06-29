@@ -22,6 +22,8 @@ export interface CreatePrescriptionPayload {
   frequency?: string;
   duration?: string;
   instructions?: string;
+  quantity?: number;
+  refillsLeft?: number;
 }
 
 interface PrescriptionListResponse {

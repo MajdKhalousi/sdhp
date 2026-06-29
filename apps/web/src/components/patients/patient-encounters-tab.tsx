@@ -86,16 +86,16 @@ export function PatientEncountersTab({ patientId }: Props) {
             </div>
 
             {enc.chiefComplaint && (
-              <p className="text-sm" dir="auto">
+              <p className="text-sm text-start">
                 <span className="text-xs text-muted-foreground">{tVisits('chiefComplaint')}: </span>
-                {enc.chiefComplaint}
+                <span dir="auto">{enc.chiefComplaint}</span>
               </p>
             )}
 
             {enc.diagnosis ? (
-              <p className="text-sm" dir="auto">
+              <p className="text-sm text-start">
                 <span className="text-xs font-medium text-muted-foreground">{tVisits('diagnosis')}: </span>
-                <span className="font-medium">{enc.diagnosis}</span>
+                <span className="font-medium" dir="auto">{enc.diagnosis}</span>
                 {enc.diagnosisCode && (
                   <span className="ms-1 font-mono text-xs text-muted-foreground" dir="ltr">
                     ({enc.diagnosisCode})
@@ -103,23 +103,23 @@ export function PatientEncountersTab({ patientId }: Props) {
                 )}
               </p>
             ) : enc.diagnosisCode && (
-              <p className="text-sm" dir="ltr">
+              <p className="text-sm text-start">
                 <span className="text-xs font-medium text-muted-foreground">{tVisits('diagnosis')}: </span>
-                <span className="font-mono">{enc.diagnosisCode}</span>
+                <span className="font-mono" dir="ltr">{enc.diagnosisCode}</span>
               </p>
             )}
 
             {enc.treatmentPlan && (
-              <p className="text-sm" dir="auto">
+              <p className="text-sm text-start">
                 <span className="text-xs text-muted-foreground">{tVisits('plan')}: </span>
-                {enc.treatmentPlan}
+                <span dir="auto">{enc.treatmentPlan}</span>
               </p>
             )}
 
             {enc.notes && (
-              <p className="text-sm" dir="auto">
+              <p className="text-sm text-start">
                 <span className="text-xs text-muted-foreground">{tCards('notes')}: </span>
-                {enc.notes}
+                <span dir="auto">{enc.notes}</span>
               </p>
             )}
 

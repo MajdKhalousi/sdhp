@@ -423,6 +423,39 @@ C43B, C43B-Polish, C43B-Polish-2, and C43C are all frontend-only. No Prisma sche
 
 ---
 
+### Sprint 13 — Cancel Encounter / Abandon Visit
+
+**Status: Closed (2026-06-30).** Closed the encounter-lifecycle gap first identified in the C43A First Clinic Trial Readiness Audit and explicitly deferred at the end of Sprint 12: a doctor had no graceful way to abandon a mistakenly-started visit other than completing it with empty fields or asking an ORG_ADMIN to use the generic delete endpoint (which DOCTOR couldn't access at all). Backend and frontend both staging-verified.
+
+**What shipped**
+
+| Phase | Commit | What |
+|---|---|---|
+| C44B | `78b0009` | New `PATCH /v1/encounters/:id/cancel` endpoint (`SUPER_ADMIN`/`ORG_ADMIN`/`DOCTOR`, DOCTOR restricted to their own encounter). Adds one nullable `cancelReason` column via a minimal migration. Reuses the existing soft-delete mechanism (`deletedAt`) rather than a new status field or state machine — confirmed during planning that Visit Reports and the patient timeline already exclude `deletedAt`-set encounters, so no reports/timeline code needed to change. Rejects with a clear error if the encounter is already completed (`endedAt` set) or already cancelled/deleted. Writes an audit log (`action: 'CANCEL'`) — the first audited mutation on `Encounter` in this codebase, since `create()`/the existing `remove()` write none. Deliberately writes no patient-facing medical-timeline event, after confirming the timeline-writer's underlying table isn't read by the patient-facing timeline endpoint at all. Transactionally reverts a linked appointment from `IN_PROGRESS` to `CANCELLED` and its queue entry from `IN_PROGRESS` to `SKIPPED`, only when each was in that exact active state. |
+| C44C | `2cad105` | New "Cancel Visit"/"إلغاء الزيارة" action in the doctor encounter workspace, alongside the existing "Complete Visit" button but with clearly lower visual weight (muted outline vs. green-filled). Confirmation dialog with an optional reason textarea, full Arabic/English copy. A dirty-state visibility bug — copying `EndEncounterButton`'s `(!isDirty || pendingComplete)` condition, which would have hidden Cancel whenever the form had unsaved edits — was caught during diff review and fixed before commit; visibility is `canEdit && !isEnded` only, independent of the form's dirty state. Redirects to `/dashboard/doctor/queue` on success, matching the existing completion flow. |
+
+**Current behavior**
+
+A doctor can now safely abandon an active, not-yet-completed visit at any point — including with unsaved edits in the form — without it ever being counted as a completed visit or appearing in the patient's clinical history. The action is reachable for SUPER_ADMIN/ORG_ADMIN/DOCTOR (DOCTOR limited to their own encounters), invisible to NURSE/SECRETARY, and disappears entirely once a visit is completed. A linked appointment/queue entry that was actively in progress is automatically cleaned up to reflect the abandoned visit rather than being left stuck "in progress" indefinitely.
+
+**Staging verification**
+
+Full end-to-end verification was performed on staging, not just unit-level: Cancel Visit appears and remains visible with unsaved edits; the confirmation dialog (Arabic and English) appears before any API call; an optional reason textarea works; "Keep Visit" dismisses cleanly; a successful cancel shows the Arabic success toast and redirects; the cancelled encounter's database row has `deletedAt` set and `cancelReason` correctly `NULL` when no reason was given; an audit log row exists with `action = CANCEL`, `resource = encounter`; a real linked appointment (`seed-appt-026`) transitioned to `CANCELLED` and its queue entry to `SKIPPED`; Appointment Reports' cancelled count incremented by one after the test, confirming the propagation is visible end-to-end through an existing, unmodified read path. API health and the web build/restart were both confirmed OK after their respective deploys.
+
+**No backend/RBAC surprises**
+
+The new endpoint's role list (`SUPER_ADMIN`/`ORG_ADMIN`/`DOCTOR`) exactly matches the existing `Encounters POST / PATCH` row in the Permissions Matrix — DOCTOR's ownership restriction mirrors `update()`'s pre-existing pattern verbatim, not a new RBAC concept. The Permissions Matrix gained one new row for this endpoint (see below); no existing role or endpoint's access changed.
+
+**Explicitly deferred**
+
+- Localized/friendly mapping for the two backend cancel rejection messages (already-completed, already-cancelled) — same class of gap C42B addressed for billing, not yet extended here.
+- Any patient-facing "this visit was cancelled" timeline marker — the audit log is the system of record for this; the patient timeline silently excludes cancelled encounters today, by deliberate choice during C44A/C44B planning.
+- A broader `EncounterStatus` enum or state machine — explicitly ruled out as out of scope for this slice.
+- A frontend UI for an admin to cancel a different user's in-progress encounter outside the doctor's own workspace — no such route currently exists naturally; not built speculatively.
+- Audit-log coverage for `create()`/`remove()` on `Encounter`, which still write none — noted as a related, smaller gap, not addressed in this slice.
+
+---
+
 ## Recommended First Sprint
 
 **Sprint 1 — Financial events on the patient medical timeline.**

@@ -27,6 +27,7 @@ Roles, abbreviated: **SA**=SUPER_ADMIN, **OA**=ORG_ADMIN, **BA**=BRANCH_ADMIN, *
 | **Appointments** DELETE | ✓ | ✓ | | | | | | |
 | **Encounters** GET | ✓ | ✓ | | ✓ | ✓ | ✓ | | |
 | **Encounters** POST / PATCH | ✓ | ✓ | | ✓ | | | | |
+| **Encounters** PATCH :id/cancel | ✓ | ✓ | | ✓ | | | | |
 | **Encounters** DELETE | ✓ | ✓ | | | | | | |
 | **Queue** GET | ✓ | ✓ | | ✓ | ✓ | ✓ | | |
 | **Queue** POST (check-in) | ✓ | ✓ | | | | ✓ | | |

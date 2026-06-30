@@ -12,6 +12,7 @@ import { assertPatientLinkedToOrg } from '../../common/helpers/patient-access.he
 import { PaginatedResponse } from '../../common/types/paginated-response.type';
 import { CreateEncounterDto } from './dto/create-encounter.dto';
 import { UpdateEncounterDto } from './dto/update-encounter.dto';
+import { CancelEncounterDto } from './dto/cancel-encounter.dto';
 import { EncounterQueryDto } from './dto/encounter-query.dto';
 import { AuditLogsWriterService, toSnapshot } from '../audit-logs/audit-logs-writer.service';
 import { MedicalTimelineWriterService } from '../medical-timeline/medical-timeline-writer.service';
@@ -62,6 +63,7 @@ const SELECT = {
   vitals: true,
   startedAt: true,
   endedAt: true,
+  cancelReason: true,
   createdAt: true,
   updatedAt: true,
   patient: { select: PATIENT_SELECT },
@@ -89,6 +91,7 @@ const SNAPSHOT_SELECT = {
   vitals: true,
   startedAt: true,
   endedAt: true,
+  cancelReason: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -340,6 +343,89 @@ export class EncountersService {
       resourceId: id,
       oldData: toSnapshot(encounter),
       newData: toSnapshot({ ...encounter, ...updateData }),
+    });
+
+    return result;
+  }
+
+  // Cancel an active (not yet completed, not yet deleted) encounter. Reuses the
+  // same soft-delete mechanism as remove() — both reports and the patient
+  // timeline already exclude deletedAt-set encounters, so cancelling needs no
+  // changes to either read path. Distinct from remove(): scoped to DOCTOR's own
+  // active encounters too, requires endedAt to still be null, captures an
+  // optional reason, and is audit-logged (remove() currently is not).
+  async cancel(id: string, dto: CancelEncounterDto, caller: JwtPayload) {
+    const encounter = await this.prisma.encounter.findFirst({
+      where: { id },
+      select: { ...SNAPSHOT_SELECT, doctorId: true, appointmentId: true, deletedAt: true },
+    });
+
+    if (!encounter) throw new NotFoundException('Encounter not found');
+    this.assertOwnership(encounter.organizationId, caller);
+
+    // DOCTOR can only cancel their own encounters.
+    if (caller.role === UserRole.DOCTOR) {
+      const doctorProfile = await this.prisma.doctor.findFirst({
+        where: { userId: caller.sub, deletedAt: null },
+        select: { id: true },
+      });
+      if (!doctorProfile || doctorProfile.id !== encounter.doctorId) {
+        throw new ForbiddenException('You can only cancel your own encounters');
+      }
+    }
+
+    if (encounter.deletedAt) {
+      throw new BadRequestException('Encounter is already cancelled or deleted');
+    }
+    if (encounter.endedAt) {
+      throw new BadRequestException('Completed encounters cannot be cancelled');
+    }
+
+    const cancelReason = dto.reason?.trim() || null;
+    const cancelledAt = new Date();
+    const appointmentId = encounter.appointmentId;
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.encounter.update({
+        where: { id },
+        data: { deletedAt: cancelledAt, cancelReason },
+        select: SELECT,
+      });
+
+      if (appointmentId) {
+        const appt = await tx.appointment.findUnique({
+          where: { id: appointmentId },
+          select: { status: true },
+        });
+        if (appt?.status === AppointmentStatus.IN_PROGRESS) {
+          await tx.appointment.update({
+            where: { id: appointmentId },
+            data: { status: AppointmentStatus.CANCELLED },
+          });
+        }
+
+        const queueEntry = await tx.queueEntry.findUnique({
+          where: { appointmentId },
+          select: { id: true, status: true },
+        });
+        if (queueEntry && queueEntry.status === QueueStatus.IN_PROGRESS) {
+          await tx.queueEntry.update({
+            where: { id: queueEntry.id },
+            data: { status: QueueStatus.SKIPPED },
+          });
+        }
+      }
+
+      return updated;
+    });
+
+    await this.auditWriter.log({
+      caller,
+      action: 'CANCEL',
+      resource: 'encounter',
+      resourceId: id,
+      oldData: toSnapshot(encounter),
+      newData: toSnapshot({ ...encounter, deletedAt: cancelledAt, cancelReason }),
     });
 
     return result;

@@ -24,6 +24,7 @@ import { EncountersService } from './encounters.service';
 import { EncounterQueryDto } from './dto/encounter-query.dto';
 import { CreateEncounterDto } from './dto/create-encounter.dto';
 import { UpdateEncounterDto } from './dto/update-encounter.dto';
+import { CancelEncounterDto } from './dto/cancel-encounter.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { RequiresActiveSubscription } from '../../common/decorators/requires-active-subscription.decorator';
@@ -87,6 +88,22 @@ export class EncountersController {
     @CurrentUser() user: JwtPayload,
   ) {
     return this.service.update(id, dto, user);
+  }
+
+  @Patch(':id/cancel')
+  @Version('1')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN, UserRole.DOCTOR)
+  @ApiOperation({
+    summary:
+      'Cancel an active encounter — DOCTOR can only cancel their own. Allowed only while not yet completed (endedAt null) and not already cancelled/deleted. Soft-deletes the encounter; if linked to an in-progress appointment/queue entry, both are reverted (appointment→CANCELLED, queue→SKIPPED).',
+  })
+  @ApiNotFoundResponse({ description: 'Encounter not found' })
+  cancel(
+    @Param('id') id: string,
+    @Body() dto: CancelEncounterDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.service.cancel(id, dto, user);
   }
 
   @Delete(':id')

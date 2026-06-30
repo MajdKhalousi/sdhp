@@ -36,7 +36,7 @@ Full detail: [Staging-Environment.md](Staging-Environment.md), [Staging-Phase-Lo
 | Compose file | `docker/docker-compose.prod.yml` (containers `sdhp_api`, `sdhp_web`, `sdhp_postgres`, `sdhp_redis`, `sdhp_minio`, `sdhp_nginx`, `sdhp_certbot`) |
 | Env file policy | `docker/.env.production` lives only on the server, `chmod 600` — never committed |
 | Purpose / data policy | Intended for real clinic use once ready; currently demo/internal data only |
-| Current status | Updated to latest master as of **Phase 0E-C24**. Contains demo/internal data only — **no real clinic data yet**. Cleanup/re-baseline (**Phase 0E-C26**) is deliberately **deferred until a real clinic actually exists** — not a forgotten step. |
+| Current status | Updated to latest master (`ed2a85d`) as of **Phase 0E-C45C**, after a verified pre/post-update backup pair and a passing manual smoke test (see `elaji-planning/ELAJI_IMPLEMENTATION_ROADMAP.md` Sprint 14). Contains demo/internal data only — **no real clinic data yet**. Cleanup/re-baseline (**Phase 0E-C26**) is deliberately **deferred until a real clinic actually exists** — not a forgotten step. Before real data enters, an explicit owner decision is still needed on whether to clean this demo data, isolate by new tenant, or create a fresh real-clinic org (see Sprint 14 closure). |
 
 ## Production Rules
 

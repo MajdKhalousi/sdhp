@@ -454,6 +454,56 @@ The new endpoint's role list (`SUPER_ADMIN`/`ORG_ADMIN`/`DOCTOR`) exactly matche
 - A frontend UI for an admin to cancel a different user's in-progress encounter outside the doctor's own workspace — no such route currently exists naturally; not built speculatively.
 - Audit-log coverage for `create()`/`remove()` on `Encounter`, which still write none — noted as a related, smaller gap, not addressed in this slice.
 
+### Sprint 14 — Primary server update / operational verification (C41–C44 deploy)
+
+**Status: Closed (2026-06-30).** Not a feature sprint — brings the primary server fully current after it had drifted 65 commits behind master, and verifies the deploy mechanically and via manual smoke test before any real clinic data consideration proceeds. Documentation-only phase; no app code changed as part of C45C itself.
+
+**What happened**
+
+The host with hostname `sdhp-staging` — which, per the Environment-Registry naming warning, actually runs the production domain and `docker/docker-compose.prod.yml` stack (containers `sdhp_api`, `sdhp_web`, `sdhp_postgres`, `sdhp_nginx`; images `sdhp_prod-api`, `sdhp_prod-web`) — was updated from 65 commits behind to current `master` (`ed2a85d`), bringing it through everything from Sprint 11 (Cashier/Billing Operational Polish) through Sprint 13 (Cancel Encounter / Abandon Visit).
+
+**Backup evidence**
+
+- Pre-update manual Postgres backup created and verified before any change was made.
+- Post-update manual Postgres backup created and verified: `/var/backups/sdhp/manual/post-master-update-20260630-111621.pgdump`.
+
+**Migration verification**
+
+- `apps/api` and `apps/web` builds both succeeded.
+- Prisma migrations applied successfully, including C44B's hand-written `20260630120000_add_encounter_cancel_reason` migration (created without local `migrate dev` access per that phase's explicit DB-access constraint — this is its first real-database application).
+- No unresolved Prisma migrations remain.
+
+**Health verification**
+
+- API and Web containers both healthy after restart.
+- API health endpoint returns `ok`.
+- `git status` on the server is clean and synced with `origin/master` at `ed2a85d`.
+- Disk usage after update: 24% — safe.
+
+**Manual UI smoke-test checklist**
+
+| Check | Result |
+|---|---|
+| Patient creation | ✅ Works |
+| Missing optional information warning (Sprint 12 / C43B-Polish-2) | ✅ Works |
+| Duplicate-patient warning + explicit "Create Anyway" (Sprint 12 / C43B-Polish) | ✅ Works |
+| Old non-functional Allergies textarea (Sprint 12 / C43C) | ✅ Confirmed removed |
+| Existing structured `AllergiesCard` | ✅ Unaffected |
+| Cancel Visit from doctor workspace (Sprint 13 / C44C) | ✅ Works |
+| Billing/cashier guards (Sprint 11) | ✅ Still work |
+| Medical service / prescription-template pages | ✅ Open without crash |
+
+**No app-code blocker from the C41–C44 update.** Every sprint shipped between the prior deploy and `ed2a85d` is now live, mechanically verified (build, migrate, health) and manually smoke-tested across its own acceptance criteria. The update itself surfaced no regression and required no follow-up code fix.
+
+**Remaining operational decision — not resolved in this phase**
+
+The primary server's demo/internal data, already documented in Environment-Registry.md ("currently demo/internal data only") and re-confirmed by the C45A/C45B readiness audits, is still present. Before any real patient data is entered, an explicit decision is needed on one of:
+1. Clean the existing demo/internal data from this organization,
+2. Isolate real data by creating a new organization/tenant alongside the existing demo one, or
+3. Create a fresh real-clinic organization and accounts and leave the demo org as-is, unused.
+
+This decision belongs to the project owner (see C45B's "Decisions needed from owner") and is explicitly **not** made or assumed by this documentation phase.
+
 ---
 
 ## Recommended First Sprint

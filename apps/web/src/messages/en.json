@@ -609,9 +609,19 @@
       "savedAt": "Saved at {time}",
       "closeVisit": "Complete Visit",
       "closing": "Completing…",
+      "cancelVisit": "Cancel Visit",
       "unsavedChangesConfirm": "You have unsaved changes. Leave without saving?",
       "unsavedChanges": "Unsaved changes",
       "saveBeforeClosing": "Save changes before ending the visit."
+    },
+    "cancel": {
+      "title": "Cancel this visit?",
+      "description": "This will cancel the visit. It will not be counted as a completed visit and will not appear in the patient’s clinical history.",
+      "reasonLabel": "Reason (optional)",
+      "reasonPlaceholder": "Add a short reason if needed",
+      "confirm": "Cancel Visit",
+      "dismiss": "Keep Visit",
+      "success": "Visit cancelled successfully"
     },
     "close": {
       "confirm": "Complete this visit? The encounter will be locked and the appointment marked complete.",

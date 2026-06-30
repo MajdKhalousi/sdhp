@@ -60,3 +60,18 @@ export function useStartEncounter() {
     },
   });
 }
+
+export function useCancelEncounter() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
+      api.patch<Encounter>(`/v1/encounters/${id}/cancel`, { reason }),
+    onSuccess: (encounter) => {
+      qc.setQueryData(['encounter', encounter.id], encounter);
+      qc.invalidateQueries({ queryKey: ['encounters'] });
+      qc.invalidateQueries({ queryKey: ['queue'] });
+      qc.invalidateQueries({ queryKey: ['appointments'] });
+      qc.invalidateQueries({ queryKey: ['patient-timeline'] });
+    },
+  });
+}

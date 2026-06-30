@@ -20,6 +20,7 @@ import { IcdCodeCombobox } from './icd-code-combobox';
 import { ICD_CODES } from '@/lib/icd-codes';
 import { FollowUpBookingPanel } from './follow-up-booking-panel';
 import { EndEncounterButton } from './end-encounter-button';
+import { CancelEncounterButton } from './cancel-encounter-button';
 import { getFriendlyApiErrorMessage } from '@/lib/api-error-messages';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -901,6 +902,13 @@ export function EncounterWorkspace({ encounterId, onDirtyChange }: Props) {
               >
                 {saving ? t('actions.saving') : t('actions.saveAndComplete')}
               </button>
+            )}
+
+            {canEdit && !isEnded && (
+              <CancelEncounterButton
+                encounterId={encounterId}
+                disabled={saving}
+              />
             )}
 
             {canEdit && (!isDirty || pendingComplete) && (

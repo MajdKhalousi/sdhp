@@ -44,6 +44,7 @@ export interface Encounter {
   vitals: Record<string, unknown> | null;
   startedAt: string | null;
   endedAt: string | null;
+  cancelReason?: string | null;
   createdAt: string;
   updatedAt: string;
   patient: EncounterPatientRef;

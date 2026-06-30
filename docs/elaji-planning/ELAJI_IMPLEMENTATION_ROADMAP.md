@@ -385,6 +385,44 @@ No backend billing logic, invoice/payment state, RBAC, or payment-amount toleran
 
 ---
 
+### Sprint 12 — Patient Creation Quality / First Clinic Trial Readiness
+
+**Status: Closed (2026-06-30).** Grew out of the C43A First Clinic Trial Readiness Audit, which flagged patient registration as the one module with a concrete, real data-quality gap (duplicate-phone-within-org not enforced) ahead of a real clinic trial. This slice closed that gap and two related findings discovered along the way, all staging-verified.
+
+**What shipped**
+
+| Phase | Commit | What |
+|---|---|---|
+| C43B | `3def3d1` | Fixed a stale-acknowledgement bug in the duplicate-patient soft warning: editing the phone field after a duplicate warning was shown previously left the old "Create Anyway" acknowledgement pointing at the un-edited value. Now any phone edit while the warning is showing resets it, forcing a fresh check on the next submit. |
+| C43B-Polish | `0469da2` | Found and fixed a deeper regression this surfaced: the "Create Anyway" button was hidden entirely whenever the matched duplicate was already linked to the org — true for nearly every real duplicate-phone case — making the soft warning behave like a hard block in practice. The button now always renders; the "already linked" note is additional advisory text, not a replacement for the escape hatch. The bottom form submit button is now also disabled while the warning is pending, closing a redundant-resubmit path. |
+| C43B-Polish-2 | `6e0d80f` | Added a second, independent soft confirmation: if required fields pass but an entire optional section (family info, additional info, medical info, or emergency contact) is left blank, a "missing information" warning lists the blank sections and offers "Complete information" or "Create Anyway." Sequenced strictly after the duplicate-warning gate clears, with its own independent stale-payload reset (any field edit invalidates it) that doesn't interfere with the duplicate warning's narrower phone-only reset. |
+| C43C | `edabc68` | Removed a non-functional "Allergies" textarea from the patient create/edit form, discovered while building C43B-Polish-2's medical-section check. The field was collected in local form state but never included in the create/update payload — a silent clinical-data-loss risk, since staff could type an allergy and reasonably assume it was saved. The real, structured allergy feature (`Allergy[]` model, full backend CRUD, `AllergiesCard` on the patient profile) was confirmed completely separate and untouched. |
+
+**Current behavior**
+
+Creating a patient now runs two independent, sequential soft gates before the API call: a duplicate-phone/name/DOB/nationalId check (existing, now fixed), then a missing-optional-section check (new). Both are dismissible, both require an explicit "create anyway" click to proceed past, and neither blocks creation outright — consistent with this slice's explicit non-negotiable: legitimate edge cases (shared-household phone numbers, genuinely sparse patient records at registration time) must remain creatable. The Allergies textarea — which never did anything — is gone from both create and edit forms; Chronic Diseases remains, unaffected.
+
+**Staging verification**
+
+All of the following were visually confirmed on staging: duplicate warning appears before creating a likely-duplicate patient, with existing-patient context (name, MRN, phone, DOB) and three clear actions (view existing, cancel, create anyway); the bottom form button cannot bypass it; editing the phone clears it. The missing-information warning appears only after the duplicate gate clears, lists blank sections correctly, and offers complete-or-continue. The Allergies textarea is gone from both create and edit forms; Chronic Diseases still saves and displays correctly; an existing real allergy record still appears correctly in patient safety alerts and the Known Allergies card on the patient profile, confirming the dead-field removal didn't touch the real feature.
+
+**Safety/UX rationale**
+
+Every change in this slice follows the same principle established back in C43A: a first clinic trial needs friction against *accidental* mistakes (duplicate records, sparse records, a field that silently eats clinical input) without ever blocking a legitimate edge case outright. Two soft, dismissible, sequenced confirmations plus removing one misleading dead field accomplish that without introducing any new required field, any backend validation, or any hard constraint.
+
+**No backend/schema/RBAC changes**
+
+C43B, C43B-Polish, C43B-Polish-2, and C43C are all frontend-only. No Prisma schema, migration, backend service/controller, DTO, or permissions/RBAC file was touched in any of the four phases — confirmed in each phase's diff review before commit.
+
+**Explicitly deferred**
+
+- A real Add/Edit Allergy UI using the existing, already-built `Allergy[]` backend CRUD (`/v1/patients/:patientId/allergies`) — the backend fully supports this today; only a frontend write path is missing. Identified as a genuine, separately-scoped feature gap during C43C planning, not a small fix.
+- Cancel Encounter — the encounter-lifecycle gap identified in the original C43A audit (no graceful cancel path for a mis-started encounter, distinct from hard delete).
+- Carried over from C42: frontend/backend payment-tolerance alignment, NURSE invoice-read frontend permission decision, `RecordPaymentForm`/`IssueAndPayDialog` refactor, invoice `update`/`addItem`/`removeItem` audit-log coverage.
+- Carried over from C43A: RTL bidi polish on free-text clinical fields, ACCOUNTANT/DOCTOR nav-visibility UX cleanups, dead non-localized queue route cleanup.
+
+---
+
 ## Recommended First Sprint
 
 **Sprint 1 — Financial events on the patient medical timeline.**
